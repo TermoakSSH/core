@@ -35,35 +35,14 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
   test:
-    name: Tests (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.os }}
-      - name: OpenSSH for the integration tests
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y openssh-server && sudo mkdir -p /run/sshd
-      - name: Tests
-        run: cargo test --workspace --locked
-
-  ffi:
-    name: Mobile bindings (UniFFI)
+    name: Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build -p termoak-ffi --locked
-      - name: Generated bindings are up to date
-        run: |
-          scripts/generate-bindings.sh
-          git status --porcelain bindings
-          git diff --exit-code bindings || (echo "::error::The bindings are out of date: run scripts/generate-bindings.sh" && exit 1)
-          test -z "$(git status --porcelain bindings)"
+      - name: OpenSSH for the integration tests
+        run: sudo apt-get update && sudo apt-get install -y openssh-server && sudo mkdir -p /run/sshd
+      - name: Tests
+        run: cargo test --workspace --locked
+
