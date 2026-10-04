@@ -408,6 +408,12 @@ const MIGRATIONS: &[&str] = &[
                created_at
         FROM ai_tasks WHERE cost_micros > 0;
     "#,
+    // v6: six-digit email verification codes live in `email_tokens` too
+    // (purpose `verify_code`); `attempts` counts the wrong guesses of each
+    // one, so it can be invalidated after a few.
+    r#"
+    ALTER TABLE email_tokens ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0;
+    "#,
 ];
 
 fn migrate(conn: &Connection) -> Result<()> {

@@ -222,6 +222,30 @@ impl Workspace {
         Ok(api)
     }
 
+    /// Verifies the email with the code from the verification email and
+    /// signs in to the server, remembering it like [`login`](Self::login).
+    pub async fn verify_code(
+        &self,
+        url: &str,
+        email: &str,
+        code: &str,
+        totp_code: Option<&str>,
+    ) -> Result<ApiClient> {
+        let api = self.api_for(url, None)?;
+        let device = self.device_name().await?;
+        let auth = api
+            .verify_code(email, code, totp_code, &device, &api::platform())
+            .await?;
+        self.store.meta_set(SERVER_URL, api.base_url()).await?;
+        self.store.meta_set(SERVER_USER, &auth.user.email).await?;
+        Ok(api)
+    }
+
+    /// Asks the server for a new verification code (no sign-in needed).
+    pub async fn resend_code(&self, url: &str, email: &str) -> Result<()> {
+        ApiClient::new(url)?.resend_code(email).await
+    }
+
     pub async fn logout(&self) -> Result<()> {
         if let Some(api) = self.server().await? {
             let _ = api.logout().await;

@@ -595,6 +595,11 @@ impl TermoakCore {
     /// If the account has two-factor authentication and no `totp_code` is
     /// given, it fails with `TotpRequired`: ask for the code (from the
     /// authenticator app, or a recovery code) and repeat the call with it.
+    ///
+    /// On a server that requires a verified email, an account that has not
+    /// verified it still signs in, but can only manage itself: check
+    /// `verification_required` afterwards (the server emails a new code if
+    /// the previous one expired).
     #[uniffi::method(default(totp_code))]
     pub async fn login(
         &self,
@@ -620,6 +625,13 @@ impl TermoakCore {
     /// Creates an account (the server's first user is the admin) and signs in.
     /// When registration is closed, an invitation code is required (see
     /// [`invite_info`](crate::invite_info)).
+    ///
+    /// On a server that requires a verified email (`features.email_verification`
+    /// in `server_info`), the new account must enter the six-digit code from
+    /// the email before using the server: check `verification_required`
+    /// afterwards and show the code screen (`verify_code`, `resend_code`).
+    /// Accounts created from an invitation sent to the same email are
+    /// verified already.
     #[uniffi::method(default(invite))]
     pub async fn register(
         &self,
@@ -641,6 +653,56 @@ impl TermoakCore {
         .await?;
         *self.api.lock() = Some(api);
         Ok(())
+    }
+
+    /// Whether the signed-in account still has to verify its email before
+    /// using the server. Ask after `login` or `register`: when `true`, show
+    /// the screen to enter the six-digit code from the email (`verify_code`)
+    /// with a "resend" button (`resend_code`). Until then, everything except
+    /// the account itself fails with `EmailNotVerified`.
+    pub async fn verification_required(&self) -> Result<bool> {
+        self.with_api(|api| async move { Ok(api.verification_required().await?) })
+            .await
+    }
+
+    /// Verifies the account's email with the six-digit code from the
+    /// verification email and signs in to the server (like `login`: the
+    /// tokens are stored encrypted in the vault). Works whether or not
+    /// `register` or `login` were called before on this device.
+    ///
+    /// A wrong or expired code fails with `Invalid` (the code is used up
+    /// after 5 wrong tries: ask for another one with `resend_code`); too many
+    /// tries in a few minutes fail with `Server` (HTTP 429). If the account
+    /// already has two-factor authentication it fails with `TotpRequired`:
+    /// repeat with `totp_code`.
+    #[uniffi::method(default(totp_code))]
+    pub async fn verify_code(
+        &self,
+        url: String,
+        email: String,
+        code: String,
+        totp_code: Option<String>,
+    ) -> Result<()> {
+        let ws = self.ws.clone();
+        let totp = totp_code
+            .map(|c| c.trim().to_string())
+            .filter(|c| !c.is_empty());
+        // Codes are often pasted with spaces or dashes ("123 456").
+        let code: String = code.chars().filter(char::is_ascii_digit).collect();
+        let api =
+            run(async move { Ok(ws.verify_code(&url, &email, &code, totp.as_deref()).await?) })
+                .await?;
+        *self.api.lock() = Some(api);
+        Ok(())
+    }
+
+    /// Emails a new six-digit verification code to `email` on the server at
+    /// `url` (no sign-in needed). It succeeds whether or not that account
+    /// exists; asking more than once a minute (or five times an hour) fails
+    /// with `Server` (HTTP 429).
+    pub async fn resend_code(&self, url: String, email: String) -> Result<()> {
+        let ws = self.ws.clone();
+        run(async move { Ok(ws.resend_code(&url, &email).await?) }).await
     }
 
     /// Signs this device out of the server. Local data is kept.

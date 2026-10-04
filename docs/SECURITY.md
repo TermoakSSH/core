@@ -57,6 +57,16 @@ Digital SL through https://termoak.com.
   exists or not, counts as an attempt for the per-email and per-IP limits,
   and using it signs out every device (two-step verification is still
   required).
+- **Email verification codes.** When the server requires a verified email,
+  the verification email also carries a six-digit code (from the system
+  generator) that verifies the email and signs in. It lasts 15 minutes, a
+  new one replaces the previous one, and five wrong tries use it up. Only an
+  HMAC-SHA256 of it, keyed with the server's master key and salted, is
+  stored, so a copy of the database alone does not reveal it. Wrong codes
+  count as failures for the sign-in limits (per email and per IP), the
+  answer is the same whether the account exists or not, and code emails are
+  limited to one a minute and five an hour per address (thirty an hour per
+  IP).
 - **Deleting the account.** Asks for the password and, if enabled, a
   verification code. Deletes the vault records, the sessions and their
   history, the recordings, the AI tasks, the user's own audit entries and

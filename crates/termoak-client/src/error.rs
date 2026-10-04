@@ -75,6 +75,18 @@ impl ClientError {
         self.api_code() == Some("totp_invalid")
     }
 
+    /// The server requires a verified email and the account has not
+    /// verified it: show the screen to enter the code from the email
+    /// ([`ApiClient::verify_code`](crate::api::ApiClient::verify_code)).
+    pub fn is_email_not_verified(&self) -> bool {
+        self.api_code() == Some("email_not_verified")
+    }
+
+    /// The email verification code is wrong, expired or used up.
+    pub fn is_invalid_code(&self) -> bool {
+        self.api_code() == Some("invalid_code")
+    }
+
     /// The plan does not include the server's AI and there is no API key of
     /// the user's own: show "add your API key in Settings → AI".
     pub fn is_ai_key_required(&self) -> bool {

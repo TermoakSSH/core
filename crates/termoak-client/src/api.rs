@@ -20,6 +20,13 @@ use crate::error::{ClientError, Result};
 pub struct AuthResponse {
     pub user: User,
     pub tokens: TokenPair,
+    /// The server requires a verified email and this account has not
+    /// verified it yet: the tokens only reach the account itself (`/me`,
+    /// `/auth/*`, `/devices`) until the code from the email is entered
+    /// ([`ApiClient::verify_code`]) or its link is opened. `false` with older
+    /// servers, which do not send it.
+    #[serde(default)]
+    pub verification_required: bool,
 }
 
 /// Sync response.
@@ -505,6 +512,58 @@ impl ApiClient {
         let auth: AuthResponse = Self::parse(resp).await?;
         self.set_tokens(auth.tokens.clone());
         Ok(auth)
+    }
+
+    /// Verifies the account's email with the six-digit code from the
+    /// verification email and signs in (the tokens are kept like after
+    /// [`login`](Self::login)). A wrong, expired or used-up code fails with
+    /// [`ClientError::is_invalid_code`]. If the account already has
+    /// two-factor authentication, the server asks for that code too
+    /// ([`ClientError::is_totp_required`]): repeat with `totp_code`.
+    pub async fn verify_code(
+        &self,
+        email: &str,
+        code: &str,
+        totp_code: Option<&str>,
+        device_name: &str,
+        platform: &str,
+    ) -> Result<AuthResponse> {
+        let resp = self
+            .http
+            .post(self.url("/api/v1/auth/verify-code"))
+            .json(&json!({"email": email.trim(), "code": code.trim(), "totp_code": totp_code, "device_name": device_name, "platform": platform}))
+            .send()
+            .await?;
+        let auth: AuthResponse = Self::parse(resp).await?;
+        self.set_tokens(auth.tokens.clone());
+        Ok(auth)
+    }
+
+    /// Asks for a new verification code by email. The server answers the
+    /// same whether the account exists or not; it only fails when asked too
+    /// often (`too_many_attempts`: once a minute and five times an hour).
+    pub async fn resend_code(&self, email: &str) -> Result<()> {
+        let _: Value = self
+            .post_public("/api/v1/auth/resend-code", &json!({"email": email.trim()}))
+            .await?;
+        Ok(())
+    }
+
+    /// Whether the signed-in account still has to verify its email before
+    /// using the server (see [`AuthResponse::verification_required`]).
+    pub async fn verification_required(&self) -> Result<bool> {
+        let me: Value = self.get("/api/v1/me").await?;
+        if let Some(required) = me["verification_required"].as_bool() {
+            return Ok(required);
+        }
+        // Older servers do not say: the same rule they apply.
+        if me["user"]["email_verified"].as_bool().unwrap_or(true) {
+            return Ok(false);
+        }
+        let info = self.info().await?;
+        Ok(info["features"]["email_verification"]
+            .as_bool()
+            .unwrap_or(false))
     }
 
     pub async fn logout(&self) -> Result<()> {

@@ -4591,6 +4591,11 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * If the account has two-factor authentication and no `totp_code` is
      * given, it fails with `TotpRequired`: ask for the code (from the
      * authenticator app, or a recovery code) and repeat the call with it.
+     *
+     * On a server that requires a verified email, an account that has not
+     * verified it still signs in, but can only manage itself: check
+     * `verification_required` afterwards (the server emails a new code if
+     * the previous one expired).
      */
     func login(url: String, email: String, password: String, totpCode: String?) async throws 
     
@@ -4610,8 +4615,23 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Creates an account (the server's first user is the admin) and signs in.
      * When registration is closed, an invitation code is required (see
      * [`invite_info`](crate::invite_info)).
+     *
+     * On a server that requires a verified email (`features.email_verification`
+     * in `server_info`), the new account must enter the six-digit code from
+     * the email before using the server: check `verification_required`
+     * afterwards and show the code screen (`verify_code`, `resend_code`).
+     * Accounts created from an invitation sent to the same email are
+     * verified already.
      */
     func register(url: String, email: String, name: String, password: String, invite: String?) async throws 
+    
+    /**
+     * Emails a new six-digit verification code to `email` on the server at
+     * `url` (no sign-in needed). It succeeds whether or not that account
+     * exists; asking more than once a minute (or five times an hour) fails
+     * with `Server` (HTTP 429).
+     */
+    func resendCode(url: String, email: String) async throws 
     
     /**
      * Forgets the sync revision: the next round downloads everything.
@@ -4666,6 +4686,29 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * `key`, or the saved one if `None`. At most 10 per minute.
      */
     func testAiKey(provider: String, key: String?) async throws  -> AiKeyTestResult
+    
+    /**
+     * Whether the signed-in account still has to verify its email before
+     * using the server. Ask after `login` or `register`: when `true`, show
+     * the screen to enter the six-digit code from the email (`verify_code`)
+     * with a "resend" button (`resend_code`). Until then, everything except
+     * the account itself fails with `EmailNotVerified`.
+     */
+    func verificationRequired() async throws  -> Bool
+    
+    /**
+     * Verifies the account's email with the six-digit code from the
+     * verification email and signs in to the server (like `login`: the
+     * tokens are stored encrypted in the vault). Works whether or not
+     * `register` or `login` were called before on this device.
+     *
+     * A wrong or expired code fails with `Invalid` (the code is used up
+     * after 5 wrong tries: ask for another one with `resend_code`); too many
+     * tries in a few minutes fail with `Server` (HTTP 429). If the account
+     * already has two-factor authentication it fails with `TotpRequired`:
+     * repeat with `totp_code`.
+     */
+    func verifyCode(url: String, email: String, code: String, totpCode: String?) async throws 
     
     /**
      * Connects to a host over SSH from this device (through its jumps).
@@ -6134,6 +6177,11 @@ open func listServerSessions()async throws  -> ServerSessionList  {
      * If the account has two-factor authentication and no `totp_code` is
      * given, it fails with `TotpRequired`: ask for the code (from the
      * authenticator app, or a recovery code) and repeat the call with it.
+     *
+     * On a server that requires a verified email, an account that has not
+     * verified it still signs in, but can only manage itself: check
+     * `verification_required` afterwards (the server emails a new code if
+     * the previous one expired).
      */
 open func login(url: String, email: String, password: String, totpCode: String? = nil)async throws   {
     return
@@ -6195,6 +6243,13 @@ open func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: S
      * Creates an account (the server's first user is the admin) and signs in.
      * When registration is closed, an invitation code is required (see
      * [`invite_info`](crate::invite_info)).
+     *
+     * On a server that requires a verified email (`features.email_verification`
+     * in `server_info`), the new account must enter the six-digit code from
+     * the email before using the server: check `verification_required`
+     * afterwards and show the code screen (`verify_code`, `resend_code`).
+     * Accounts created from an invitation sent to the same email are
+     * verified already.
      */
 open func register(url: String, email: String, name: String, password: String, invite: String? = nil)async throws   {
     return
@@ -6202,6 +6257,28 @@ open func register(url: String, email: String, name: String, password: String, i
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_register(
                         self.uniffiCloneHandle(),FfiConverterString.lower(url),FfiConverterString.lower(email),FfiConverterString.lower(name),FfiConverterString.lower(password),FfiConverterOptionString.lower(invite)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Emails a new six-digit verification code to `email` on the server at
+     * `url` (no sign-in needed). It succeeds whether or not that account
+     * exists; asking more than once a minute (or five times an hour) fails
+     * with `Server` (HTTP 429).
+     */
+open func resendCode(url: String, email: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_resend_code(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(url),FfiConverterString.lower(email)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -6381,6 +6458,57 @@ open func testAiKey(provider: String, key: String?)async throws  -> AiKeyTestRes
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeAiKeyTestResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Whether the signed-in account still has to verify its email before
+     * using the server. Ask after `login` or `register`: when `true`, show
+     * the screen to enter the six-digit code from the email (`verify_code`)
+     * with a "resend" button (`resend_code`). Until then, everything except
+     * the account itself fails with `EmailNotVerified`.
+     */
+open func verificationRequired()async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_verification_required(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Verifies the account's email with the six-digit code from the
+     * verification email and signs in to the server (like `login`: the
+     * tokens are stored encrypted in the vault). Works whether or not
+     * `register` or `login` were called before on this device.
+     *
+     * A wrong or expired code fails with `Invalid` (the code is used up
+     * after 5 wrong tries: ask for another one with `resend_code`); too many
+     * tries in a few minutes fail with `Server` (HTTP 429). If the account
+     * already has two-factor authentication it fails with `TotpRequired`:
+     * repeat with `totp_code`.
+     */
+open func verifyCode(url: String, email: String, code: String, totpCode: String? = nil)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_verify_code(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(url),FfiConverterString.lower(email),FfiConverterString.lower(code),FfiConverterOptionString.lower(totpCode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -14062,6 +14190,14 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case AiBudgetExceeded(message: String)
     
+    /**
+     * The server requires a verified email and this account has not
+     * verified it yet: show the screen to enter the six-digit code from the
+     * email (`verify_code`, `resend_code`). The account's email is
+     * `server_user`.
+     */
+    case EmailNotVerified(message: String)
+    
 
     
 
@@ -14171,6 +14307,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 21: return .EmailNotVerified(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -14222,6 +14362,8 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(19))
         case .AiBudgetExceeded(_ /* message is ignored*/):
             writeInt(&buf, Int32(20))
+        case .EmailNotVerified(_ /* message is ignored*/):
+            writeInt(&buf, Int32(21))
 
         
         }
@@ -16167,7 +16309,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_server_sessions() != 1186) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_login() != 63986) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_login() != 29702) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_logout() != 15911) {
@@ -16176,7 +16318,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session() != 120) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_register() != 19519) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_register() != 5670) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_resend_code() != 16903) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync() != 9745) {
@@ -16204,6 +16349,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_test_ai_key() != 33509) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_verification_required() != 55185) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() != 65042) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 41104) {

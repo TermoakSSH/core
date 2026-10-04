@@ -77,6 +77,12 @@ pub enum TermoakError {
     /// API keys keep working).
     #[error("{0}")]
     AiBudgetExceeded(String),
+    /// The server requires a verified email and this account has not
+    /// verified it yet: show the screen to enter the six-digit code from the
+    /// email (`verify_code`, `resend_code`). The account's email is
+    /// `server_user`.
+    #[error("{0}")]
+    EmailNotVerified(String),
 }
 
 pub type Result<T, E = TermoakError> = std::result::Result<T, E>;
@@ -128,6 +134,7 @@ impl From<ClientError> for TermoakError {
             ClientError::Api { .. } if e.is_totp_invalid() => Self::TotpInvalid(msg),
             ClientError::Api { .. } if e.is_ai_key_required() => Self::AiKeyRequired(msg),
             ClientError::Api { .. } if e.is_ai_budget_exceeded() => Self::AiBudgetExceeded(msg),
+            ClientError::Api { .. } if e.is_email_not_verified() => Self::EmailNotVerified(msg),
             ClientError::Api { status, .. } => match status {
                 401 => Self::SessionExpired(msg),
                 403 => Self::Forbidden(msg),
@@ -160,5 +167,37 @@ impl From<serde_json::Error> for TermoakError {
 impl From<reqwest::Error> for TermoakError {
     fn from(e: reqwest::Error) -> Self {
         Self::Network(format!("network: {e}"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn api(status: u16, code: &str) -> TermoakError {
+        ClientError::Api {
+            status,
+            code: code.into(),
+            message: "m".into(),
+        }
+        .into()
+    }
+
+    #[test]
+    fn api_codes_map_to_variants() {
+        assert!(matches!(
+            api(403, "email_not_verified"),
+            TermoakError::EmailNotVerified(_)
+        ));
+        assert!(matches!(api(403, "forbidden"), TermoakError::Forbidden(_)));
+        assert!(matches!(api(400, "invalid_code"), TermoakError::Invalid(_)));
+        assert!(matches!(
+            api(401, "totp_required"),
+            TermoakError::TotpRequired(_)
+        ));
+        assert!(matches!(
+            api(429, "too_many_attempts"),
+            TermoakError::Server(_)
+        ));
     }
 }

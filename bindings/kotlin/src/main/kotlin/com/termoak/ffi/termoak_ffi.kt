@@ -1158,6 +1158,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_register(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_resend_code(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_send_ai_message(
@@ -1175,6 +1177,10 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_sync_now(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_test_ai_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_verification_required(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_verify_code(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_connect(
     ): Int
@@ -1666,6 +1672,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_register(`ptr`: Long,`url`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`password`: RustBuffer.ByValue,`invite`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_resend_code(`ptr`: Long,`url`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_reset_sync(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_send_ai_message(`ptr`: Long,`taskId`: RustBuffer.ByValue,`text`: RustBuffer.ByValue,
@@ -1683,6 +1691,10 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_sync_now(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_test_ai_key(`ptr`: Long,`provider`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_verification_required(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_verify_code(`ptr`: Long,`url`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`code`: RustBuffer.ByValue,`totpCode`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_connect(`ptr`: Long,`hostId`: RustBuffer.ByValue,`auth`: Long,
     ): Long
@@ -2381,7 +2393,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_server_sessions() and 0xFFFF) != 1186) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_login() and 0xFFFF) != 63986) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_login() and 0xFFFF) != 29702) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_logout() and 0xFFFF) != 15911) {
@@ -2390,7 +2402,10 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session() and 0xFFFF) != 120) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_register() and 0xFFFF) != 19519) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_register() and 0xFFFF) != 5670) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_resend_code() and 0xFFFF) != 16903) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync() and 0xFFFF) != 9745) {
@@ -2418,6 +2433,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_test_ai_key() and 0xFFFF) != 33509) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verification_required() and 0xFFFF) != 55185) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() and 0xFFFF) != 65042) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect() and 0xFFFF) != 41104) {
@@ -9037,6 +9058,11 @@ public interface TermoakCoreInterface {
      * If the account has two-factor authentication and no `totp_code` is
      * given, it fails with `TotpRequired`: ask for the code (from the
      * authenticator app, or a recovery code) and repeat the call with it.
+     *
+     * On a server that requires a verified email, an account that has not
+     * verified it still signs in, but can only manage itself: check
+     * `verification_required` afterwards (the server emails a new code if
+     * the previous one expired).
      */
     suspend fun `login`(`url`: kotlin.String, `email`: kotlin.String, `password`: kotlin.String, `totpCode`: kotlin.String? = null)
     
@@ -9056,8 +9082,23 @@ public interface TermoakCoreInterface {
      * Creates an account (the server's first user is the admin) and signs in.
      * When registration is closed, an invitation code is required (see
      * [`invite_info`](crate::invite_info)).
+     *
+     * On a server that requires a verified email (`features.email_verification`
+     * in `server_info`), the new account must enter the six-digit code from
+     * the email before using the server: check `verification_required`
+     * afterwards and show the code screen (`verify_code`, `resend_code`).
+     * Accounts created from an invitation sent to the same email are
+     * verified already.
      */
     suspend fun `register`(`url`: kotlin.String, `email`: kotlin.String, `name`: kotlin.String, `password`: kotlin.String, `invite`: kotlin.String? = null)
+    
+    /**
+     * Emails a new six-digit verification code to `email` on the server at
+     * `url` (no sign-in needed). It succeeds whether or not that account
+     * exists; asking more than once a minute (or five times an hour) fails
+     * with `Server` (HTTP 429).
+     */
+    suspend fun `resendCode`(`url`: kotlin.String, `email`: kotlin.String)
     
     /**
      * Forgets the sync revision: the next round downloads everything.
@@ -9112,6 +9153,29 @@ public interface TermoakCoreInterface {
      * `key`, or the saved one if `None`. At most 10 per minute.
      */
     suspend fun `testAiKey`(`provider`: kotlin.String, `key`: kotlin.String?): AiKeyTestResult
+    
+    /**
+     * Whether the signed-in account still has to verify its email before
+     * using the server. Ask after `login` or `register`: when `true`, show
+     * the screen to enter the six-digit code from the email (`verify_code`)
+     * with a "resend" button (`resend_code`). Until then, everything except
+     * the account itself fails with `EmailNotVerified`.
+     */
+    suspend fun `verificationRequired`(): kotlin.Boolean
+    
+    /**
+     * Verifies the account's email with the six-digit code from the
+     * verification email and signs in to the server (like `login`: the
+     * tokens are stored encrypted in the vault). Works whether or not
+     * `register` or `login` were called before on this device.
+     *
+     * A wrong or expired code fails with `Invalid` (the code is used up
+     * after 5 wrong tries: ask for another one with `resend_code`); too many
+     * tries in a few minutes fail with `Server` (HTTP 429). If the account
+     * already has two-factor authentication it fails with `TotpRequired`:
+     * repeat with `totp_code`.
+     */
+    suspend fun `verifyCode`(`url`: kotlin.String, `email`: kotlin.String, `code`: kotlin.String, `totpCode`: kotlin.String? = null)
     
     /**
      * Connects to a host over SSH from this device (through its jumps).
@@ -11072,6 +11136,11 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * If the account has two-factor authentication and no `totp_code` is
      * given, it fails with `TotpRequired`: ask for the code (from the
      * authenticator app, or a recovery code) and repeat the call with it.
+     *
+     * On a server that requires a verified email, an account that has not
+     * verified it still signs in, but can only manage itself: check
+     * `verification_required` afterwards (the server emails a new code if
+     * the previous one expired).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -11159,6 +11228,13 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * Creates an account (the server's first user is the admin) and signs in.
      * When registration is closed, an invitation code is required (see
      * [`invite_info`](crate::invite_info)).
+     *
+     * On a server that requires a verified email (`features.email_verification`
+     * in `server_info`), the new account must enter the six-digit code from
+     * the email before using the server: check `verification_required`
+     * afterwards and show the code screen (`verify_code`, `resend_code`).
+     * Accounts created from an invitation sent to the same email are
+     * verified already.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -11173,6 +11249,36 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`name`),
         FfiConverterString.lower(`password`),
         FfiConverterOptionalString.lower(`invite`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Emails a new six-digit verification code to `email` on the server at
+     * `url` (no sign-in needed). It succeeds whether or not that account
+     * exists; asking more than once a minute (or five times an hour) fails
+     * with `Server` (HTTP 429).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `resendCode`(`url`: kotlin.String, `email`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_resend_code(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`url`),
+        FfiConverterString.lower(`email`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
@@ -11410,6 +11516,72 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeAiKeyTestResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Whether the signed-in account still has to verify its email before
+     * using the server. Ask after `login` or `register`: when `true`, show
+     * the screen to enter the six-digit code from the email (`verify_code`)
+     * with a "resend" button (`resend_code`). Until then, everything except
+     * the account itself fails with `EmailNotVerified`.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `verificationRequired`() : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_verification_required(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Verifies the account's email with the six-digit code from the
+     * verification email and signs in to the server (like `login`: the
+     * tokens are stored encrypted in the vault). Works whether or not
+     * `register` or `login` were called before on this device.
+     *
+     * A wrong or expired code fails with `Invalid` (the code is used up
+     * after 5 wrong tries: ask for another one with `resend_code`); too many
+     * tries in a few minutes fail with `Server` (HTTP 429). If the account
+     * already has two-factor authentication it fails with `TotpRequired`:
+     * repeat with `totp_code`.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `verifyCode`(`url`: kotlin.String, `email`: kotlin.String, `code`: kotlin.String, `totpCode`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_verify_code(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`url`),
+        FfiConverterString.lower(`email`),
+        FfiConverterString.lower(`code`),
+        FfiConverterOptionalString.lower(`totpCode`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -18081,6 +18253,14 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class AiBudgetExceeded(message: String) : TermoakException(message)
         
+    /**
+     * The server requires a verified email and this account has not
+     * verified it yet: show the screen to enter the six-digit code from the
+     * email (`verify_code`, `resend_code`). The account's email is
+     * `server_user`.
+     */
+        class EmailNotVerified(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -18114,6 +18294,7 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             18 -> TermoakException.Internal(FfiConverterString.read(buf))
             19 -> TermoakException.AiKeyRequired(FfiConverterString.read(buf))
             20 -> TermoakException.AiBudgetExceeded(FfiConverterString.read(buf))
+            21 -> TermoakException.EmailNotVerified(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -18203,6 +18384,10 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.AiBudgetExceeded -> {
                 buf.putInt(20)
+                Unit
+            }
+            is TermoakException.EmailNotVerified -> {
+                buf.putInt(21)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

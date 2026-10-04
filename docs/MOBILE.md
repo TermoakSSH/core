@@ -163,6 +163,7 @@ not matter: the bindings are the same.
 | `TerminalScreen(cols, rows, scrollback)`: `feed`, `snapshot`, `key`, `character`, `paste`, `resize`, `scroll` | Terminal emulator (the desktop one): turns output into a screen ready to draw, and keystrokes into bytes |
 | `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection |
 | `login/register/logout/isLoggedIn/syncNow` | Server account and sync (with optional 2FA code and invitation) |
+| `verificationRequired`, `verifyCode(url, email, code)`, `resendCode(url, email)` | Email verification with the six-digit code from the email (signs in) |
 | `inviteInfo(url, token)` | Invitation details before signing up |
 | `twoFactorStatus/setupTwoFactor/enableTwoFactor/disableTwoFactor`, `qrCode(text)` | Two-step verification (TOTP) with its QR code |
 | `listTeams/createTeam/renameTeam/deleteTeam`, `listTeamMembers/addTeamMember/setTeamMemberRole/removeTeamMember/leaveTeam` | Teams |
@@ -195,7 +196,7 @@ Conventions:
 - Errors: a single error type, `TermoakError` in Swift and
   `TermoakException` in Kotlin, with variants to decide what to do
   (`NotLoggedIn`, `SessionExpired`, `TotpRequired`, `TotpInvalid`,
-  `HostKey`, `Auth`, `Network`, `Vault`…) and a message ready to show. In
+  `EmailNotVerified`, `HostKey`, `Auth`, `Network`, `Vault`…) and a message ready to show. In
   Swift, `TermoakKit` adds a helper that returns the message of any error;
   in Kotlin, use `e.message`.
 
@@ -396,6 +397,24 @@ let recoveryCodes = try await core.enableTwoFactor(code: codeFromTheApp)
 let info = try await inviteInfo(url: server, token: code)   // email, team
 try await core.register(url: server, email: email, name: name,
                         password: password, invite: code)
+
+// Servers that require a verified email (`features.email_verification` in
+// serverInfo): a new account gets a six-digit code by email. Until it is
+// entered, everything but the account itself fails with .EmailNotVerified.
+try await core.register(url: server, email: email, name: name, password: password)
+if try await core.verificationRequired() {
+    // "Check your email" screen: code field (numeric, one-time-code),
+    // "Resend code" (at most once a minute) and "Use a different email".
+    do {
+        try await core.verifyCode(url: server, email: email, code: typedCode)  // signs in
+    } catch TermoakError.Invalid {
+        // Wrong or expired (5 wrong tries use a code up): ask for another.
+        try await core.resendCode(url: server, email: email)
+    }
+}
+// The same after `login` (the server emails a new code if the last one
+// expired), or whenever a call fails with .EmailNotVerified (the email is
+// `serverUser()`).
 
 // Share a persistent session with a team.
 let team = try await core.createTeam(name: "Ops")

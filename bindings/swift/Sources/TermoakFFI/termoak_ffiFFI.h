@@ -1309,6 +1309,11 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_open_server_session(uint64_t p
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_register(uint64_t ptr, RustBuffer url, RustBuffer email, RustBuffer name, RustBuffer password, RustBuffer invite
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_RESEND_CODE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_RESEND_CODE
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_resend_code(uint64_t ptr, RustBuffer url, RustBuffer email
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_RESET_SYNC
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_RESET_SYNC
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_reset_sync(uint64_t ptr
@@ -1352,6 +1357,16 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_sync_now(uint64_t ptr
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_AI_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_AI_KEY
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_test_ai_key(uint64_t ptr, RustBuffer provider, RustBuffer key
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFICATION_REQUIRED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFICATION_REQUIRED
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_verification_required(uint64_t ptr
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFY_CODE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFY_CODE
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_verify_code(uint64_t ptr, RustBuffer url, RustBuffer email, RustBuffer code, RustBuffer totp_code
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CONNECT
@@ -2848,6 +2863,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_register(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_RESEND_CODE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_RESEND_CODE
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_resend_code(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_RESET_SYNC
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_RESET_SYNC
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync(void
@@ -2899,6 +2920,18 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_sync_now(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_AI_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_AI_KEY
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_test_ai_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFICATION_REQUIRED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFICATION_REQUIRED
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_verification_required(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFY_CODE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFY_CODE
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_verify_code(void
     
 );
 #endif
