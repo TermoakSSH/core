@@ -1,0 +1,99 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/termoak-core",
+    "crates/termoak-ssh",
+    "crates/termoak-ai",
+    "crates/termoak-client",
+    "crates/termoak-cli",
+    "crates/termoak-ffi",
+    "crates/termoak-update",
+]
+
+[workspace.package]
+# Version of the libraries (core, ssh, ai, client, ffi, update). They are not
+# published on crates.io: the server and the desktop app depend on the
+# `vX.Y.Z` git tag of this repository, and the mobile apps include it as a
+# submodule. The CLI has its own version (crates/termoak-cli/Cargo.toml)
+# and is released as cli-vX.Y.Z: scripts/release-local.sh.
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.89"
+authors = ["Oihalitz <oihalitz@ohz.es>"]
+license = "AGPL-3.0-only"
+repository = "https://github.com/TermoakSSH/core"
+publish = false
+
+[workspace.dependencies]
+termoak-core = { path = "crates/termoak-core" }
+termoak-ssh = { path = "crates/termoak-ssh" }
+termoak-ai = { path = "crates/termoak-ai" }
+termoak-client = { path = "crates/termoak-client" }
+
+tokio = { version = "1.53", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io", "codec"] }
+futures = "0.3"
+bytes = "1"
+async-trait = "0.1"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+base64 = "0.22"
+hex = "0.4"
+url = "2"
+directories = "6"
+parking_lot = "0.12"
+
+rusqlite = { version = "0.37", features = ["bundled"] }
+
+russh = { version = "0.63", default-features = false, features = ["flate2", "ring", "rsa"] }
+russh-sftp = "3"
+
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "gzip", "http2"] }
+
+axum = { version = "0.8", features = ["ws", "macros"] }
+utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid"] }
+
+clap = { version = "4", features = ["derive", "env"] }
+
+chacha20poly1305 = "0.11"
+argon2 = { version = "0.6", features = ["zeroize"] }
+sha2 = "0.11"
+sha1 = "0.11"
+hmac = "0.13"
+data-encoding = "2"
+qrcode = { version = "0.14", default-features = false }
+getrandom = "0.4"
+zeroize = { version = "1", features = ["derive"] }
+rand = "0.10"
+keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "crypto-rust", "tokio"] }
+# System roots plus the bundled ones (webpki): Windows does not ship some
+# recent roots (ISRG Root X2, Let's Encrypt's ECDSA one) and only downloads
+# them when its own TLS asks for them, not rustls.
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots", "rustls-tls-webpki-roots"] }
+sha2-10 = { package = "sha2", version = "0.10" }
+ed25519-dalek = "2"
+semver = "1"
+self-replace = "1"
+flate2 = "1"
+tar = "0.4"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+lto = "thin"
+codegen-units = 4
+strip = "symbols"

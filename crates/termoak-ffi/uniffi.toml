@@ -1,0 +1,19 @@
+# Configuration of the UniFFI-generated bindings (library mode).
+# Regenerate them with `scripts/generate-bindings.sh`.
+
+[bindings.swift]
+# Swift module with the generated API (target `TermoakFFI` of the
+# bindings/swift package; the app imports `Termoak`, which re-exports it).
+module_name = "TermoakFFI"
+# Low-level C module (header + modulemap) shipped inside the xcframework.
+ffi_module_name = "termoak_ffiFFI"
+# chrono (time zone) uses CoreFoundation.
+link_frameworks = ["CoreFoundation"]
+
+[bindings.kotlin]
+package_name = "com.termoak.ffi"
+# Native library name: libtermoak_ffi.so in jniLibs.
+cdylib_name = "termoak_ffi"
+# Use the system `Cleaner` on Android 14+ and JNA's on older versions.
+android = true
+kotlin_target_version = "2.0.0"

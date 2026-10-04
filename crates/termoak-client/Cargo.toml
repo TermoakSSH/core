@@ -1,0 +1,37 @@
+[package]
+name = "termoak-client"
+description = "Termoak client: server API, sync, remote terminals, relay and local vault"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[features]
+default = ["os-keyring"]
+# Store the local vault key in the system keyring.
+os-keyring = ["dep:keyring"]
+
+[dependencies]
+termoak-core.workspace = true
+termoak-ssh.workspace = true
+tokio.workspace = true
+futures.workspace = true
+tokio-util.workspace = true
+bytes.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+reqwest.workspace = true
+url.workspace = true
+uuid.workspace = true
+parking_lot.workspace = true
+base64.workspace = true
+directories.workspace = true
+tokio-tungstenite.workspace = true
+keyring = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile = "3"

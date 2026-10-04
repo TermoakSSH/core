@@ -1,0 +1,69 @@
+name: CI
+
+# Public repository: GitHub Actions minutes are free. The same checks locally:
+#   cargo fmt --all --check
+#   cargo clippy --workspace --all-targets --locked -- -D warnings
+#   cargo test --workspace --locked
+#   scripts/generate-bindings.sh && git diff --exit-code bindings
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**/*.md", "LICENSE"]
+  pull_request:
+    paths-ignore: ["docs/**", "**/*.md", "LICENSE"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  lint:
+    name: Format and clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+  test:
+    name: Tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
+      - name: OpenSSH for the integration tests
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y openssh-server && sudo mkdir -p /run/sshd
+      - name: Tests
+        run: cargo test --workspace --locked
+
+  ffi:
+    name: Mobile bindings (UniFFI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p termoak-ffi --locked
+      - name: Generated bindings are up to date
+        run: |
+          scripts/generate-bindings.sh
+          git status --porcelain bindings
+          git diff --exit-code bindings || (echo "::error::The bindings are out of date: run scripts/generate-bindings.sh" && exit 1)
+          test -z "$(git status --porcelain bindings)"

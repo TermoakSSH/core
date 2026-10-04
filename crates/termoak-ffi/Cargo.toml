@@ -1,0 +1,53 @@
+[package]
+name = "termoak-ffi"
+description = "Termoak FFI layer (UniFFI) for the iOS (Swift) and Android (Kotlin) apps"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "termoak_ffi"
+# `staticlib` for the iOS xcframework, `cdylib` for Android (and for generating
+# the bindings in library mode) and `lib` for the tests and the bindgen binary.
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[[bin]]
+# Bindings generator (Swift/Kotlin) using the same UniFFI version as the
+# library: `cargo run -p termoak-ffi --bin uniffi-bindgen -- generate ...`
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+
+[dependencies]
+termoak-core.workspace = true
+termoak-ssh.workspace = true
+url.workspace = true
+# Without `os-keyring`: on mobile the app stores the vault key (iOS Keychain /
+# Android Keystore) and passes it over FFI.
+# (path dependency because the workspace one enables the default features)
+termoak-client = { path = "../termoak-client", default-features = false }
+uniffi = { version = "0.32", features = ["cli"] }
+tokio.workspace = true
+futures.workspace = true
+base64.workspace = true
+bytes.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+parking_lot.workspace = true
+# Terminal emulator (the same one as the desktop app).
+alacritty_terminal = "0.26"
+reqwest.workspace = true
+rustls.workspace = true
+# On mobile there is no certificate store `rustls-native-certs` can read
+# (Android): bundle Mozilla's roots for `wss://` WebSockets.
+tokio-tungstenite = { workspace = true, features = ["rustls-tls-webpki-roots"] }
+
+[dev-dependencies]
+tempfile = "3"

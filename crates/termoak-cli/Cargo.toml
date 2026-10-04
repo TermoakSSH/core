@@ -1,0 +1,35 @@
+[package]
+name = "termoak-cli"
+description = "Termoak CLI: local SSH engine, host management, SFTP, tunnels, server sessions and AI"
+# Released separately (tag cli-vX.Y.Z): it has its own version.
+version = "0.2.0"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "termoak"
+path = "src/main.rs"
+
+[dependencies]
+termoak-core.workspace = true
+termoak-ssh.workspace = true
+termoak-client.workspace = true
+tokio.workspace = true
+futures.workspace = true
+bytes.workspace = true
+async-trait.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+clap.workspace = true
+crossterm = "0.29"
+rpassword = "7"
+reqwest.workspace = true
+tokio-tungstenite.workspace = true

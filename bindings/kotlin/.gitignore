@@ -1,0 +1,3 @@
+# Created by scripts/build-android.sh (binaries, not versioned).
+/src/main/jniLibs/
+/build/

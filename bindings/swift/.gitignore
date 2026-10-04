@@ -1,0 +1,4 @@
+# Created by scripts/build-ios.sh (binaries, not versioned).
+/termoak_ffiFFI.xcframework/
+/.build/
+/.swiftpm/

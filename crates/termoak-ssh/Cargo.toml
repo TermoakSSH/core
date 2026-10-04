@@ -1,0 +1,29 @@
+[package]
+name = "termoak-ssh"
+description = "Termoak SSH engine: terminal, exec, SFTP, tunnels, jump hosts and recording"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+termoak-core.workspace = true
+russh.workspace = true
+russh-sftp.workspace = true
+tokio.workspace = true
+base64.workspace = true
+bytes.workspace = true
+futures.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+parking_lot.workspace = true
+rand.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

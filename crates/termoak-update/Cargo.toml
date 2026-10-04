@@ -1,0 +1,37 @@
+[package]
+name = "termoak-update"
+description = "Signed automatic updates for Termoak (downloaded in the background, applied on restart)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "termoak-release"
+path = "src/bin/release.rs"
+
+[dependencies]
+tokio.workspace = true
+futures.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+reqwest.workspace = true
+base64.workspace = true
+hex.workspace = true
+sha2-10.workspace = true
+ed25519-dalek.workspace = true
+semver.workspace = true
+self-replace.workspace = true
+flate2.workspace = true
+tar.workspace = true
+clap.workspace = true
+getrandom.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+axum.workspace = true

@@ -1,0 +1,12 @@
+/target
+**/*.rs.bk
+*.db
+*.db-wal
+*.db-shm
+/data
+.env
+.DS_Store
+/dist
+
+# Android native libraries (scripts/build-android.sh)
+/bindings/kotlin/src/main/jniLibs
