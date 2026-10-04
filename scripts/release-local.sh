@@ -346,8 +346,12 @@ github_setup() {
   if [[ -z "$github_token" && -f "$file" ]]; then
     github_token="$(tr -d '[:space:]' <"$file")"
   fi
+  # Otherwise, the login of the GitHub CLI if it is installed (`gh auth login`).
+  if [[ -z "$github_token" ]] && command -v gh >/dev/null; then
+    github_token="$(gh auth token 2>/dev/null || true)"
+  fi
   [[ -n "$github_token" ]] ||
-    die "the GitHub token is missing: GITHUB_TOKEN or $file (fine-grained, Contents: Read and write)"
+    die "the GitHub token is missing: GITHUB_TOKEN, $file or \`gh auth login\`"
   # This repository; REPO=owner/repository publishes somewhere else (a fork).
   repo="${REPO:-TermoakSSH/core}"
   [[ "$repo" == */* ]] || die "cannot tell which repository this is: set REPO=owner/repository"
