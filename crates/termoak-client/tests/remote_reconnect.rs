@@ -6,7 +6,7 @@ use futures::{SinkExt, StreamExt};
 use serde_json::json;
 use termoak_client::api::ApiClient;
 use termoak_client::remote::{RemoteEvent, RemoteTerminal};
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
 use tokio_tungstenite::tungstenite::Message;
@@ -113,6 +113,16 @@ async fn gives_up_when_the_session_is_gone() {
         // Afterwards, the session no longer exists.
         loop {
             let (mut s, _) = listener.accept().await.unwrap();
+            // Read the request first: closing a socket with unread data makes
+            // Windows reset the connection instead of delivering the response.
+            let mut request = Vec::new();
+            let mut buf = [0u8; 1024];
+            while !request.windows(4).any(|w| w == b"\r\n\r\n") {
+                match s.read(&mut buf).await {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => request.extend_from_slice(&buf[..n]),
+                }
+            }
             let body = r#"{"error":{"code":"not_found","message":"not found"}}"#;
             let _ = s
                 .write_all(
@@ -123,6 +133,7 @@ async fn gives_up_when_the_session_is_gone() {
                     .as_bytes(),
                 )
                 .await;
+            let _ = s.shutdown().await;
         }
     });
     let api = ApiClient::new(&format!("http://{addr}")).unwrap();
