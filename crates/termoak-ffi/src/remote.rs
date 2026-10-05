@@ -51,11 +51,17 @@ pub enum ServerTerminalEvent {
     },
     /// The keyboard changed hands. `can_write`: your input and resizes reach
     /// the terminal now (otherwise the library does not send them).
+    /// `until`: when a timed grant ends (ms since the epoch); the server
+    /// takes the keyboard back by itself then.
     Control {
         driver: Option<String>,
         driver_name: Option<String>,
         can_write: bool,
+        until: Option<i64>,
     },
+    /// A timed grant ended and the keyboard went back to the owner. It
+    /// reaches whoever had it and the owner (`participant_id`: who had it).
+    ControlExpired { participant_id: Option<String> },
     /// You are in the waiting room until the owner lets you in (`Hello`
     /// arrives then).
     Waiting {
@@ -147,10 +153,15 @@ fn convert_event(ev: RemoteEvent) -> ServerTerminalEvent {
             driver,
             driver_name,
             can_write,
+            until,
         } => ServerTerminalEvent::Control {
             driver: driver.map(|d| d.to_string()),
             driver_name,
             can_write,
+            until,
+        },
+        RemoteEvent::ControlExpired { participant } => ServerTerminalEvent::ControlExpired {
+            participant_id: participant.map(|p| p.to_string()),
         },
         RemoteEvent::Waiting(v) => ServerTerminalEvent::Waiting {
             participant_id: v["participant"].as_str().map(str::to_string),
@@ -329,11 +340,19 @@ impl ServerTerminalHandle {
         block_on(self.remote.set_name(&name));
     }
 
-    /// Owner: hands the keyboard to a participant.
-    pub fn grant_control(&self, participant_id: String) -> Result<()> {
+    /// Owner: hands the keyboard to a participant, for `minutes` (1-240)
+    /// or until it is given back or taken (`None`).
+    pub fn grant_control(&self, participant_id: String, minutes: Option<u32>) -> Result<()> {
         let id = parse_id(&participant_id)?;
-        block_on(self.remote.grant_control(id));
+        check_minutes(minutes)?;
+        block_on(self.remote.grant_control(id, minutes));
         Ok(())
+    }
+
+    /// When the current driver's timed grant ends (ms since the epoch);
+    /// `None` if it is not timed or the owner has the keyboard.
+    pub fn control_until(&self) -> Option<i64> {
+        self.remote.control_until()
     }
 
     /// Owner: says no to a request for the keyboard.
@@ -648,11 +667,15 @@ pub enum SharedTerminalEvent {
         participants: Vec<SessionParticipant>,
         driver: Option<String>,
     },
-    /// The keyboard changed hands.
+    /// The keyboard changed hands. `until`: when a timed grant ends (ms).
     Control {
         driver: Option<String>,
         driver_name: Option<String>,
+        until: Option<i64>,
     },
+    /// A timed grant ended: the keyboard is yours again
+    /// (`participant_id`: who had it).
+    ControlExpired { participant_id: Option<String> },
     /// The driver would like this size. The terminal is here: apply it or
     /// ignore it (guests follow the size you report with `resize`).
     ResizeRequest { cols: u32, rows: u32 },
@@ -688,9 +711,14 @@ fn convert_relay(ev: RelayEvent) -> SharedTerminalEvent {
         RelayEvent::Control {
             driver,
             driver_name,
+            until,
         } => SharedTerminalEvent::Control {
             driver: driver.map(|d| d.to_string()),
             driver_name,
+            until,
+        },
+        RelayEvent::ControlExpired { participant } => SharedTerminalEvent::ControlExpired {
+            participant_id: participant.map(|p| p.to_string()),
         },
         RelayEvent::ResizeRequest { cols, rows } => SharedTerminalEvent::ResizeRequest {
             cols: cols.into(),
@@ -749,6 +777,16 @@ impl SharedTerminal {
             Ok(ShareInvite::from_json(&v))
         })
         .await
+    }
+}
+
+/// A timed grant lasts 1-240 minutes.
+pub(crate) fn check_minutes(minutes: Option<u32>) -> Result<()> {
+    match minutes {
+        Some(m) if !(1..=owner_msg::MAX_CONTROL_MINUTES).contains(&m) => Err(
+            TermoakError::Invalid("the keyboard can be handed over for 1 to 240 minutes".into()),
+        ),
+        _ => Ok(()),
     }
 }
 
@@ -840,10 +878,12 @@ impl SharedTerminal {
         Ok(())
     }
 
-    /// Hands the keyboard to a participant.
-    pub async fn grant_control(&self, participant_id: String) -> Result<()> {
+    /// Hands the keyboard to a participant, for `minutes` (1-240) or until
+    /// it is given back or taken (`None`).
+    pub async fn grant_control(&self, participant_id: String, minutes: Option<u32>) -> Result<()> {
         let id = parse_id(&participant_id)?;
-        self.owner(owner_msg::grant_control(id)).await
+        check_minutes(minutes)?;
+        self.owner(owner_msg::grant_control(id, minutes)).await
     }
 
     /// Says no to a request for the keyboard.
@@ -1002,6 +1042,36 @@ mod share_tests {
                 owner: "Ana".into()
             }
         );
+        // A timed grant and its end.
+        let remote = termoak_client::remote::RemoteEvent::Control {
+            driver: Some(pid),
+            driver_name: Some("Zoe".into()),
+            can_write: false,
+            until: Some(1_900_000),
+        };
+        assert!(matches!(
+            convert_event(remote),
+            ServerTerminalEvent::Control {
+                until: Some(1_900_000),
+                ..
+            }
+        ));
+        assert_eq!(
+            convert_event(RemoteEvent::ControlExpired {
+                participant: Some(pid)
+            }),
+            ServerTerminalEvent::ControlExpired {
+                participant_id: Some(pid.to_string())
+            }
+        );
+        assert_eq!(
+            convert_relay(RelayEvent::ControlExpired { participant: None }),
+            SharedTerminalEvent::ControlExpired {
+                participant_id: None
+            }
+        );
+        assert!(check_minutes(Some(240)).is_ok() && check_minutes(None).is_ok());
+        assert!(check_minutes(Some(0)).is_err() && check_minutes(Some(241)).is_err());
     }
 
     #[test]
@@ -1014,6 +1084,21 @@ mod share_tests {
         assert_eq!(s.kind, ShareKind::Link);
         assert!(s.control && s.require_approval && s.active);
         assert_eq!(s.participants, 3);
+        assert_eq!(s.control_minutes, None);
+        let timed = SessionShareInfo::from_json(&json!({"id": "d", "control_minutes": 15}));
+        assert_eq!(timed.control_minutes, Some(15));
+        let mut opts = crate::account::ShareOptions {
+            control: true,
+            expires_in_minutes: None,
+            require_approval: None,
+            auto_grant: true,
+            control_minutes: Some(10),
+        };
+        let link = crate::account::ShareTarget::Link;
+        let body = crate::account::share_body_with(&link, &opts).unwrap();
+        assert_eq!(body["control_minutes"], 10);
+        opts.control_minutes = Some(0);
+        assert!(crate::account::share_body_with(&link, &opts).is_err());
         let t =
             SessionShareInfo::from_json(&json!({"id": "c", "team_id": "t", "permission": "view"}));
         assert_eq!(t.kind, ShareKind::Team);

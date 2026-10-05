@@ -217,6 +217,9 @@ pub struct ServerSession {
     pub participants: Vec<SessionParticipant>,
     /// Participant with the keyboard (`None`: the owner).
     pub driver: Option<String>,
+    /// When the driver's timed grant ends (ms since the epoch), if timed.
+    #[uniffi(default)]
+    pub driver_until: Option<i64>,
 }
 
 impl ServerSession {
@@ -236,6 +239,7 @@ impl ServerSession {
             viewers: SessionViewer::list_from_json(&v["viewers"]),
             participants: SessionParticipant::list_from_json(&v["participants"]),
             driver: v["driver"].as_str().map(str::to_string),
+            driver_until: v["driver_until"].as_i64(),
         }
     }
 }

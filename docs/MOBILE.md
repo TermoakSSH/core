@@ -167,8 +167,8 @@ not matter: the bindings are the same.
 | `inviteInfo(url, token)` | Invitation details before signing up |
 | `twoFactorStatus/setupTwoFactor/enableTwoFactor/disableTwoFactor`, `qrCode(text)` | Two-step verification (TOTP) with its QR code |
 | `listTeams/createTeam/renameTeam/deleteTeam`, `listTeamMembers/addTeamMember/setTeamMemberRole/removeTeamMember/leaveTeam` | Teams |
-| `shareServerSession(sessionId, target, control, expiresInMinutes)`, `shareServerSessionWith(sessionId, target, options)`, `SharedTerminal.inviteTeam/invite` | Share with a user, a team or a link (`ShareOptions`: `control`, `expiresInMinutes`, `requireApproval`, `autoGrant`) |
-| `listServerSessionShares(sessionId)`, `updateServerSessionShare(sessionId, shareId, changes)`, `stopSharingServerSession(sessionId)`, `revokeServerSessionShare` | See, change live (`ShareChanges`) and revoke the shares of a session |
+| `shareServerSession(sessionId, target, control, expiresInMinutes)`, `shareServerSessionWith(sessionId, target, options)`, `SharedTerminal.inviteTeam/invite` | Share with a user, a team or a link (`ShareOptions`: `control`, `expiresInMinutes`, `requireApproval`, `autoGrant`, `controlMinutes` = time limit of automatic grants) |
+| `listServerSessionShares(sessionId)`, `updateServerSessionShare(sessionId, shareId, changes)`, `stopSharingServerSession(sessionId)`, `revokeServerSessionShare` | See, change live (`ShareChanges`, with `controlMinutes` / `noControlLimit`) and revoke the shares of a session |
 | `adminListUsers/adminCreateUser/adminUpdateUser/adminResetPassword/adminResetTwoFactor`, `adminCreateInvite/adminListInvites/adminRevokeInvite`, `adminAudit` | Server administration (administrators only) |
 | `importSshConfig(text, options)`, `importSshConfigFile(path, options)` | Import an `ssh_config` (with a `dryRun` preview) |
 | `completeCommand(hostId, os, line, limit)`, `recordCommand`, `clearCommandHistory` | Command autocomplete |
@@ -178,8 +178,8 @@ not matter: the bindings are the same.
 | `listServerSessions/openServerSession/attachServerSession/closeServerSession` | Persistent sessions |
 | `linkInviteInfo(serverUrl, token)` → `LinkInvite` | What a link offers (title, owner, access, waiting room, people inside) |
 | `joinSharedSession(serverUrl, token, listener)`, `joinSharedSessionAs(serverUrl, token, name, listener)`, `core.joinLink(token, listener)` | Join with an invitation link: without an account (as "Guest N" or with a name) or with your account |
-| `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `requestControl`, `releaseControl`, `setName` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway) |
-| `ServerTerminalHandle` (owner): `allowJoin`, `denyJoin`, `grantControl`, `denyControl`, `takeControl`, `kick(participantId, revokeShare)`, `stopSharing` | Waiting room, keyboard and participants |
+| `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `controlUntil`, `requestControl`, `releaseControl`, `setName` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway). `controlUntil()` (and `until` in `Control`) is when a timed grant ends; `ControlExpired` arrives when it does |
+| `ServerTerminalHandle` (owner): `allowJoin`, `denyJoin`, `grantControl(participantId, minutes)`, `denyControl`, `takeControl`, `kick(participantId, revokeShare)`, `stopSharing` | Waiting room, keyboard and participants. `minutes` (1-240, or `nil`/`null`) hands the keyboard over for a while |
 | `shareTerminal(terminal, title)` → `SharedTerminal`: `setListener` (`SharedTerminalEvent`), the owner actions above, `listInvites`, `updateInvite`, `revokeAllInvites` | Share a local terminal (relay) and invite people |
 | `createAiTask/listAiTasks/getAiTask/sendAiMessage/cancelAiTask` | Background AI |
 | `listPendingApprovals/decideApproval` | Approve or deny AI actions |

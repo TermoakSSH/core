@@ -828,6 +828,10 @@ pub struct SessionShare {
     /// Requests for the keyboard are granted without asking the owner.
     #[serde(default)]
     pub auto_grant: bool,
+    /// An automatic grant (`auto_grant`) lasts at most this many minutes
+    /// (1-240); `None`: until the keyboard is given back or taken.
+    #[serde(default)]
+    pub control_minutes: Option<u32>,
 }
 
 impl SessionShare {

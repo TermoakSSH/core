@@ -82,7 +82,9 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
   room: `require_approval`). The participants of a session (people, not
   sockets) and the keyboard live in the server's `room` module: one driver
   at a time, the owner can always type, everyone else joins read-only and
-  asks for the keyboard (`auto_grant` grants it at once). Revoking, changing
+  asks for the keyboard (`auto_grant` grants it at once). The owner can
+  hand it over for a while (1-240 minutes) and the server takes it back
+  when the time is up. Revoking, changing
   (`PATCH`) or expiring a share, or leaving a team, re-checks the access of
   everyone affected: whoever has no other valid share is sent away with a
   stable code (`revoked`, `kicked`, `expired`...).

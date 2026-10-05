@@ -97,11 +97,15 @@ pub enum RelayEvent {
         participants: Vec<Participant>,
         driver: Option<Id>,
     },
-    /// The keyboard changed hands.
+    /// The keyboard changed hands. `until`: when a timed grant ends (ms).
     Control {
         driver: Option<Id>,
         driver_name: Option<String>,
+        until: Option<i64>,
     },
+    /// A timed grant ended: the keyboard is yours again (`participant`:
+    /// who had it).
+    ControlExpired { participant: Option<Id> },
     /// The driver (or you, from another device) would like this size. The
     /// terminal is here, so it decides: apply it to the local terminal or
     /// ignore it. Guests see the size this side reports with `resize`.
@@ -243,9 +247,11 @@ impl RelayShare {
             .await
     }
 
-    /// Hands the keyboard to a participant.
-    pub async fn grant_control(&self, participant: Id) {
-        self.send(owner_msg::grant_control(participant)).await;
+    /// Hands the keyboard to a participant, for `minutes` (1-240) or until
+    /// it is given back or taken (`None`).
+    pub async fn grant_control(&self, participant: Id, minutes: Option<u32>) {
+        self.send(owner_msg::grant_control(participant, minutes))
+            .await;
     }
 
     /// Says no to a request for the keyboard.
@@ -403,6 +409,10 @@ fn parse(text: &str) -> Option<RelayEvent> {
         "control" => RelayEvent::Control {
             driver: id(&v["driver"]),
             driver_name: v["driver_name"].as_str().map(str::to_string),
+            until: v["until"].as_i64(),
+        },
+        "control_expired" => RelayEvent::ControlExpired {
+            participant: id(&v["participant"]),
         },
         "resize" => RelayEvent::ResizeRequest {
             cols: v["cols"].as_u64()? as u16,

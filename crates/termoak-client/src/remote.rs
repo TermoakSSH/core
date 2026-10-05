@@ -110,11 +110,17 @@ pub enum RemoteEvent {
         driver: Option<Id>,
     },
     /// The keyboard changed hands. `can_write`: your input reaches the
-    /// terminal now.
+    /// terminal now. `until`: when a timed grant ends (ms), if it is timed.
     Control {
         driver: Option<Id>,
         driver_name: Option<String>,
         can_write: bool,
+        until: Option<i64>,
+    },
+    /// A timed grant ended: the keyboard went back to the owner. It reaches
+    /// whoever had it and the owner (`participant`: who had it).
+    ControlExpired {
+        participant: Option<Id>,
     },
     /// You are in the waiting room until the owner lets you in (`Hello`
     /// arrives then).
@@ -161,6 +167,8 @@ struct Seat {
     /// `None` until the first `hello`.
     can_write: Option<bool>,
     driver: Option<Id>,
+    /// End of the current timed grant (ms).
+    until: Option<i64>,
     waiting: bool,
 }
 
@@ -238,6 +246,12 @@ impl RemoteTerminal {
         self.seat.lock().driver
     }
 
+    /// When the current driver's timed grant ends (ms since the epoch);
+    /// `None` if it is not timed (or the owner has the keyboard).
+    pub fn control_until(&self) -> Option<i64> {
+        self.seat.lock().until
+    }
+
     /// You have the keyboard (the owner has it when nobody else does).
     pub fn is_driver(&self) -> bool {
         let s = self.seat.lock();
@@ -309,9 +323,12 @@ impl RemoteTerminal {
         self.send(json!({"type": "set_name", "name": name})).await;
     }
 
-    /// Owner: hands the keyboard to a participant.
-    pub async fn grant_control(&self, participant: Id) {
-        self.send(owner_msg::grant_control(participant)).await;
+    /// Owner: hands the keyboard to a participant, for `minutes` (1-240)
+    /// or until it is given back or taken (`None`). When the time is up the
+    /// server takes it back by itself.
+    pub async fn grant_control(&self, participant: Id, minutes: Option<u32>) {
+        self.send(owner_msg::grant_control(participant, minutes))
+            .await;
     }
 
     /// Owner: says no to a request for the keyboard.
@@ -356,8 +373,16 @@ pub mod owner_msg {
     use serde_json::{Value, json};
     use termoak_core::Id;
 
-    pub fn grant_control(participant: Id) -> Value {
-        json!({"type": "control_grant", "participant": participant})
+    /// Longest timed grant, in minutes.
+    pub const MAX_CONTROL_MINUTES: u32 = 240;
+
+    /// `minutes`: timed grant (1-240; the server rejects anything else).
+    pub fn grant_control(participant: Id, minutes: Option<u32>) -> Value {
+        let mut v = json!({"type": "control_grant", "participant": participant});
+        if let Some(m) = minutes {
+            v["minutes"] = json!(m);
+        }
+        v
     }
 
     pub fn deny_control(participant: Id) -> Value {
@@ -444,6 +469,7 @@ fn update_seat(seat: &Mutex<Seat>, ev: &RemoteEvent) -> bool {
             s.owner = you["kind"] == "owner" || access == "owner";
             s.participant = you["participant"].as_str().and_then(|p| p.parse().ok());
             s.driver = v["session"]["driver"].as_str().and_then(|p| p.parse().ok());
+            s.until = v["session"]["driver_until"].as_i64();
             // Servers before protocol 2: `control` could always type.
             s.can_write = Some(
                 you["can_write"]
@@ -453,9 +479,13 @@ fn update_seat(seat: &Mutex<Seat>, ev: &RemoteEvent) -> bool {
             s.waiting = false;
         }
         RemoteEvent::Control {
-            driver, can_write, ..
+            driver,
+            can_write,
+            until,
+            ..
         } => {
             s.driver = *driver;
+            s.until = *until;
             s.can_write = Some(*can_write);
         }
         RemoteEvent::Participants { driver, .. } => s.driver = *driver,
@@ -589,6 +619,10 @@ fn parse_event(v: Value) -> RemoteEvent {
             driver: parse_id(&v["driver"]),
             driver_name: v["driver_name"].as_str().map(str::to_string),
             can_write: v["can_write"].as_bool().unwrap_or(false),
+            until: v["until"].as_i64(),
+        },
+        "control_expired" => RemoteEvent::ControlExpired {
+            participant: parse_id(&v["participant"]),
         },
         "waiting" => RemoteEvent::Waiting(v),
         "join_request" => match serde_json::from_value(v["participant"].clone()) {
@@ -695,9 +729,30 @@ mod tests {
         );
         assert!(!update_seat(&seat, &hello));
         assert_eq!(seat.lock().can_write, Some(false));
-        let grant = parse_event(json!({"type": "control", "driver": pid, "can_write": true}));
+        let grant = parse_event(
+            json!({"type": "control", "driver": pid, "can_write": true, "until": 1_800_000}),
+        );
         assert!(update_seat(&seat, &grant));
         assert_eq!(seat.lock().driver, Some(pid));
+        assert_eq!(seat.lock().until, Some(1_800_000));
+        // Time is up: the keyboard goes back to the owner.
+        let back = parse_event(json!({"type": "control", "driver": null, "can_write": false}));
+        update_seat(&seat, &back);
+        let s = seat.lock();
+        assert_eq!((s.driver, s.until), (None, None));
+        drop(s);
+        assert!(matches!(
+            parse_event(json!({"type": "control_expired", "participant": pid})),
+            RemoteEvent::ControlExpired { participant: Some(p) } if p == pid
+        ));
+        assert_eq!(
+            owner_msg::grant_control(pid, Some(5)),
+            json!({"type": "control_grant", "participant": pid, "minutes": 5})
+        );
+        assert_eq!(
+            owner_msg::grant_control(pid, None),
+            json!({"type": "control_grant", "participant": pid})
+        );
         // An older server: `control` could always type.
         let seat = Mutex::new(Seat::default());
         let old =

@@ -136,6 +136,10 @@ pub struct ShareOptions {
     pub require_approval: Option<bool>,
     /// Requests for the keyboard are granted without asking you.
     pub auto_grant: bool,
+    /// With `auto_grant`: each automatic grant lasts at most this many
+    /// minutes (1-240); `None`: no limit.
+    #[uniffi(default)]
+    pub control_minutes: Option<u32>,
 }
 
 /// Changes to an invitation (`None` leaves the field as it is).
@@ -149,6 +153,12 @@ pub struct ShareChanges {
     pub no_expiry: bool,
     pub require_approval: Option<bool>,
     pub auto_grant: Option<bool>,
+    /// New time limit of automatic grants (1-240 minutes).
+    #[uniffi(default)]
+    pub control_minutes: Option<u32>,
+    /// Remove the time limit of automatic grants.
+    #[uniffi(default)]
+    pub no_control_limit: bool,
 }
 
 /// Who an invitation is for.
@@ -181,6 +191,9 @@ pub struct SessionShareInfo {
     pub created_at: i64,
     /// People in the session with it now.
     pub participants: u32,
+    /// Time limit of automatic grants (minutes), if any.
+    #[uniffi(default)]
+    pub control_minutes: Option<u32>,
 }
 
 impl SessionShareInfo {
@@ -211,6 +224,7 @@ impl SessionShareInfo {
             auto_grant: v["auto_grant"].as_bool().unwrap_or(false),
             created_at: v["created_at"].as_i64().unwrap_or(0),
             participants: v["participants"].as_u64().unwrap_or(0) as u32,
+            control_minutes: v["control_minutes"].as_u64().map(|m| m as u32),
         }
     }
 }
@@ -247,6 +261,12 @@ pub(crate) async fn update_share(
     }
     if let Some(a) = changes.auto_grant {
         body["auto_grant"] = json!(a);
+    }
+    if changes.no_control_limit {
+        body["no_control_limit"] = json!(true);
+    } else if let Some(m) = changes.control_minutes {
+        crate::remote::check_minutes(Some(m))?;
+        body["control_minutes"] = json!(m);
     }
     let v: Value = api
         .patch(&format!("/api/v1/sessions/{session}/shares/{share}"), &body)
@@ -397,6 +417,7 @@ pub(crate) fn share_body(
             expires_in_minutes,
             require_approval: None,
             auto_grant: false,
+            control_minutes: None,
         },
     )
 }
@@ -410,6 +431,10 @@ pub(crate) fn share_body_with(target: &ShareTarget, opts: &ShareOptions) -> Resu
     });
     if let Some(r) = opts.require_approval {
         body["require_approval"] = json!(r);
+    }
+    if let Some(m) = opts.control_minutes {
+        crate::remote::check_minutes(Some(m))?;
+        body["control_minutes"] = json!(m);
     }
     match target {
         ShareTarget::User { email } => body["email"] = json!(email.trim()),

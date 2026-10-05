@@ -28,7 +28,7 @@ fn map_session(r: &rusqlite::Row<'_>) -> rusqlite::Result<SessionInfo> {
 }
 
 const SHARE_COLUMNS: &str = "id, session_id, created_by, user_id, token_hash, permission, \
-     expires_at, revoked, created_at, team_id, require_approval, auto_grant";
+     expires_at, revoked, created_at, team_id, require_approval, auto_grant, control_minutes";
 
 fn map_share(r: &rusqlite::Row<'_>) -> rusqlite::Result<SessionShare> {
     map_share_at(r, 0)
@@ -49,6 +49,9 @@ fn map_share_at(r: &rusqlite::Row<'_>, o: usize) -> rusqlite::Result<SessionShar
         team_id: parse_opt_id(r.get(o + 9)?)?,
         require_approval: r.get::<_, i64>(o + 10)? != 0,
         auto_grant: r.get::<_, i64>(o + 11)? != 0,
+        control_minutes: r
+            .get::<_, Option<i64>>(o + 12)?
+            .and_then(|m| u32::try_from(m).ok()),
     })
 }
 
@@ -79,6 +82,9 @@ pub struct ShareOptions {
     pub require_approval: bool,
     /// Requests for the keyboard are granted without asking the owner.
     pub auto_grant: bool,
+    /// Keyboard granted automatically (`auto_grant`) for this many minutes
+    /// at most (1-240); `None`: until it is given back or taken.
+    pub control_minutes: Option<u32>,
 }
 
 /// Changes to a share (`None` leaves the field as it is).
@@ -89,6 +95,8 @@ pub struct ShareUpdate {
     pub expires_at: Option<Option<i64>>,
     pub require_approval: Option<bool>,
     pub auto_grant: Option<bool>,
+    /// `Some(None)` removes the time limit of automatic grants.
+    pub control_minutes: Option<Option<u32>>,
 }
 
 impl Store {
@@ -271,9 +279,10 @@ impl Store {
                 created_at: now_ms(),
                 require_approval: opts.require_approval,
                 auto_grant: opts.auto_grant,
+                control_minutes: opts.control_minutes,
             };
             c.execute(
-                &format!("INSERT INTO session_shares ({SHARE_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,0,?8,?9,?10,?11)"),
+                &format!("INSERT INTO session_shares ({SHARE_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,0,?8,?9,?10,?11,?12)"),
                 params![
                     share.id.to_string(),
                     session_id.to_string(),
@@ -285,7 +294,8 @@ impl Store {
                     share.created_at,
                     team_id.map(|t| t.to_string()),
                     opts.require_approval as i64,
-                    opts.auto_grant as i64
+                    opts.auto_grant as i64,
+                    opts.control_minutes
                 ],
             )?;
             Ok((share, token))
@@ -355,16 +365,20 @@ impl Store {
             if let Some(a) = update.auto_grant {
                 share.auto_grant = a;
             }
+            if let Some(m) = update.control_minutes {
+                share.control_minutes = m;
+            }
             tx.execute(
                 "UPDATE session_shares SET permission = ?2, expires_at = ?3,
-                        require_approval = ?4, auto_grant = ?5
+                        require_approval = ?4, auto_grant = ?5, control_minutes = ?6
                  WHERE id = ?1",
                 params![
                     share_id.to_string(),
                     share.permission.as_str(),
                     share.expires_at,
                     share.require_approval as i64,
-                    share.auto_grant as i64
+                    share.auto_grant as i64,
+                    share.control_minutes
                 ],
             )?;
             tx.commit()?;
@@ -531,6 +545,7 @@ mod tests {
                 ShareOptions {
                     require_approval: true,
                     auto_grant: false,
+                    control_minutes: Some(15),
                 },
             )
             .await
@@ -539,6 +554,7 @@ mod tests {
         let by_token = store.share_by_token(&token).await.unwrap().unwrap();
         assert_eq!(by_token.permission, SharePermission::View);
         assert!(by_token.require_approval && !by_token.auto_grant);
+        assert_eq!(by_token.control_minutes, Some(15));
 
         // Changed live: permission, options and expiry.
         let changed = store
@@ -549,12 +565,14 @@ mod tests {
                     permission: Some(SharePermission::Control),
                     auto_grant: Some(true),
                     expires_at: Some(Some(5)),
+                    control_minutes: Some(None),
                     ..Default::default()
                 },
             )
             .await
             .unwrap();
         assert_eq!(changed.permission, SharePermission::Control);
+        assert_eq!(changed.control_minutes, None);
         assert!(changed.require_approval && changed.auto_grant);
         assert!(!changed.is_valid(10));
         assert!(store.share_by_token(&token).await.unwrap().is_none());
@@ -564,6 +582,7 @@ mod tests {
             .unwrap()
             .unwrap();
         assert_eq!(again.expires_at, Some(5));
+        assert_eq!(again.control_minutes, None);
         assert!(
             store
                 .update_share(info.id, new_id(), ShareUpdate::default())

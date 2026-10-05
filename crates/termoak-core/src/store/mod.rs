@@ -422,6 +422,11 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE session_shares ADD COLUMN require_approval INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE session_shares ADD COLUMN auto_grant INTEGER NOT NULL DEFAULT 0;
     "#,
+    // v8: timed keyboard. `control_minutes`: an automatic grant (`auto_grant`)
+    // lasts at most this many minutes (NULL: no limit, as before).
+    r#"
+    ALTER TABLE session_shares ADD COLUMN control_minutes INTEGER;
+    "#,
 ];
 
 fn migrate(conn: &Connection) -> Result<()> {

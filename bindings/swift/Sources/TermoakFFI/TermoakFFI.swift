@@ -2018,6 +2018,12 @@ public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     func closeSession() 
     
     /**
+     * When the current driver's timed grant ends (ms since the epoch);
+     * `None` if it is not timed or the owner has the keyboard.
+     */
+    func controlUntil()  -> Int64?
+    
+    /**
      * Owner: says no to a request for the keyboard.
      */
     func denyControl(participantId: String) throws 
@@ -2033,9 +2039,10 @@ public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     func detach() 
     
     /**
-     * Owner: hands the keyboard to a participant.
+     * Owner: hands the keyboard to a participant, for `minutes` (1-240)
+     * or until it is given back or taken (`None`).
      */
-    func grantControl(participantId: String) throws 
+    func grantControl(participantId: String, minutes: UInt32?) throws 
     
     /**
      * You have the keyboard (the owner has it when nobody else does).
@@ -2215,6 +2222,19 @@ open func closeSession()  {try! rustCall() {
 }
     
     /**
+     * When the current driver's timed grant ends (ms since the epoch);
+     * `None` if it is not timed or the owner has the keyboard.
+     */
+open func controlUntil() -> Int64?  {
+    return try!  FfiConverterOptionInt64.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_control_until(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Owner: says no to a request for the keyboard.
      */
 open func denyControl(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
@@ -2250,13 +2270,15 @@ open func detach()  {try! rustCall() {
 }
     
     /**
-     * Owner: hands the keyboard to a participant.
+     * Owner: hands the keyboard to a participant, for `minutes` (1-240)
+     * or until it is given back or taken (`None`).
      */
-open func grantControl(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func grantControl(participantId: String, minutes: UInt32?)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(participantId),uniffiCallStatus
+        FfiConverterString.lower(participantId),
+        FfiConverterOptionUInt32.lower(minutes),uniffiCallStatus
     )
 }
 }
@@ -2708,9 +2730,10 @@ public protocol SharedTerminalProtocol: AnyObject, Sendable {
     func denyJoin(participantId: String) async throws 
     
     /**
-     * Hands the keyboard to a participant.
+     * Hands the keyboard to a participant, for `minutes` (1-240) or until
+     * it is given back or taken (`None`).
      */
-    func grantControl(participantId: String) async throws 
+    func grantControl(participantId: String, minutes: UInt32?) async throws 
     
     /**
      * Invites with every option (waiting room, automatic keyboard...).
@@ -2903,14 +2926,15 @@ open func denyJoin(participantId: String)async throws   {
 }
     
     /**
-     * Hands the keyboard to a participant.
+     * Hands the keyboard to a participant, for `minutes` (1-240) or until
+     * it is given back or taken (`None`).
      */
-open func grantControl(participantId: String)async throws   {
+open func grantControl(participantId: String, minutes: UInt32?)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId),FfiConverterOptionUInt32.lower(minutes)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -11356,6 +11380,10 @@ public struct ServerSession: Equatable, Hashable {
      * Participant with the keyboard (`None`: the owner).
      */
     public var driver: String?
+    /**
+     * When the driver's timed grant ends (ms since the epoch), if timed.
+     */
+    public var driverUntil: Int64?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -11371,7 +11399,10 @@ public struct ServerSession: Equatable, Hashable {
          */participants: [SessionParticipant], 
         /**
          * Participant with the keyboard (`None`: the owner).
-         */driver: String?) {
+         */driver: String?, 
+        /**
+         * When the driver's timed grant ends (ms since the epoch), if timed.
+         */driverUntil: Int64? = nil) {
         self.id = id
         self.ownerId = ownerId
         self.hostId = hostId
@@ -11386,6 +11417,7 @@ public struct ServerSession: Equatable, Hashable {
         self.viewers = viewers
         self.participants = participants
         self.driver = driver
+        self.driverUntil = driverUntil
     }
 
     
@@ -11417,7 +11449,8 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
                 access: FfiConverterTypeSessionAccess.read(from: &buf), 
                 viewers: FfiConverterSequenceTypeSessionViewer.read(from: &buf), 
                 participants: FfiConverterSequenceTypeSessionParticipant.read(from: &buf), 
-                driver: FfiConverterOptionString.read(from: &buf)
+                driver: FfiConverterOptionString.read(from: &buf), 
+                driverUntil: FfiConverterOptionInt64.read(from: &buf)
         )
     }
 
@@ -11436,6 +11469,7 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
         FfiConverterSequenceTypeSessionViewer.write(value.viewers, into: &buf)
         FfiConverterSequenceTypeSessionParticipant.write(value.participants, into: &buf)
         FfiConverterOptionString.write(value.driver, into: &buf)
+        FfiConverterOptionInt64.write(value.driverUntil, into: &buf)
     }
 }
 
@@ -11906,6 +11940,10 @@ public struct SessionShareInfo: Equatable, Hashable {
      * People in the session with it now.
      */
     public var participants: UInt32
+    /**
+     * Time limit of automatic grants (minutes), if any.
+     */
+    public var controlMinutes: UInt32?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -11918,7 +11956,10 @@ public struct SessionShareInfo: Equatable, Hashable {
          */active: Bool, requireApproval: Bool, autoGrant: Bool, createdAt: Int64, 
         /**
          * People in the session with it now.
-         */participants: UInt32) {
+         */participants: UInt32, 
+        /**
+         * Time limit of automatic grants (minutes), if any.
+         */controlMinutes: UInt32? = nil) {
         self.id = id
         self.sessionId = sessionId
         self.kind = kind
@@ -11935,6 +11976,7 @@ public struct SessionShareInfo: Equatable, Hashable {
         self.autoGrant = autoGrant
         self.createdAt = createdAt
         self.participants = participants
+        self.controlMinutes = controlMinutes
     }
 
     
@@ -11968,7 +12010,8 @@ public struct FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer {
                 requireApproval: FfiConverterBool.read(from: &buf), 
                 autoGrant: FfiConverterBool.read(from: &buf), 
                 createdAt: FfiConverterInt64.read(from: &buf), 
-                participants: FfiConverterUInt32.read(from: &buf)
+                participants: FfiConverterUInt32.read(from: &buf), 
+                controlMinutes: FfiConverterOptionUInt32.read(from: &buf)
         )
     }
 
@@ -11989,6 +12032,7 @@ public struct FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer {
         FfiConverterBool.write(value.autoGrant, into: &buf)
         FfiConverterInt64.write(value.createdAt, into: &buf)
         FfiConverterUInt32.write(value.participants, into: &buf)
+        FfiConverterOptionUInt32.write(value.controlMinutes, into: &buf)
     }
 }
 
@@ -12111,6 +12155,14 @@ public struct ShareChanges: Equatable, Hashable {
     public var noExpiry: Bool
     public var requireApproval: Bool?
     public var autoGrant: Bool?
+    /**
+     * New time limit of automatic grants (1-240 minutes).
+     */
+    public var controlMinutes: UInt32?
+    /**
+     * Remove the time limit of automatic grants.
+     */
+    public var noControlLimit: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -12123,12 +12175,20 @@ public struct ShareChanges: Equatable, Hashable {
          */expiresInMinutes: Int64?, 
         /**
          * Remove the expiry.
-         */noExpiry: Bool, requireApproval: Bool?, autoGrant: Bool?) {
+         */noExpiry: Bool, requireApproval: Bool?, autoGrant: Bool?, 
+        /**
+         * New time limit of automatic grants (1-240 minutes).
+         */controlMinutes: UInt32? = nil, 
+        /**
+         * Remove the time limit of automatic grants.
+         */noControlLimit: Bool = false) {
         self.control = control
         self.expiresInMinutes = expiresInMinutes
         self.noExpiry = noExpiry
         self.requireApproval = requireApproval
         self.autoGrant = autoGrant
+        self.controlMinutes = controlMinutes
+        self.noControlLimit = noControlLimit
     }
 
     
@@ -12151,7 +12211,9 @@ public struct FfiConverterTypeShareChanges: FfiConverterRustBuffer {
                 expiresInMinutes: FfiConverterOptionInt64.read(from: &buf), 
                 noExpiry: FfiConverterBool.read(from: &buf), 
                 requireApproval: FfiConverterOptionBool.read(from: &buf), 
-                autoGrant: FfiConverterOptionBool.read(from: &buf)
+                autoGrant: FfiConverterOptionBool.read(from: &buf), 
+                controlMinutes: FfiConverterOptionUInt32.read(from: &buf), 
+                noControlLimit: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -12161,6 +12223,8 @@ public struct FfiConverterTypeShareChanges: FfiConverterRustBuffer {
         FfiConverterBool.write(value.noExpiry, into: &buf)
         FfiConverterOptionBool.write(value.requireApproval, into: &buf)
         FfiConverterOptionBool.write(value.autoGrant, into: &buf)
+        FfiConverterOptionUInt32.write(value.controlMinutes, into: &buf)
+        FfiConverterBool.write(value.noControlLimit, into: &buf)
     }
 }
 
@@ -12294,6 +12358,11 @@ public struct ShareOptions: Equatable, Hashable {
      * Requests for the keyboard are granted without asking you.
      */
     public var autoGrant: Bool
+    /**
+     * With `auto_grant`: each automatic grant lasts at most this many
+     * minutes (1-240); `None`: no limit.
+     */
+    public var controlMinutes: UInt32?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -12310,11 +12379,16 @@ public struct ShareOptions: Equatable, Hashable {
          */requireApproval: Bool?, 
         /**
          * Requests for the keyboard are granted without asking you.
-         */autoGrant: Bool) {
+         */autoGrant: Bool, 
+        /**
+         * With `auto_grant`: each automatic grant lasts at most this many
+         * minutes (1-240); `None`: no limit.
+         */controlMinutes: UInt32? = nil) {
         self.control = control
         self.expiresInMinutes = expiresInMinutes
         self.requireApproval = requireApproval
         self.autoGrant = autoGrant
+        self.controlMinutes = controlMinutes
     }
 
     
@@ -12336,7 +12410,8 @@ public struct FfiConverterTypeShareOptions: FfiConverterRustBuffer {
                 control: FfiConverterBool.read(from: &buf), 
                 expiresInMinutes: FfiConverterOptionInt64.read(from: &buf), 
                 requireApproval: FfiConverterOptionBool.read(from: &buf), 
-                autoGrant: FfiConverterBool.read(from: &buf)
+                autoGrant: FfiConverterBool.read(from: &buf), 
+                controlMinutes: FfiConverterOptionUInt32.read(from: &buf)
         )
     }
 
@@ -12345,6 +12420,7 @@ public struct FfiConverterTypeShareOptions: FfiConverterRustBuffer {
         FfiConverterOptionInt64.write(value.expiresInMinutes, into: &buf)
         FfiConverterOptionBool.write(value.requireApproval, into: &buf)
         FfiConverterBool.write(value.autoGrant, into: &buf)
+        FfiConverterOptionUInt32.write(value.controlMinutes, into: &buf)
     }
 }
 
@@ -14793,8 +14869,16 @@ public enum ServerTerminalEvent: Equatable, Hashable {
     /**
      * The keyboard changed hands. `can_write`: your input and resizes reach
      * the terminal now (otherwise the library does not send them).
+     * `until`: when a timed grant ends (ms since the epoch); the server
+     * takes the keyboard back by itself then.
      */
-    case control(driver: String?, driverName: String?, canWrite: Bool
+    case control(driver: String?, driverName: String?, canWrite: Bool, until: Int64?
+    )
+    /**
+     * A timed grant ended and the keyboard went back to the owner. It
+     * reaches whoever had it and the owner (`participant_id`: who had it).
+     */
+    case controlExpired(participantId: String?
     )
     /**
      * You are in the waiting room until the owner lets you in (`Hello`
@@ -14896,42 +14980,45 @@ public struct FfiConverterTypeServerTerminalEvent: FfiConverterRustBuffer {
         case 6: return .participants(participants: try FfiConverterSequenceTypeSessionParticipant.read(from: &buf), driver: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 7: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf), canWrite: try FfiConverterBool.read(from: &buf)
+        case 7: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf), canWrite: try FfiConverterBool.read(from: &buf), until: try FfiConverterOptionInt64.read(from: &buf)
         )
         
-        case 8: return .waiting(participantId: try FfiConverterOptionString.read(from: &buf), title: try FfiConverterString.read(from: &buf), owner: try FfiConverterString.read(from: &buf)
+        case 8: return .controlExpired(participantId: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 9: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        case 9: return .waiting(participantId: try FfiConverterOptionString.read(from: &buf), title: try FfiConverterString.read(from: &buf), owner: try FfiConverterString.read(from: &buf)
         )
         
-        case 10: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        case 10: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
         )
         
-        case 11: return .controlDenied
-        
-        case 12: return .prompt(prompt: try FfiConverterTypeServerPrompt.read(from: &buf)
+        case 11: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
         )
         
-        case 13: return .promptDone(promptId: try FfiConverterString.read(from: &buf)
+        case 12: return .controlDenied
+        
+        case 13: return .prompt(prompt: try FfiConverterTypeServerPrompt.read(from: &buf)
         )
         
-        case 14: return .resize(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
+        case 14: return .promptDone(promptId: try FfiConverterString.read(from: &buf)
         )
         
-        case 15: return .title(title: try FfiConverterString.read(from: &buf)
+        case 15: return .resize(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
         )
         
-        case 16: return .error(message: try FfiConverterString.read(from: &buf)
+        case 16: return .title(title: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .ended(code: try FfiConverterString.read(from: &buf), message: try FfiConverterString.read(from: &buf)
+        case 17: return .error(message: try FfiConverterString.read(from: &buf)
         )
         
-        case 18: return .other(json: try FfiConverterString.read(from: &buf)
+        case 18: return .ended(code: try FfiConverterString.read(from: &buf), message: try FfiConverterString.read(from: &buf)
         )
         
-        case 19: return .closed
+        case 19: return .other(json: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 20: return .closed
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -14971,73 +15058,79 @@ public struct FfiConverterTypeServerTerminalEvent: FfiConverterRustBuffer {
             FfiConverterOptionString.write(driver, into: &buf)
             
         
-        case let .control(driver,driverName,canWrite):
+        case let .control(driver,driverName,canWrite,until):
             writeInt(&buf, Int32(7))
             FfiConverterOptionString.write(driver, into: &buf)
             FfiConverterOptionString.write(driverName, into: &buf)
             FfiConverterBool.write(canWrite, into: &buf)
+            FfiConverterOptionInt64.write(until, into: &buf)
+            
+        
+        case let .controlExpired(participantId):
+            writeInt(&buf, Int32(8))
+            FfiConverterOptionString.write(participantId, into: &buf)
             
         
         case let .waiting(participantId,title,owner):
-            writeInt(&buf, Int32(8))
+            writeInt(&buf, Int32(9))
             FfiConverterOptionString.write(participantId, into: &buf)
             FfiConverterString.write(title, into: &buf)
             FfiConverterString.write(owner, into: &buf)
             
         
         case let .joinRequest(participant):
-            writeInt(&buf, Int32(9))
-            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
-            
-        
-        case let .controlRequest(participant):
             writeInt(&buf, Int32(10))
             FfiConverterTypeSessionParticipant.write(participant, into: &buf)
             
         
-        case .controlDenied:
+        case let .controlRequest(participant):
             writeInt(&buf, Int32(11))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
+        
+        case .controlDenied:
+            writeInt(&buf, Int32(12))
         
         
         case let .prompt(prompt):
-            writeInt(&buf, Int32(12))
+            writeInt(&buf, Int32(13))
             FfiConverterTypeServerPrompt.write(prompt, into: &buf)
             
         
         case let .promptDone(promptId):
-            writeInt(&buf, Int32(13))
+            writeInt(&buf, Int32(14))
             FfiConverterString.write(promptId, into: &buf)
             
         
         case let .resize(cols,rows):
-            writeInt(&buf, Int32(14))
+            writeInt(&buf, Int32(15))
             FfiConverterUInt32.write(cols, into: &buf)
             FfiConverterUInt32.write(rows, into: &buf)
             
         
         case let .title(title):
-            writeInt(&buf, Int32(15))
+            writeInt(&buf, Int32(16))
             FfiConverterString.write(title, into: &buf)
             
         
         case let .error(message):
-            writeInt(&buf, Int32(16))
+            writeInt(&buf, Int32(17))
             FfiConverterString.write(message, into: &buf)
             
         
         case let .ended(code,message):
-            writeInt(&buf, Int32(17))
+            writeInt(&buf, Int32(18))
             FfiConverterString.write(code, into: &buf)
             FfiConverterString.write(message, into: &buf)
             
         
         case let .other(json):
-            writeInt(&buf, Int32(18))
+            writeInt(&buf, Int32(19))
             FfiConverterString.write(json, into: &buf)
             
         
         case .closed:
-            writeInt(&buf, Int32(19))
+            writeInt(&buf, Int32(20))
         
         }
     }
@@ -15324,9 +15417,15 @@ public enum SharedTerminalEvent: Equatable, Hashable {
     case participants(participants: [SessionParticipant], driver: String?
     )
     /**
-     * The keyboard changed hands.
+     * The keyboard changed hands. `until`: when a timed grant ends (ms).
      */
-    case control(driver: String?, driverName: String?
+    case control(driver: String?, driverName: String?, until: Int64?
+    )
+    /**
+     * A timed grant ended: the keyboard is yours again
+     * (`participant_id`: who had it).
+     */
+    case controlExpired(participantId: String?
     )
     /**
      * The driver would like this size. The terminal is here: apply it or
@@ -15381,23 +15480,26 @@ public struct FfiConverterTypeSharedTerminalEvent: FfiConverterRustBuffer {
         case 1: return .participants(participants: try FfiConverterSequenceTypeSessionParticipant.read(from: &buf), driver: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 2: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf)
+        case 2: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf), until: try FfiConverterOptionInt64.read(from: &buf)
         )
         
-        case 3: return .resizeRequest(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
+        case 3: return .controlExpired(participantId: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 4: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        case 4: return .resizeRequest(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
         )
         
-        case 5: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        case 5: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
         )
         
-        case 6: return .reconnecting
+        case 6: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        )
         
-        case 7: return .reconnected
+        case 7: return .reconnecting
         
-        case 8: return .ended(code: try FfiConverterOptionString.read(from: &buf)
+        case 8: return .reconnected
+        
+        case 9: return .ended(code: try FfiConverterOptionString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -15414,38 +15516,44 @@ public struct FfiConverterTypeSharedTerminalEvent: FfiConverterRustBuffer {
             FfiConverterOptionString.write(driver, into: &buf)
             
         
-        case let .control(driver,driverName):
+        case let .control(driver,driverName,until):
             writeInt(&buf, Int32(2))
             FfiConverterOptionString.write(driver, into: &buf)
             FfiConverterOptionString.write(driverName, into: &buf)
+            FfiConverterOptionInt64.write(until, into: &buf)
+            
+        
+        case let .controlExpired(participantId):
+            writeInt(&buf, Int32(3))
+            FfiConverterOptionString.write(participantId, into: &buf)
             
         
         case let .resizeRequest(cols,rows):
-            writeInt(&buf, Int32(3))
+            writeInt(&buf, Int32(4))
             FfiConverterUInt32.write(cols, into: &buf)
             FfiConverterUInt32.write(rows, into: &buf)
             
         
         case let .joinRequest(participant):
-            writeInt(&buf, Int32(4))
-            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
-            
-        
-        case let .controlRequest(participant):
             writeInt(&buf, Int32(5))
             FfiConverterTypeSessionParticipant.write(participant, into: &buf)
             
         
-        case .reconnecting:
+        case let .controlRequest(participant):
             writeInt(&buf, Int32(6))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
         
-        
-        case .reconnected:
+        case .reconnecting:
             writeInt(&buf, Int32(7))
         
         
-        case let .ended(code):
+        case .reconnected:
             writeInt(&buf, Int32(8))
+        
+        
+        case let .ended(code):
+            writeInt(&buf, Int32(9))
             FfiConverterOptionString.write(code, into: &buf)
             
         }
@@ -17891,6 +17999,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session() != 3879) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_control_until() != 2909) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control() != 38049) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -17900,7 +18011,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() != 27313) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() != 30706) {
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() != 25054) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() != 36879) {
@@ -17957,7 +18068,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() != 4831) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() != 4247) {
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() != 24047) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite() != 50339) {

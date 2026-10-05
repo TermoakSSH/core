@@ -216,7 +216,7 @@ async fn waiting_room_and_owner_requests() {
             .unwrap();
         assert_eq!(
             next_text(&mut ws).await,
-            json!({"type": "control_grant", "participant": guest})
+            json!({"type": "control_grant", "participant": guest, "minutes": 30})
         );
         assert_eq!(
             next_text(&mut ws).await,
@@ -254,7 +254,7 @@ async fn waiting_room_and_owner_requests() {
         RemoteEvent::ControlRequest(p) => assert_eq!(p.id, id),
         other => panic!("{other:?}"),
     }
-    remote.grant_control(id).await;
+    remote.grant_control(id, Some(30)).await;
     remote.kick(id, true).await;
     assert!(matches!(
         next_event(&mut events).await,

@@ -15,8 +15,18 @@ Digital SL through https://termoak.com.
   be recovered.
 - **Vault key on clients.** Looked up in this order:
   1. `TERMOAK_VAULT_KEY`.
-  2. The system keychain: Keychain, Credential Manager or Secret Service.
+  2. The system keychain: Keychain, Credential Manager or Secret Service
+     (read once per process).
   3. The `vault.key` file (`0600`) in the data directory.
+
+  A key is never invented for existing data: if the keychain refuses
+  (access denied, locked, no Secret Service) and there is already a
+  database without a `vault.key` file, opening fails with
+  `KeychainUnavailable` (the apps offer "Try again") instead of creating a
+  new key that would make every saved secret unreadable. If the keychain
+  item is missing but `vault.key` exists, that file is used and copied to
+  the keychain. The AceitunoakSSH item (the former name) is only read when
+  the new one is missing and a database exists.
 - **This device only.** Any entity or secret can be marked this way and
   never leaves the device: it is not synced and the server never sees it.
 - **Revealing secrets.** The API never returns secrets in listings. They
@@ -116,8 +126,13 @@ Digital SL through https://termoak.com.
 - **Permissions.** Two levels: `view` (watch only) and `control` (can ask
   for the keyboard). One person types at a time: the owner always can,
   everyone else only while the owner lets them (or automatically, with
-  `auto_grant`). Input and resizes from anyone else are dropped on the
-  server. Only the owner answers connection prompts (known host, 2FA) and
+  `auto_grant`), optionally for a limited time (1-240 minutes, after which
+  the server takes the keyboard back). Input and resizes from anyone else
+  are dropped on the server.
+- **Who typed what.** Each period someone else had the keyboard is audited
+  (`session.control_period`: who, from-to, bytes typed); recordings mark
+  who typed each part (author marks, written even when the keystrokes
+  themselves are not recorded). Only the owner answers connection prompts (known host, 2FA) and
   closes the session.
 - **Waiting room.** Links ask the owner before letting anyone in (by
   default); the owner can say no or kick someone out (and revoke their

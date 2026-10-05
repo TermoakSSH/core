@@ -914,6 +914,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_control_until(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_join(
@@ -1447,13 +1449,15 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_close_session(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_control_until(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_detach(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,`minutes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_is_driver(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
@@ -1501,7 +1505,7 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_deny_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,`minutes`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_invite(`ptr`: Long,`target`: RustBuffer.ByValue,`options`: RustBuffer.ByValue,
     ): Long
@@ -2171,6 +2175,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session() and 0xFFFF) != 3879) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_control_until() and 0xFFFF) != 2909) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control() and 0xFFFF) != 38049) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2180,7 +2187,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() and 0xFFFF) != 27313) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() and 0xFFFF) != 30706) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() and 0xFFFF) != 25054) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() and 0xFFFF) != 36879) {
@@ -2237,7 +2244,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() and 0xFFFF) != 4831) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() and 0xFFFF) != 4247) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() and 0xFFFF) != 24047) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite() and 0xFFFF) != 50339) {
@@ -5548,6 +5555,12 @@ public interface ServerTerminalHandleInterface {
     fun `closeSession`()
     
     /**
+     * When the current driver's timed grant ends (ms since the epoch);
+     * `None` if it is not timed or the owner has the keyboard.
+     */
+    fun `controlUntil`(): kotlin.Long?
+    
+    /**
      * Owner: says no to a request for the keyboard.
      */
     fun `denyControl`(`participantId`: kotlin.String)
@@ -5563,9 +5576,10 @@ public interface ServerTerminalHandleInterface {
     fun `detach`()
     
     /**
-     * Owner: hands the keyboard to a participant.
+     * Owner: hands the keyboard to a participant, for `minutes` (1-240)
+     * or until it is given back or taken (`None`).
      */
-    fun `grantControl`(`participantId`: kotlin.String)
+    fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
     
     /**
      * You have the keyboard (the owner has it when nobody else does).
@@ -5814,6 +5828,23 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
+     * When the current driver's timed grant ends (ms since the epoch);
+     * `None` if it is not timed or the owner has the keyboard.
+     */override fun `controlUntil`(): kotlin.Long? {
+            return FfiConverterOptionalLong.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_control_until(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Owner: says no to a request for the keyboard.
      */
     @Throws(TermoakException::class)override fun `denyControl`(`participantId`: kotlin.String)
@@ -5863,16 +5894,18 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
-     * Owner: hands the keyboard to a participant.
+     * Owner: hands the keyboard to a participant, for `minutes` (1-240)
+     * or until it is given back or taken (`None`).
      */
-    @Throws(TermoakException::class)override fun `grantControl`(`participantId`: kotlin.String)
+    @Throws(TermoakException::class)override fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
         = 
     callWithHandle {
     uniffiRustCallWithError(TermoakException) { _status ->
     UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(
         it,
         
-        FfiConverterString.lower(`participantId`),_status)
+        FfiConverterString.lower(`participantId`),
+        FfiConverterOptionalUInt.lower(`minutes`),_status)
 }
     }
     
@@ -6579,9 +6612,10 @@ public interface SharedTerminalInterface {
     suspend fun `denyJoin`(`participantId`: kotlin.String)
     
     /**
-     * Hands the keyboard to a participant.
+     * Hands the keyboard to a participant, for `minutes` (1-240) or until
+     * it is given back or taken (`None`).
      */
-    suspend fun `grantControl`(`participantId`: kotlin.String)
+    suspend fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
     
     /**
      * Invites with every option (waiting room, automatic keyboard...).
@@ -6846,17 +6880,19 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 
     
     /**
-     * Hands the keyboard to a participant.
+     * Hands the keyboard to a participant, for `minutes` (1-240) or until
+     * it is given back or taken (`None`).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `grantControl`(`participantId`: kotlin.String) {
+    override suspend fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?) {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(
                 uniffiHandle,
                 
         FfiConverterString.lower(`participantId`),
+        FfiConverterOptionalUInt.lower(`minutes`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
@@ -16587,6 +16623,11 @@ data class ServerSession (
      * Participant with the keyboard (`None`: the owner).
      */
     var `driver`: kotlin.String?
+    , 
+    /**
+     * When the driver's timed grant ends (ms since the epoch), if timed.
+     */
+    var `driverUntil`: kotlin.Long? = null 
     
 ){
     
@@ -16617,6 +16658,7 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterSequenceTypeSessionViewer.read(buf),
             FfiConverterSequenceTypeSessionParticipant.read(buf),
             FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
         )
     }
 
@@ -16634,7 +16676,8 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterTypeSessionAccess.allocationSize(value.`access`) +
             FfiConverterSequenceTypeSessionViewer.allocationSize(value.`viewers`) +
             FfiConverterSequenceTypeSessionParticipant.allocationSize(value.`participants`) +
-            FfiConverterOptionalString.allocationSize(value.`driver`)
+            FfiConverterOptionalString.allocationSize(value.`driver`) +
+            FfiConverterOptionalLong.allocationSize(value.`driverUntil`)
     )
 
     override fun write(value: ServerSession, buf: ByteBuffer) {
@@ -16652,6 +16695,7 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterSequenceTypeSessionViewer.write(value.`viewers`, buf)
             FfiConverterSequenceTypeSessionParticipant.write(value.`participants`, buf)
             FfiConverterOptionalString.write(value.`driver`, buf)
+            FfiConverterOptionalLong.write(value.`driverUntil`, buf)
     }
 }
 
@@ -17034,6 +17078,11 @@ data class SessionShareInfo (
      * People in the session with it now.
      */
     var `participants`: kotlin.UInt
+    , 
+    /**
+     * Time limit of automatic grants (minutes), if any.
+     */
+    var `controlMinutes`: kotlin.UInt? = null 
     
 ){
     
@@ -17066,6 +17115,7 @@ public object FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer<SessionSh
             FfiConverterBoolean.read(buf),
             FfiConverterLong.read(buf),
             FfiConverterUInt.read(buf),
+            FfiConverterOptionalUInt.read(buf),
         )
     }
 
@@ -17085,7 +17135,8 @@ public object FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer<SessionSh
             FfiConverterBoolean.allocationSize(value.`requireApproval`) +
             FfiConverterBoolean.allocationSize(value.`autoGrant`) +
             FfiConverterLong.allocationSize(value.`createdAt`) +
-            FfiConverterUInt.allocationSize(value.`participants`)
+            FfiConverterUInt.allocationSize(value.`participants`) +
+            FfiConverterOptionalUInt.allocationSize(value.`controlMinutes`)
     )
 
     override fun write(value: SessionShareInfo, buf: ByteBuffer) {
@@ -17105,6 +17156,7 @@ public object FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer<SessionSh
             FfiConverterBoolean.write(value.`autoGrant`, buf)
             FfiConverterLong.write(value.`createdAt`, buf)
             FfiConverterUInt.write(value.`participants`, buf)
+            FfiConverterOptionalUInt.write(value.`controlMinutes`, buf)
     }
 }
 
@@ -17199,6 +17251,16 @@ data class ShareChanges (
     var `requireApproval`: kotlin.Boolean?
     , 
     var `autoGrant`: kotlin.Boolean?
+    , 
+    /**
+     * New time limit of automatic grants (1-240 minutes).
+     */
+    var `controlMinutes`: kotlin.UInt? = null 
+    , 
+    /**
+     * Remove the time limit of automatic grants.
+     */
+    var `noControlLimit`: kotlin.Boolean = false 
     
 ){
     
@@ -17220,6 +17282,8 @@ public object FfiConverterTypeShareChanges: FfiConverterRustBuffer<ShareChanges>
             FfiConverterBoolean.read(buf),
             FfiConverterOptionalBoolean.read(buf),
             FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
@@ -17228,7 +17292,9 @@ public object FfiConverterTypeShareChanges: FfiConverterRustBuffer<ShareChanges>
             FfiConverterOptionalLong.allocationSize(value.`expiresInMinutes`) +
             FfiConverterBoolean.allocationSize(value.`noExpiry`) +
             FfiConverterOptionalBoolean.allocationSize(value.`requireApproval`) +
-            FfiConverterOptionalBoolean.allocationSize(value.`autoGrant`)
+            FfiConverterOptionalBoolean.allocationSize(value.`autoGrant`) +
+            FfiConverterOptionalUInt.allocationSize(value.`controlMinutes`) +
+            FfiConverterBoolean.allocationSize(value.`noControlLimit`)
     )
 
     override fun write(value: ShareChanges, buf: ByteBuffer) {
@@ -17237,6 +17303,8 @@ public object FfiConverterTypeShareChanges: FfiConverterRustBuffer<ShareChanges>
             FfiConverterBoolean.write(value.`noExpiry`, buf)
             FfiConverterOptionalBoolean.write(value.`requireApproval`, buf)
             FfiConverterOptionalBoolean.write(value.`autoGrant`, buf)
+            FfiConverterOptionalUInt.write(value.`controlMinutes`, buf)
+            FfiConverterBoolean.write(value.`noControlLimit`, buf)
     }
 }
 
@@ -17334,6 +17402,12 @@ data class ShareOptions (
      * Requests for the keyboard are granted without asking you.
      */
     var `autoGrant`: kotlin.Boolean
+    , 
+    /**
+     * With `auto_grant`: each automatic grant lasts at most this many
+     * minutes (1-240); `None`: no limit.
+     */
+    var `controlMinutes`: kotlin.UInt? = null 
     
 ){
     
@@ -17354,6 +17428,7 @@ public object FfiConverterTypeShareOptions: FfiConverterRustBuffer<ShareOptions>
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalBoolean.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterOptionalUInt.read(buf),
         )
     }
 
@@ -17361,7 +17436,8 @@ public object FfiConverterTypeShareOptions: FfiConverterRustBuffer<ShareOptions>
             FfiConverterBoolean.allocationSize(value.`control`) +
             FfiConverterOptionalLong.allocationSize(value.`expiresInMinutes`) +
             FfiConverterOptionalBoolean.allocationSize(value.`requireApproval`) +
-            FfiConverterBoolean.allocationSize(value.`autoGrant`)
+            FfiConverterBoolean.allocationSize(value.`autoGrant`) +
+            FfiConverterOptionalUInt.allocationSize(value.`controlMinutes`)
     )
 
     override fun write(value: ShareOptions, buf: ByteBuffer) {
@@ -17369,6 +17445,7 @@ public object FfiConverterTypeShareOptions: FfiConverterRustBuffer<ShareOptions>
             FfiConverterOptionalLong.write(value.`expiresInMinutes`, buf)
             FfiConverterOptionalBoolean.write(value.`requireApproval`, buf)
             FfiConverterBoolean.write(value.`autoGrant`, buf)
+            FfiConverterOptionalUInt.write(value.`controlMinutes`, buf)
     }
 }
 
@@ -19167,11 +19244,27 @@ sealed class ServerTerminalEvent {
     /**
      * The keyboard changed hands. `can_write`: your input and resizes reach
      * the terminal now (otherwise the library does not send them).
+     * `until`: when a timed grant ends (ms since the epoch); the server
+     * takes the keyboard back by itself then.
      */
     data class Control(
         val `driver`: kotlin.String?, 
         val `driverName`: kotlin.String?, 
-        val `canWrite`: kotlin.Boolean) : ServerTerminalEvent()
+        val `canWrite`: kotlin.Boolean, 
+        val `until`: kotlin.Long?) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * A timed grant ended and the keyboard went back to the owner. It
+     * reaches whoever had it and the owner (`participant_id`: who had it).
+     */
+    data class ControlExpired(
+        val `participantId`: kotlin.String?) : ServerTerminalEvent()
         
     {
         
@@ -19356,43 +19449,47 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
                 FfiConverterOptionalString.read(buf),
                 FfiConverterOptionalString.read(buf),
                 FfiConverterBoolean.read(buf),
+                FfiConverterOptionalLong.read(buf),
                 )
-            8 -> ServerTerminalEvent.Waiting(
+            8 -> ServerTerminalEvent.ControlExpired(
+                FfiConverterOptionalString.read(buf),
+                )
+            9 -> ServerTerminalEvent.Waiting(
                 FfiConverterOptionalString.read(buf),
                 FfiConverterString.read(buf),
                 FfiConverterString.read(buf),
                 )
-            9 -> ServerTerminalEvent.JoinRequest(
+            10 -> ServerTerminalEvent.JoinRequest(
                 FfiConverterTypeSessionParticipant.read(buf),
                 )
-            10 -> ServerTerminalEvent.ControlRequest(
+            11 -> ServerTerminalEvent.ControlRequest(
                 FfiConverterTypeSessionParticipant.read(buf),
                 )
-            11 -> ServerTerminalEvent.ControlDenied
-            12 -> ServerTerminalEvent.Prompt(
+            12 -> ServerTerminalEvent.ControlDenied
+            13 -> ServerTerminalEvent.Prompt(
                 FfiConverterTypeServerPrompt.read(buf),
                 )
-            13 -> ServerTerminalEvent.PromptDone(
+            14 -> ServerTerminalEvent.PromptDone(
                 FfiConverterString.read(buf),
                 )
-            14 -> ServerTerminalEvent.Resize(
+            15 -> ServerTerminalEvent.Resize(
                 FfiConverterUInt.read(buf),
                 FfiConverterUInt.read(buf),
                 )
-            15 -> ServerTerminalEvent.Title(
+            16 -> ServerTerminalEvent.Title(
                 FfiConverterString.read(buf),
                 )
-            16 -> ServerTerminalEvent.Error(
+            17 -> ServerTerminalEvent.Error(
                 FfiConverterString.read(buf),
                 )
-            17 -> ServerTerminalEvent.Ended(
+            18 -> ServerTerminalEvent.Ended(
                 FfiConverterString.read(buf),
                 FfiConverterString.read(buf),
                 )
-            18 -> ServerTerminalEvent.Other(
+            19 -> ServerTerminalEvent.Other(
                 FfiConverterString.read(buf),
                 )
-            19 -> ServerTerminalEvent.Closed
+            20 -> ServerTerminalEvent.Closed
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
         }
     }
@@ -19447,6 +19544,14 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
                 + FfiConverterOptionalString.allocationSize(value.`driver`)
                 + FfiConverterOptionalString.allocationSize(value.`driverName`)
                 + FfiConverterBoolean.allocationSize(value.`canWrite`)
+                + FfiConverterOptionalLong.allocationSize(value.`until`)
+            )
+        }
+        is ServerTerminalEvent.ControlExpired -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`participantId`)
             )
         }
         is ServerTerminalEvent.Waiting -> {
@@ -19574,68 +19679,74 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
                 FfiConverterOptionalString.write(value.`driver`, buf)
                 FfiConverterOptionalString.write(value.`driverName`, buf)
                 FfiConverterBoolean.write(value.`canWrite`, buf)
+                FfiConverterOptionalLong.write(value.`until`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.ControlExpired -> {
+                buf.putInt(8)
+                FfiConverterOptionalString.write(value.`participantId`, buf)
                 Unit
             }
             is ServerTerminalEvent.Waiting -> {
-                buf.putInt(8)
+                buf.putInt(9)
                 FfiConverterOptionalString.write(value.`participantId`, buf)
                 FfiConverterString.write(value.`title`, buf)
                 FfiConverterString.write(value.`owner`, buf)
                 Unit
             }
             is ServerTerminalEvent.JoinRequest -> {
-                buf.putInt(9)
-                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
-                Unit
-            }
-            is ServerTerminalEvent.ControlRequest -> {
                 buf.putInt(10)
                 FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
                 Unit
             }
-            is ServerTerminalEvent.ControlDenied -> {
+            is ServerTerminalEvent.ControlRequest -> {
                 buf.putInt(11)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.ControlDenied -> {
+                buf.putInt(12)
                 Unit
             }
             is ServerTerminalEvent.Prompt -> {
-                buf.putInt(12)
+                buf.putInt(13)
                 FfiConverterTypeServerPrompt.write(value.`prompt`, buf)
                 Unit
             }
             is ServerTerminalEvent.PromptDone -> {
-                buf.putInt(13)
+                buf.putInt(14)
                 FfiConverterString.write(value.`promptId`, buf)
                 Unit
             }
             is ServerTerminalEvent.Resize -> {
-                buf.putInt(14)
+                buf.putInt(15)
                 FfiConverterUInt.write(value.`cols`, buf)
                 FfiConverterUInt.write(value.`rows`, buf)
                 Unit
             }
             is ServerTerminalEvent.Title -> {
-                buf.putInt(15)
+                buf.putInt(16)
                 FfiConverterString.write(value.`title`, buf)
                 Unit
             }
             is ServerTerminalEvent.Error -> {
-                buf.putInt(16)
+                buf.putInt(17)
                 FfiConverterString.write(value.`message`, buf)
                 Unit
             }
             is ServerTerminalEvent.Ended -> {
-                buf.putInt(17)
+                buf.putInt(18)
                 FfiConverterString.write(value.`code`, buf)
                 FfiConverterString.write(value.`message`, buf)
                 Unit
             }
             is ServerTerminalEvent.Other -> {
-                buf.putInt(18)
+                buf.putInt(19)
                 FfiConverterString.write(value.`json`, buf)
                 Unit
             }
             is ServerTerminalEvent.Closed -> {
-                buf.putInt(19)
+                buf.putInt(20)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -19863,11 +19974,25 @@ sealed class SharedTerminalEvent {
     }
     
     /**
-     * The keyboard changed hands.
+     * The keyboard changed hands. `until`: when a timed grant ends (ms).
      */
     data class Control(
         val `driver`: kotlin.String?, 
-        val `driverName`: kotlin.String?) : SharedTerminalEvent()
+        val `driverName`: kotlin.String?, 
+        val `until`: kotlin.Long?) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * A timed grant ended: the keyboard is yours again
+     * (`participant_id`: who had it).
+     */
+    data class ControlExpired(
+        val `participantId`: kotlin.String?) : SharedTerminalEvent()
         
     {
         
@@ -19960,20 +20085,24 @@ public object FfiConverterTypeSharedTerminalEvent : FfiConverterRustBuffer<Share
             2 -> SharedTerminalEvent.Control(
                 FfiConverterOptionalString.read(buf),
                 FfiConverterOptionalString.read(buf),
+                FfiConverterOptionalLong.read(buf),
                 )
-            3 -> SharedTerminalEvent.ResizeRequest(
+            3 -> SharedTerminalEvent.ControlExpired(
+                FfiConverterOptionalString.read(buf),
+                )
+            4 -> SharedTerminalEvent.ResizeRequest(
                 FfiConverterUInt.read(buf),
                 FfiConverterUInt.read(buf),
                 )
-            4 -> SharedTerminalEvent.JoinRequest(
+            5 -> SharedTerminalEvent.JoinRequest(
                 FfiConverterTypeSessionParticipant.read(buf),
                 )
-            5 -> SharedTerminalEvent.ControlRequest(
+            6 -> SharedTerminalEvent.ControlRequest(
                 FfiConverterTypeSessionParticipant.read(buf),
                 )
-            6 -> SharedTerminalEvent.Reconnecting
-            7 -> SharedTerminalEvent.Reconnected
-            8 -> SharedTerminalEvent.Ended(
+            7 -> SharedTerminalEvent.Reconnecting
+            8 -> SharedTerminalEvent.Reconnected
+            9 -> SharedTerminalEvent.Ended(
                 FfiConverterOptionalString.read(buf),
                 )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
@@ -19995,6 +20124,14 @@ public object FfiConverterTypeSharedTerminalEvent : FfiConverterRustBuffer<Share
                 4UL
                 + FfiConverterOptionalString.allocationSize(value.`driver`)
                 + FfiConverterOptionalString.allocationSize(value.`driverName`)
+                + FfiConverterOptionalLong.allocationSize(value.`until`)
+            )
+        }
+        is SharedTerminalEvent.ControlExpired -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`participantId`)
             )
         }
         is SharedTerminalEvent.ResizeRequest -> {
@@ -20052,34 +20189,40 @@ public object FfiConverterTypeSharedTerminalEvent : FfiConverterRustBuffer<Share
                 buf.putInt(2)
                 FfiConverterOptionalString.write(value.`driver`, buf)
                 FfiConverterOptionalString.write(value.`driverName`, buf)
+                FfiConverterOptionalLong.write(value.`until`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.ControlExpired -> {
+                buf.putInt(3)
+                FfiConverterOptionalString.write(value.`participantId`, buf)
                 Unit
             }
             is SharedTerminalEvent.ResizeRequest -> {
-                buf.putInt(3)
+                buf.putInt(4)
                 FfiConverterUInt.write(value.`cols`, buf)
                 FfiConverterUInt.write(value.`rows`, buf)
                 Unit
             }
             is SharedTerminalEvent.JoinRequest -> {
-                buf.putInt(4)
-                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
-                Unit
-            }
-            is SharedTerminalEvent.ControlRequest -> {
                 buf.putInt(5)
                 FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
                 Unit
             }
-            is SharedTerminalEvent.Reconnecting -> {
+            is SharedTerminalEvent.ControlRequest -> {
                 buf.putInt(6)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
                 Unit
             }
-            is SharedTerminalEvent.Reconnected -> {
+            is SharedTerminalEvent.Reconnecting -> {
                 buf.putInt(7)
                 Unit
             }
-            is SharedTerminalEvent.Ended -> {
+            is SharedTerminalEvent.Reconnected -> {
                 buf.putInt(8)
+                Unit
+            }
+            is SharedTerminalEvent.Ended -> {
+                buf.putInt(9)
                 FfiConverterOptionalString.write(value.`code`, buf)
                 Unit
             }
