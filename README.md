@@ -75,7 +75,7 @@ termoak register https://termoak.example.com --email you@example.com
 termoak sync
 termoak connect web1 --server        # Ctrl+] detaches; the session stays alive
 termoak sessions attach <id>
-termoak sessions share <id> --link   # view-only link
+termoak sessions share <id> --link   # view-only link (guests wait until you let them in)
 termoak ai ask "why is web1 slow?" --hosts web1
 
 # Accounts, teams and import

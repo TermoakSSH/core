@@ -102,7 +102,8 @@ enum Command {
         /// Invite a server user.
         #[arg(long)]
         invite: Vec<String>,
-        /// Give guests control (typing) permission.
+        /// Let guests type: they get the keyboard when they ask for it (one at
+        /// a time; you can always type).
         #[arg(long)]
         control: bool,
     },
@@ -359,8 +360,16 @@ enum SessionsCmd {
         team: Option<String>,
         #[arg(long)]
         link: bool,
+        /// Guests can ask for the keyboard (one types at a time).
         #[arg(long)]
         control: bool,
+        /// Grant the keyboard without asking (with --control).
+        #[arg(long)]
+        auto_grant: bool,
+        /// Whoever joins waits until you let them in from an app or the web
+        /// (default for --link).
+        #[arg(long)]
+        approve: Option<bool>,
     },
 }
 
@@ -753,11 +762,18 @@ async fn run(cli: Cli) -> Result<()> {
             let (cols, rows) = crossterm::terminal::size().unwrap_or((80, 24));
             let t = ws.open_terminal(h.id, conn, cols, rows, false).await?;
             let share = termoak_client::relay::RelayShare::start(&api, t.clone(), &h.label).await?;
+            // The terminal here cannot show requests: nobody waits to come in
+            // and, with --control, the keyboard is granted when asked for.
+            let permission = if control { "control" } else { "view" };
             for email in &invite {
-                share.invite_user(email, control).await?;
+                share
+                    .invite(&serde_json::json!({"email": email, "permission": permission, "auto_grant": control}))
+                    .await?;
                 eprintln!("Invited: {email}");
             }
-            let link = share.invite_link(control, Some(24 * 60)).await?;
+            let link = share
+                .invite(&serde_json::json!({"link": true, "permission": permission, "expires_in_minutes": 24 * 60, "require_approval": false, "auto_grant": control}))
+                .await?;
             eprintln!("Guest link (24 h): {}", link["link"].as_str().unwrap_or(""));
             eprintln!("In the app: {}", link["app_link"].as_str().unwrap_or(""));
             term::run_local(t).await?;
@@ -884,9 +900,11 @@ async fn run(cli: Cli) -> Result<()> {
                     team,
                     link,
                     control,
+                    auto_grant,
+                    approve,
                 } => {
                     let permission = if control { "control" } else { "view" };
-                    let body = if link {
+                    let mut body = if link {
                         serde_json::json!({"link": true, "permission": permission})
                     } else if let Some(team) = team {
                         let t = account::find_team(&api, &team).await?;
@@ -894,6 +912,10 @@ async fn run(cli: Cli) -> Result<()> {
                     } else {
                         serde_json::json!({"email": email.context("specify --email, --team or --link")?, "permission": permission})
                     };
+                    body["auto_grant"] = serde_json::json!(auto_grant);
+                    if let Some(a) = approve {
+                        body["require_approval"] = serde_json::json!(a);
+                    }
                     let v: serde_json::Value = api
                         .post(&format!("/api/v1/sessions/{id}/shares"), &body)
                         .await?;

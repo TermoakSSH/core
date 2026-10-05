@@ -61,7 +61,16 @@ pub async fn attach(api: &ApiClient, session: Id) -> Result<()> {
                     }
                     let _ = terminal::enable_raw_mode();
                 }
-                Some(RemoteEvent::Error(e)) => { reason = Some(e); break; }
+                Some(RemoteEvent::Error(e)) => { let _ = write!(stdout, "\r\n[{e}]\r\n"); stdout.flush()?; }
+                Some(RemoteEvent::Ended { message, .. }) => { reason = Some(message); break; }
+                Some(RemoteEvent::Waiting(_)) => { let _ = write!(stdout, "\r\n[waiting for the owner to let you in…]\r\n"); stdout.flush()?; }
+                Some(RemoteEvent::JoinRequest(p)) => { let _ = write!(stdout, "\r\n[{} is waiting to join: let them in from the app or the web]\r\n", p.name); stdout.flush()?; }
+                Some(RemoteEvent::ControlRequest(p)) => { let _ = write!(stdout, "\r\n[{} asks for the keyboard: grant it from the app or the web]\r\n", p.name); stdout.flush()?; }
+                Some(RemoteEvent::Control { can_write, driver_name, .. }) => {
+                    let who = driver_name.unwrap_or_else(|| "the owner".into());
+                    let _ = write!(stdout, "\r\n[{}]\r\n", if can_write { "you have the keyboard".to_string() } else { format!("read-only: {who} has the keyboard") });
+                    stdout.flush()?;
+                }
                 Some(RemoteEvent::Closed) | None => break,
                 Some(_) => {}
             },
