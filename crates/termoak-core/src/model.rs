@@ -775,14 +775,15 @@ pub struct SessionInfo {
     pub recording: bool,
 }
 
-/// Guest permission on a shared session.
+/// Guest permission on a shared session: the most the owner can hand over.
+/// Everyone joins read-only; only one person drives (types) at a time.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum SharePermission {
-    /// View only.
+    /// View only: never gets the keyboard.
     View,
-    /// View and type (while holding control).
+    /// Can ask for the keyboard (and type while the owner lets them drive).
     Control,
 }
 
@@ -821,6 +822,19 @@ pub struct SessionShare {
     pub expires_at: Option<i64>,
     pub revoked: bool,
     pub created_at: i64,
+    /// Whoever joins with it waits until the owner lets them in.
+    #[serde(default)]
+    pub require_approval: bool,
+    /// Requests for the keyboard are granted without asking the owner.
+    #[serde(default)]
+    pub auto_grant: bool,
+}
+
+impl SessionShare {
+    /// Not revoked and not expired at `now` (ms).
+    pub fn is_valid(&self, now: i64) -> bool {
+        !self.revoked && self.expires_at.is_none_or(|e| e > now)
+    }
 }
 
 /// Role within a team.

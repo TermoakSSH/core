@@ -371,6 +371,7 @@ mod tests {
                 ShareTarget::Team(team.id),
                 SharePermission::View,
                 None,
+                Default::default(),
             )
             .await
             .unwrap();
@@ -402,12 +403,21 @@ mod tests {
                 ShareTarget::User(bea.id),
                 SharePermission::Control,
                 None,
+                Default::default(),
             )
             .await
             .unwrap();
         let shared = store.sessions_shared_with(bea.id).await.unwrap();
         assert_eq!(shared.len(), 1);
         assert_eq!(shared[0].1.permission, SharePermission::Control);
+        // The same when joining (the permission is not sorted as text).
+        let best = store
+            .share_for_user(session.id, bea.id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(best.permission, SharePermission::Control);
+        assert_eq!(best.user_id, Some(bea.id));
 
         // The only owner cannot leave; when Bea leaves she loses the access she
         // had through the team.

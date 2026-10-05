@@ -414,6 +414,14 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE email_tokens ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0;
     "#,
+    // v7: live session sharing (one driver at a time). `require_approval`:
+    // whoever joins waits until the owner lets them in; `auto_grant`:
+    // requests for the keyboard are granted without asking. Shares created
+    // before keep the old behaviour (no waiting room).
+    r#"
+    ALTER TABLE session_shares ADD COLUMN require_approval INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE session_shares ADD COLUMN auto_grant INTEGER NOT NULL DEFAULT 0;
+    "#,
 ];
 
 fn migrate(conn: &Connection) -> Result<()> {

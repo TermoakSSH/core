@@ -28,7 +28,7 @@ fn map_session(r: &rusqlite::Row<'_>) -> rusqlite::Result<SessionInfo> {
 }
 
 const SHARE_COLUMNS: &str = "id, session_id, created_by, user_id, token_hash, permission, \
-     expires_at, revoked, created_at, team_id";
+     expires_at, revoked, created_at, team_id, require_approval, auto_grant";
 
 fn map_share(r: &rusqlite::Row<'_>) -> rusqlite::Result<SessionShare> {
     map_share_at(r, 0)
@@ -47,6 +47,8 @@ fn map_share_at(r: &rusqlite::Row<'_>, o: usize) -> rusqlite::Result<SessionShar
         revoked: r.get::<_, i64>(o + 7)? != 0,
         created_at: r.get(o + 8)?,
         team_id: parse_opt_id(r.get(o + 9)?)?,
+        require_approval: r.get::<_, i64>(o + 10)? != 0,
+        auto_grant: r.get::<_, i64>(o + 11)? != 0,
     })
 }
 
@@ -55,6 +57,12 @@ fn map_share_at(r: &rusqlite::Row<'_>, o: usize) -> rusqlite::Result<SessionShar
 const SHARE_FOR_USER: &str = "(sh.user_id = ?1 OR sh.team_id IN \
      (SELECT team_id FROM team_members WHERE user_id = ?1))";
 
+/// Highest permission first (the column is text: `'view' > 'control'`
+/// alphabetically, so it cannot be sorted as is), then a direct invitation
+/// before a team one.
+const BEST_SHARE_FIRST: &str = "CASE sh.permission WHEN 'control' THEN 1 ELSE 0 END DESC, sh.user_id IS NOT NULL DESC, \
+     sh.created_at";
+
 /// Recipient of a share.
 #[derive(Debug, Clone)]
 pub enum ShareTarget {
@@ -62,6 +70,25 @@ pub enum ShareTarget {
     /// All members of a team.
     Team(Id),
     Link,
+}
+
+/// Options of a new share.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ShareOptions {
+    /// Whoever joins waits until the owner lets them in.
+    pub require_approval: bool,
+    /// Requests for the keyboard are granted without asking the owner.
+    pub auto_grant: bool,
+}
+
+/// Changes to a share (`None` leaves the field as it is).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ShareUpdate {
+    pub permission: Option<SharePermission>,
+    /// `Some(None)` removes the expiry.
+    pub expires_at: Option<Option<i64>>,
+    pub require_approval: Option<bool>,
+    pub auto_grant: Option<bool>,
 }
 
 impl Store {
@@ -223,6 +250,7 @@ impl Store {
         target: ShareTarget,
         permission: SharePermission,
         expires_at: Option<i64>,
+        opts: ShareOptions,
     ) -> Result<(SessionShare, Option<String>)> {
         self.call(move |c, _| {
             let (user_id, team_id, token) = match target {
@@ -241,9 +269,11 @@ impl Store {
                 expires_at,
                 revoked: false,
                 created_at: now_ms(),
+                require_approval: opts.require_approval,
+                auto_grant: opts.auto_grant,
             };
             c.execute(
-                &format!("INSERT INTO session_shares ({SHARE_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,0,?8,?9)"),
+                &format!("INSERT INTO session_shares ({SHARE_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,0,?8,?9,?10,?11)"),
                 params![
                     share.id.to_string(),
                     session_id.to_string(),
@@ -253,7 +283,9 @@ impl Store {
                     permission.as_str(),
                     expires_at,
                     share.created_at,
-                    team_id.map(|t| t.to_string())
+                    team_id.map(|t| t.to_string()),
+                    opts.require_approval as i64,
+                    opts.auto_grant as i64
                 ],
             )?;
             Ok((share, token))
@@ -269,6 +301,99 @@ impl Store {
             Ok(stmt
                 .query_map([session_id.to_string()], map_share)?
                 .collect::<rusqlite::Result<Vec<_>>>()?)
+        })
+        .await
+    }
+
+    /// A share of a session, whatever its state (`None` if it does not exist).
+    pub async fn session_share(
+        &self,
+        session_id: Id,
+        share_id: Id,
+    ) -> Result<Option<SessionShare>> {
+        self.call(move |c, _| {
+            Ok(c.query_row(
+                &format!(
+                    "SELECT {SHARE_COLUMNS} FROM session_shares WHERE id = ?1 AND session_id = ?2"
+                ),
+                params![share_id.to_string(), session_id.to_string()],
+                map_share,
+            )
+            .optional()?)
+        })
+        .await
+    }
+
+    /// Changes a share and returns it as it is now.
+    pub async fn update_share(
+        &self,
+        session_id: Id,
+        share_id: Id,
+        update: ShareUpdate,
+    ) -> Result<SessionShare> {
+        self.call(move |c, _| {
+            let tx = c.transaction()?;
+            let mut share = tx
+                .query_row(
+                    &format!(
+                        "SELECT {SHARE_COLUMNS} FROM session_shares WHERE id = ?1 AND session_id = ?2"
+                    ),
+                    params![share_id.to_string(), session_id.to_string()],
+                    map_share,
+                )
+                .optional()?
+                .ok_or_else(|| CoreError::NotFound(format!("share {share_id}")))?;
+            if let Some(p) = update.permission {
+                share.permission = p;
+            }
+            if let Some(e) = update.expires_at {
+                share.expires_at = e;
+            }
+            if let Some(r) = update.require_approval {
+                share.require_approval = r;
+            }
+            if let Some(a) = update.auto_grant {
+                share.auto_grant = a;
+            }
+            tx.execute(
+                "UPDATE session_shares SET permission = ?2, expires_at = ?3,
+                        require_approval = ?4, auto_grant = ?5
+                 WHERE id = ?1",
+                params![
+                    share_id.to_string(),
+                    share.permission.as_str(),
+                    share.expires_at,
+                    share.require_approval as i64,
+                    share.auto_grant as i64
+                ],
+            )?;
+            tx.commit()?;
+            Ok(share)
+        })
+        .await
+    }
+
+    /// Revokes every share of a session ("stop sharing"); returns the ones
+    /// that were still valid.
+    pub async fn revoke_all_shares(&self, session_id: Id) -> Result<Vec<Id>> {
+        self.call(move |c, _| {
+            let tx = c.transaction()?;
+            let ids = tx
+                .prepare(
+                    "SELECT id FROM session_shares
+                     WHERE session_id = ?1 AND revoked = 0
+                       AND (expires_at IS NULL OR expires_at > ?2)",
+                )?
+                .query_map(params![session_id.to_string(), now_ms()], |r| {
+                    r.get::<_, String>(0)
+                })?
+                .collect::<rusqlite::Result<Vec<_>>>()?;
+            tx.execute(
+                "UPDATE session_shares SET revoked = 1 WHERE session_id = ?1",
+                [session_id.to_string()],
+            )?;
+            tx.commit()?;
+            ids.iter().map(|i| Ok(parse_id(i)?)).collect()
         })
         .await
     }
@@ -313,7 +438,7 @@ impl Store {
                     "SELECT {} FROM session_shares sh
                      WHERE sh.session_id = ?3 AND {SHARE_FOR_USER} AND sh.revoked = 0
                        AND (sh.expires_at IS NULL OR sh.expires_at > ?2)
-                     ORDER BY sh.permission DESC LIMIT 1",
+                     ORDER BY {BEST_SHARE_FIRST} LIMIT 1",
                     prefixed(SHARE_COLUMNS, "sh")
                 ),
                 params![user.to_string(), now_ms(), session_id.to_string()],
@@ -351,7 +476,7 @@ fn prefixed(columns: &str, alias: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::super::test_store;
-    use super::ShareTarget;
+    use super::{ShareOptions, ShareTarget, ShareUpdate};
     use crate::model::*;
     use crate::new_id;
 
@@ -382,6 +507,7 @@ mod tests {
                 ShareTarget::User(guest),
                 SharePermission::Control,
                 None,
+                Default::default(),
             )
             .await
             .unwrap();
@@ -402,13 +528,59 @@ mod tests {
                 ShareTarget::Link,
                 SharePermission::View,
                 None,
+                ShareOptions {
+                    require_approval: true,
+                    auto_grant: false,
+                },
             )
             .await
             .unwrap();
         let token = token.unwrap();
         let by_token = store.share_by_token(&token).await.unwrap().unwrap();
         assert_eq!(by_token.permission, SharePermission::View);
+        assert!(by_token.require_approval && !by_token.auto_grant);
 
+        // Changed live: permission, options and expiry.
+        let changed = store
+            .update_share(
+                info.id,
+                by_token.id,
+                ShareUpdate {
+                    permission: Some(SharePermission::Control),
+                    auto_grant: Some(true),
+                    expires_at: Some(Some(5)),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(changed.permission, SharePermission::Control);
+        assert!(changed.require_approval && changed.auto_grant);
+        assert!(!changed.is_valid(10));
+        assert!(store.share_by_token(&token).await.unwrap().is_none());
+        let again = store
+            .session_share(info.id, by_token.id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(again.expires_at, Some(5));
+        assert!(
+            store
+                .update_share(info.id, new_id(), ShareUpdate::default())
+                .await
+                .is_err()
+        );
+
+        // A direct invitation with control wins over a link-only view.
+        assert_eq!(
+            store
+                .share_for_user(info.id, guest)
+                .await
+                .unwrap()
+                .unwrap()
+                .permission,
+            SharePermission::Control
+        );
         store.revoke_share(info.id, share.id).await.unwrap();
         assert!(
             store
@@ -416,6 +588,31 @@ mod tests {
                 .await
                 .unwrap()
                 .is_none()
+        );
+
+        // Stop sharing: every share is revoked.
+        let (third, _) = store
+            .create_share(
+                info.id,
+                owner,
+                ShareTarget::User(guest),
+                SharePermission::View,
+                None,
+                Default::default(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            store.revoke_all_shares(info.id).await.unwrap(),
+            vec![third.id]
+        );
+        assert!(
+            store
+                .list_shares(info.id)
+                .await
+                .unwrap()
+                .iter()
+                .all(|s| s.revoked)
         );
 
         // Sessions kept by the session holder stay open.
