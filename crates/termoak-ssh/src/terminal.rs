@@ -16,7 +16,7 @@ use tokio::sync::{broadcast, mpsc, watch};
 
 use crate::client::Connection;
 use crate::error::{Result, SshError};
-use crate::recording::Recorder;
+use crate::recording::{InputAuthor, Recorder};
 
 /// PTY options.
 #[derive(Debug, Clone)]
@@ -161,6 +161,7 @@ fn concat(chunks: &VecDeque<Bytes>, size: usize) -> Bytes {
 enum Input {
     Data(Bytes),
     Resize(u16, u16),
+    Author(InputAuthor),
     Close,
 }
 
@@ -238,6 +239,12 @@ impl TerminalSession {
                             rec.resize(c, r);
                         }
                         write.window_change(c as u32, r as u32, 0, 0).await
+                    }
+                    Input::Author(author) => {
+                        if let Some(rec) = &rec_w {
+                            rec.author(&author);
+                        }
+                        Ok(())
                     }
                     Input::Close => {
                         let _ = write.eof().await;
@@ -330,6 +337,18 @@ impl TerminalSession {
     pub async fn write(&self, data: impl Into<Bytes>) -> Result<()> {
         self.input
             .send(Input::Data(data.into()))
+            .await
+            .map_err(|_| SshError::Closed)
+    }
+
+    /// Marks who types the input written after this (an `a` event in the
+    /// recording, in order with the input). Nothing if not recording.
+    pub async fn set_input_author(&self, author: InputAuthor) -> Result<()> {
+        if self.recorder.is_none() {
+            return Ok(());
+        }
+        self.input
+            .send(Input::Author(author))
             .await
             .map_err(|_| SshError::Closed)
     }
