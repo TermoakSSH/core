@@ -677,6 +677,9 @@ internal interface UniffiCallbackInterfaceServerEventListenerMethod1 : com.sun.j
 internal interface UniffiCallbackInterfaceServerTerminalListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceSharedTerminalListenerMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceTerminalListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`data`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
@@ -768,6 +771,25 @@ internal open class UniffiVTableCallbackInterfaceServerTerminalListener(
     }
 
 }
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onEvent")
+internal open class UniffiVTableCallbackInterfaceSharedTerminalListener(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `onEvent`: UniffiCallbackInterfaceSharedTerminalListenerMethod0? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `onEvent`: UniffiCallbackInterfaceSharedTerminalListenerMethod0? = null,
+    ): UniffiVTableCallbackInterfaceSharedTerminalListener(`uniffiFree`,`uniffiClone`,`onEvent`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceSharedTerminalListener) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `onEvent` = other.`onEvent`
+    }
+
+}
 @Structure.FieldOrder("uniffiFree", "uniffiClone", "onOutput", "onStatus")
 internal open class UniffiVTableCallbackInterfaceTerminalListener(
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
@@ -846,6 +868,10 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_join_shared_session(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_join_shared_session_as(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_link_invite_info(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_server_info(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_generate_vault_key(
@@ -880,15 +906,45 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_servereventlistener_on_closed(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_allow_join(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_answer_prompt(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_can_write(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_join(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_owner(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_waiting(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_release_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_request_control(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_resize(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_session_id(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_set_name(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_stop_sharing(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_take_control(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_write(
     ): Int
@@ -896,19 +952,43 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminallistener_on_event(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_allow_join(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_deny_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_invite(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_invite_link(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_invite_team(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_invite_user(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_kick(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_list_invites(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_resize(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_all_invites(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_invite(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_session_id(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_set_listener(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_sharedterminal_stop(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_take_control(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminal_update_invite(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sharedterminallistener_on_event(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_alternate_screen(
     ): Int
@@ -1050,6 +1130,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_leave_team(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_teams(
@@ -1072,9 +1154,15 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session_with(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_stop_sharing_server_session(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_two_factor_status(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_unregister_push_token(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_update_server_session_share(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history(
     ): Int
@@ -1105,6 +1193,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_join_link(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal(
     ): Int
@@ -1288,6 +1378,7 @@ internal object UniffiLib {
         uniffiCallbackInterfaceLogListener.register(this)
         uniffiCallbackInterfaceServerEventListener.register(this)
         uniffiCallbackInterfaceServerTerminalListener.register(this)
+        uniffiCallbackInterfaceSharedTerminalListener.register(this)
         uniffiCallbackInterfaceTerminalListener.register(this)
         uniffiCallbackInterfaceTransferListener.register(this)
         
@@ -1348,16 +1439,46 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_free_serverterminalhandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_allow_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_answer_prompt(`ptr`: Long,`promptId`: RustBuffer.ByValue,`accept`: RustBuffer.ByValue,`answers`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_can_write(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_close_session(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_detach(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_is_driver(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_is_owner(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_is_waiting(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_kick(`ptr`: Long,`participantId`: RustBuffer.ByValue,`revokeShare`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_participant_id(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_release_control(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_request_control(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_resize(`ptr`: Long,`cols`: Int,`rows`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_session_id(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_set_name(`ptr`: Long,`name`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_stop_sharing(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_take_control(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_write(`ptr`: Long,`data`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_write_text(`ptr`: Long,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -1374,20 +1495,50 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_free_sharedterminal(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_allow_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_deny_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_deny_join(`ptr`: Long,`participantId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(`ptr`: Long,`participantId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_invite(`ptr`: Long,`target`: RustBuffer.ByValue,`options`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_invite_link(`ptr`: Long,`control`: Byte,`expiresInMinutes`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_invite_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,`control`: Byte,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_invite_user(`ptr`: Long,`email`: RustBuffer.ByValue,`control`: Byte,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_kick(`ptr`: Long,`participantId`: RustBuffer.ByValue,`revokeShare`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_list_invites(`ptr`: Long,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_resize(`ptr`: Long,`cols`: Int,`rows`: Int,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_revoke_all_invites(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_revoke_invite(`ptr`: Long,`shareId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_session_id(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_set_listener(`ptr`: Long,`listener`: Long,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_sharedterminal_stop(`ptr`: Long,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_take_control(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_sharedterminal_update_invite(`ptr`: Long,`shareId`: RustBuffer.ByValue,`changes`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_clone_sharedterminallistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_sharedterminallistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_init_callback_vtable_sharedterminallistener(`vtable`: UniffiVTableCallbackInterfaceSharedTerminalListener,
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_sharedterminallistener_on_event(`ptr`: Long,`event`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_clone_terminalscreen(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_terminalscreen(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -1564,6 +1715,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_leave_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_list_server_session_shares(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_team_members(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_teams(`ptr`: Long,
@@ -1586,9 +1739,15 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_share_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`control`: Byte,`expiresInMinutes`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_share_server_session_with(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`options`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_stop_sharing_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_two_factor_status(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_unregister_push_token(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_update_server_session_share(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`shareId`: RustBuffer.ByValue,`changes`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_clear_command_history(`ptr`: Long,`hostId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
@@ -1619,6 +1778,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(`ptr`: Long,`hostId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_attach_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`listener`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_join_link(`ptr`: Long,`token`: RustBuffer.ByValue,`listener`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_share_terminal(`ptr`: Long,`terminal`: Long,`title`: RustBuffer.ByValue,
     ): Long
@@ -1788,6 +1949,10 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_join_shared_session(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`listener`: Long,
     ): Long
+    external fun uniffi_termoak_ffi_fn_func_join_shared_session_as(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`listener`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_func_link_invite_info(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_func_server_info(`url`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_func_generate_vault_key(uniffi_out_err: UniffiRustCallStatus, 
@@ -1934,7 +2099,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_init_logging() and 0xFFFF) != 8284) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_func_join_shared_session() and 0xFFFF) != 49569) {
+    if ((lib.uniffi_termoak_ffi_checksum_func_join_shared_session() and 0xFFFF) != 45359) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_join_shared_session_as() and 0xFFFF) != 50357) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_link_invite_info() and 0xFFFF) != 34812) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_server_info() and 0xFFFF) != 52695) {
@@ -1982,28 +2153,73 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_eventsubscription_unsubscribe() and 0xFFFF) != 64736) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() and 0xFFFF) != 15198) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() and 0xFFFF) != 25443) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_servereventlistener_on_closed() and 0xFFFF) != 27770) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_allow_join() and 0xFFFF) != 16754) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_answer_prompt() and 0xFFFF) != 13980) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_can_write() and 0xFFFF) != 58479) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session() and 0xFFFF) != 3879) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control() and 0xFFFF) != 38049) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_join() and 0xFFFF) != 60209) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() and 0xFFFF) != 27313) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_resize() and 0xFFFF) != 13041) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() and 0xFFFF) != 30706) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() and 0xFFFF) != 36879) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_owner() and 0xFFFF) != 1286) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_waiting() and 0xFFFF) != 55330) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick() and 0xFFFF) != 41720) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id() and 0xFFFF) != 55958) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_release_control() and 0xFFFF) != 20848) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_request_control() and 0xFFFF) != 41005) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_resize() and 0xFFFF) != 1342) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_session_id() and 0xFFFF) != 19287) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_write() and 0xFFFF) != 7410) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_set_name() and 0xFFFF) != 30789) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_stop_sharing() and 0xFFFF) != 9859) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_take_control() and 0xFFFF) != 65495) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_write() and 0xFFFF) != 13978) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_write_text() and 0xFFFF) != 48087) {
@@ -2012,25 +2228,61 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminallistener_on_event() and 0xFFFF) != 54979) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite_link() and 0xFFFF) != 44942) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_allow_join() and 0xFFFF) != 45475) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_deny_control() and 0xFFFF) != 6323) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() and 0xFFFF) != 4831) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() and 0xFFFF) != 4247) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite() and 0xFFFF) != 50339) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite_link() and 0xFFFF) != 9802) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite_team() and 0xFFFF) != 49530) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite_user() and 0xFFFF) != 5860) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite_user() and 0xFFFF) != 17104) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_kick() and 0xFFFF) != 45216) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_list_invites() and 0xFFFF) != 44444) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_resize() and 0xFFFF) != 27502) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_invite() and 0xFFFF) != 10822) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_all_invites() and 0xFFFF) != 6822) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_invite() and 0xFFFF) != 50012) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_session_id() and 0xFFFF) != 9718) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_set_listener() and 0xFFFF) != 39217) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_stop() and 0xFFFF) != 49544) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_take_control() and 0xFFFF) != 3202) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_update_invite() and 0xFFFF) != 39669) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminallistener_on_event() and 0xFFFF) != 53964) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_alternate_screen() and 0xFFFF) != 62809) {
@@ -2243,6 +2495,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_leave_team() and 0xFFFF) != 44057) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares() and 0xFFFF) != 43171) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members() and 0xFFFF) != 44) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2258,7 +2513,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_rename_team() and 0xFFFF) != 61682) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() and 0xFFFF) != 25522) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() and 0xFFFF) != 62215) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push() and 0xFFFF) != 38010) {
@@ -2273,13 +2528,22 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_setup_two_factor() and 0xFFFF) != 14499) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session() and 0xFFFF) != 13957) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session() and 0xFFFF) != 56148) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session_with() and 0xFFFF) != 12552) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_stop_sharing_server_session() and 0xFFFF) != 2823) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_two_factor_status() and 0xFFFF) != 22209) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_unregister_push_token() and 0xFFFF) != 16868) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_update_server_session_share() and 0xFFFF) != 25731) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history() and 0xFFFF) != 33858) {
@@ -2325,6 +2589,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() and 0xFFFF) != 65058) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_join_link() and 0xFFFF) != 12633) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() and 0xFFFF) != 33023) {
@@ -4888,7 +5155,9 @@ public interface ServerEventListener {
      * Event as JSON. Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
-     * `prompt_pending`) and `lagged` (events were lost: refresh).
+     * `prompt_pending`, `join_request`, `control_request`,
+     * `control_granted`, `control_revoked`) and `lagged` (events were
+     * lost: refresh).
      */
     fun `onEvent`(`eventJson`: kotlin.String)
     
@@ -5014,7 +5283,9 @@ open class ServerEventListenerImpl: Disposable, AutoCloseable, ServerEventListen
      * Event as JSON. Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
-     * `prompt_pending`) and `lagged` (events were lost: refresh).
+     * `prompt_pending`, `join_request`, `control_request`,
+     * `control_granted`, `control_revoked`) and `lagged` (events were
+     * lost: refresh).
      */override fun `onEvent`(`eventJson`: kotlin.String)
         = 
     callWithHandle {
@@ -5255,10 +5526,21 @@ public object FfiConverterTypeServerEventListener: FfiConverter<ServerEventListe
 public interface ServerTerminalHandleInterface {
     
     /**
+     * Owner: lets someone in from the waiting room.
+     */
+    fun `allowJoin`(`participantId`: kotlin.String)
+    
+    /**
      * Answers a `Prompt`: `accept` for fingerprints (`hostkey`), `answers`
      * for the rest (one per field). `nil` in both cancels.
      */
     fun `answerPrompt`(`promptId`: kotlin.String, `accept`: kotlin.Boolean?, `answers`: List<kotlin.String>?)
+    
+    /**
+     * Your input and resizes reach the terminal now (you are the owner or
+     * have the keyboard). `false` until `Hello`.
+     */
+    fun `canWrite`(): kotlin.Boolean
     
     /**
      * Closes the session on the server (owner only).
@@ -5266,19 +5548,88 @@ public interface ServerTerminalHandleInterface {
     fun `closeSession`()
     
     /**
+     * Owner: says no to a request for the keyboard.
+     */
+    fun `denyControl`(`participantId`: kotlin.String)
+    
+    /**
+     * Owner: does not let someone in.
+     */
+    fun `denyJoin`(`participantId`: kotlin.String)
+    
+    /**
      * Detaches (the session stays alive on the server).
      */
     fun `detach`()
     
     /**
-     * New size in columns and rows.
+     * Owner: hands the keyboard to a participant.
+     */
+    fun `grantControl`(`participantId`: kotlin.String)
+    
+    /**
+     * You have the keyboard (the owner has it when nobody else does).
+     */
+    fun `isDriver`(): kotlin.Boolean
+    
+    /**
+     * You are the session's owner.
+     */
+    fun `isOwner`(): kotlin.Boolean
+    
+    /**
+     * You are in the waiting room.
+     */
+    fun `isWaiting`(): kotlin.Boolean
+    
+    /**
+     * Owner: sends a participant away. `revoke_share`: also revokes the
+     * invitation they used (for a team or a link, everyone who joined with
+     * it and has no other one leaves too).
+     */
+    fun `kick`(`participantId`: kotlin.String, `revokeShare`: kotlin.Boolean)
+    
+    /**
+     * Your participant id (once in).
+     */
+    fun `participantId`(): kotlin.String?
+    
+    /**
+     * Gives the keyboard back (or withdraws the request).
+     */
+    fun `releaseControl`()
+    
+    /**
+     * Asks the owner for the keyboard (invitations with control).
+     */
+    fun `requestControl`()
+    
+    /**
+     * New size in columns and rows. Remembered, and sent only while you
+     * can write (the owner or the driver set the size; the rest follow
+     * `Resize`).
      */
     fun `resize`(`cols`: kotlin.UInt, `rows`: kotlin.UInt)
     
     fun `sessionId`(): kotlin.String
     
     /**
-     * Sends typed input (ignored if you only have read permission).
+     * Link guests: changes your display name (at most 40 characters).
+     */
+    fun `setName`(`name`: kotlin.String)
+    
+    /**
+     * Owner: stops sharing (every invitation is revoked; everyone else leaves).
+     */
+    fun `stopSharing`()
+    
+    /**
+     * Owner: takes the keyboard back.
+     */
+    fun `takeControl`()
+    
+    /**
+     * Sends typed input (dropped while you cannot write: see `can_write`).
      */
     fun `write`(`data`: kotlin.ByteArray)
     
@@ -5394,6 +5745,23 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
+     * Owner: lets someone in from the waiting room.
+     */
+    @Throws(TermoakException::class)override fun `allowJoin`(`participantId`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_allow_join(
+        it,
+        
+        FfiConverterString.lower(`participantId`),_status)
+}
+    }
+    
+    
+
+    
+    /**
      * Answers a `Prompt`: `accept` for fingerprints (`hostkey`), `answers`
      * for the rest (one per field). `nil` in both cancels.
      */
@@ -5414,6 +5782,23 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
+     * Your input and resizes reach the terminal now (you are the owner or
+     * have the keyboard). `false` until `Hello`.
+     */override fun `canWrite`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_can_write(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Closes the session on the server (owner only).
      */override fun `closeSession`()
         = 
@@ -5422,6 +5807,40 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
     UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_close_session(
         it,
         _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Owner: says no to a request for the keyboard.
+     */
+    @Throws(TermoakException::class)override fun `denyControl`(`participantId`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_control(
+        it,
+        
+        FfiConverterString.lower(`participantId`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Owner: does not let someone in.
+     */
+    @Throws(TermoakException::class)override fun `denyJoin`(`participantId`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_join(
+        it,
+        
+        FfiConverterString.lower(`participantId`),_status)
 }
     }
     
@@ -5444,7 +5863,140 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
-     * New size in columns and rows.
+     * Owner: hands the keyboard to a participant.
+     */
+    @Throws(TermoakException::class)override fun `grantControl`(`participantId`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(
+        it,
+        
+        FfiConverterString.lower(`participantId`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * You have the keyboard (the owner has it when nobody else does).
+     */override fun `isDriver`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_is_driver(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * You are the session's owner.
+     */override fun `isOwner`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_is_owner(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * You are in the waiting room.
+     */override fun `isWaiting`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_is_waiting(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Owner: sends a participant away. `revoke_share`: also revokes the
+     * invitation they used (for a team or a link, everyone who joined with
+     * it and has no other one leaves too).
+     */
+    @Throws(TermoakException::class)override fun `kick`(`participantId`: kotlin.String, `revokeShare`: kotlin.Boolean)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_kick(
+        it,
+        
+        FfiConverterString.lower(`participantId`),
+        FfiConverterBoolean.lower(`revokeShare`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Your participant id (once in).
+     */override fun `participantId`(): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_participant_id(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Gives the keyboard back (or withdraws the request).
+     */override fun `releaseControl`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_release_control(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Asks the owner for the keyboard (invitations with control).
+     */override fun `requestControl`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_request_control(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * New size in columns and rows. Remembered, and sent only while you
+     * can write (the owner or the driver set the size; the rest follow
+     * `Resize`).
      */override fun `resize`(`cols`: kotlin.UInt, `rows`: kotlin.UInt)
         = 
     callWithHandle {
@@ -5474,7 +6026,53 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
 
     
     /**
-     * Sends typed input (ignored if you only have read permission).
+     * Link guests: changes your display name (at most 40 characters).
+     */override fun `setName`(`name`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_set_name(
+        it,
+        
+        FfiConverterString.lower(`name`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Owner: stops sharing (every invitation is revoked; everyone else leaves).
+     */override fun `stopSharing`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_stop_sharing(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Owner: takes the keyboard back.
+     */override fun `takeControl`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_take_control(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Sends typed input (dropped while you cannot write: see `can_write`).
      */override fun `write`(`data`: kotlin.ByteArray)
         = 
     callWithHandle {
@@ -5960,13 +6558,39 @@ public object FfiConverterTypeServerTerminalListener: FfiConverter<ServerTermina
 
 /**
  * Local terminal shared through the server. The terminal stays on this
- * device; the server relays the output to the guests and what they type
- * (if they have control). Sharing stops with `stop` or when dropped.
+ * device; the server relays the output to the guests and what the driver
+ * types. Sharing stops with `stop` or when dropped.
  */
 public interface SharedTerminalInterface {
     
     /**
-     * Creates a link for guests without an account (no expiry if not given).
+     * Lets someone in from the waiting room.
+     */
+    suspend fun `allowJoin`(`participantId`: kotlin.String)
+    
+    /**
+     * Says no to a request for the keyboard.
+     */
+    suspend fun `denyControl`(`participantId`: kotlin.String)
+    
+    /**
+     * Does not let someone in.
+     */
+    suspend fun `denyJoin`(`participantId`: kotlin.String)
+    
+    /**
+     * Hands the keyboard to a participant.
+     */
+    suspend fun `grantControl`(`participantId`: kotlin.String)
+    
+    /**
+     * Invites with every option (waiting room, automatic keyboard...).
+     */
+    suspend fun `invite`(`target`: ShareTarget, `options`: ShareOptions): ShareInvite
+    
+    /**
+     * Creates a link for guests without an account (no expiry if not
+     * given). They wait until you let them in (`JoinRequest`).
      */
     suspend fun `inviteLink`(`control`: kotlin.Boolean, `expiresInMinutes`: kotlin.Long?): ShareInvite
     
@@ -5976,9 +6600,19 @@ public interface SharedTerminalInterface {
     suspend fun `inviteTeam`(`teamId`: kotlin.String, `control`: kotlin.Boolean): ShareInvite
     
     /**
-     * Invites a server user by email (`control` = can type).
+     * Invites a server user by email (`control` = can ask for the keyboard).
      */
     suspend fun `inviteUser`(`email`: kotlin.String, `control`: kotlin.Boolean): ShareInvite
+    
+    /**
+     * Sends a participant away (`revoke_share`: and revokes their invitation).
+     */
+    suspend fun `kick`(`participantId`: kotlin.String, `revokeShare`: kotlin.Boolean)
+    
+    /**
+     * The invitations of this shared terminal.
+     */
+    suspend fun `listInvites`(): List<SessionShareInfo>
     
     /**
      * Tells the guests the new size of the local terminal.
@@ -5986,7 +6620,13 @@ public interface SharedTerminalInterface {
     suspend fun `resize`(`cols`: kotlin.UInt, `rows`: kotlin.UInt)
     
     /**
-     * Revokes an invitation (kicks out whoever is using it).
+     * Revokes every invitation (everyone leaves) but keeps sharing the
+     * terminal, so you can invite again.
+     */
+    suspend fun `revokeAllInvites`()
+    
+    /**
+     * Revokes an invitation (whoever used it and has no other one leaves).
      */
     suspend fun `revokeInvite`(`shareId`: kotlin.String)
     
@@ -5996,17 +6636,34 @@ public interface SharedTerminalInterface {
     fun `sessionId`(): kotlin.String
     
     /**
+     * Receives what happens in the shared session (participants, requests,
+     * reconnections). Call it once.
+     */
+    suspend fun `setListener`(`listener`: SharedTerminalListener)
+    
+    /**
      * Stops sharing (the local terminal stays open).
      */
     suspend fun `stop`()
+    
+    /**
+     * Takes the keyboard back.
+     */
+    suspend fun `takeControl`()
+    
+    /**
+     * Changes an invitation live (permission, expiry, approval, automatic
+     * keyboard).
+     */
+    suspend fun `updateInvite`(`shareId`: kotlin.String, `changes`: ShareChanges): SessionShareInfo
     
     companion object
 }
 
 /**
  * Local terminal shared through the server. The terminal stays on this
- * device; the server relays the output to the guests and what they type
- * (if they have control). Sharing stops with `stop` or when dropped.
+ * device; the server relays the output to the guests and what the driver
+ * types. Sharing stops with `stop` or when dropped.
  */
 open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 {
@@ -6111,7 +6768,138 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 
     
     /**
-     * Creates a link for guests without an account (no expiry if not given).
+     * Lets someone in from the waiting room.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `allowJoin`(`participantId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_allow_join(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`participantId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Says no to a request for the keyboard.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `denyControl`(`participantId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_deny_control(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`participantId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Does not let someone in.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `denyJoin`(`participantId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_deny_join(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`participantId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Hands the keyboard to a participant.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `grantControl`(`participantId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`participantId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Invites with every option (waiting room, automatic keyboard...).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `invite`(`target`: ShareTarget, `options`: ShareOptions) : ShareInvite {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_invite(
+                uniffiHandle,
+                
+        FfiConverterTypeShareTarget.lower(`target`),
+        FfiConverterTypeShareOptions.lower(`options`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeShareInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Creates a link for guests without an account (no expiry if not
+     * given). They wait until you let them in (`JoinRequest`).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -6163,7 +6951,7 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 
     
     /**
-     * Invites a server user by email (`control` = can type).
+     * Invites a server user by email (`control` = can ask for the keyboard).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -6182,6 +6970,57 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeShareInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sends a participant away (`revoke_share`: and revokes their invitation).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `kick`(`participantId`: kotlin.String, `revokeShare`: kotlin.Boolean) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_kick(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`participantId`),
+        FfiConverterBoolean.lower(`revokeShare`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * The invitations of this shared terminal.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listInvites`() : List<SessionShareInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_list_invites(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeSessionShareInfo.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -6216,7 +7055,33 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 
     
     /**
-     * Revokes an invitation (kicks out whoever is using it).
+     * Revokes every invitation (everyone leaves) but keeps sharing the
+     * terminal, so you can invite again.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeAllInvites`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_revoke_all_invites(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Revokes an invitation (whoever used it and has no other one leaves).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -6258,6 +7123,33 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
 
     
     /**
+     * Receives what happens in the shared session (participants, requests,
+     * reconnections). Call it once.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setListener`(`listener`: SharedTerminalListener) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_set_listener(
+                uniffiHandle,
+                
+        FfiConverterTypeSharedTerminalListener.lower(`listener`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Stops sharing (the local terminal stays open).
      */
     @Throws(TermoakException::class)
@@ -6276,6 +7168,58 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
         // lift function
         { },
         
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Takes the keyboard back.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `takeControl`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_take_control(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Changes an invitation live (permission, expiry, approval, automatic
+     * keyboard).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateInvite`(`shareId`: kotlin.String, `changes`: ShareChanges) : SessionShareInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminal_update_invite(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`shareId`),
+        FfiConverterTypeShareChanges.lower(`changes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSessionShareInfo.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -6315,6 +7259,327 @@ public object FfiConverterTypeSharedTerminal: FfiConverter<SharedTerminal, Long>
     override fun allocationSize(value: SharedTerminal) = 8UL
 
     override fun write(value: SharedTerminal, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
+ * Implemented by the app to hear about a shared terminal.
+ *
+ * **Threads**: its own background thread, in order; it must return quickly.
+ */
+public interface SharedTerminalListener {
+    
+    fun `onEvent`(`event`: SharedTerminalEvent)
+    
+    companion object
+}
+
+/**
+ * Implemented by the app to hear about a shared terminal.
+ *
+ * **Threads**: its own background thread, in order; it must return quickly.
+ */
+open class SharedTerminalListenerImpl: Disposable, AutoCloseable, SharedTerminalListener
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_sharedterminallistener(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_sharedterminallistener(handle, status)
+        }
+    }
+
+    override fun `onEvent`(`event`: SharedTerminalEvent)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_sharedterminallistener_on_event(
+        it,
+        
+        FfiConverterTypeSharedTerminalEvent.lower(`event`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceSharedTerminalListener {
+    internal object `onEvent`: UniffiCallbackInterfaceSharedTerminalListenerMethod0 {
+        override fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSharedTerminalListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onEvent`(
+                    FfiConverterTypeSharedTerminalEvent.lift(`event`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeSharedTerminalListener.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeSharedTerminalListener.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceSharedTerminalListener.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `onEvent`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_termoak_ffi_fn_init_callback_vtable_sharedterminallistener(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSharedTerminalListener: FfiConverter<SharedTerminalListener, Long> {
+    internal val handleMap = UniffiHandleMap<SharedTerminalListener>()
+
+    override fun lower(value: SharedTerminalListener): Long {
+        if (value is SharedTerminalListenerImpl) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): SharedTerminalListener {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return SharedTerminalListenerImpl(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): SharedTerminalListener {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: SharedTerminalListener) = 8UL
+
+    override fun write(value: SharedTerminalListener, buf: ByteBuffer) {
         buf.putLong(lower(value))
     }
 }
@@ -8784,6 +10049,11 @@ public interface TermoakCoreInterface {
     suspend fun `leaveTeam`(`teamId`: kotlin.String)
     
     /**
+     * The invitations of one of your sessions (also revoked and expired ones).
+     */
+    suspend fun `listServerSessionShares`(`sessionId`: kotlin.String): List<SessionShareInfo>
+    
+    /**
      * Members of a team.
      */
     suspend fun `listTeamMembers`(`teamId`: kotlin.String): List<TeamMember>
@@ -8814,8 +10084,8 @@ public interface TermoakCoreInterface {
     suspend fun `renameTeam`(`teamId`: kotlin.String, `name`: kotlin.String): Team
     
     /**
-     * Revokes an invitation to a persistent session (kicks out whoever is
-     * using it).
+     * Revokes an invitation to a persistent session (whoever used it and
+     * has no other one leaves).
      */
     suspend fun `revokeServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String)
     
@@ -8846,9 +10116,22 @@ public interface TermoakCoreInterface {
     
     /**
      * Shares a persistent server session with a user, a team or through a
-     * link (`control` = can type).
+     * link (`control` = can ask for the keyboard; links wait for your
+     * approval).
      */
     suspend fun `shareServerSession`(`sessionId`: kotlin.String, `target`: ShareTarget, `control`: kotlin.Boolean, `expiresInMinutes`: kotlin.Long?): ShareInvite
+    
+    /**
+     * Shares a session with every option (waiting room, automatic
+     * keyboard...).
+     */
+    suspend fun `shareServerSessionWith`(`sessionId`: kotlin.String, `target`: ShareTarget, `options`: ShareOptions): ShareInvite
+    
+    /**
+     * Stops sharing a session: every invitation is revoked and everyone but
+     * you leaves. Returns how many invitations were active.
+     */
+    suspend fun `stopSharingServerSession`(`sessionId`: kotlin.String): kotlin.UInt
     
     /**
      * Two-factor authentication status.
@@ -8859,6 +10142,12 @@ public interface TermoakCoreInterface {
      * Stops receiving notifications on this device.
      */
     suspend fun `unregisterPushToken`()
+    
+    /**
+     * Changes an invitation live: whoever uses it gets the new permission
+     * at once (going down to view only takes the keyboard away).
+     */
+    suspend fun `updateServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String, `changes`: ShareChanges): SessionShareInfo
     
     /**
      * Clears the command history of a host (or all of it if `None`).
@@ -8950,6 +10239,13 @@ public interface TermoakCoreInterface {
      * arrives first, then the history.
      */
     suspend fun `attachServerSession`(`sessionId`: kotlin.String, `listener`: ServerTerminalListener): ServerTerminalHandle
+    
+    /**
+     * Joins with a link of this server while signed in (you appear with
+     * your account's name; a direct invitation of yours is used if it
+     * gives more).
+     */
+    suspend fun `joinLink`(`token`: kotlin.String, `listener`: ServerTerminalListener): ServerTerminalHandle
     
     /**
      * Shares a local terminal through the server with the given title. Then
@@ -9870,6 +11166,31 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * The invitations of one of your sessions (also revoked and expired ones).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listServerSessionShares`(`sessionId`: kotlin.String) : List<SessionShareInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_list_server_session_shares(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeSessionShareInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Members of a team.
      */
     @Throws(TermoakException::class)
@@ -10004,8 +11325,8 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
-     * Revokes an invitation to a persistent session (kicks out whoever is
-     * using it).
+     * Revokes an invitation to a persistent session (whoever used it and
+     * has no other one leaves).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -10139,7 +11460,8 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     
     /**
      * Shares a persistent server session with a user, a team or through a
-     * link (`control` = can type).
+     * link (`control` = can ask for the keyboard; links wait for your
+     * approval).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -10160,6 +11482,60 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeShareInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Shares a session with every option (waiting room, automatic
+     * keyboard...).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `shareServerSessionWith`(`sessionId`: kotlin.String, `target`: ShareTarget, `options`: ShareOptions) : ShareInvite {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_share_server_session_with(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterTypeShareTarget.lower(`target`),
+        FfiConverterTypeShareOptions.lower(`options`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeShareInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Stops sharing a session: every invitation is revoked and everyone but
+     * you leaves. Returns how many invitations were active.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `stopSharingServerSession`(`sessionId`: kotlin.String) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_stop_sharing_server_session(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -10209,6 +11585,34 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         // lift function
         { },
         
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Changes an invitation live: whoever uses it gets the new permission
+     * at once (going down to view only takes the keyboard away).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String, `changes`: ShareChanges) : SessionShareInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_update_server_session_share(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`shareId`),
+        FfiConverterTypeShareChanges.lower(`changes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSessionShareInfo.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -10576,6 +11980,34 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
                 uniffiHandle,
                 
         FfiConverterString.lower(`sessionId`),
+        FfiConverterTypeServerTerminalListener.lower(`listener`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterTypeServerTerminalHandle.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Joins with a link of this server while signed in (you appear with
+     * your account's name; a direct invitation of yours is used if it
+     * gives more).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `joinLink`(`token`: kotlin.String, `listener`: ServerTerminalListener) : ServerTerminalHandle {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_join_link(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`token`),
         FfiConverterTypeServerTerminalListener.lower(`listener`),
             )
         },
@@ -14321,6 +15753,84 @@ public object FfiConverterTypeKnownHost: FfiConverterRustBuffer<KnownHost> {
 
 
 /**
+ * Details of a link invitation (no account needed), to show before joining.
+ */
+data class LinkInvite (
+    var `sessionId`: kotlin.String
+    , 
+    var `title`: kotlin.String
+    , 
+    /**
+     * Name of who shares it.
+     */
+    var `owner`: kotlin.String
+    , 
+    /**
+     * The most you can get: `Control` (can ask for the keyboard) or `View`.
+     */
+    var `access`: SessionAccess
+    , 
+    /**
+     * You will wait until the owner lets you in.
+     */
+    var `requireApproval`: kotlin.Boolean
+    , 
+    /**
+     * People inside now.
+     */
+    var `participants`: kotlin.UInt
+    , 
+    var `expiresAt`: kotlin.Long?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLinkInvite: FfiConverterRustBuffer<LinkInvite> {
+    override fun read(buf: ByteBuffer): LinkInvite {
+        return LinkInvite(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeSessionAccess.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LinkInvite) = (
+            FfiConverterString.allocationSize(value.`sessionId`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`owner`) +
+            FfiConverterTypeSessionAccess.allocationSize(value.`access`) +
+            FfiConverterBoolean.allocationSize(value.`requireApproval`) +
+            FfiConverterUInt.allocationSize(value.`participants`) +
+            FfiConverterOptionalLong.allocationSize(value.`expiresAt`)
+    )
+
+    override fun write(value: LinkInvite, buf: ByteBuffer) {
+            FfiConverterString.write(value.`sessionId`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`owner`, buf)
+            FfiConverterTypeSessionAccess.write(value.`access`, buf)
+            FfiConverterBoolean.write(value.`requireApproval`, buf)
+            FfiConverterUInt.write(value.`participants`, buf)
+            FfiConverterOptionalLong.write(value.`expiresAt`, buf)
+    }
+}
+
+
+
+/**
  * Port forwarding rule.
  */
 data class PortForward (
@@ -15067,6 +16577,16 @@ data class ServerSession (
     var `access`: SessionAccess
     , 
     var `viewers`: List<SessionViewer>
+    , 
+    /**
+     * People in the session (servers 0.3+).
+     */
+    var `participants`: List<SessionParticipant>
+    , 
+    /**
+     * Participant with the keyboard (`None`: the owner).
+     */
+    var `driver`: kotlin.String?
     
 ){
     
@@ -15095,6 +16615,8 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterBoolean.read(buf),
             FfiConverterTypeSessionAccess.read(buf),
             FfiConverterSequenceTypeSessionViewer.read(buf),
+            FfiConverterSequenceTypeSessionParticipant.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -15110,7 +16632,9 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterUInt.allocationSize(value.`rows`) +
             FfiConverterBoolean.allocationSize(value.`recording`) +
             FfiConverterTypeSessionAccess.allocationSize(value.`access`) +
-            FfiConverterSequenceTypeSessionViewer.allocationSize(value.`viewers`)
+            FfiConverterSequenceTypeSessionViewer.allocationSize(value.`viewers`) +
+            FfiConverterSequenceTypeSessionParticipant.allocationSize(value.`participants`) +
+            FfiConverterOptionalString.allocationSize(value.`driver`)
     )
 
     override fun write(value: ServerSession, buf: ByteBuffer) {
@@ -15126,6 +16650,8 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterBoolean.write(value.`recording`, buf)
             FfiConverterTypeSessionAccess.write(value.`access`, buf)
             FfiConverterSequenceTypeSessionViewer.write(value.`viewers`, buf)
+            FfiConverterSequenceTypeSessionParticipant.write(value.`participants`, buf)
+            FfiConverterOptionalString.write(value.`driver`, buf)
     }
 }
 
@@ -15344,6 +16870,247 @@ public object FfiConverterTypeServerUser: FfiConverterRustBuffer<ServerUser> {
 
 
 /**
+ * A person in a shared session (all their devices count as one).
+ */
+data class SessionParticipant (
+    /**
+     * Participant id (for `grant_control`, `kick`...).
+     */
+    var `id`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    var `kind`: ParticipantKind
+    , 
+    /**
+     * `Owner`, `Control` (can ask for the keyboard) or `View`.
+     */
+    var `access`: SessionAccess
+    , 
+    /**
+     * Has the keyboard (the owner, when nobody else has it).
+     */
+    var `isDriver`: kotlin.Boolean
+    , 
+    /**
+     * Since when (ms).
+     */
+    var `since`: kotlin.Long
+    , 
+    /**
+     * Devices attached (0 while reconnecting).
+     */
+    var `devices`: kotlin.UInt
+    , 
+    /**
+     * Asked for the keyboard and waits for the owner.
+     */
+    var `requestedControl`: kotlin.Boolean
+    , 
+    /**
+     * In the waiting room (only in the owner's list).
+     */
+    var `waiting`: kotlin.Boolean
+    , 
+    /**
+     * It is you.
+     */
+    var `you`: kotlin.Boolean
+    , 
+    /**
+     * Only in the owner's list.
+     */
+    var `userId`: kotlin.String?
+    , 
+    /**
+     * Share they joined with (only in the owner's list).
+     */
+    var `shareId`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSessionParticipant: FfiConverterRustBuffer<SessionParticipant> {
+    override fun read(buf: ByteBuffer): SessionParticipant {
+        return SessionParticipant(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeParticipantKind.read(buf),
+            FfiConverterTypeSessionAccess.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SessionParticipant) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterTypeParticipantKind.allocationSize(value.`kind`) +
+            FfiConverterTypeSessionAccess.allocationSize(value.`access`) +
+            FfiConverterBoolean.allocationSize(value.`isDriver`) +
+            FfiConverterLong.allocationSize(value.`since`) +
+            FfiConverterUInt.allocationSize(value.`devices`) +
+            FfiConverterBoolean.allocationSize(value.`requestedControl`) +
+            FfiConverterBoolean.allocationSize(value.`waiting`) +
+            FfiConverterBoolean.allocationSize(value.`you`) +
+            FfiConverterOptionalString.allocationSize(value.`userId`) +
+            FfiConverterOptionalString.allocationSize(value.`shareId`)
+    )
+
+    override fun write(value: SessionParticipant, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterTypeParticipantKind.write(value.`kind`, buf)
+            FfiConverterTypeSessionAccess.write(value.`access`, buf)
+            FfiConverterBoolean.write(value.`isDriver`, buf)
+            FfiConverterLong.write(value.`since`, buf)
+            FfiConverterUInt.write(value.`devices`, buf)
+            FfiConverterBoolean.write(value.`requestedControl`, buf)
+            FfiConverterBoolean.write(value.`waiting`, buf)
+            FfiConverterBoolean.write(value.`you`, buf)
+            FfiConverterOptionalString.write(value.`userId`, buf)
+            FfiConverterOptionalString.write(value.`shareId`, buf)
+    }
+}
+
+
+
+/**
+ * An invitation to one of your sessions.
+ */
+data class SessionShareInfo (
+    var `id`: kotlin.String
+    , 
+    var `sessionId`: kotlin.String
+    , 
+    var `kind`: ShareKind
+    , 
+    /**
+     * Can ask for the keyboard (otherwise view only).
+     */
+    var `control`: kotlin.Boolean
+    , 
+    var `userId`: kotlin.String?
+    , 
+    var `userEmail`: kotlin.String?
+    , 
+    var `userName`: kotlin.String?
+    , 
+    var `teamId`: kotlin.String?
+    , 
+    var `teamName`: kotlin.String?
+    , 
+    var `expiresAt`: kotlin.Long?
+    , 
+    var `revoked`: kotlin.Boolean
+    , 
+    /**
+     * Not revoked and not expired.
+     */
+    var `active`: kotlin.Boolean
+    , 
+    var `requireApproval`: kotlin.Boolean
+    , 
+    var `autoGrant`: kotlin.Boolean
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    /**
+     * People in the session with it now.
+     */
+    var `participants`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer<SessionShareInfo> {
+    override fun read(buf: ByteBuffer): SessionShareInfo {
+        return SessionShareInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeShareKind.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SessionShareInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`sessionId`) +
+            FfiConverterTypeShareKind.allocationSize(value.`kind`) +
+            FfiConverterBoolean.allocationSize(value.`control`) +
+            FfiConverterOptionalString.allocationSize(value.`userId`) +
+            FfiConverterOptionalString.allocationSize(value.`userEmail`) +
+            FfiConverterOptionalString.allocationSize(value.`userName`) +
+            FfiConverterOptionalString.allocationSize(value.`teamId`) +
+            FfiConverterOptionalString.allocationSize(value.`teamName`) +
+            FfiConverterOptionalLong.allocationSize(value.`expiresAt`) +
+            FfiConverterBoolean.allocationSize(value.`revoked`) +
+            FfiConverterBoolean.allocationSize(value.`active`) +
+            FfiConverterBoolean.allocationSize(value.`requireApproval`) +
+            FfiConverterBoolean.allocationSize(value.`autoGrant`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterUInt.allocationSize(value.`participants`)
+    )
+
+    override fun write(value: SessionShareInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`sessionId`, buf)
+            FfiConverterTypeShareKind.write(value.`kind`, buf)
+            FfiConverterBoolean.write(value.`control`, buf)
+            FfiConverterOptionalString.write(value.`userId`, buf)
+            FfiConverterOptionalString.write(value.`userEmail`, buf)
+            FfiConverterOptionalString.write(value.`userName`, buf)
+            FfiConverterOptionalString.write(value.`teamId`, buf)
+            FfiConverterOptionalString.write(value.`teamName`, buf)
+            FfiConverterOptionalLong.write(value.`expiresAt`, buf)
+            FfiConverterBoolean.write(value.`revoked`, buf)
+            FfiConverterBoolean.write(value.`active`, buf)
+            FfiConverterBoolean.write(value.`requireApproval`, buf)
+            FfiConverterBoolean.write(value.`autoGrant`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterUInt.write(value.`participants`, buf)
+    }
+}
+
+
+
+/**
  * Person connected to a server session.
  */
 data class SessionViewer (
@@ -15405,6 +17172,71 @@ public object FfiConverterTypeSessionViewer: FfiConverterRustBuffer<SessionViewe
             FfiConverterTypeSessionAccess.write(value.`access`, buf)
             FfiConverterString.write(value.`role`, buf)
             FfiConverterLong.write(value.`since`, buf)
+    }
+}
+
+
+
+/**
+ * Changes to an invitation (`None` leaves the field as it is).
+ */
+data class ShareChanges (
+    /**
+     * `Some(false)` goes down to view only (the keyboard is taken away).
+     */
+    var `control`: kotlin.Boolean?
+    , 
+    /**
+     * New expiry, in minutes from now.
+     */
+    var `expiresInMinutes`: kotlin.Long?
+    , 
+    /**
+     * Remove the expiry.
+     */
+    var `noExpiry`: kotlin.Boolean
+    , 
+    var `requireApproval`: kotlin.Boolean?
+    , 
+    var `autoGrant`: kotlin.Boolean?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeShareChanges: FfiConverterRustBuffer<ShareChanges> {
+    override fun read(buf: ByteBuffer): ShareChanges {
+        return ShareChanges(
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ShareChanges) = (
+            FfiConverterOptionalBoolean.allocationSize(value.`control`) +
+            FfiConverterOptionalLong.allocationSize(value.`expiresInMinutes`) +
+            FfiConverterBoolean.allocationSize(value.`noExpiry`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`requireApproval`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`autoGrant`)
+    )
+
+    override fun write(value: ShareChanges, buf: ByteBuffer) {
+            FfiConverterOptionalBoolean.write(value.`control`, buf)
+            FfiConverterOptionalLong.write(value.`expiresInMinutes`, buf)
+            FfiConverterBoolean.write(value.`noExpiry`, buf)
+            FfiConverterOptionalBoolean.write(value.`requireApproval`, buf)
+            FfiConverterOptionalBoolean.write(value.`autoGrant`, buf)
     }
 }
 
@@ -15473,6 +17305,70 @@ public object FfiConverterTypeShareInvite: FfiConverterRustBuffer<ShareInvite> {
             FfiConverterOptionalString.write(value.`token`, buf)
             FfiConverterOptionalString.write(value.`link`, buf)
             FfiConverterOptionalString.write(value.`appLink`, buf)
+    }
+}
+
+
+
+/**
+ * Options of a new invitation to a session.
+ */
+data class ShareOptions (
+    /**
+     * Can ask for (and receive) the keyboard; otherwise only watches.
+     */
+    var `control`: kotlin.Boolean
+    , 
+    /**
+     * No expiry if not given.
+     */
+    var `expiresInMinutes`: kotlin.Long?
+    , 
+    /**
+     * Whoever joins waits until you let them in. `None`: the server's
+     * default (yes for links, no for users and teams).
+     */
+    var `requireApproval`: kotlin.Boolean?
+    , 
+    /**
+     * Requests for the keyboard are granted without asking you.
+     */
+    var `autoGrant`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeShareOptions: FfiConverterRustBuffer<ShareOptions> {
+    override fun read(buf: ByteBuffer): ShareOptions {
+        return ShareOptions(
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ShareOptions) = (
+            FfiConverterBoolean.allocationSize(value.`control`) +
+            FfiConverterOptionalLong.allocationSize(value.`expiresInMinutes`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`requireApproval`) +
+            FfiConverterBoolean.allocationSize(value.`autoGrant`)
+    )
+
+    override fun write(value: ShareOptions, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`control`, buf)
+            FfiConverterOptionalLong.write(value.`expiresInMinutes`, buf)
+            FfiConverterOptionalBoolean.write(value.`requireApproval`, buf)
+            FfiConverterBoolean.write(value.`autoGrant`, buf)
     }
 }
 
@@ -16609,6 +18505,55 @@ public object FfiConverterTypeLogLevel: FfiConverterRustBuffer<LogLevel> {
 
 
 
+/**
+ * Kind of participant in a shared session.
+ */
+
+enum class ParticipantKind {
+    
+    /**
+     * The session's owner.
+     */
+    OWNER,
+    /**
+     * A user of the server (invited directly, through a team or by link).
+     */
+    USER,
+    /**
+     * Someone without an account who joined with a link.
+     */
+    GUEST;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeParticipantKind: FfiConverterRustBuffer<ParticipantKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ParticipantKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ParticipantKind) = 4UL
+
+    override fun write(value: ParticipantKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
 
 enum class ProxyKind {
     
@@ -17195,7 +19140,7 @@ sealed class ServerTerminalEvent {
     }
     
     /**
-     * Who is connected.
+     * Who is connected (sockets; servers before 0.3 only).
      */
     data class Presence(
         val `viewers`: List<com.termoak.ffi.SessionViewer>) : ServerTerminalEvent()
@@ -17205,6 +19150,79 @@ sealed class ServerTerminalEvent {
 
         companion object
     }
+    
+    /**
+     * Who is in the session and who drives (`None`: the owner).
+     */
+    data class Participants(
+        val `participants`: List<com.termoak.ffi.SessionParticipant>, 
+        val `driver`: kotlin.String?) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The keyboard changed hands. `can_write`: your input and resizes reach
+     * the terminal now (otherwise the library does not send them).
+     */
+    data class Control(
+        val `driver`: kotlin.String?, 
+        val `driverName`: kotlin.String?, 
+        val `canWrite`: kotlin.Boolean) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * You are in the waiting room until the owner lets you in (`Hello`
+     * arrives then).
+     */
+    data class Waiting(
+        val `participantId`: kotlin.String?, 
+        val `title`: kotlin.String, 
+        val `owner`: kotlin.String) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Owner: someone waits to be let in (`allow_join` / `deny_join`).
+     */
+    data class JoinRequest(
+        val `participant`: com.termoak.ffi.SessionParticipant) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Owner: someone asks for the keyboard (`grant_control` / `deny_control`).
+     */
+    data class ControlRequest(
+        val `participant`: com.termoak.ffi.SessionParticipant) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The owner said no to your request for the keyboard.
+     */
+    object ControlDenied : ServerTerminalEvent()
+    
     
     /**
      * Authentication question (owner only): answer it with
@@ -17257,9 +19275,24 @@ sealed class ServerTerminalEvent {
     }
     
     /**
-     * Error sent by the server (e.g. access revoked).
+     * Error that does not end the connection (an action that was not allowed).
      */
     data class Error(
+        val `message`: kotlin.String) : ServerTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The server sent you away for good. `code`: `revoked`, `kicked`,
+     * `expired`, `session_ended`, `join_denied` or `forbidden`. `Closed`
+     * follows; it does not reconnect.
+     */
+    data class Ended(
+        val `code`: kotlin.String, 
         val `message`: kotlin.String) : ServerTerminalEvent()
         
     {
@@ -17315,26 +19348,51 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
             5 -> ServerTerminalEvent.Presence(
                 FfiConverterSequenceTypeSessionViewer.read(buf),
                 )
-            6 -> ServerTerminalEvent.Prompt(
+            6 -> ServerTerminalEvent.Participants(
+                FfiConverterSequenceTypeSessionParticipant.read(buf),
+                FfiConverterOptionalString.read(buf),
+                )
+            7 -> ServerTerminalEvent.Control(
+                FfiConverterOptionalString.read(buf),
+                FfiConverterOptionalString.read(buf),
+                FfiConverterBoolean.read(buf),
+                )
+            8 -> ServerTerminalEvent.Waiting(
+                FfiConverterOptionalString.read(buf),
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                )
+            9 -> ServerTerminalEvent.JoinRequest(
+                FfiConverterTypeSessionParticipant.read(buf),
+                )
+            10 -> ServerTerminalEvent.ControlRequest(
+                FfiConverterTypeSessionParticipant.read(buf),
+                )
+            11 -> ServerTerminalEvent.ControlDenied
+            12 -> ServerTerminalEvent.Prompt(
                 FfiConverterTypeServerPrompt.read(buf),
                 )
-            7 -> ServerTerminalEvent.PromptDone(
+            13 -> ServerTerminalEvent.PromptDone(
                 FfiConverterString.read(buf),
                 )
-            8 -> ServerTerminalEvent.Resize(
+            14 -> ServerTerminalEvent.Resize(
                 FfiConverterUInt.read(buf),
                 FfiConverterUInt.read(buf),
                 )
-            9 -> ServerTerminalEvent.Title(
+            15 -> ServerTerminalEvent.Title(
                 FfiConverterString.read(buf),
                 )
-            10 -> ServerTerminalEvent.Error(
+            16 -> ServerTerminalEvent.Error(
                 FfiConverterString.read(buf),
                 )
-            11 -> ServerTerminalEvent.Other(
+            17 -> ServerTerminalEvent.Ended(
+                FfiConverterString.read(buf),
                 FfiConverterString.read(buf),
                 )
-            12 -> ServerTerminalEvent.Closed
+            18 -> ServerTerminalEvent.Other(
+                FfiConverterString.read(buf),
+                )
+            19 -> ServerTerminalEvent.Closed
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
         }
     }
@@ -17374,6 +19432,52 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
                 + FfiConverterSequenceTypeSessionViewer.allocationSize(value.`viewers`)
             )
         }
+        is ServerTerminalEvent.Participants -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterSequenceTypeSessionParticipant.allocationSize(value.`participants`)
+                + FfiConverterOptionalString.allocationSize(value.`driver`)
+            )
+        }
+        is ServerTerminalEvent.Control -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`driver`)
+                + FfiConverterOptionalString.allocationSize(value.`driverName`)
+                + FfiConverterBoolean.allocationSize(value.`canWrite`)
+            )
+        }
+        is ServerTerminalEvent.Waiting -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`participantId`)
+                + FfiConverterString.allocationSize(value.`title`)
+                + FfiConverterString.allocationSize(value.`owner`)
+            )
+        }
+        is ServerTerminalEvent.JoinRequest -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterTypeSessionParticipant.allocationSize(value.`participant`)
+            )
+        }
+        is ServerTerminalEvent.ControlRequest -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterTypeSessionParticipant.allocationSize(value.`participant`)
+            )
+        }
+        is ServerTerminalEvent.ControlDenied -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
         is ServerTerminalEvent.Prompt -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
@@ -17407,6 +19511,14 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+        }
+        is ServerTerminalEvent.Ended -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`code`)
                 + FfiConverterString.allocationSize(value.`message`)
             )
         }
@@ -17451,39 +19563,79 @@ public object FfiConverterTypeServerTerminalEvent : FfiConverterRustBuffer<Serve
                 FfiConverterSequenceTypeSessionViewer.write(value.`viewers`, buf)
                 Unit
             }
-            is ServerTerminalEvent.Prompt -> {
+            is ServerTerminalEvent.Participants -> {
                 buf.putInt(6)
+                FfiConverterSequenceTypeSessionParticipant.write(value.`participants`, buf)
+                FfiConverterOptionalString.write(value.`driver`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.Control -> {
+                buf.putInt(7)
+                FfiConverterOptionalString.write(value.`driver`, buf)
+                FfiConverterOptionalString.write(value.`driverName`, buf)
+                FfiConverterBoolean.write(value.`canWrite`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.Waiting -> {
+                buf.putInt(8)
+                FfiConverterOptionalString.write(value.`participantId`, buf)
+                FfiConverterString.write(value.`title`, buf)
+                FfiConverterString.write(value.`owner`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.JoinRequest -> {
+                buf.putInt(9)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.ControlRequest -> {
+                buf.putInt(10)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.ControlDenied -> {
+                buf.putInt(11)
+                Unit
+            }
+            is ServerTerminalEvent.Prompt -> {
+                buf.putInt(12)
                 FfiConverterTypeServerPrompt.write(value.`prompt`, buf)
                 Unit
             }
             is ServerTerminalEvent.PromptDone -> {
-                buf.putInt(7)
+                buf.putInt(13)
                 FfiConverterString.write(value.`promptId`, buf)
                 Unit
             }
             is ServerTerminalEvent.Resize -> {
-                buf.putInt(8)
+                buf.putInt(14)
                 FfiConverterUInt.write(value.`cols`, buf)
                 FfiConverterUInt.write(value.`rows`, buf)
                 Unit
             }
             is ServerTerminalEvent.Title -> {
-                buf.putInt(9)
+                buf.putInt(15)
                 FfiConverterString.write(value.`title`, buf)
                 Unit
             }
             is ServerTerminalEvent.Error -> {
-                buf.putInt(10)
+                buf.putInt(16)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is ServerTerminalEvent.Ended -> {
+                buf.putInt(17)
+                FfiConverterString.write(value.`code`, buf)
                 FfiConverterString.write(value.`message`, buf)
                 Unit
             }
             is ServerTerminalEvent.Other -> {
-                buf.putInt(11)
+                buf.putInt(18)
                 FfiConverterString.write(value.`json`, buf)
                 Unit
             }
             is ServerTerminalEvent.Closed -> {
-                buf.putInt(12)
+                buf.putInt(19)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -17535,6 +19687,46 @@ public object FfiConverterTypeSessionAccess: FfiConverterRustBuffer<SessionAcces
     override fun allocationSize(value: SessionAccess) = 4UL
 
     override fun write(value: SessionAccess, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Who an invitation is for.
+ */
+
+enum class ShareKind {
+    
+    USER,
+    TEAM,
+    LINK;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeShareKind: FfiConverterRustBuffer<ShareKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ShareKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ShareKind) = 4UL
+
+    override fun write(value: ShareKind, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -17642,6 +19834,253 @@ public object FfiConverterTypeShareTarget : FfiConverterRustBuffer<ShareTarget>{
             }
             is ShareTarget.Link -> {
                 buf.putInt(3)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+
+
+
+/**
+ * What the device that shares a terminal hears from the server.
+ */
+sealed class SharedTerminalEvent {
+    
+    /**
+     * Who is in the session and who drives (`None`: you).
+     */
+    data class Participants(
+        val `participants`: List<com.termoak.ffi.SessionParticipant>, 
+        val `driver`: kotlin.String?) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The keyboard changed hands.
+     */
+    data class Control(
+        val `driver`: kotlin.String?, 
+        val `driverName`: kotlin.String?) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The driver would like this size. The terminal is here: apply it or
+     * ignore it (guests follow the size you report with `resize`).
+     */
+    data class ResizeRequest(
+        val `cols`: kotlin.UInt, 
+        val `rows`: kotlin.UInt) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Someone waits to be let in (`allow_join` / `deny_join`).
+     */
+    data class JoinRequest(
+        val `participant`: com.termoak.ffi.SessionParticipant) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Someone asks for the keyboard (`grant_control` / `deny_control`).
+     */
+    data class ControlRequest(
+        val `participant`: com.termoak.ffi.SessionParticipant) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * The connection to the server dropped; it is being retried.
+     */
+    object Reconnecting : SharedTerminalEvent()
+    
+    
+    /**
+     * Back after `Reconnecting`.
+     */
+    object Reconnected : SharedTerminalEvent()
+    
+    
+    /**
+     * Sharing ended (`code` if the server said why). Nothing else arrives.
+     */
+    data class Ended(
+        val `code`: kotlin.String?) : SharedTerminalEvent()
+        
+    {
+        
+
+        companion object
+    }
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSharedTerminalEvent : FfiConverterRustBuffer<SharedTerminalEvent>{
+    override fun read(buf: ByteBuffer): SharedTerminalEvent {
+        return when(buf.getInt()) {
+            1 -> SharedTerminalEvent.Participants(
+                FfiConverterSequenceTypeSessionParticipant.read(buf),
+                FfiConverterOptionalString.read(buf),
+                )
+            2 -> SharedTerminalEvent.Control(
+                FfiConverterOptionalString.read(buf),
+                FfiConverterOptionalString.read(buf),
+                )
+            3 -> SharedTerminalEvent.ResizeRequest(
+                FfiConverterUInt.read(buf),
+                FfiConverterUInt.read(buf),
+                )
+            4 -> SharedTerminalEvent.JoinRequest(
+                FfiConverterTypeSessionParticipant.read(buf),
+                )
+            5 -> SharedTerminalEvent.ControlRequest(
+                FfiConverterTypeSessionParticipant.read(buf),
+                )
+            6 -> SharedTerminalEvent.Reconnecting
+            7 -> SharedTerminalEvent.Reconnected
+            8 -> SharedTerminalEvent.Ended(
+                FfiConverterOptionalString.read(buf),
+                )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: SharedTerminalEvent): ULong = when(value) {
+        is SharedTerminalEvent.Participants -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterSequenceTypeSessionParticipant.allocationSize(value.`participants`)
+                + FfiConverterOptionalString.allocationSize(value.`driver`)
+            )
+        }
+        is SharedTerminalEvent.Control -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`driver`)
+                + FfiConverterOptionalString.allocationSize(value.`driverName`)
+            )
+        }
+        is SharedTerminalEvent.ResizeRequest -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterUInt.allocationSize(value.`cols`)
+                + FfiConverterUInt.allocationSize(value.`rows`)
+            )
+        }
+        is SharedTerminalEvent.JoinRequest -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterTypeSessionParticipant.allocationSize(value.`participant`)
+            )
+        }
+        is SharedTerminalEvent.ControlRequest -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterTypeSessionParticipant.allocationSize(value.`participant`)
+            )
+        }
+        is SharedTerminalEvent.Reconnecting -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is SharedTerminalEvent.Reconnected -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is SharedTerminalEvent.Ended -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterOptionalString.allocationSize(value.`code`)
+            )
+        }
+    }
+
+    override fun write(value: SharedTerminalEvent, buf: ByteBuffer) {
+        when(value) {
+            is SharedTerminalEvent.Participants -> {
+                buf.putInt(1)
+                FfiConverterSequenceTypeSessionParticipant.write(value.`participants`, buf)
+                FfiConverterOptionalString.write(value.`driver`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.Control -> {
+                buf.putInt(2)
+                FfiConverterOptionalString.write(value.`driver`, buf)
+                FfiConverterOptionalString.write(value.`driverName`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.ResizeRequest -> {
+                buf.putInt(3)
+                FfiConverterUInt.write(value.`cols`, buf)
+                FfiConverterUInt.write(value.`rows`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.JoinRequest -> {
+                buf.putInt(4)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.ControlRequest -> {
+                buf.putInt(5)
+                FfiConverterTypeSessionParticipant.write(value.`participant`, buf)
+                Unit
+            }
+            is SharedTerminalEvent.Reconnecting -> {
+                buf.putInt(6)
+                Unit
+            }
+            is SharedTerminalEvent.Reconnected -> {
+                buf.putInt(7)
+                Unit
+            }
+            is SharedTerminalEvent.Ended -> {
+                buf.putInt(8)
+                FfiConverterOptionalString.write(value.`code`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -19557,6 +21996,62 @@ public object FfiConverterSequenceTypeServerUser: FfiConverterRustBuffer<List<Se
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeSessionParticipant: FfiConverterRustBuffer<List<SessionParticipant>> {
+    override fun read(buf: ByteBuffer): List<SessionParticipant> {
+        val len = buf.getInt()
+        return List<SessionParticipant>(len) {
+            FfiConverterTypeSessionParticipant.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SessionParticipant>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSessionParticipant.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SessionParticipant>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSessionParticipant.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSessionShareInfo: FfiConverterRustBuffer<List<SessionShareInfo>> {
+    override fun read(buf: ByteBuffer): List<SessionShareInfo> {
+        val len = buf.getInt()
+        return List<SessionShareInfo>(len) {
+            FfiConverterTypeSessionShareInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SessionShareInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSessionShareInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SessionShareInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSessionShareInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeSessionViewer: FfiConverterRustBuffer<List<SessionViewer>> {
     override fun read(buf: ByteBuffer): List<SessionViewer> {
         val len = buf.getInt()
@@ -19942,8 +22437,9 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
 
         /**
-         * Joins a shared session with an invitation link, without an account.
-         * `server_url` and `token` come from the link (`termoak://join?server=...&token=...`).
+         * Joins a shared session with an invitation link, without an account
+         * (as "Guest N"). `server_url` and `token` come from the link
+         * (`termoak://join?server=...&token=...`).
          */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -19958,6 +22454,51 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
         // lift function
         { FfiConverterTypeServerTerminalHandle.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+        /**
+         * Joins with a link, without an account, under a display name (at most 40
+         * characters). If the invitation asks for approval, `Waiting` arrives
+         * first and `Hello` once the owner lets you in.
+         */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `joinSharedSessionAs`(`serverUrl`: kotlin.String, `token`: kotlin.String, `name`: kotlin.String?, `listener`: ServerTerminalListener) : ServerTerminalHandle {
+        return uniffiRustCallAsync(
+        UniffiLib.uniffi_termoak_ffi_fn_func_join_shared_session_as(
+        FfiConverterString.lower(`serverUrl`),
+        FfiConverterString.lower(`token`),
+        FfiConverterOptionalString.lower(`name`),
+        FfiConverterTypeServerTerminalListener.lower(`listener`),),
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterTypeServerTerminalHandle.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+        /**
+         * What a link invitation offers (`server_url` and `token` come from the
+         * link `termoak://join?server=...&token=...`).
+         */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `linkInviteInfo`(`serverUrl`: kotlin.String, `token`: kotlin.String) : LinkInvite {
+        return uniffiRustCallAsync(
+        UniffiLib.uniffi_termoak_ffi_fn_func_link_invite_info(
+        FfiConverterString.lower(`serverUrl`),
+        FfiConverterString.lower(`token`),),
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeLinkInvite.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )

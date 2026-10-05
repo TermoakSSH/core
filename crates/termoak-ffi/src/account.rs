@@ -124,6 +124,136 @@ pub enum ShareTarget {
     Link,
 }
 
+/// Options of a new invitation to a session.
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct ShareOptions {
+    /// Can ask for (and receive) the keyboard; otherwise only watches.
+    pub control: bool,
+    /// No expiry if not given.
+    pub expires_in_minutes: Option<i64>,
+    /// Whoever joins waits until you let them in. `None`: the server's
+    /// default (yes for links, no for users and teams).
+    pub require_approval: Option<bool>,
+    /// Requests for the keyboard are granted without asking you.
+    pub auto_grant: bool,
+}
+
+/// Changes to an invitation (`None` leaves the field as it is).
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct ShareChanges {
+    /// `Some(false)` goes down to view only (the keyboard is taken away).
+    pub control: Option<bool>,
+    /// New expiry, in minutes from now.
+    pub expires_in_minutes: Option<i64>,
+    /// Remove the expiry.
+    pub no_expiry: bool,
+    pub require_approval: Option<bool>,
+    pub auto_grant: Option<bool>,
+}
+
+/// Who an invitation is for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum ShareKind {
+    User,
+    Team,
+    Link,
+}
+
+/// An invitation to one of your sessions.
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct SessionShareInfo {
+    pub id: String,
+    pub session_id: String,
+    pub kind: ShareKind,
+    /// Can ask for the keyboard (otherwise view only).
+    pub control: bool,
+    pub user_id: Option<String>,
+    pub user_email: Option<String>,
+    pub user_name: Option<String>,
+    pub team_id: Option<String>,
+    pub team_name: Option<String>,
+    pub expires_at: Option<i64>,
+    pub revoked: bool,
+    /// Not revoked and not expired.
+    pub active: bool,
+    pub require_approval: bool,
+    pub auto_grant: bool,
+    pub created_at: i64,
+    /// People in the session with it now.
+    pub participants: u32,
+}
+
+impl SessionShareInfo {
+    pub(crate) fn from_json(v: &Value) -> Self {
+        let opt = |k: &str| v[k].as_str().map(str::to_string);
+        SessionShareInfo {
+            id: str_of(&v["id"]),
+            session_id: str_of(&v["session_id"]),
+            kind: if v["is_link"].as_bool().unwrap_or(false) {
+                ShareKind::Link
+            } else if v["team_id"].is_string() {
+                ShareKind::Team
+            } else {
+                ShareKind::User
+            },
+            control: v["permission"] == "control",
+            user_id: opt("user_id"),
+            user_email: opt("user_email"),
+            user_name: opt("user_name"),
+            team_id: opt("team_id"),
+            team_name: opt("team_name"),
+            expires_at: v["expires_at"].as_i64(),
+            revoked: v["revoked"].as_bool().unwrap_or(false),
+            active: v["active"]
+                .as_bool()
+                .unwrap_or(!v["revoked"].as_bool().unwrap_or(false)),
+            require_approval: v["require_approval"].as_bool().unwrap_or(false),
+            auto_grant: v["auto_grant"].as_bool().unwrap_or(false),
+            created_at: v["created_at"].as_i64().unwrap_or(0),
+            participants: v["participants"].as_u64().unwrap_or(0) as u32,
+        }
+    }
+}
+
+/// `GET /sessions/{id}/shares`.
+pub(crate) async fn list_shares(
+    api: &termoak_client::ApiClient,
+    session: termoak_core::Id,
+) -> Result<Vec<SessionShareInfo>> {
+    let v: Value = api
+        .get(&format!("/api/v1/sessions/{session}/shares"))
+        .await?;
+    Ok(v.as_array()
+        .map(|a| a.iter().map(SessionShareInfo::from_json).collect())
+        .unwrap_or_default())
+}
+
+/// `PATCH /sessions/{id}/shares/{share_id}`.
+pub(crate) async fn update_share(
+    api: &termoak_client::ApiClient,
+    session: termoak_core::Id,
+    share: termoak_core::Id,
+    changes: &ShareChanges,
+) -> Result<SessionShareInfo> {
+    let mut body = json!({"no_expiry": changes.no_expiry});
+    if let Some(c) = changes.control {
+        body["permission"] = json!(permission(c));
+    }
+    if let Some(m) = changes.expires_in_minutes {
+        body["expires_in_minutes"] = json!(m);
+    }
+    if let Some(r) = changes.require_approval {
+        body["require_approval"] = json!(r);
+    }
+    if let Some(a) = changes.auto_grant {
+        body["auto_grant"] = json!(a);
+    }
+    let v: Value = api
+        .patch(&format!("/api/v1/sessions/{session}/shares/{share}"), &body)
+        .await?;
+    Ok(SessionShareInfo::from_json(&v))
+}
+
 /// Invitation to create an account on the server.
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
 pub struct AccountInvite {
@@ -260,10 +390,27 @@ pub(crate) fn share_body(
     control: bool,
     expires_in_minutes: Option<i64>,
 ) -> Result<Value> {
+    share_body_with(
+        target,
+        &ShareOptions {
+            control,
+            expires_in_minutes,
+            require_approval: None,
+            auto_grant: false,
+        },
+    )
+}
+
+/// Body of `POST /sessions/{id}/shares` with every option.
+pub(crate) fn share_body_with(target: &ShareTarget, opts: &ShareOptions) -> Result<Value> {
     let mut body = json!({
-        "permission": permission(control),
-        "expires_in_minutes": expires_in_minutes,
+        "permission": permission(opts.control),
+        "expires_in_minutes": opts.expires_in_minutes,
+        "auto_grant": opts.auto_grant,
     });
+    if let Some(r) = opts.require_approval {
+        body["require_approval"] = json!(r);
+    }
     match target {
         ShareTarget::User { email } => body["email"] = json!(email.trim()),
         ShareTarget::Team { team_id } => body["team_id"] = json!(parse_id(team_id)?),
@@ -582,7 +729,8 @@ impl TermoakCore {
     }
 
     /// Shares a persistent server session with a user, a team or through a
-    /// link (`control` = can type).
+    /// link (`control` = can ask for the keyboard; links wait for your
+    /// approval).
     pub async fn share_server_session(
         &self,
         session_id: String,
@@ -601,8 +749,61 @@ impl TermoakCore {
         .await
     }
 
-    /// Revokes an invitation to a persistent session (kicks out whoever is
-    /// using it).
+    /// Shares a session with every option (waiting room, automatic
+    /// keyboard...).
+    pub async fn share_server_session_with(
+        &self,
+        session_id: String,
+        target: ShareTarget,
+        options: ShareOptions,
+    ) -> Result<ShareInvite> {
+        let id = parse_id(&session_id)?;
+        let body = share_body_with(&target, &options)?;
+        self.with_api(move |api| async move {
+            let v: Value = api
+                .post(&format!("/api/v1/sessions/{id}/shares"), &body)
+                .await?;
+            Ok(ShareInvite::from_json(&v))
+        })
+        .await
+    }
+
+    /// The invitations of one of your sessions (also revoked and expired ones).
+    pub async fn list_server_session_shares(
+        &self,
+        session_id: String,
+    ) -> Result<Vec<SessionShareInfo>> {
+        let id = parse_id(&session_id)?;
+        self.with_api(move |api| async move { list_shares(&api, id).await })
+            .await
+    }
+
+    /// Changes an invitation live: whoever uses it gets the new permission
+    /// at once (going down to view only takes the keyboard away).
+    pub async fn update_server_session_share(
+        &self,
+        session_id: String,
+        share_id: String,
+        changes: ShareChanges,
+    ) -> Result<SessionShareInfo> {
+        let (id, share) = (parse_id(&session_id)?, parse_id(&share_id)?);
+        self.with_api(move |api| async move { update_share(&api, id, share, &changes).await })
+            .await
+    }
+
+    /// Stops sharing a session: every invitation is revoked and everyone but
+    /// you leaves. Returns how many invitations were active.
+    pub async fn stop_sharing_server_session(&self, session_id: String) -> Result<u32> {
+        let id = parse_id(&session_id)?;
+        self.with_api(move |api| async move {
+            let v: Value = api.delete(&format!("/api/v1/sessions/{id}/shares")).await?;
+            Ok(v["revoked"].as_u64().unwrap_or(0) as u32)
+        })
+        .await
+    }
+
+    /// Revokes an invitation to a persistent session (whoever used it and
+    /// has no other one leaves).
     pub async fn revoke_server_session_share(
         &self,
         session_id: String,

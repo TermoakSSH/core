@@ -6,17 +6,19 @@ use std::sync::Arc;
 use futures::StreamExt;
 use serde_json::{Value, json};
 use termoak_client::ApiClient;
-use termoak_client::relay::RelayShare;
-use termoak_client::remote::{RemoteEvent, RemoteTerminal};
+use termoak_client::relay::{RelayEvent, RelayShare};
+use termoak_client::remote::{RemoteEvent, RemoteTerminal, owner_msg};
 use termoak_core::Id;
 use tokio::sync::{Notify, mpsc};
 use tokio_tungstenite::tungstenite::Message;
 
+use crate::account::{SessionShareInfo, ShareChanges};
 use crate::error::{Result, TermoakError};
 use crate::models::parse_id;
 use crate::runtime::{block_on, run, runtime, spawn_callback_thread};
 use crate::server::{
-    JoinInfo, ServerPrompt, ServerSession, ServerSessionState, SessionViewer, str_of,
+    JoinInfo, ServerPrompt, ServerSession, ServerSessionState, SessionAccess, SessionParticipant,
+    SessionViewer, str_of,
 };
 use crate::ssh::TerminalHandle;
 use crate::vault::TermoakCore;
@@ -40,8 +42,33 @@ pub enum ServerTerminalEvent {
     Resync,
     /// The session's state changed.
     Status { state: ServerSessionState },
-    /// Who is connected.
+    /// Who is connected (sockets; servers before 0.3 only).
     Presence { viewers: Vec<SessionViewer> },
+    /// Who is in the session and who drives (`None`: the owner).
+    Participants {
+        participants: Vec<SessionParticipant>,
+        driver: Option<String>,
+    },
+    /// The keyboard changed hands. `can_write`: your input and resizes reach
+    /// the terminal now (otherwise the library does not send them).
+    Control {
+        driver: Option<String>,
+        driver_name: Option<String>,
+        can_write: bool,
+    },
+    /// You are in the waiting room until the owner lets you in (`Hello`
+    /// arrives then).
+    Waiting {
+        participant_id: Option<String>,
+        title: String,
+        owner: String,
+    },
+    /// Owner: someone waits to be let in (`allow_join` / `deny_join`).
+    JoinRequest { participant: SessionParticipant },
+    /// Owner: someone asks for the keyboard (`grant_control` / `deny_control`).
+    ControlRequest { participant: SessionParticipant },
+    /// The owner said no to your request for the keyboard.
+    ControlDenied,
     /// Authentication question (owner only): answer it with
     /// `ServerTerminalHandle::answer_prompt`.
     Prompt { prompt: ServerPrompt },
@@ -51,8 +78,12 @@ pub enum ServerTerminalEvent {
     Resize { cols: u32, rows: u32 },
     /// New session title.
     Title { title: String },
-    /// Error sent by the server (e.g. access revoked).
+    /// Error that does not end the connection (an action that was not allowed).
     Error { message: String },
+    /// The server sent you away for good. `code`: `revoked`, `kicked`,
+    /// `expired`, `session_ended`, `join_denied` or `forbidden`. `Closed`
+    /// follows; it does not reconnect.
+    Ended { code: String, message: String },
     /// Other control message (JSON), for future protocol versions.
     Other { json: String },
     /// Connection closed. Nothing else arrives.
@@ -104,6 +135,35 @@ fn convert_event(ev: RemoteEvent) -> ServerTerminalEvent {
             rows: rows.into(),
         },
         RemoteEvent::Error(message) => ServerTerminalEvent::Error { message },
+        RemoteEvent::Ended { code, message } => ServerTerminalEvent::Ended { code, message },
+        RemoteEvent::Participants {
+            participants,
+            driver,
+        } => ServerTerminalEvent::Participants {
+            participants: participants.iter().map(Into::into).collect(),
+            driver: driver.map(|d| d.to_string()),
+        },
+        RemoteEvent::Control {
+            driver,
+            driver_name,
+            can_write,
+        } => ServerTerminalEvent::Control {
+            driver: driver.map(|d| d.to_string()),
+            driver_name,
+            can_write,
+        },
+        RemoteEvent::Waiting(v) => ServerTerminalEvent::Waiting {
+            participant_id: v["participant"].as_str().map(str::to_string),
+            title: str_of(&v["session"]["title"]),
+            owner: str_of(&v["session"]["owner"]),
+        },
+        RemoteEvent::JoinRequest(p) => ServerTerminalEvent::JoinRequest {
+            participant: (&p).into(),
+        },
+        RemoteEvent::ControlRequest(p) => ServerTerminalEvent::ControlRequest {
+            participant: (&p).into(),
+        },
+        RemoteEvent::ControlDenied => ServerTerminalEvent::ControlDenied,
         RemoteEvent::Other(v) => match v["type"].as_str().unwrap_or("") {
             "prompt_done" => ServerTerminalEvent::PromptDone {
                 prompt_id: str_of(&v["prompt_id"]),
@@ -187,7 +247,7 @@ impl ServerTerminalHandle {
         self.session_id.clone()
     }
 
-    /// Sends typed input (ignored if you only have read permission).
+    /// Sends typed input (dropped while you cannot write: see `can_write`).
     pub fn write(&self, data: Vec<u8>) {
         block_on(self.remote.input(data));
     }
@@ -196,7 +256,9 @@ impl ServerTerminalHandle {
         block_on(self.remote.input(text.into_bytes()));
     }
 
-    /// New size in columns and rows.
+    /// New size in columns and rows. Remembered, and sent only while you
+    /// can write (the owner or the driver set the size; the rest follow
+    /// `Resize`).
     pub fn resize(&self, cols: u32, rows: u32) {
         let c = u16::try_from(cols).unwrap_or(u16::MAX);
         let r = u16::try_from(rows).unwrap_or(u16::MAX);
@@ -225,6 +287,94 @@ impl ServerTerminalHandle {
     pub fn close_session(&self) {
         block_on(self.remote.close_session());
     }
+
+    /// Your input and resizes reach the terminal now (you are the owner or
+    /// have the keyboard). `false` until `Hello`.
+    pub fn can_write(&self) -> bool {
+        self.remote.can_write()
+    }
+
+    /// You have the keyboard (the owner has it when nobody else does).
+    pub fn is_driver(&self) -> bool {
+        self.remote.is_driver()
+    }
+
+    /// You are the session's owner.
+    pub fn is_owner(&self) -> bool {
+        self.remote.is_owner()
+    }
+
+    /// You are in the waiting room.
+    pub fn is_waiting(&self) -> bool {
+        self.remote.is_waiting()
+    }
+
+    /// Your participant id (once in).
+    pub fn participant_id(&self) -> Option<String> {
+        self.remote.participant_id().map(|p| p.to_string())
+    }
+
+    /// Asks the owner for the keyboard (invitations with control).
+    pub fn request_control(&self) {
+        block_on(self.remote.request_control());
+    }
+
+    /// Gives the keyboard back (or withdraws the request).
+    pub fn release_control(&self) {
+        block_on(self.remote.release_control());
+    }
+
+    /// Link guests: changes your display name (at most 40 characters).
+    pub fn set_name(&self, name: String) {
+        block_on(self.remote.set_name(&name));
+    }
+
+    /// Owner: hands the keyboard to a participant.
+    pub fn grant_control(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        block_on(self.remote.grant_control(id));
+        Ok(())
+    }
+
+    /// Owner: says no to a request for the keyboard.
+    pub fn deny_control(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        block_on(self.remote.deny_control(id));
+        Ok(())
+    }
+
+    /// Owner: takes the keyboard back.
+    pub fn take_control(&self) {
+        block_on(self.remote.take_control());
+    }
+
+    /// Owner: lets someone in from the waiting room.
+    pub fn allow_join(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        block_on(self.remote.allow_join(id));
+        Ok(())
+    }
+
+    /// Owner: does not let someone in.
+    pub fn deny_join(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        block_on(self.remote.deny_join(id));
+        Ok(())
+    }
+
+    /// Owner: sends a participant away. `revoke_share`: also revokes the
+    /// invitation they used (for a team or a link, everyone who joined with
+    /// it and has no other one leaves too).
+    pub fn kick(&self, participant_id: String, revoke_share: bool) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        block_on(self.remote.kick(id, revoke_share));
+        Ok(())
+    }
+
+    /// Owner: stops sharing (every invitation is revoked; everyone else leaves).
+    pub fn stop_sharing(&self) {
+        block_on(self.remote.stop_sharing());
+    }
 }
 
 #[uniffi::export]
@@ -246,47 +396,132 @@ impl TermoakCore {
     }
 }
 
-/// Joins a shared session with an invitation link, without an account.
-/// `server_url` and `token` come from the link (`termoak://join?server=...&token=...`).
+/// Details of a link invitation (no account needed), to show before joining.
+#[derive(Debug, Clone, PartialEq, uniffi::Record)]
+pub struct LinkInvite {
+    pub session_id: String,
+    pub title: String,
+    /// Name of who shares it.
+    pub owner: String,
+    /// The most you can get: `Control` (can ask for the keyboard) or `View`.
+    pub access: SessionAccess,
+    /// You will wait until the owner lets you in.
+    pub require_approval: bool,
+    /// People inside now.
+    pub participants: u32,
+    pub expires_at: Option<i64>,
+}
+
+fn check_token(token: &str) -> Result<String> {
+    let token = token.trim().to_string();
+    if token.is_empty()
+        || !token
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "-_".contains(c))
+    {
+        return Err(TermoakError::Invalid(
+            "the invitation link is not valid".into(),
+        ));
+    }
+    Ok(token)
+}
+
+async fn fetch_join_info(api: &ApiClient, token: &str) -> Result<JoinInfo> {
+    let resp = reqwest::Client::new()
+        .get(format!("{}/api/v1/join/{token}", api.base_url()))
+        .send()
+        .await?;
+    if !resp.status().is_success() {
+        return Err(TermoakError::NotFound(
+            "the link is not valid, has expired or the session has ended".into(),
+        ));
+    }
+    Ok(resp.json().await?)
+}
+
+fn session_of(info: &JoinInfo) -> String {
+    info.ws_path
+        .split('/')
+        .nth(4)
+        .unwrap_or_default()
+        .to_string()
+}
+
+/// What a link invitation offers (`server_url` and `token` come from the
+/// link `termoak://join?server=...&token=...`).
+#[uniffi::export]
+pub async fn link_invite_info(server_url: String, token: String) -> Result<LinkInvite> {
+    crate::vault::install_crypto_provider();
+    run(async move {
+        let api = ApiClient::new(&server_url)?;
+        let token = check_token(&token)?;
+        let info = fetch_join_info(&api, &token).await?;
+        Ok(LinkInvite {
+            session_id: session_of(&info),
+            title: str_of(&info.session["title"]),
+            owner: info.owner.clone(),
+            access: SessionAccess::parse(&info.permission),
+            require_approval: info.require_approval,
+            participants: info.session["participants"].as_u64().unwrap_or(0) as u32,
+            expires_at: info.expires_at,
+        })
+    })
+    .await
+}
+
+/// Joins a shared session with an invitation link, without an account
+/// (as "Guest N"). `server_url` and `token` come from the link
+/// (`termoak://join?server=...&token=...`).
 #[uniffi::export]
 pub async fn join_shared_session(
     server_url: String,
     token: String,
     listener: Arc<dyn ServerTerminalListener>,
 ) -> Result<Arc<ServerTerminalHandle>> {
+    join_shared_session_as(server_url, token, None, listener).await
+}
+
+/// Joins with a link, without an account, under a display name (at most 40
+/// characters). If the invitation asks for approval, `Waiting` arrives
+/// first and `Hello` once the owner lets you in.
+#[uniffi::export]
+pub async fn join_shared_session_as(
+    server_url: String,
+    token: String,
+    name: Option<String>,
+    listener: Arc<dyn ServerTerminalListener>,
+) -> Result<Arc<ServerTerminalHandle>> {
     crate::vault::install_crypto_provider();
     run(async move {
         let api = ApiClient::new(&server_url)?;
-        let token = token.trim().to_string();
-        if token.is_empty()
-            || !token
-                .chars()
-                .all(|c| c.is_ascii_alphanumeric() || "-_".contains(c))
-        {
-            return Err(TermoakError::Invalid(
-                "the invitation link is not valid".into(),
-            ));
-        }
-        let resp = reqwest::Client::new()
-            .get(format!("{}/api/v1/join/{token}", api.base_url()))
-            .send()
-            .await?;
-        if !resp.status().is_success() {
-            return Err(TermoakError::NotFound(
-                "the link is not valid, has expired or the session has ended".into(),
-            ));
-        }
-        let info: JoinInfo = resp.json().await?;
-        let session_id = info
-            .ws_path
-            .split('/')
-            .nth(4)
-            .unwrap_or_default()
-            .to_string();
-        let (remote, events) = RemoteTerminal::attach_path(&api, &info.ws_path).await?;
-        Ok(start_remote(session_id, remote, events, listener))
+        let token = check_token(&token)?;
+        let info = fetch_join_info(&api, &token).await?;
+        let (remote, events) =
+            RemoteTerminal::attach_as(&api, &info.ws_path, name.as_deref()).await?;
+        Ok(start_remote(session_of(&info), remote, events, listener))
     })
     .await
+}
+
+#[uniffi::export]
+impl TermoakCore {
+    /// Joins with a link of this server while signed in (you appear with
+    /// your account's name; a direct invitation of yours is used if it
+    /// gives more).
+    pub async fn join_link(
+        &self,
+        token: String,
+        listener: Arc<dyn ServerTerminalListener>,
+    ) -> Result<Arc<ServerTerminalHandle>> {
+        let api = self.api().await?;
+        run(async move {
+            let token = check_token(&token)?;
+            let info = fetch_join_info(&api, &token).await?;
+            let (remote, events) = RemoteTerminal::attach_path(&api, &info.ws_path).await?;
+            Ok(start_remote(session_of(&info), remote, events, listener))
+        })
+        .await
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -303,7 +538,9 @@ pub trait ServerEventListener: Send + Sync {
     /// Event as JSON. Types (`type`): `hello` (user and pending approvals),
     /// `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
     /// `session_opened`, `session_closed`, `session_shared`,
-    /// `prompt_pending`) and `lagged` (events were lost: refresh).
+    /// `prompt_pending`, `join_request`, `control_request`,
+    /// `control_granted`, `control_revoked`) and `lagged` (events were
+    /// lost: refresh).
     fn on_event(&self, event_json: String);
 
     /// The WebSocket closed (`reason` if it was due to an error). Nothing else
@@ -403,9 +640,77 @@ impl ShareInvite {
     }
 }
 
+/// What the device that shares a terminal hears from the server.
+#[derive(Debug, Clone, PartialEq, uniffi::Enum)]
+pub enum SharedTerminalEvent {
+    /// Who is in the session and who drives (`None`: you).
+    Participants {
+        participants: Vec<SessionParticipant>,
+        driver: Option<String>,
+    },
+    /// The keyboard changed hands.
+    Control {
+        driver: Option<String>,
+        driver_name: Option<String>,
+    },
+    /// The driver would like this size. The terminal is here: apply it or
+    /// ignore it (guests follow the size you report with `resize`).
+    ResizeRequest { cols: u32, rows: u32 },
+    /// Someone waits to be let in (`allow_join` / `deny_join`).
+    JoinRequest { participant: SessionParticipant },
+    /// Someone asks for the keyboard (`grant_control` / `deny_control`).
+    ControlRequest { participant: SessionParticipant },
+    /// The connection to the server dropped; it is being retried.
+    Reconnecting,
+    /// Back after `Reconnecting`.
+    Reconnected,
+    /// Sharing ended (`code` if the server said why). Nothing else arrives.
+    Ended { code: Option<String> },
+}
+
+/// Implemented by the app to hear about a shared terminal.
+///
+/// **Threads**: its own background thread, in order; it must return quickly.
+#[uniffi::export(foreign)]
+pub trait SharedTerminalListener: Send + Sync {
+    fn on_event(&self, event: SharedTerminalEvent);
+}
+
+fn convert_relay(ev: RelayEvent) -> SharedTerminalEvent {
+    match ev {
+        RelayEvent::Participants {
+            participants,
+            driver,
+        } => SharedTerminalEvent::Participants {
+            participants: participants.iter().map(Into::into).collect(),
+            driver: driver.map(|d| d.to_string()),
+        },
+        RelayEvent::Control {
+            driver,
+            driver_name,
+        } => SharedTerminalEvent::Control {
+            driver: driver.map(|d| d.to_string()),
+            driver_name,
+        },
+        RelayEvent::ResizeRequest { cols, rows } => SharedTerminalEvent::ResizeRequest {
+            cols: cols.into(),
+            rows: rows.into(),
+        },
+        RelayEvent::JoinRequest(p) => SharedTerminalEvent::JoinRequest {
+            participant: (&p).into(),
+        },
+        RelayEvent::ControlRequest(p) => SharedTerminalEvent::ControlRequest {
+            participant: (&p).into(),
+        },
+        RelayEvent::Reconnecting => SharedTerminalEvent::Reconnecting,
+        RelayEvent::Reconnected => SharedTerminalEvent::Reconnected,
+        RelayEvent::Ended { code } => SharedTerminalEvent::Ended { code },
+    }
+}
+
 /// Local terminal shared through the server. The terminal stays on this
-/// device; the server relays the output to the guests and what they type
-/// (if they have control). Sharing stops with `stop` or when dropped.
+/// device; the server relays the output to the guests and what the driver
+/// types. Sharing stops with `stop` or when dropped.
 #[derive(uniffi::Object)]
 pub struct SharedTerminal {
     session_id: Id,
@@ -425,6 +730,17 @@ impl Drop for SharedTerminal {
 }
 
 impl SharedTerminal {
+    async fn owner(&self, msg: Value) -> Result<()> {
+        let share = self.share.clone();
+        run(async move {
+            if let Some(s) = share.lock().await.as_ref() {
+                s.send_raw(msg).await;
+            }
+            Ok(())
+        })
+        .await
+    }
+
     async fn create_invite(&self, body: Value) -> Result<ShareInvite> {
         let api = self.api.clone();
         let path = format!("/api/v1/sessions/{}/shares", self.session_id);
@@ -447,7 +763,7 @@ impl SharedTerminal {
         self.session_id.to_string()
     }
 
-    /// Invites a server user by email (`control` = can type).
+    /// Invites a server user by email (`control` = can ask for the keyboard).
     pub async fn invite_user(&self, email: String, control: bool) -> Result<ShareInvite> {
         self.create_invite(json!({"email": email, "permission": permission(control)}))
             .await
@@ -460,17 +776,28 @@ impl SharedTerminal {
             .await
     }
 
-    /// Creates a link for guests without an account (no expiry if not given).
+    /// Creates a link for guests without an account (no expiry if not
+    /// given). They wait until you let them in (`JoinRequest`).
     pub async fn invite_link(
         &self,
         control: bool,
         expires_in_minutes: Option<i64>,
     ) -> Result<ShareInvite> {
-        self.create_invite(json!({"link": true, "permission": permission(control), "expires_in_minutes": expires_in_minutes}))
+        self.create_invite(json!({"link": true, "permission": permission(control), "expires_in_minutes": expires_in_minutes, "require_approval": true}))
             .await
     }
 
-    /// Revokes an invitation (kicks out whoever is using it).
+    /// Invites with every option (waiting room, automatic keyboard...).
+    pub async fn invite(
+        &self,
+        target: crate::account::ShareTarget,
+        options: crate::account::ShareOptions,
+    ) -> Result<ShareInvite> {
+        self.create_invite(crate::account::share_body_with(&target, &options)?)
+            .await
+    }
+
+    /// Revokes an invitation (whoever used it and has no other one leaves).
     pub async fn revoke_invite(&self, share_id: String) -> Result<()> {
         let share = parse_id(&share_id)?;
         let api = self.api.clone();
@@ -480,6 +807,98 @@ impl SharedTerminal {
             Ok(())
         })
         .await
+    }
+
+    /// Receives what happens in the shared session (participants, requests,
+    /// reconnections). Call it once.
+    pub async fn set_listener(&self, listener: Arc<dyn SharedTerminalListener>) -> Result<()> {
+        let share = self.share.clone();
+        let rx = run(async move { Ok(share.lock().await.as_ref().map(|s| s.subscribe())) }).await?;
+        let Some(mut rx) = rx else {
+            return Err(TermoakError::Invalid(
+                "the terminal is no longer shared".into(),
+            ));
+        };
+        spawn_callback_thread("termoak-shared-term", move |rt| {
+            loop {
+                match rt.block_on(rx.recv()) {
+                    Ok(ev) => {
+                        let end = matches!(ev, RelayEvent::Ended { .. });
+                        listener.on_event(convert_relay(ev));
+                        if end {
+                            return;
+                        }
+                    }
+                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
+                    Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                        listener.on_event(SharedTerminalEvent::Ended { code: None });
+                        return;
+                    }
+                }
+            }
+        });
+        Ok(())
+    }
+
+    /// Hands the keyboard to a participant.
+    pub async fn grant_control(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        self.owner(owner_msg::grant_control(id)).await
+    }
+
+    /// Says no to a request for the keyboard.
+    pub async fn deny_control(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        self.owner(owner_msg::deny_control(id)).await
+    }
+
+    /// Takes the keyboard back.
+    pub async fn take_control(&self) -> Result<()> {
+        self.owner(owner_msg::take_control()).await
+    }
+
+    /// Lets someone in from the waiting room.
+    pub async fn allow_join(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        self.owner(owner_msg::allow_join(id)).await
+    }
+
+    /// Does not let someone in.
+    pub async fn deny_join(&self, participant_id: String) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        self.owner(owner_msg::deny_join(id)).await
+    }
+
+    /// Sends a participant away (`revoke_share`: and revokes their invitation).
+    pub async fn kick(&self, participant_id: String, revoke_share: bool) -> Result<()> {
+        let id = parse_id(&participant_id)?;
+        self.owner(owner_msg::kick(id, revoke_share)).await
+    }
+
+    /// Revokes every invitation (everyone leaves) but keeps sharing the
+    /// terminal, so you can invite again.
+    pub async fn revoke_all_invites(&self) -> Result<()> {
+        self.owner(owner_msg::stop_sharing()).await
+    }
+
+    /// The invitations of this shared terminal.
+    pub async fn list_invites(&self) -> Result<Vec<SessionShareInfo>> {
+        let api = self.api.clone();
+        let id = self.session_id;
+        run(async move { crate::account::list_shares(&api, id).await }).await
+    }
+
+    /// Changes an invitation live (permission, expiry, approval, automatic
+    /// keyboard).
+    pub async fn update_invite(
+        &self,
+        share_id: String,
+        changes: ShareChanges,
+    ) -> Result<SessionShareInfo> {
+        let share = parse_id(&share_id)?;
+        let api = self.api.clone();
+        let id = self.session_id;
+        run(async move { crate::account::update_share(&api, id, share, &changes).await }).await
     }
 
     /// Tells the guests the new size of the local terminal.
@@ -531,5 +950,73 @@ impl TermoakCore {
             }))
         })
         .await
+    }
+}
+
+#[cfg(test)]
+mod share_tests {
+    use super::*;
+    use crate::account::ShareKind;
+    use crate::server::ParticipantKind;
+
+    #[test]
+    fn participants_control_and_ends_reach_the_apps() {
+        let pid = termoak_core::new_id();
+        let p = termoak_client::remote::Participant::list_from_json(&json!([{
+            "id": pid, "name": "Zoe", "kind": "guest", "access": "control",
+            "is_driver": true, "since": 5, "devices": 2, "you": true
+        }]));
+        match convert_event(RemoteEvent::Participants {
+            participants: p,
+            driver: Some(pid),
+        }) {
+            ServerTerminalEvent::Participants {
+                participants,
+                driver,
+            } => {
+                assert_eq!(driver, Some(pid.to_string()));
+                assert_eq!(participants[0].kind, ParticipantKind::Guest);
+                assert_eq!(participants[0].access, SessionAccess::Control);
+                assert_eq!(participants[0].devices, 2);
+                assert!(participants[0].you && participants[0].is_driver);
+            }
+            other => panic!("{other:?}"),
+        }
+        assert_eq!(
+            convert_event(RemoteEvent::Ended {
+                code: "kicked".into(),
+                message: "bye".into()
+            }),
+            ServerTerminalEvent::Ended {
+                code: "kicked".into(),
+                message: "bye".into()
+            }
+        );
+        assert_eq!(
+            convert_event(RemoteEvent::Waiting(json!({
+                "participant": pid, "session": {"title": "web", "owner": "Ana"}
+            }))),
+            ServerTerminalEvent::Waiting {
+                participant_id: Some(pid.to_string()),
+                title: "web".into(),
+                owner: "Ana".into()
+            }
+        );
+    }
+
+    #[test]
+    fn share_info_from_the_server() {
+        let s = SessionShareInfo::from_json(&json!({
+            "id": "a", "session_id": "b", "is_link": true, "permission": "control",
+            "expires_at": 10, "revoked": false, "active": true, "require_approval": true,
+            "auto_grant": false, "created_at": 1, "participants": 3
+        }));
+        assert_eq!(s.kind, ShareKind::Link);
+        assert!(s.control && s.require_approval && s.active);
+        assert_eq!(s.participants, 3);
+        let t =
+            SessionShareInfo::from_json(&json!({"id": "c", "team_id": "t", "permission": "view"}));
+        assert_eq!(t.kind, ShareKind::Team);
+        assert!(!t.control);
     }
 }

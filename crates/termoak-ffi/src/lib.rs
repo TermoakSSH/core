@@ -44,8 +44,9 @@ pub use error::{Result, TermoakError};
 pub use logging::{LogLevel, LogListener, init_logging};
 pub use models::*;
 pub use remote::{
-    EventSubscription, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,
-    ServerTerminalListener, ShareInvite, SharedTerminal, join_shared_session,
+    EventSubscription, LinkInvite, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,
+    ServerTerminalListener, ShareInvite, SharedTerminal, SharedTerminalEvent,
+    SharedTerminalListener, join_shared_session, join_shared_session_as, link_invite_info,
 };
 pub use screen::{
     KeyModifiers, ScreenCursor, ScreenCursorShape, ScreenEvent, ScreenLine, ScreenRun,

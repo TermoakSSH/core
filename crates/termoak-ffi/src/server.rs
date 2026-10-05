@@ -53,7 +53,7 @@ pub enum SessionAccess {
 }
 
 impl SessionAccess {
-    fn parse(s: &str) -> Self {
+    pub(crate) fn parse(s: &str) -> Self {
         match s {
             "owner" => SessionAccess::Owner,
             "control" => SessionAccess::Control,
@@ -126,6 +126,76 @@ impl SessionViewer {
     }
 }
 
+/// Kind of participant in a shared session.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum ParticipantKind {
+    /// The session's owner.
+    Owner,
+    /// A user of the server (invited directly, through a team or by link).
+    User,
+    /// Someone without an account who joined with a link.
+    Guest,
+}
+
+/// A person in a shared session (all their devices count as one).
+#[derive(Debug, Clone, PartialEq, uniffi::Record)]
+pub struct SessionParticipant {
+    /// Participant id (for `grant_control`, `kick`...).
+    pub id: String,
+    pub name: String,
+    pub kind: ParticipantKind,
+    /// `Owner`, `Control` (can ask for the keyboard) or `View`.
+    pub access: SessionAccess,
+    /// Has the keyboard (the owner, when nobody else has it).
+    pub is_driver: bool,
+    /// Since when (ms).
+    pub since: i64,
+    /// Devices attached (0 while reconnecting).
+    pub devices: u32,
+    /// Asked for the keyboard and waits for the owner.
+    pub requested_control: bool,
+    /// In the waiting room (only in the owner's list).
+    pub waiting: bool,
+    /// It is you.
+    pub you: bool,
+    /// Only in the owner's list.
+    pub user_id: Option<String>,
+    /// Share they joined with (only in the owner's list).
+    pub share_id: Option<String>,
+}
+
+impl From<&termoak_client::remote::Participant> for SessionParticipant {
+    fn from(p: &termoak_client::remote::Participant) -> Self {
+        SessionParticipant {
+            id: p.id.to_string(),
+            name: p.name.clone(),
+            kind: match p.kind.as_str() {
+                "owner" => ParticipantKind::Owner,
+                "user" => ParticipantKind::User,
+                _ => ParticipantKind::Guest,
+            },
+            access: SessionAccess::parse(&p.access),
+            is_driver: p.is_driver,
+            since: p.since,
+            devices: p.devices,
+            requested_control: p.requested_control,
+            waiting: p.waiting,
+            you: p.you,
+            user_id: p.user_id.map(|u| u.to_string()),
+            share_id: p.share_id.map(|s| s.to_string()),
+        }
+    }
+}
+
+impl SessionParticipant {
+    pub(crate) fn list_from_json(v: &Value) -> Vec<Self> {
+        termoak_client::remote::Participant::list_from_json(v)
+            .iter()
+            .map(Into::into)
+            .collect()
+    }
+}
+
 /// Live terminal session on the server (yours or shared with you).
 #[derive(Debug, Clone, PartialEq, uniffi::Record)]
 pub struct ServerSession {
@@ -143,6 +213,10 @@ pub struct ServerSession {
     /// Your permission on the session.
     pub access: SessionAccess,
     pub viewers: Vec<SessionViewer>,
+    /// People in the session (servers 0.3+).
+    pub participants: Vec<SessionParticipant>,
+    /// Participant with the keyboard (`None`: the owner).
+    pub driver: Option<String>,
 }
 
 impl ServerSession {
@@ -160,6 +234,8 @@ impl ServerSession {
             recording: v["recording"].as_bool().unwrap_or(false),
             access: SessionAccess::parse(v["access"].as_str().unwrap_or("")),
             viewers: SessionViewer::list_from_json(&v["viewers"]),
+            participants: SessionParticipant::list_from_json(&v["participants"]),
+            driver: v["driver"].as_str().map(str::to_string),
         }
     }
 }
@@ -1075,4 +1151,14 @@ impl TermoakCore {
 #[derive(Debug, Deserialize)]
 pub(crate) struct JoinInfo {
     pub ws_path: String,
+    #[serde(default)]
+    pub session: Value,
+    #[serde(default)]
+    pub owner: String,
+    #[serde(default)]
+    pub permission: String,
+    #[serde(default)]
+    pub require_approval: bool,
+    #[serde(default)]
+    pub expires_at: Option<i64>,
 }

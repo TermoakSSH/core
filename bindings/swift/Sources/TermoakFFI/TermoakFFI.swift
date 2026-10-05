@@ -1731,7 +1731,9 @@ public protocol ServerEventListener: AnyObject, Sendable {
      * Event as JSON. Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
-     * `prompt_pending`) and `lagged` (events were lost: refresh).
+     * `prompt_pending`, `join_request`, `control_request`,
+     * `control_granted`, `control_revoked`) and `lagged` (events were
+     * lost: refresh).
      */
     func onEvent(eventJson: String) 
     
@@ -1806,7 +1808,9 @@ open class ServerEventListenerImpl: ServerEventListener, @unchecked Sendable {
      * Event as JSON. Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
-     * `prompt_pending`) and `lagged` (events were lost: refresh).
+     * `prompt_pending`, `join_request`, `control_request`,
+     * `control_granted`, `control_revoked`) and `lagged` (events were
+     * lost: refresh).
      */
 open func onEvent(eventJson: String)  {try! rustCall() {
         uniffiCallStatus in
@@ -1992,10 +1996,21 @@ public func FfiConverterTypeServerEventListener_lower(_ value: ServerEventListen
 public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     
     /**
+     * Owner: lets someone in from the waiting room.
+     */
+    func allowJoin(participantId: String) throws 
+    
+    /**
      * Answers a `Prompt`: `accept` for fingerprints (`hostkey`), `answers`
      * for the rest (one per field). `nil` in both cancels.
      */
     func answerPrompt(promptId: String, accept: Bool?, answers: [String]?) throws 
+    
+    /**
+     * Your input and resizes reach the terminal now (you are the owner or
+     * have the keyboard). `false` until `Hello`.
+     */
+    func canWrite()  -> Bool
     
     /**
      * Closes the session on the server (owner only).
@@ -2003,19 +2018,88 @@ public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     func closeSession() 
     
     /**
+     * Owner: says no to a request for the keyboard.
+     */
+    func denyControl(participantId: String) throws 
+    
+    /**
+     * Owner: does not let someone in.
+     */
+    func denyJoin(participantId: String) throws 
+    
+    /**
      * Detaches (the session stays alive on the server).
      */
     func detach() 
     
     /**
-     * New size in columns and rows.
+     * Owner: hands the keyboard to a participant.
+     */
+    func grantControl(participantId: String) throws 
+    
+    /**
+     * You have the keyboard (the owner has it when nobody else does).
+     */
+    func isDriver()  -> Bool
+    
+    /**
+     * You are the session's owner.
+     */
+    func isOwner()  -> Bool
+    
+    /**
+     * You are in the waiting room.
+     */
+    func isWaiting()  -> Bool
+    
+    /**
+     * Owner: sends a participant away. `revoke_share`: also revokes the
+     * invitation they used (for a team or a link, everyone who joined with
+     * it and has no other one leaves too).
+     */
+    func kick(participantId: String, revokeShare: Bool) throws 
+    
+    /**
+     * Your participant id (once in).
+     */
+    func participantId()  -> String?
+    
+    /**
+     * Gives the keyboard back (or withdraws the request).
+     */
+    func releaseControl() 
+    
+    /**
+     * Asks the owner for the keyboard (invitations with control).
+     */
+    func requestControl() 
+    
+    /**
+     * New size in columns and rows. Remembered, and sent only while you
+     * can write (the owner or the driver set the size; the rest follow
+     * `Resize`).
      */
     func resize(cols: UInt32, rows: UInt32) 
     
     func sessionId()  -> String
     
     /**
-     * Sends typed input (ignored if you only have read permission).
+     * Link guests: changes your display name (at most 40 characters).
+     */
+    func setName(name: String) 
+    
+    /**
+     * Owner: stops sharing (every invitation is revoked; everyone else leaves).
+     */
+    func stopSharing() 
+    
+    /**
+     * Owner: takes the keyboard back.
+     */
+    func takeControl() 
+    
+    /**
+     * Sends typed input (dropped while you cannot write: see `can_write`).
      */
     func write(data: Data) 
     
@@ -2080,6 +2164,18 @@ open class ServerTerminalHandle: ServerTerminalHandleProtocol, @unchecked Sendab
 
     
     /**
+     * Owner: lets someone in from the waiting room.
+     */
+open func allowJoin(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_allow_join(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(participantId),uniffiCallStatus
+    )
+}
+}
+    
+    /**
      * Answers a `Prompt`: `accept` for fingerprints (`hostkey`), `answers`
      * for the rest (one per field). `nil` in both cancels.
      */
@@ -2095,12 +2191,49 @@ open func answerPrompt(promptId: String, accept: Bool?, answers: [String]?)throw
 }
     
     /**
+     * Your input and resizes reach the terminal now (you are the owner or
+     * have the keyboard). `false` until `Hello`.
+     */
+open func canWrite() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_can_write(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Closes the session on the server (owner only).
      */
 open func closeSession()  {try! rustCall() {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_serverterminalhandle_close_session(
             self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Owner: says no to a request for the keyboard.
+     */
+open func denyControl(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_control(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(participantId),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Owner: does not let someone in.
+     */
+open func denyJoin(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_deny_join(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(participantId),uniffiCallStatus
     )
 }
 }
@@ -2117,7 +2250,106 @@ open func detach()  {try! rustCall() {
 }
     
     /**
-     * New size in columns and rows.
+     * Owner: hands the keyboard to a participant.
+     */
+open func grantControl(participantId: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(participantId),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * You have the keyboard (the owner has it when nobody else does).
+     */
+open func isDriver() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_is_driver(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * You are the session's owner.
+     */
+open func isOwner() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_is_owner(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * You are in the waiting room.
+     */
+open func isWaiting() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_is_waiting(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Owner: sends a participant away. `revoke_share`: also revokes the
+     * invitation they used (for a team or a link, everyone who joined with
+     * it and has no other one leaves too).
+     */
+open func kick(participantId: String, revokeShare: Bool)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_kick(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(participantId),
+        FfiConverterBool.lower(revokeShare),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Your participant id (once in).
+     */
+open func participantId() -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_participant_id(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Gives the keyboard back (or withdraws the request).
+     */
+open func releaseControl()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_release_control(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Asks the owner for the keyboard (invitations with control).
+     */
+open func requestControl()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_request_control(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * New size in columns and rows. Remembered, and sent only while you
+     * can write (the owner or the driver set the size; the rest follow
+     * `Resize`).
      */
 open func resize(cols: UInt32, rows: UInt32)  {try! rustCall() {
         uniffiCallStatus in
@@ -2139,7 +2371,41 @@ open func sessionId() -> String  {
 }
     
     /**
-     * Sends typed input (ignored if you only have read permission).
+     * Link guests: changes your display name (at most 40 characters).
+     */
+open func setName(name: String)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_set_name(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(name),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Owner: stops sharing (every invitation is revoked; everyone else leaves).
+     */
+open func stopSharing()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_stop_sharing(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Owner: takes the keyboard back.
+     */
+open func takeControl()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_serverterminalhandle_take_control(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Sends typed input (dropped while you cannot write: see `can_write`).
      */
 open func write(data: Data)  {try! rustCall() {
         uniffiCallStatus in
@@ -2421,13 +2687,39 @@ public func FfiConverterTypeServerTerminalListener_lower(_ value: ServerTerminal
 
 /**
  * Local terminal shared through the server. The terminal stays on this
- * device; the server relays the output to the guests and what they type
- * (if they have control). Sharing stops with `stop` or when dropped.
+ * device; the server relays the output to the guests and what the driver
+ * types. Sharing stops with `stop` or when dropped.
  */
 public protocol SharedTerminalProtocol: AnyObject, Sendable {
     
     /**
-     * Creates a link for guests without an account (no expiry if not given).
+     * Lets someone in from the waiting room.
+     */
+    func allowJoin(participantId: String) async throws 
+    
+    /**
+     * Says no to a request for the keyboard.
+     */
+    func denyControl(participantId: String) async throws 
+    
+    /**
+     * Does not let someone in.
+     */
+    func denyJoin(participantId: String) async throws 
+    
+    /**
+     * Hands the keyboard to a participant.
+     */
+    func grantControl(participantId: String) async throws 
+    
+    /**
+     * Invites with every option (waiting room, automatic keyboard...).
+     */
+    func invite(target: ShareTarget, options: ShareOptions) async throws  -> ShareInvite
+    
+    /**
+     * Creates a link for guests without an account (no expiry if not
+     * given). They wait until you let them in (`JoinRequest`).
      */
     func inviteLink(control: Bool, expiresInMinutes: Int64?) async throws  -> ShareInvite
     
@@ -2437,9 +2729,19 @@ public protocol SharedTerminalProtocol: AnyObject, Sendable {
     func inviteTeam(teamId: String, control: Bool) async throws  -> ShareInvite
     
     /**
-     * Invites a server user by email (`control` = can type).
+     * Invites a server user by email (`control` = can ask for the keyboard).
      */
     func inviteUser(email: String, control: Bool) async throws  -> ShareInvite
+    
+    /**
+     * Sends a participant away (`revoke_share`: and revokes their invitation).
+     */
+    func kick(participantId: String, revokeShare: Bool) async throws 
+    
+    /**
+     * The invitations of this shared terminal.
+     */
+    func listInvites() async throws  -> [SessionShareInfo]
     
     /**
      * Tells the guests the new size of the local terminal.
@@ -2447,7 +2749,13 @@ public protocol SharedTerminalProtocol: AnyObject, Sendable {
     func resize(cols: UInt32, rows: UInt32) async throws 
     
     /**
-     * Revokes an invitation (kicks out whoever is using it).
+     * Revokes every invitation (everyone leaves) but keeps sharing the
+     * terminal, so you can invite again.
+     */
+    func revokeAllInvites() async throws 
+    
+    /**
+     * Revokes an invitation (whoever used it and has no other one leaves).
      */
     func revokeInvite(shareId: String) async throws 
     
@@ -2457,15 +2765,32 @@ public protocol SharedTerminalProtocol: AnyObject, Sendable {
     func sessionId()  -> String
     
     /**
+     * Receives what happens in the shared session (participants, requests,
+     * reconnections). Call it once.
+     */
+    func setListener(listener: SharedTerminalListener) async throws 
+    
+    /**
      * Stops sharing (the local terminal stays open).
      */
     func stop() async throws 
     
+    /**
+     * Takes the keyboard back.
+     */
+    func takeControl() async throws 
+    
+    /**
+     * Changes an invitation live (permission, expiry, approval, automatic
+     * keyboard).
+     */
+    func updateInvite(shareId: String, changes: ShareChanges) async throws  -> SessionShareInfo
+    
 }
 /**
  * Local terminal shared through the server. The terminal stays on this
- * device; the server relays the output to the guests and what they type
- * (if they have control). Sharing stops with `stop` or when dropped.
+ * device; the server relays the output to the guests and what the driver
+ * types. Sharing stops with `stop` or when dropped.
  */
 open class SharedTerminal: SharedTerminalProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -2521,7 +2846,103 @@ open class SharedTerminal: SharedTerminalProtocol, @unchecked Sendable {
 
     
     /**
-     * Creates a link for guests without an account (no expiry if not given).
+     * Lets someone in from the waiting room.
+     */
+open func allowJoin(participantId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_allow_join(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Says no to a request for the keyboard.
+     */
+open func denyControl(participantId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_deny_control(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Does not let someone in.
+     */
+open func denyJoin(participantId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_deny_join(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Hands the keyboard to a participant.
+     */
+open func grantControl(participantId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_grant_control(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Invites with every option (waiting room, automatic keyboard...).
+     */
+open func invite(target: ShareTarget, options: ShareOptions)async throws  -> ShareInvite  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_invite(
+                        self.uniffiCloneHandle(),FfiConverterTypeShareTarget_lower(target),FfiConverterTypeShareOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeShareInvite_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Creates a link for guests without an account (no expiry if not
+     * given). They wait until you let them in (`JoinRequest`).
      */
 open func inviteLink(control: Bool, expiresInMinutes: Int64?)async throws  -> ShareInvite  {
     return
@@ -2559,7 +2980,7 @@ open func inviteTeam(teamId: String, control: Bool)async throws  -> ShareInvite 
 }
     
     /**
-     * Invites a server user by email (`control` = can type).
+     * Invites a server user by email (`control` = can ask for the keyboard).
      */
 open func inviteUser(email: String, control: Bool)async throws  -> ShareInvite  {
     return
@@ -2573,6 +2994,44 @@ open func inviteUser(email: String, control: Bool)async throws  -> ShareInvite  
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeShareInvite_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Sends a participant away (`revoke_share`: and revokes their invitation).
+     */
+open func kick(participantId: String, revokeShare: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_kick(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(participantId),FfiConverterBool.lower(revokeShare)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * The invitations of this shared terminal.
+     */
+open func listInvites()async throws  -> [SessionShareInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_list_invites(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeSessionShareInfo.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -2597,7 +3056,27 @@ open func resize(cols: UInt32, rows: UInt32)async throws   {
 }
     
     /**
-     * Revokes an invitation (kicks out whoever is using it).
+     * Revokes every invitation (everyone leaves) but keeps sharing the
+     * terminal, so you can invite again.
+     */
+open func revokeAllInvites()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_revoke_all_invites(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Revokes an invitation (whoever used it and has no other one leaves).
      */
 open func revokeInvite(shareId: String)async throws   {
     return
@@ -2628,6 +3107,26 @@ open func sessionId() -> String  {
 }
     
     /**
+     * Receives what happens in the shared session (participants, requests,
+     * reconnections). Call it once.
+     */
+open func setListener(listener: SharedTerminalListener)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_set_listener(
+                        self.uniffiCloneHandle(),FfiConverterTypeSharedTerminalListener_lower(listener)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Stops sharing (the local terminal stays open).
      */
 open func stop()async throws   {
@@ -2642,6 +3141,45 @@ open func stop()async throws   {
             completeFunc: ffi_termoak_ffi_rust_future_complete_void,
             freeFunc: ffi_termoak_ffi_rust_future_free_void,
             liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Takes the keyboard back.
+     */
+open func takeControl()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_take_control(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Changes an invitation live (permission, expiry, approval, automatic
+     * keyboard).
+     */
+open func updateInvite(shareId: String, changes: ShareChanges)async throws  -> SessionShareInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_sharedterminal_update_invite(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(shareId),FfiConverterTypeShareChanges_lower(changes)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSessionShareInfo_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -2689,6 +3227,214 @@ public func FfiConverterTypeSharedTerminal_lift(_ handle: UInt64) throws -> Shar
 #endif
 public func FfiConverterTypeSharedTerminal_lower(_ value: SharedTerminal) -> UInt64 {
     return FfiConverterTypeSharedTerminal.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Implemented by the app to hear about a shared terminal.
+ *
+ * **Threads**: its own background thread, in order; it must return quickly.
+ */
+public protocol SharedTerminalListener: AnyObject, Sendable {
+    
+    func onEvent(event: SharedTerminalEvent) 
+    
+}
+/**
+ * Implemented by the app to hear about a shared terminal.
+ *
+ * **Threads**: its own background thread, in order; it must return quickly.
+ */
+open class SharedTerminalListenerImpl: SharedTerminalListener, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_sharedterminallistener(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_sharedterminallistener(handle, $0) }
+    }
+
+    
+
+    
+open func onEvent(event: SharedTerminalEvent)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_sharedterminallistener_on_event(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeSharedTerminalEvent_lower(event),uniffiCallStatus
+    )
+}
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceSharedTerminalListener {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceSharedTerminalListener = UniffiVTableCallbackInterfaceSharedTerminalListener(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeSharedTerminalListener.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface SharedTerminalListener: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeSharedTerminalListener.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface SharedTerminalListener: handle missing in uniffiClone")
+            }
+        },
+        onEvent: { (
+            uniffiHandle: UInt64,
+            event: RustBuffer,
+            uniffiOutReturn: UnsafeMutableRawPointer,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> () in
+                guard let uniffiObj = try? FfiConverterTypeSharedTerminalListener.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return uniffiObj.onEvent(
+                     event: try FfiConverterTypeSharedTerminalEvent_lift(event)
+                )
+            }
+
+            
+            let writeReturn = { () }
+            uniffiTraitInterfaceCall(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceSharedTerminalListener> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceSharedTerminalListener>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitSharedTerminalListener() {
+    uniffi_termoak_ffi_fn_init_callback_vtable_sharedterminallistener(UniffiCallbackInterfaceSharedTerminalListener.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSharedTerminalListener: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<SharedTerminalListener>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = SharedTerminalListener
+
+    public static func lift(_ handle: UInt64) throws -> SharedTerminalListener {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return SharedTerminalListenerImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: SharedTerminalListener) -> UInt64 {
+         if let rustImpl = value as? SharedTerminalListenerImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SharedTerminalListener {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SharedTerminalListener, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSharedTerminalListener_lift(_ handle: UInt64) throws -> SharedTerminalListener {
+    return try FfiConverterTypeSharedTerminalListener.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSharedTerminalListener_lower(_ value: SharedTerminalListener) -> UInt64 {
+    return FfiConverterTypeSharedTerminalListener.lower(value)
 }
 
 
@@ -4317,6 +5063,11 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func leaveTeam(teamId: String) async throws 
     
     /**
+     * The invitations of one of your sessions (also revoked and expired ones).
+     */
+    func listServerSessionShares(sessionId: String) async throws  -> [SessionShareInfo]
+    
+    /**
      * Members of a team.
      */
     func listTeamMembers(teamId: String) async throws  -> [TeamMember]
@@ -4347,8 +5098,8 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func renameTeam(teamId: String, name: String) async throws  -> Team
     
     /**
-     * Revokes an invitation to a persistent session (kicks out whoever is
-     * using it).
+     * Revokes an invitation to a persistent session (whoever used it and
+     * has no other one leaves).
      */
     func revokeServerSessionShare(sessionId: String, shareId: String) async throws 
     
@@ -4379,9 +5130,22 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     
     /**
      * Shares a persistent server session with a user, a team or through a
-     * link (`control` = can type).
+     * link (`control` = can ask for the keyboard; links wait for your
+     * approval).
      */
     func shareServerSession(sessionId: String, target: ShareTarget, control: Bool, expiresInMinutes: Int64?) async throws  -> ShareInvite
+    
+    /**
+     * Shares a session with every option (waiting room, automatic
+     * keyboard...).
+     */
+    func shareServerSessionWith(sessionId: String, target: ShareTarget, options: ShareOptions) async throws  -> ShareInvite
+    
+    /**
+     * Stops sharing a session: every invitation is revoked and everyone but
+     * you leaves. Returns how many invitations were active.
+     */
+    func stopSharingServerSession(sessionId: String) async throws  -> UInt32
     
     /**
      * Two-factor authentication status.
@@ -4392,6 +5156,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Stops receiving notifications on this device.
      */
     func unregisterPushToken() async throws 
+    
+    /**
+     * Changes an invitation live: whoever uses it gets the new permission
+     * at once (going down to view only takes the keyboard away).
+     */
+    func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges) async throws  -> SessionShareInfo
     
     /**
      * Clears the command history of a host (or all of it if `None`).
@@ -4483,6 +5253,13 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * arrives first, then the history.
      */
     func attachServerSession(sessionId: String, listener: ServerTerminalListener) async throws  -> ServerTerminalHandle
+    
+    /**
+     * Joins with a link of this server while signed in (you appear with
+     * your account's name; a direct invitation of yours is used if it
+     * gives more).
+     */
+    func joinLink(token: String, listener: ServerTerminalListener) async throws  -> ServerTerminalHandle
     
     /**
      * Shares a local terminal through the server with the given title. Then
@@ -5239,6 +6016,25 @@ open func leaveTeam(teamId: String)async throws   {
 }
     
     /**
+     * The invitations of one of your sessions (also revoked and expired ones).
+     */
+open func listServerSessionShares(sessionId: String)async throws  -> [SessionShareInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_list_server_session_shares(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeSessionShareInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Members of a team.
      */
 open func listTeamMembers(teamId: String)async throws  -> [TeamMember]  {
@@ -5339,8 +6135,8 @@ open func renameTeam(teamId: String, name: String)async throws  -> Team  {
 }
     
     /**
-     * Revokes an invitation to a persistent session (kicks out whoever is
-     * using it).
+     * Revokes an invitation to a persistent session (whoever used it and
+     * has no other one leaves).
      */
 open func revokeServerSessionShare(sessionId: String, shareId: String)async throws   {
     return
@@ -5441,7 +6237,8 @@ open func setupTwoFactor()async throws  -> TwoFactorSetup  {
     
     /**
      * Shares a persistent server session with a user, a team or through a
-     * link (`control` = can type).
+     * link (`control` = can ask for the keyboard; links wait for your
+     * approval).
      */
 open func shareServerSession(sessionId: String, target: ShareTarget, control: Bool, expiresInMinutes: Int64?)async throws  -> ShareInvite  {
     return
@@ -5455,6 +6252,46 @@ open func shareServerSession(sessionId: String, target: ShareTarget, control: Bo
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeShareInvite_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Shares a session with every option (waiting room, automatic
+     * keyboard...).
+     */
+open func shareServerSessionWith(sessionId: String, target: ShareTarget, options: ShareOptions)async throws  -> ShareInvite  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_share_server_session_with(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterTypeShareTarget_lower(target),FfiConverterTypeShareOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeShareInvite_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Stops sharing a session: every invitation is revoked and everyone but
+     * you leaves. Returns how many invitations were active.
+     */
+open func stopSharingServerSession(sessionId: String)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_stop_sharing_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -5493,6 +6330,26 @@ open func unregisterPushToken()async throws   {
             completeFunc: ffi_termoak_ffi_rust_future_complete_void,
             freeFunc: ffi_termoak_ffi_rust_future_free_void,
             liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Changes an invitation live: whoever uses it gets the new permission
+     * at once (going down to view only takes the keyboard away).
+     */
+open func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges)async throws  -> SessionShareInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_update_server_session_share(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(shareId),FfiConverterTypeShareChanges_lower(changes)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSessionShareInfo_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -5759,6 +6616,27 @@ open func attachServerSession(sessionId: String, listener: ServerTerminalListene
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_attach_server_session(
                         self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterTypeServerTerminalListener_lower(listener)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeServerTerminalHandle_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Joins with a link of this server while signed in (you appear with
+     * your account's name; a direct invitation of yours is used if it
+     * gives more).
+     */
+open func joinLink(token: String, listener: ServerTerminalListener)async throws  -> ServerTerminalHandle  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_join_link(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(token),FfiConverterTypeServerTerminalListener_lower(listener)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -9417,6 +10295,107 @@ public func FfiConverterTypeKnownHost_lower(_ value: KnownHost) -> RustBuffer {
 
 
 /**
+ * Details of a link invitation (no account needed), to show before joining.
+ */
+public struct LinkInvite: Equatable, Hashable {
+    public var sessionId: String
+    public var title: String
+    /**
+     * Name of who shares it.
+     */
+    public var owner: String
+    /**
+     * The most you can get: `Control` (can ask for the keyboard) or `View`.
+     */
+    public var access: SessionAccess
+    /**
+     * You will wait until the owner lets you in.
+     */
+    public var requireApproval: Bool
+    /**
+     * People inside now.
+     */
+    public var participants: UInt32
+    public var expiresAt: Int64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(sessionId: String, title: String, 
+        /**
+         * Name of who shares it.
+         */owner: String, 
+        /**
+         * The most you can get: `Control` (can ask for the keyboard) or `View`.
+         */access: SessionAccess, 
+        /**
+         * You will wait until the owner lets you in.
+         */requireApproval: Bool, 
+        /**
+         * People inside now.
+         */participants: UInt32, expiresAt: Int64?) {
+        self.sessionId = sessionId
+        self.title = title
+        self.owner = owner
+        self.access = access
+        self.requireApproval = requireApproval
+        self.participants = participants
+        self.expiresAt = expiresAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension LinkInvite: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLinkInvite: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LinkInvite {
+        return
+            try LinkInvite(
+                sessionId: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                owner: FfiConverterString.read(from: &buf), 
+                access: FfiConverterTypeSessionAccess.read(from: &buf), 
+                requireApproval: FfiConverterBool.read(from: &buf), 
+                participants: FfiConverterUInt32.read(from: &buf), 
+                expiresAt: FfiConverterOptionInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LinkInvite, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.sessionId, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.owner, into: &buf)
+        FfiConverterTypeSessionAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.requireApproval, into: &buf)
+        FfiConverterUInt32.write(value.participants, into: &buf)
+        FfiConverterOptionInt64.write(value.expiresAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkInvite_lift(_ buf: RustBuffer) throws -> LinkInvite {
+    return try FfiConverterTypeLinkInvite.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkInvite_lower(_ value: LinkInvite) -> RustBuffer {
+    return FfiConverterTypeLinkInvite.lower(value)
+}
+
+
+/**
  * Port forwarding rule.
  */
 public struct PortForward: Equatable, Hashable {
@@ -10369,6 +11348,14 @@ public struct ServerSession: Equatable, Hashable {
      */
     public var access: SessionAccess
     public var viewers: [SessionViewer]
+    /**
+     * People in the session (servers 0.3+).
+     */
+    public var participants: [SessionParticipant]
+    /**
+     * Participant with the keyboard (`None`: the owner).
+     */
+    public var driver: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -10378,7 +11365,13 @@ public struct ServerSession: Equatable, Hashable {
          */kind: String, state: ServerSessionState, createdAt: Int64, cols: UInt32, rows: UInt32, recording: Bool, 
         /**
          * Your permission on the session.
-         */access: SessionAccess, viewers: [SessionViewer]) {
+         */access: SessionAccess, viewers: [SessionViewer], 
+        /**
+         * People in the session (servers 0.3+).
+         */participants: [SessionParticipant], 
+        /**
+         * Participant with the keyboard (`None`: the owner).
+         */driver: String?) {
         self.id = id
         self.ownerId = ownerId
         self.hostId = hostId
@@ -10391,6 +11384,8 @@ public struct ServerSession: Equatable, Hashable {
         self.recording = recording
         self.access = access
         self.viewers = viewers
+        self.participants = participants
+        self.driver = driver
     }
 
     
@@ -10420,7 +11415,9 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
                 rows: FfiConverterUInt32.read(from: &buf), 
                 recording: FfiConverterBool.read(from: &buf), 
                 access: FfiConverterTypeSessionAccess.read(from: &buf), 
-                viewers: FfiConverterSequenceTypeSessionViewer.read(from: &buf)
+                viewers: FfiConverterSequenceTypeSessionViewer.read(from: &buf), 
+                participants: FfiConverterSequenceTypeSessionParticipant.read(from: &buf), 
+                driver: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -10437,6 +11434,8 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
         FfiConverterBool.write(value.recording, into: &buf)
         FfiConverterTypeSessionAccess.write(value.access, into: &buf)
         FfiConverterSequenceTypeSessionViewer.write(value.viewers, into: &buf)
+        FfiConverterSequenceTypeSessionParticipant.write(value.participants, into: &buf)
+        FfiConverterOptionString.write(value.driver, into: &buf)
     }
 }
 
@@ -10722,6 +11721,294 @@ public func FfiConverterTypeServerUser_lower(_ value: ServerUser) -> RustBuffer 
 
 
 /**
+ * A person in a shared session (all their devices count as one).
+ */
+public struct SessionParticipant: Equatable, Hashable {
+    /**
+     * Participant id (for `grant_control`, `kick`...).
+     */
+    public var id: String
+    public var name: String
+    public var kind: ParticipantKind
+    /**
+     * `Owner`, `Control` (can ask for the keyboard) or `View`.
+     */
+    public var access: SessionAccess
+    /**
+     * Has the keyboard (the owner, when nobody else has it).
+     */
+    public var isDriver: Bool
+    /**
+     * Since when (ms).
+     */
+    public var since: Int64
+    /**
+     * Devices attached (0 while reconnecting).
+     */
+    public var devices: UInt32
+    /**
+     * Asked for the keyboard and waits for the owner.
+     */
+    public var requestedControl: Bool
+    /**
+     * In the waiting room (only in the owner's list).
+     */
+    public var waiting: Bool
+    /**
+     * It is you.
+     */
+    public var you: Bool
+    /**
+     * Only in the owner's list.
+     */
+    public var userId: String?
+    /**
+     * Share they joined with (only in the owner's list).
+     */
+    public var shareId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Participant id (for `grant_control`, `kick`...).
+         */id: String, name: String, kind: ParticipantKind, 
+        /**
+         * `Owner`, `Control` (can ask for the keyboard) or `View`.
+         */access: SessionAccess, 
+        /**
+         * Has the keyboard (the owner, when nobody else has it).
+         */isDriver: Bool, 
+        /**
+         * Since when (ms).
+         */since: Int64, 
+        /**
+         * Devices attached (0 while reconnecting).
+         */devices: UInt32, 
+        /**
+         * Asked for the keyboard and waits for the owner.
+         */requestedControl: Bool, 
+        /**
+         * In the waiting room (only in the owner's list).
+         */waiting: Bool, 
+        /**
+         * It is you.
+         */you: Bool, 
+        /**
+         * Only in the owner's list.
+         */userId: String?, 
+        /**
+         * Share they joined with (only in the owner's list).
+         */shareId: String?) {
+        self.id = id
+        self.name = name
+        self.kind = kind
+        self.access = access
+        self.isDriver = isDriver
+        self.since = since
+        self.devices = devices
+        self.requestedControl = requestedControl
+        self.waiting = waiting
+        self.you = you
+        self.userId = userId
+        self.shareId = shareId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SessionParticipant: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSessionParticipant: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SessionParticipant {
+        return
+            try SessionParticipant(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeParticipantKind.read(from: &buf), 
+                access: FfiConverterTypeSessionAccess.read(from: &buf), 
+                isDriver: FfiConverterBool.read(from: &buf), 
+                since: FfiConverterInt64.read(from: &buf), 
+                devices: FfiConverterUInt32.read(from: &buf), 
+                requestedControl: FfiConverterBool.read(from: &buf), 
+                waiting: FfiConverterBool.read(from: &buf), 
+                you: FfiConverterBool.read(from: &buf), 
+                userId: FfiConverterOptionString.read(from: &buf), 
+                shareId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SessionParticipant, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterTypeParticipantKind.write(value.kind, into: &buf)
+        FfiConverterTypeSessionAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.isDriver, into: &buf)
+        FfiConverterInt64.write(value.since, into: &buf)
+        FfiConverterUInt32.write(value.devices, into: &buf)
+        FfiConverterBool.write(value.requestedControl, into: &buf)
+        FfiConverterBool.write(value.waiting, into: &buf)
+        FfiConverterBool.write(value.you, into: &buf)
+        FfiConverterOptionString.write(value.userId, into: &buf)
+        FfiConverterOptionString.write(value.shareId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionParticipant_lift(_ buf: RustBuffer) throws -> SessionParticipant {
+    return try FfiConverterTypeSessionParticipant.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionParticipant_lower(_ value: SessionParticipant) -> RustBuffer {
+    return FfiConverterTypeSessionParticipant.lower(value)
+}
+
+
+/**
+ * An invitation to one of your sessions.
+ */
+public struct SessionShareInfo: Equatable, Hashable {
+    public var id: String
+    public var sessionId: String
+    public var kind: ShareKind
+    /**
+     * Can ask for the keyboard (otherwise view only).
+     */
+    public var control: Bool
+    public var userId: String?
+    public var userEmail: String?
+    public var userName: String?
+    public var teamId: String?
+    public var teamName: String?
+    public var expiresAt: Int64?
+    public var revoked: Bool
+    /**
+     * Not revoked and not expired.
+     */
+    public var active: Bool
+    public var requireApproval: Bool
+    public var autoGrant: Bool
+    public var createdAt: Int64
+    /**
+     * People in the session with it now.
+     */
+    public var participants: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, sessionId: String, kind: ShareKind, 
+        /**
+         * Can ask for the keyboard (otherwise view only).
+         */control: Bool, userId: String?, userEmail: String?, userName: String?, teamId: String?, teamName: String?, expiresAt: Int64?, revoked: Bool, 
+        /**
+         * Not revoked and not expired.
+         */active: Bool, requireApproval: Bool, autoGrant: Bool, createdAt: Int64, 
+        /**
+         * People in the session with it now.
+         */participants: UInt32) {
+        self.id = id
+        self.sessionId = sessionId
+        self.kind = kind
+        self.control = control
+        self.userId = userId
+        self.userEmail = userEmail
+        self.userName = userName
+        self.teamId = teamId
+        self.teamName = teamName
+        self.expiresAt = expiresAt
+        self.revoked = revoked
+        self.active = active
+        self.requireApproval = requireApproval
+        self.autoGrant = autoGrant
+        self.createdAt = createdAt
+        self.participants = participants
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SessionShareInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSessionShareInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SessionShareInfo {
+        return
+            try SessionShareInfo(
+                id: FfiConverterString.read(from: &buf), 
+                sessionId: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeShareKind.read(from: &buf), 
+                control: FfiConverterBool.read(from: &buf), 
+                userId: FfiConverterOptionString.read(from: &buf), 
+                userEmail: FfiConverterOptionString.read(from: &buf), 
+                userName: FfiConverterOptionString.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf), 
+                teamName: FfiConverterOptionString.read(from: &buf), 
+                expiresAt: FfiConverterOptionInt64.read(from: &buf), 
+                revoked: FfiConverterBool.read(from: &buf), 
+                active: FfiConverterBool.read(from: &buf), 
+                requireApproval: FfiConverterBool.read(from: &buf), 
+                autoGrant: FfiConverterBool.read(from: &buf), 
+                createdAt: FfiConverterInt64.read(from: &buf), 
+                participants: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SessionShareInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.sessionId, into: &buf)
+        FfiConverterTypeShareKind.write(value.kind, into: &buf)
+        FfiConverterBool.write(value.control, into: &buf)
+        FfiConverterOptionString.write(value.userId, into: &buf)
+        FfiConverterOptionString.write(value.userEmail, into: &buf)
+        FfiConverterOptionString.write(value.userName, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
+        FfiConverterOptionString.write(value.teamName, into: &buf)
+        FfiConverterOptionInt64.write(value.expiresAt, into: &buf)
+        FfiConverterBool.write(value.revoked, into: &buf)
+        FfiConverterBool.write(value.active, into: &buf)
+        FfiConverterBool.write(value.requireApproval, into: &buf)
+        FfiConverterBool.write(value.autoGrant, into: &buf)
+        FfiConverterInt64.write(value.createdAt, into: &buf)
+        FfiConverterUInt32.write(value.participants, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionShareInfo_lift(_ buf: RustBuffer) throws -> SessionShareInfo {
+    return try FfiConverterTypeSessionShareInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionShareInfo_lower(_ value: SessionShareInfo) -> RustBuffer {
+    return FfiConverterTypeSessionShareInfo.lower(value)
+}
+
+
+/**
  * Person connected to a server session.
  */
 public struct SessionViewer: Equatable, Hashable {
@@ -10803,6 +12090,93 @@ public func FfiConverterTypeSessionViewer_lift(_ buf: RustBuffer) throws -> Sess
 #endif
 public func FfiConverterTypeSessionViewer_lower(_ value: SessionViewer) -> RustBuffer {
     return FfiConverterTypeSessionViewer.lower(value)
+}
+
+
+/**
+ * Changes to an invitation (`None` leaves the field as it is).
+ */
+public struct ShareChanges: Equatable, Hashable {
+    /**
+     * `Some(false)` goes down to view only (the keyboard is taken away).
+     */
+    public var control: Bool?
+    /**
+     * New expiry, in minutes from now.
+     */
+    public var expiresInMinutes: Int64?
+    /**
+     * Remove the expiry.
+     */
+    public var noExpiry: Bool
+    public var requireApproval: Bool?
+    public var autoGrant: Bool?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `Some(false)` goes down to view only (the keyboard is taken away).
+         */control: Bool?, 
+        /**
+         * New expiry, in minutes from now.
+         */expiresInMinutes: Int64?, 
+        /**
+         * Remove the expiry.
+         */noExpiry: Bool, requireApproval: Bool?, autoGrant: Bool?) {
+        self.control = control
+        self.expiresInMinutes = expiresInMinutes
+        self.noExpiry = noExpiry
+        self.requireApproval = requireApproval
+        self.autoGrant = autoGrant
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ShareChanges: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeShareChanges: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ShareChanges {
+        return
+            try ShareChanges(
+                control: FfiConverterOptionBool.read(from: &buf), 
+                expiresInMinutes: FfiConverterOptionInt64.read(from: &buf), 
+                noExpiry: FfiConverterBool.read(from: &buf), 
+                requireApproval: FfiConverterOptionBool.read(from: &buf), 
+                autoGrant: FfiConverterOptionBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ShareChanges, into buf: inout [UInt8]) {
+        FfiConverterOptionBool.write(value.control, into: &buf)
+        FfiConverterOptionInt64.write(value.expiresInMinutes, into: &buf)
+        FfiConverterBool.write(value.noExpiry, into: &buf)
+        FfiConverterOptionBool.write(value.requireApproval, into: &buf)
+        FfiConverterOptionBool.write(value.autoGrant, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareChanges_lift(_ buf: RustBuffer) throws -> ShareChanges {
+    return try FfiConverterTypeShareChanges.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareChanges_lower(_ value: ShareChanges) -> RustBuffer {
+    return FfiConverterTypeShareChanges.lower(value)
 }
 
 
@@ -10896,6 +12270,97 @@ public func FfiConverterTypeShareInvite_lift(_ buf: RustBuffer) throws -> ShareI
 #endif
 public func FfiConverterTypeShareInvite_lower(_ value: ShareInvite) -> RustBuffer {
     return FfiConverterTypeShareInvite.lower(value)
+}
+
+
+/**
+ * Options of a new invitation to a session.
+ */
+public struct ShareOptions: Equatable, Hashable {
+    /**
+     * Can ask for (and receive) the keyboard; otherwise only watches.
+     */
+    public var control: Bool
+    /**
+     * No expiry if not given.
+     */
+    public var expiresInMinutes: Int64?
+    /**
+     * Whoever joins waits until you let them in. `None`: the server's
+     * default (yes for links, no for users and teams).
+     */
+    public var requireApproval: Bool?
+    /**
+     * Requests for the keyboard are granted without asking you.
+     */
+    public var autoGrant: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Can ask for (and receive) the keyboard; otherwise only watches.
+         */control: Bool, 
+        /**
+         * No expiry if not given.
+         */expiresInMinutes: Int64?, 
+        /**
+         * Whoever joins waits until you let them in. `None`: the server's
+         * default (yes for links, no for users and teams).
+         */requireApproval: Bool?, 
+        /**
+         * Requests for the keyboard are granted without asking you.
+         */autoGrant: Bool) {
+        self.control = control
+        self.expiresInMinutes = expiresInMinutes
+        self.requireApproval = requireApproval
+        self.autoGrant = autoGrant
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ShareOptions: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeShareOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ShareOptions {
+        return
+            try ShareOptions(
+                control: FfiConverterBool.read(from: &buf), 
+                expiresInMinutes: FfiConverterOptionInt64.read(from: &buf), 
+                requireApproval: FfiConverterOptionBool.read(from: &buf), 
+                autoGrant: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ShareOptions, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.control, into: &buf)
+        FfiConverterOptionInt64.write(value.expiresInMinutes, into: &buf)
+        FfiConverterOptionBool.write(value.requireApproval, into: &buf)
+        FfiConverterBool.write(value.autoGrant, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareOptions_lift(_ buf: RustBuffer) throws -> ShareOptions {
+    return try FfiConverterTypeShareOptions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareOptions_lower(_ value: ShareOptions) -> RustBuffer {
+    return FfiConverterTypeShareOptions.lower(value)
 }
 
 
@@ -12595,6 +14060,91 @@ public func FfiConverterTypeLogLevel_lower(_ value: LogLevel) -> RustBuffer {
 
 
 
+/**
+ * Kind of participant in a shared session.
+ */
+
+public enum ParticipantKind: Equatable, Hashable {
+    
+    /**
+     * The session's owner.
+     */
+    case owner
+    /**
+     * A user of the server (invited directly, through a team or by link).
+     */
+    case user
+    /**
+     * Someone without an account who joined with a link.
+     */
+    case guest
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ParticipantKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeParticipantKind: FfiConverterRustBuffer {
+    typealias SwiftType = ParticipantKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ParticipantKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .owner
+        
+        case 2: return .user
+        
+        case 3: return .guest
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ParticipantKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .owner:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .user:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .guest:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeParticipantKind_lift(_ buf: RustBuffer) throws -> ParticipantKind {
+    return try FfiConverterTypeParticipantKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeParticipantKind_lower(_ value: ParticipantKind) -> RustBuffer {
+    return FfiConverterTypeParticipantKind.lower(value)
+}
+
+
+
 
 public enum ProxyKind: Equatable, Hashable {
     
@@ -13231,10 +14781,41 @@ public enum ServerTerminalEvent: Equatable, Hashable {
     case status(state: ServerSessionState
     )
     /**
-     * Who is connected.
+     * Who is connected (sockets; servers before 0.3 only).
      */
     case presence(viewers: [SessionViewer]
     )
+    /**
+     * Who is in the session and who drives (`None`: the owner).
+     */
+    case participants(participants: [SessionParticipant], driver: String?
+    )
+    /**
+     * The keyboard changed hands. `can_write`: your input and resizes reach
+     * the terminal now (otherwise the library does not send them).
+     */
+    case control(driver: String?, driverName: String?, canWrite: Bool
+    )
+    /**
+     * You are in the waiting room until the owner lets you in (`Hello`
+     * arrives then).
+     */
+    case waiting(participantId: String?, title: String, owner: String
+    )
+    /**
+     * Owner: someone waits to be let in (`allow_join` / `deny_join`).
+     */
+    case joinRequest(participant: SessionParticipant
+    )
+    /**
+     * Owner: someone asks for the keyboard (`grant_control` / `deny_control`).
+     */
+    case controlRequest(participant: SessionParticipant
+    )
+    /**
+     * The owner said no to your request for the keyboard.
+     */
+    case controlDenied
     /**
      * Authentication question (owner only): answer it with
      * `ServerTerminalHandle::answer_prompt`.
@@ -13257,9 +14838,16 @@ public enum ServerTerminalEvent: Equatable, Hashable {
     case title(title: String
     )
     /**
-     * Error sent by the server (e.g. access revoked).
+     * Error that does not end the connection (an action that was not allowed).
      */
     case error(message: String
+    )
+    /**
+     * The server sent you away for good. `code`: `revoked`, `kicked`,
+     * `expired`, `session_ended`, `join_denied` or `forbidden`. `Closed`
+     * follows; it does not reconnect.
+     */
+    case ended(code: String, message: String
     )
     /**
      * Other control message (JSON), for future protocol versions.
@@ -13305,25 +14893,45 @@ public struct FfiConverterTypeServerTerminalEvent: FfiConverterRustBuffer {
         case 5: return .presence(viewers: try FfiConverterSequenceTypeSessionViewer.read(from: &buf)
         )
         
-        case 6: return .prompt(prompt: try FfiConverterTypeServerPrompt.read(from: &buf)
+        case 6: return .participants(participants: try FfiConverterSequenceTypeSessionParticipant.read(from: &buf), driver: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 7: return .promptDone(promptId: try FfiConverterString.read(from: &buf)
+        case 7: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf), canWrite: try FfiConverterBool.read(from: &buf)
         )
         
-        case 8: return .resize(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
+        case 8: return .waiting(participantId: try FfiConverterOptionString.read(from: &buf), title: try FfiConverterString.read(from: &buf), owner: try FfiConverterString.read(from: &buf)
         )
         
-        case 9: return .title(title: try FfiConverterString.read(from: &buf)
+        case 9: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
         )
         
-        case 10: return .error(message: try FfiConverterString.read(from: &buf)
+        case 10: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
         )
         
-        case 11: return .other(json: try FfiConverterString.read(from: &buf)
+        case 11: return .controlDenied
+        
+        case 12: return .prompt(prompt: try FfiConverterTypeServerPrompt.read(from: &buf)
         )
         
-        case 12: return .closed
+        case 13: return .promptDone(promptId: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 14: return .resize(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        case 15: return .title(title: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 16: return .error(message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 17: return .ended(code: try FfiConverterString.read(from: &buf), message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 18: return .other(json: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 19: return .closed
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -13357,39 +14965,79 @@ public struct FfiConverterTypeServerTerminalEvent: FfiConverterRustBuffer {
             FfiConverterSequenceTypeSessionViewer.write(viewers, into: &buf)
             
         
-        case let .prompt(prompt):
+        case let .participants(participants,driver):
             writeInt(&buf, Int32(6))
+            FfiConverterSequenceTypeSessionParticipant.write(participants, into: &buf)
+            FfiConverterOptionString.write(driver, into: &buf)
+            
+        
+        case let .control(driver,driverName,canWrite):
+            writeInt(&buf, Int32(7))
+            FfiConverterOptionString.write(driver, into: &buf)
+            FfiConverterOptionString.write(driverName, into: &buf)
+            FfiConverterBool.write(canWrite, into: &buf)
+            
+        
+        case let .waiting(participantId,title,owner):
+            writeInt(&buf, Int32(8))
+            FfiConverterOptionString.write(participantId, into: &buf)
+            FfiConverterString.write(title, into: &buf)
+            FfiConverterString.write(owner, into: &buf)
+            
+        
+        case let .joinRequest(participant):
+            writeInt(&buf, Int32(9))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
+        
+        case let .controlRequest(participant):
+            writeInt(&buf, Int32(10))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
+        
+        case .controlDenied:
+            writeInt(&buf, Int32(11))
+        
+        
+        case let .prompt(prompt):
+            writeInt(&buf, Int32(12))
             FfiConverterTypeServerPrompt.write(prompt, into: &buf)
             
         
         case let .promptDone(promptId):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(13))
             FfiConverterString.write(promptId, into: &buf)
             
         
         case let .resize(cols,rows):
-            writeInt(&buf, Int32(8))
+            writeInt(&buf, Int32(14))
             FfiConverterUInt32.write(cols, into: &buf)
             FfiConverterUInt32.write(rows, into: &buf)
             
         
         case let .title(title):
-            writeInt(&buf, Int32(9))
+            writeInt(&buf, Int32(15))
             FfiConverterString.write(title, into: &buf)
             
         
         case let .error(message):
-            writeInt(&buf, Int32(10))
+            writeInt(&buf, Int32(16))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .ended(code,message):
+            writeInt(&buf, Int32(17))
+            FfiConverterString.write(code, into: &buf)
             FfiConverterString.write(message, into: &buf)
             
         
         case let .other(json):
-            writeInt(&buf, Int32(11))
+            writeInt(&buf, Int32(18))
             FfiConverterString.write(json, into: &buf)
             
         
         case .closed:
-            writeInt(&buf, Int32(12))
+            writeInt(&buf, Int32(19))
         
         }
     }
@@ -13498,6 +15146,82 @@ public func FfiConverterTypeSessionAccess_lower(_ value: SessionAccess) -> RustB
 
 
 /**
+ * Who an invitation is for.
+ */
+
+public enum ShareKind: Equatable, Hashable {
+    
+    case user
+    case team
+    case link
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ShareKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeShareKind: FfiConverterRustBuffer {
+    typealias SwiftType = ShareKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ShareKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .user
+        
+        case 2: return .team
+        
+        case 3: return .link
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ShareKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .user:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .team:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .link:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareKind_lift(_ buf: RustBuffer) throws -> ShareKind {
+    return try FfiConverterTypeShareKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeShareKind_lower(_ value: ShareKind) -> RustBuffer {
+    return FfiConverterTypeShareKind.lower(value)
+}
+
+
+
+/**
  * Who a server session is shared with.
  */
 
@@ -13584,6 +15308,163 @@ public func FfiConverterTypeShareTarget_lift(_ buf: RustBuffer) throws -> ShareT
 #endif
 public func FfiConverterTypeShareTarget_lower(_ value: ShareTarget) -> RustBuffer {
     return FfiConverterTypeShareTarget.lower(value)
+}
+
+
+
+/**
+ * What the device that shares a terminal hears from the server.
+ */
+
+public enum SharedTerminalEvent: Equatable, Hashable {
+    
+    /**
+     * Who is in the session and who drives (`None`: you).
+     */
+    case participants(participants: [SessionParticipant], driver: String?
+    )
+    /**
+     * The keyboard changed hands.
+     */
+    case control(driver: String?, driverName: String?
+    )
+    /**
+     * The driver would like this size. The terminal is here: apply it or
+     * ignore it (guests follow the size you report with `resize`).
+     */
+    case resizeRequest(cols: UInt32, rows: UInt32
+    )
+    /**
+     * Someone waits to be let in (`allow_join` / `deny_join`).
+     */
+    case joinRequest(participant: SessionParticipant
+    )
+    /**
+     * Someone asks for the keyboard (`grant_control` / `deny_control`).
+     */
+    case controlRequest(participant: SessionParticipant
+    )
+    /**
+     * The connection to the server dropped; it is being retried.
+     */
+    case reconnecting
+    /**
+     * Back after `Reconnecting`.
+     */
+    case reconnected
+    /**
+     * Sharing ended (`code` if the server said why). Nothing else arrives.
+     */
+    case ended(code: String?
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SharedTerminalEvent: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSharedTerminalEvent: FfiConverterRustBuffer {
+    typealias SwiftType = SharedTerminalEvent
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SharedTerminalEvent {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .participants(participants: try FfiConverterSequenceTypeSessionParticipant.read(from: &buf), driver: try FfiConverterOptionString.read(from: &buf)
+        )
+        
+        case 2: return .control(driver: try FfiConverterOptionString.read(from: &buf), driverName: try FfiConverterOptionString.read(from: &buf)
+        )
+        
+        case 3: return .resizeRequest(cols: try FfiConverterUInt32.read(from: &buf), rows: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        case 4: return .joinRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        )
+        
+        case 5: return .controlRequest(participant: try FfiConverterTypeSessionParticipant.read(from: &buf)
+        )
+        
+        case 6: return .reconnecting
+        
+        case 7: return .reconnected
+        
+        case 8: return .ended(code: try FfiConverterOptionString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SharedTerminalEvent, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .participants(participants,driver):
+            writeInt(&buf, Int32(1))
+            FfiConverterSequenceTypeSessionParticipant.write(participants, into: &buf)
+            FfiConverterOptionString.write(driver, into: &buf)
+            
+        
+        case let .control(driver,driverName):
+            writeInt(&buf, Int32(2))
+            FfiConverterOptionString.write(driver, into: &buf)
+            FfiConverterOptionString.write(driverName, into: &buf)
+            
+        
+        case let .resizeRequest(cols,rows):
+            writeInt(&buf, Int32(3))
+            FfiConverterUInt32.write(cols, into: &buf)
+            FfiConverterUInt32.write(rows, into: &buf)
+            
+        
+        case let .joinRequest(participant):
+            writeInt(&buf, Int32(4))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
+        
+        case let .controlRequest(participant):
+            writeInt(&buf, Int32(5))
+            FfiConverterTypeSessionParticipant.write(participant, into: &buf)
+            
+        
+        case .reconnecting:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .reconnected:
+            writeInt(&buf, Int32(7))
+        
+        
+        case let .ended(code):
+            writeInt(&buf, Int32(8))
+            FfiConverterOptionString.write(code, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSharedTerminalEvent_lift(_ buf: RustBuffer) throws -> SharedTerminalEvent {
+    return try FfiConverterTypeSharedTerminalEvent.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSharedTerminalEvent_lower(_ value: SharedTerminalEvent) -> RustBuffer {
+    return FfiConverterTypeSharedTerminalEvent.lower(value)
 }
 
 
@@ -15347,6 +17228,56 @@ fileprivate struct FfiConverterSequenceTypeServerUser: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeSessionParticipant: FfiConverterRustBuffer {
+    typealias SwiftType = [SessionParticipant]
+
+    public static func write(_ value: [SessionParticipant], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSessionParticipant.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SessionParticipant] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SessionParticipant]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSessionParticipant.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSessionShareInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [SessionShareInfo]
+
+    public static func write(_ value: [SessionShareInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSessionShareInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SessionShareInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SessionShareInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSessionShareInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeSessionViewer: FfiConverterRustBuffer {
     typealias SwiftType = [SessionViewer]
 
@@ -15721,8 +17652,9 @@ public func initLogging(level: LogLevel, listener: LogListener) -> Bool  {
 })
 }
 /**
- * Joins a shared session with an invitation link, without an account.
- * `server_url` and `token` come from the link (`termoak://join?server=...&token=...`).
+ * Joins a shared session with an invitation link, without an account
+ * (as "Guest N"). `server_url` and `token` come from the link
+ * (`termoak://join?server=...&token=...`).
  */
 public func joinSharedSession(serverUrl: String, token: String, listener: ServerTerminalListener)async throws  -> ServerTerminalHandle  {
     return
@@ -15735,6 +17667,43 @@ public func joinSharedSession(serverUrl: String, token: String, listener: Server
             completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
             freeFunc: ffi_termoak_ffi_rust_future_free_u64,
             liftFunc: FfiConverterTypeServerTerminalHandle_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+/**
+ * Joins with a link, without an account, under a display name (at most 40
+ * characters). If the invitation asks for approval, `Waiting` arrives
+ * first and `Hello` once the owner lets you in.
+ */
+public func joinSharedSessionAs(serverUrl: String, token: String, name: String?, listener: ServerTerminalListener)async throws  -> ServerTerminalHandle  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_func_join_shared_session_as(FfiConverterString.lower(serverUrl),FfiConverterString.lower(token),FfiConverterOptionString.lower(name),FfiConverterTypeServerTerminalListener_lower(listener)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeServerTerminalHandle_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+/**
+ * What a link invitation offers (`server_url` and `token` come from the
+ * link `termoak://join?server=...&token=...`).
+ */
+public func linkInviteInfo(serverUrl: String, token: String)async throws  -> LinkInvite  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_func_link_invite_info(FfiConverterString.lower(serverUrl),FfiConverterString.lower(token)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeLinkInvite_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -15850,7 +17819,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_init_logging() != 8284) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_func_join_shared_session() != 49569) {
+    if (uniffi_termoak_ffi_checksum_func_join_shared_session() != 45359) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_join_shared_session_as() != 50357) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_link_invite_info() != 34812) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_server_info() != 52695) {
@@ -15898,28 +17873,73 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_eventsubscription_unsubscribe() != 64736) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() != 15198) {
+    if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() != 25443) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_closed() != 27770) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_allow_join() != 16754) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_answer_prompt() != 13980) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_can_write() != 58479) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_close_session() != 3879) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_control() != 38049) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_deny_join() != 60209) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() != 27313) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_resize() != 13041) {
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() != 30706) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() != 36879) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_owner() != 1286) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_waiting() != 55330) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick() != 41720) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id() != 55958) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_release_control() != 20848) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_request_control() != 41005) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_resize() != 1342) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_session_id() != 19287) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_write() != 7410) {
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_set_name() != 30789) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_stop_sharing() != 9859) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_take_control() != 65495) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_write() != 13978) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_write_text() != 48087) {
@@ -15928,25 +17948,61 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_serverterminallistener_on_event() != 54979) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite_link() != 44942) {
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_allow_join() != 45475) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_deny_control() != 6323) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() != 4831) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() != 4247) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite() != 50339) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite_link() != 9802) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite_team() != 49530) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite_user() != 5860) {
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite_user() != 17104) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_kick() != 45216) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_list_invites() != 44444) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_resize() != 27502) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_invite() != 10822) {
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_all_invites() != 6822) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_revoke_invite() != 50012) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_session_id() != 9718) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_set_listener() != 39217) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_stop() != 49544) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_take_control() != 3202) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_update_invite() != 39669) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sharedterminallistener_on_event() != 53964) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_alternate_screen() != 62809) {
@@ -16159,6 +18215,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_leave_team() != 44057) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares() != 43171) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members() != 44) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -16174,7 +18233,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_rename_team() != 61682) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() != 25522) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() != 62215) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push() != 38010) {
@@ -16189,13 +18248,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_setup_two_factor() != 14499) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session() != 13957) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session() != 56148) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_share_server_session_with() != 12552) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_stop_sharing_server_session() != 2823) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_two_factor_status() != 22209) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_unregister_push_token() != 16868) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_update_server_session_share() != 25731) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history() != 33858) {
@@ -16241,6 +18309,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() != 65058) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_join_link() != 12633) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() != 33023) {
@@ -16491,6 +18562,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitLogListener()
     uniffiCallbackInitServerEventListener()
     uniffiCallbackInitServerTerminalListener()
+    uniffiCallbackInitSharedTerminalListener()
     uniffiCallbackInitTerminalListener()
     uniffiCallbackInitTransferListener()
     return InitializationResult.ok
