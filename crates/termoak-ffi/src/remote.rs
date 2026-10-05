@@ -341,7 +341,8 @@ impl ServerTerminalHandle {
     }
 
     /// Owner: hands the keyboard to a participant, for `minutes` (1-240)
-    /// or until it is given back or taken (`None`).
+    /// or until it is given back or taken (`None`, the default).
+    #[uniffi::method(default(minutes = None))]
     pub fn grant_control(&self, participant_id: String, minutes: Option<u32>) -> Result<()> {
         let id = parse_id(&participant_id)?;
         check_minutes(minutes)?;
@@ -879,7 +880,8 @@ impl SharedTerminal {
     }
 
     /// Hands the keyboard to a participant, for `minutes` (1-240) or until
-    /// it is given back or taken (`None`).
+    /// it is given back or taken (`None`, the default).
+    #[uniffi::method(default(minutes = None))]
     pub async fn grant_control(&self, participant_id: String, minutes: Option<u32>) -> Result<()> {
         let id = parse_id(&participant_id)?;
         check_minutes(minutes)?;

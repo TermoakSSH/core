@@ -2187,7 +2187,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() and 0xFFFF) != 27313) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() and 0xFFFF) != 25054) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() and 0xFFFF) != 5140) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() and 0xFFFF) != 36879) {
@@ -2244,7 +2244,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() and 0xFFFF) != 4831) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() and 0xFFFF) != 24047) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() and 0xFFFF) != 34243) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sharedterminal_invite() and 0xFFFF) != 50339) {
@@ -5577,9 +5577,9 @@ public interface ServerTerminalHandleInterface {
     
     /**
      * Owner: hands the keyboard to a participant, for `minutes` (1-240)
-     * or until it is given back or taken (`None`).
+     * or until it is given back or taken (`None`, the default).
      */
-    fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
+    fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt? = null)
     
     /**
      * You have the keyboard (the owner has it when nobody else does).
@@ -5895,7 +5895,7 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
     
     /**
      * Owner: hands the keyboard to a participant, for `minutes` (1-240)
-     * or until it is given back or taken (`None`).
+     * or until it is given back or taken (`None`, the default).
      */
     @Throws(TermoakException::class)override fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
         = 
@@ -6613,9 +6613,9 @@ public interface SharedTerminalInterface {
     
     /**
      * Hands the keyboard to a participant, for `minutes` (1-240) or until
-     * it is given back or taken (`None`).
+     * it is given back or taken (`None`, the default).
      */
-    suspend fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt?)
+    suspend fun `grantControl`(`participantId`: kotlin.String, `minutes`: kotlin.UInt? = null)
     
     /**
      * Invites with every option (waiting room, automatic keyboard...).
@@ -6881,7 +6881,7 @@ open class SharedTerminal: Disposable, AutoCloseable, SharedTerminalInterface
     
     /**
      * Hands the keyboard to a participant, for `minutes` (1-240) or until
-     * it is given back or taken (`None`).
+     * it is given back or taken (`None`, the default).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")

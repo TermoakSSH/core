@@ -2040,7 +2040,7 @@ public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     
     /**
      * Owner: hands the keyboard to a participant, for `minutes` (1-240)
-     * or until it is given back or taken (`None`).
+     * or until it is given back or taken (`None`, the default).
      */
     func grantControl(participantId: String, minutes: UInt32?) throws 
     
@@ -2271,9 +2271,9 @@ open func detach()  {try! rustCall() {
     
     /**
      * Owner: hands the keyboard to a participant, for `minutes` (1-240)
-     * or until it is given back or taken (`None`).
+     * or until it is given back or taken (`None`, the default).
      */
-open func grantControl(participantId: String, minutes: UInt32?)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func grantControl(participantId: String, minutes: UInt32? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_serverterminalhandle_grant_control(
             self.uniffiCloneHandle(),
@@ -2731,7 +2731,7 @@ public protocol SharedTerminalProtocol: AnyObject, Sendable {
     
     /**
      * Hands the keyboard to a participant, for `minutes` (1-240) or until
-     * it is given back or taken (`None`).
+     * it is given back or taken (`None`, the default).
      */
     func grantControl(participantId: String, minutes: UInt32?) async throws 
     
@@ -2927,9 +2927,9 @@ open func denyJoin(participantId: String)async throws   {
     
     /**
      * Hands the keyboard to a participant, for `minutes` (1-240) or until
-     * it is given back or taken (`None`).
+     * it is given back or taken (`None`, the default).
      */
-open func grantControl(participantId: String, minutes: UInt32?)async throws   {
+open func grantControl(participantId: String, minutes: UInt32? = nil)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -18011,7 +18011,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_detach() != 27313) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() != 25054) {
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_grant_control() != 5140) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_driver() != 36879) {
@@ -18068,7 +18068,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_deny_join() != 4831) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() != 24047) {
+    if (uniffi_termoak_ffi_checksum_method_sharedterminal_grant_control() != 34243) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sharedterminal_invite() != 50339) {
