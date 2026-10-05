@@ -78,8 +78,14 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
   scrollback from the holder and the apps reconnect on their own, so
   updating the server cuts nothing. The holder serves a single server: if
   another one connects, the previous one stops using it.
-- **Sharing.** Shares can target a user, a team or a link. Revoking a share
-  emits `Signal::Revoked`, which kicks out whoever joined with it.
+- **Sharing.** Shares can target a user, a team or a link (with a waiting
+  room: `require_approval`). The participants of a session (people, not
+  sockets) and the keyboard live in the server's `room` module: one driver
+  at a time, the owner can always type, everyone else joins read-only and
+  asks for the keyboard (`auto_grant` grants it at once). Revoking, changing
+  (`PATCH`) or expiring a share, or leaving a team, re-checks the access of
+  everyone affected: whoever has no other valid share is sent away with a
+  stable code (`revoked`, `kicked`, `expired`...).
 - **Events.** `/api/v1/events/ws` reports AI progress, approvals and
   sessions opened, closed or shared (see
   [WEBSOCKET-PROTOCOL.md](https://github.com/TermoakSSH/server/blob/main/docs/WEBSOCKET-PROTOCOL.md)). The mobile apps use it
@@ -105,9 +111,14 @@ See [AI.md](AI.md).
   on `updated_at`. Entities or secrets marked *this device only* are never
   sent.
 - `RemoteTerminal` attaches to server sessions and `RelayShare` shares a
-  local terminal. If the connection drops, `RemoteTerminal` reconnects on its
-  own for a few minutes (it signals `Reconnecting` and, when back, `Resync`
-  with the full scrollback).
+  local terminal. If the connection drops, both reconnect on their own for a
+  few minutes (`RemoteTerminal` signals `Reconnecting` and, when back,
+  `Resync` with the full scrollback; `RelayShare` sends the whole screen
+  again). They speak protocol 2: `RemoteTerminal::can_write` says whether
+  input and resizes reach the terminal (they are not sent otherwise), and
+  `RemoteEvent::Ended` carries the code when the server sends you away (no
+  reconnection then). `RelayShare::subscribe` reports participants, requests
+  and the driver's size to the host, which acts as the owner.
 - `Workspace` puts together the vault, the store, the server and the known
   hosts verifier. The CLI, the desktop app and the FFI use it.
 

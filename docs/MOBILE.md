@@ -167,7 +167,8 @@ not matter: the bindings are the same.
 | `inviteInfo(url, token)` | Invitation details before signing up |
 | `twoFactorStatus/setupTwoFactor/enableTwoFactor/disableTwoFactor`, `qrCode(text)` | Two-step verification (TOTP) with its QR code |
 | `listTeams/createTeam/renameTeam/deleteTeam`, `listTeamMembers/addTeamMember/setTeamMemberRole/removeTeamMember/leaveTeam` | Teams |
-| `shareServerSession(sessionId, target, control, expiresInMinutes)`, `SharedTerminal.inviteTeam` | Share with a user, a team or a link |
+| `shareServerSession(sessionId, target, control, expiresInMinutes)`, `shareServerSessionWith(sessionId, target, options)`, `SharedTerminal.inviteTeam/invite` | Share with a user, a team or a link (`ShareOptions`: `control`, `expiresInMinutes`, `requireApproval`, `autoGrant`) |
+| `listServerSessionShares(sessionId)`, `updateServerSessionShare(sessionId, shareId, changes)`, `stopSharingServerSession(sessionId)`, `revokeServerSessionShare` | See, change live (`ShareChanges`) and revoke the shares of a session |
 | `adminListUsers/adminCreateUser/adminUpdateUser/adminResetPassword/adminResetTwoFactor`, `adminCreateInvite/adminListInvites/adminRevokeInvite`, `adminAudit` | Server administration (administrators only) |
 | `importSshConfig(text, options)`, `importSshConfigFile(path, options)` | Import an `ssh_config` (with a `dryRun` preview) |
 | `completeCommand(hostId, os, line, limit)`, `recordCommand`, `clearCommandHistory` | Command autocomplete |
@@ -175,8 +176,11 @@ not matter: the bindings are the same.
 | `registerPushToken(platform, token, sandbox)`, `unregisterPushToken`, `sendTestPush` | Push notifications (APNs and FCM) |
 | `serverSftpHome/List/Download/Upload/Mkdir/Rename/Delete`, `downloadRecording` | Files and recordings through the server, streamed with progress |
 | `listServerSessions/openServerSession/attachServerSession/closeServerSession` | Persistent sessions |
-| `joinSharedSession(serverUrl, token, listener)` | Join with an invitation link, without an account |
-| `shareTerminal(terminal, title)` → `SharedTerminal` | Share a local terminal (relay) and invite people |
+| `linkInviteInfo(serverUrl, token)` → `LinkInvite` | What a link offers (title, owner, access, waiting room, people inside) |
+| `joinSharedSession(serverUrl, token, listener)`, `joinSharedSessionAs(serverUrl, token, name, listener)`, `core.joinLink(token, listener)` | Join with an invitation link: without an account (as "Guest N" or with a name) or with your account |
+| `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `requestControl`, `releaseControl`, `setName` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway) |
+| `ServerTerminalHandle` (owner): `allowJoin`, `denyJoin`, `grantControl`, `denyControl`, `takeControl`, `kick(participantId, revokeShare)`, `stopSharing` | Waiting room, keyboard and participants |
+| `shareTerminal(terminal, title)` → `SharedTerminal`: `setListener` (`SharedTerminalEvent`), the owner actions above, `listInvites`, `updateInvite`, `revokeAllInvites` | Share a local terminal (relay) and invite people |
 | `createAiTask/listAiTasks/getAiTask/sendAiMessage/cancelAiTask` | Background AI |
 | `listPendingApprovals/decideApproval` | Approve or deny AI actions |
 | `subscribeEvents(listener)` | Account events (AI, sessions) |
@@ -358,7 +362,12 @@ final class ServerSessionModel: ServerTerminalListener, @unchecked Sendable {
             case .resync: self.emulator.reset()          // the full scrollback follows
             case .prompt(let prompt): self.ask(prompt)
             case .status(let state): self.state = state
-            case .presence(let viewers): self.viewers = viewers
+            case .participants(let people, let driver): self.people = people; self.driver = driver
+            case .control(_, let driverName, let canWrite): self.readOnly = !canWrite; self.driverName = driverName
+            case .waiting: self.showWaitingRoom()                 // until .hello arrives
+            case .joinRequest(let p): self.askToLetIn(p)            // owner: allowJoin / denyJoin
+            case .controlRequest(let p): self.askForKeyboard(p)     // owner: grantControl / denyControl
+            case .ended(let code, _): self.endReason = code        // revoked, kicked, expired, session_ended, join_denied
             case .closed: self.session = nil
             default: break
             }
@@ -462,6 +471,7 @@ override fun onMessageReceived(msg: RemoteMessage) {
     when (msg.data["type"]) {
         "ai_approval" -> openApproval(msg.data["task_id"]!!)
         "session_shared" -> openSession(msg.data["session_id"]!!)
+        "join_request", "control_request" -> openSession(msg.data["session_id"]!!)
     }
 }
 ```

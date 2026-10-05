@@ -113,11 +113,24 @@ Digital SL through https://termoak.com.
 
 - **Link tokens.** Random, 256-bit; only their hash is stored. They can
   expire.
-- **Permissions.** Two levels: `view` (watch only) and `control` (type and
-  resize). Only the owner answers connection prompts (known host, 2FA) and
+- **Permissions.** Two levels: `view` (watch only) and `control` (can ask
+  for the keyboard). One person types at a time: the owner always can,
+  everyone else only while the owner lets them (or automatically, with
+  `auto_grant`). Input and resizes from anyone else are dropped on the
+  server. Only the owner answers connection prompts (known host, 2FA) and
   closes the session.
-- **Revocation.** Revoking a share kicks out whoever joined with it at once.
-- **Audit.** Every time someone attaches to a session it is logged.
+- **Waiting room.** Links ask the owner before letting anyone in (by
+  default); the owner can say no or kick someone out (and revoke their
+  share).
+- **Revocation and expiry.** Revoking or expiring a share sends away whoever
+  joined with it at once, unless they have another valid share; so does
+  deleting or disabling an account.
+- **Privacy.** Only the owner sees user ids and share ids; the public link
+  page only says how many people are inside. Link guests choose a display
+  name (cleaned of control and direction characters, 40 characters at most).
+- **Audit.** Joins (also of link guests, with their name; once per person,
+  not per reconnect), leaves, waiting room decisions, keyboard changes,
+  kicks, share changes and "stop sharing" are logged.
 
 ## AI
 
