@@ -144,7 +144,7 @@ impl From<ClientError> for TermoakError {
                 _ => Self::Server(msg),
             },
             ClientError::Network(_) | ClientError::WebSocket(_) => Self::Network(msg),
-            ClientError::Invalid(_) => Self::Invalid(msg),
+            ClientError::Invalid(_) | ClientError::KeychainUnavailable(_) => Self::Invalid(msg),
             ClientError::Core(c) => c.into(),
             ClientError::Ssh(s) => s.into(),
             ClientError::Io(_) => Self::Io(msg),

@@ -24,6 +24,14 @@ pub enum ClientError {
     Ssh(#[from] termoak_ssh::SshError),
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
+    /// The system keychain did not give the vault key (access denied,
+    /// locked, no Secret Service...) and the local database needs it.
+    /// Nothing was changed: show it with a "Try again" button (allowing
+    /// access in the keychain prompt or unlocking it fixes it).
+    #[error(
+        "the system keychain did not give the vault key ({0}); allow access to it and try again"
+    )]
+    KeychainUnavailable(String),
 }
 
 impl From<reqwest::Error> for ClientError {
@@ -68,6 +76,11 @@ impl ClientError {
     /// The account has two-factor authentication and the code is missing.
     pub fn is_totp_required(&self) -> bool {
         self.api_code() == Some("totp_required")
+    }
+
+    /// The system keychain refused the vault key: retrying may work.
+    pub fn is_keychain_unavailable(&self) -> bool {
+        matches!(self, ClientError::KeychainUnavailable(_))
     }
 
     /// The two-factor authentication code is wrong.
