@@ -23,7 +23,7 @@ use termoak_core::model::*;
 use termoak_ssh::exec::ExecOptions;
 use termoak_ssh::forward::ForwardSpec;
 
-use crate::data::{find_host, find_key, find_snippet};
+use crate::data::{Items, find_host, find_key, find_snippet};
 
 #[derive(Parser)]
 #[command(
@@ -36,6 +36,10 @@ struct Cli {
     /// JSON output (for scripts).
     #[arg(long, global = true)]
     json: bool,
+    /// Account to use (email, email@server, server or id; see `termoak
+    /// account list`). Defaults to the one chosen with `termoak account use`.
+    #[arg(long, global = true, env = "TERMOAK_ACCOUNT")]
+    account: Option<String>,
     #[command(subcommand)]
     command: Command,
 }
@@ -107,9 +111,10 @@ enum Command {
         #[arg(long)]
         control: bool,
     },
-    /// Signs in to a Termoak server.
+    /// Signs in to a Termoak server (the official one without a URL). Adds
+    /// the account, or signs it in again.
     Login {
-        url: String,
+        url: Option<String>,
         #[arg(long)]
         email: Option<String>,
     },
@@ -124,10 +129,15 @@ enum Command {
         #[arg(long)]
         invite: Option<String>,
     },
-    /// Signs out of the server.
+    /// Signs the current account out of its server (its data is kept; see
+    /// `termoak account remove`).
     Logout,
-    /// Syncs with the server.
-    Sync,
+    /// Syncs the current account with its server.
+    Sync {
+        /// Every signed-in account.
+        #[arg(long)]
+        all: bool,
+    },
     /// Sessions that live on the server.
     #[command(subcommand)]
     Sessions(SessionsCmd),
@@ -143,7 +153,8 @@ enum Command {
     /// Teams (to share sessions with the whole team).
     #[command(subcommand)]
     Teams(account::TeamsCmd),
-    /// Your account: plan, email, forgotten password and account deletion.
+    /// Accounts on this device (list, add, use, remove) and your account on
+    /// the server: plan, email, forgotten password and account deletion.
     #[command(subcommand)]
     Account(account::AccountCmd),
     /// Status of the local setup.
@@ -402,16 +413,29 @@ fn out<T: serde::Serialize>(json: bool, value: &T, text: impl FnOnce()) {
 
 async fn run(cli: Cli) -> Result<()> {
     let ws = Workspace::open_default().context("could not open the local database")?;
-    let owner = ws.owner();
+    if let Some(q) = cli.account.as_deref() {
+        let acc = ws.find_account(q)?;
+        ws.pin(Some(acc.id))?;
+    }
     let json = cli.json;
     match cli.command {
         Command::Status => {
-            let hosts = ws.store.list::<Host>(owner).await?.len();
-            let keys = ws.store.list::<SshKey>(owner).await?.len();
-            let server = ws.store.meta_get("server.url").await?;
+            let hosts = ws.all::<Host>().await?.len();
+            let keys = ws.all::<SshKey>().await?.len();
+            let current = ws.current().map(|a| a.id);
+            let accounts: Vec<serde_json::Value> = ws
+                .accounts()
+                .into_iter()
+                .map(|a| {
+                    serde_json::json!({"id": a.id, "server": a.server_url, "email": a.email,
+                        "status": a.status, "current": Some(a.id) == current,
+                        "vaults": a.vaults_supported(), "last_sync_at": a.last_sync_at})
+                })
+                .collect();
             let user = ws.server_user().await?;
+            let server = ws.server_url();
             let logged = ws.server().await?.is_some();
-            let v = serde_json::json!({"data_dir": ws.dir, "hosts": hosts, "keys": keys, "server": server, "user": user, "logged_in": logged});
+            let v = serde_json::json!({"data_dir": ws.dir, "hosts": hosts, "keys": keys, "server": server, "user": user, "logged_in": logged, "accounts": accounts});
             out(json, &v, || {
                 println!("Data:      {}", ws.dir.display());
                 println!("Hosts:     {hosts}");
@@ -421,7 +445,10 @@ async fn run(cli: Cli) -> Result<()> {
                         println!("Server:    {s} ({})", user.clone().unwrap_or_default())
                     }
                     (Some(s), false) => println!("Server:    {s} (signed out)"),
-                    _ => println!("Server:    none (use `termoak login <url>`)"),
+                    _ => println!("Server:    none (use `termoak login`)"),
+                }
+                if accounts.len() > 1 {
+                    println!("Accounts:  {} (see `termoak account list`)", accounts.len());
                 }
             });
         }
@@ -562,7 +589,7 @@ async fn run(cli: Cli) -> Result<()> {
         Command::Hosts(cmd) => data::hosts(&ws, cmd_hosts(cmd), json).await?,
         Command::Groups(cmd) => match cmd {
             GroupsCmd::List => {
-                let groups = ws.store.list::<Group>(owner).await?;
+                let groups = ws.all::<Group>().await?;
                 out(json, &groups, || {
                     for g in &groups {
                         println!("{}  {}", g.data.id, g.data.name);
@@ -584,11 +611,7 @@ async fn run(cli: Cli) -> Result<()> {
                     Some(k) => Some(find_key(&ws, &k).await?.id),
                     None => None,
                 };
-                let rec = ws
-                    .store
-                    .save(
-                        owner,
-                        Group {
+                let rec = ws.put(Group {
                             id: Id::nil(),
                             name,
                             parent_id,
@@ -608,14 +631,14 @@ async fn run(cli: Cli) -> Result<()> {
             }
             GroupsCmd::Rm { group } => {
                 let g = data::find_group(&ws, &group).await?;
-                ws.store.delete::<Group>(owner, g.id).await?;
+                ws.remove::<Group>(g.id).await?;
                 println!("Group deleted.");
             }
         },
         Command::Keys(cmd) => keys(&ws, cmd, json).await?,
         Command::Identities(cmd) => match cmd {
             IdentitiesCmd::List => {
-                let list = ws.store.list::<Identity>(owner).await?;
+                let list = ws.all::<Identity>().await?;
                 out(json, &list, || {
                     for i in &list {
                         println!("{}  {:20} {}", i.data.id, i.data.label, i.data.username);
@@ -639,11 +662,7 @@ async fn run(cli: Cli) -> Result<()> {
                 } else {
                     SecretUpdate::Keep
                 };
-                let rec = ws
-                    .store
-                    .save(
-                        owner,
-                        Identity {
+                let rec = ws.put(Identity {
                             id: Id::nil(),
                             label,
                             username,
@@ -656,7 +675,7 @@ async fn run(cli: Cli) -> Result<()> {
                 println!("Identity created: {}", rec.data.id);
             }
             IdentitiesCmd::Rm { identity } => {
-                let list = ws.store.list::<Identity>(owner).await?;
+                let list = ws.all::<Identity>().await?;
                 let i = list
                     .iter()
                     .find(|i| {
@@ -664,14 +683,14 @@ async fn run(cli: Cli) -> Result<()> {
                             || i.data.label.eq_ignore_ascii_case(&identity)
                     })
                     .context("no such identity")?;
-                ws.store.delete::<Identity>(owner, i.data.id).await?;
+                ws.remove::<Identity>(i.data.id).await?;
                 println!("Identity deleted.");
             }
         },
         Command::Snippets(cmd) => snippets(&ws, cmd, json).await?,
         Command::KnownHosts(cmd) => match cmd {
             KnownHostsCmd::List => {
-                let list = ws.store.list::<KnownHost>(owner).await?;
+                let list = ws.all::<KnownHost>().await?;
                 out(json, &list, || {
                     for k in &list {
                         println!(
@@ -682,13 +701,13 @@ async fn run(cli: Cli) -> Result<()> {
                 });
             }
             KnownHostsCmd::Rm { host } => {
-                let list = ws.store.list::<KnownHost>(owner).await?;
+                let list = ws.all::<KnownHost>().await?;
                 let mut n = 0;
                 for k in list.iter().filter(|k| {
                     k.data.host.eq_ignore_ascii_case(&host)
                         || format!("{}:{}", k.data.host, k.data.port) == host
                 }) {
-                    ws.store.delete::<KnownHost>(owner, k.data.id).await?;
+                    ws.remove::<KnownHost>(k.data.id).await?;
                     n += 1;
                 }
                 println!("{n} entries deleted.");
@@ -780,30 +799,19 @@ async fn run(cli: Cli) -> Result<()> {
             share.stop().await;
         }
         Command::Login { url, email } => {
-            let email = match email {
-                Some(e) => e,
-                None => prompt::ask_line("Email: ")?,
+            let choice = match url {
+                Some(u) => termoak_client::ServerChoice::Custom(u),
+                None => termoak_client::ServerChoice::Official,
             };
-            let password = prompt::password_from_env_or("Password: ")?;
-            let mut code = std::env::var("TERMOAK_TOTP").ok().filter(|c| !c.is_empty());
-            loop {
-                match ws
-                    .login_with_code(&url, &email, &password, code.as_deref())
-                    .await
-                {
-                    Ok(_) => break,
-                    Err(e) if (e.is_totp_required() || e.is_totp_invalid()) && code.is_none() => {
-                        code = Some(prompt::ask_line(
-                            "Verification code (authenticator app or recovery code): ",
-                        )?);
-                    }
-                    Err(e) => return Err(e.into()),
+            let acc = account::sign_in_interactive(&ws, choice, email).await?;
+            let info = acc.info();
+            println!("Signed in to {} as {}.", info.server_url, info.email);
+            match acc.sync_once().await {
+                Ok(r) => {
+                    println!("Synced: {} sent, {} received.", r.pushed, r.pulled);
+                    account::print_sync_notices(&r);
                 }
-            }
-            println!("Signed in to {url}.");
-            if let Some(engine) = ws.sync_engine().await? {
-                let r = engine.sync_once().await?;
-                println!("Synced: {} sent, {} received.", r.pushed, r.pulled);
+                Err(e) => eprintln!("Could not sync yet: {e}"),
             }
         }
         Command::Register {
@@ -826,26 +834,56 @@ async fn run(cli: Cli) -> Result<()> {
                     p
                 }
             };
-            ws.register_with_invite(&url, &email, &name, &password, invite.as_deref())
+            let acc = ws
+                .sign_up(
+                    termoak_client::ServerChoice::Custom(url.clone()),
+                    &email,
+                    &name,
+                    &password,
+                    invite.as_deref(),
+                )
                 .await?;
-            println!("Account created and signed in to {url}.");
+            if acc.status() == termoak_client::AccountStatus::Unverified {
+                println!(
+                    "Account created on {url}. Enter the code from the email with `termoak account verify <code>`."
+                );
+            } else {
+                println!("Account created and signed in to {url}.");
+            }
         }
         Command::Logout => {
             ws.logout().await?;
             println!("Signed out.");
         }
-        Command::Sync => {
-            let engine = ws
-                .sync_engine()
-                .await?
-                .context("not signed in to any server")?;
-            let r = engine.sync_once().await?;
-            out(json, &r, || {
-                println!(
-                    "Synced: {} sent, {} received (rev {}).",
-                    r.pushed, r.pulled, r.rev
-                )
-            });
+        Command::Sync { all } => {
+            let accounts = if all {
+                ws.account_list()
+                    .into_iter()
+                    .filter(|a| a.is_signed_in())
+                    .collect()
+            } else {
+                vec![ws.current().context("not signed in to any server")?]
+            };
+            let mut reports = Vec::new();
+            for acc in accounts {
+                let r = acc.sync_once().await?;
+                let info = acc.info();
+                if !json {
+                    println!(
+                        "{} ({}): {} sent, {} received (rev {}).",
+                        info.email, info.server_url, r.pushed, r.pulled, r.rev
+                    );
+                    account::print_sync_notices(&r);
+                }
+                reports.push(serde_json::json!({"account_id": acc.id, "report": r}));
+            }
+            if json {
+                if all {
+                    out(json, &reports, || {});
+                } else if let Some(r) = reports.first() {
+                    out(json, &r["report"], || {});
+                }
+            }
         }
         Command::Sessions(cmd) => {
             let api = data::need_server(&ws).await?;
@@ -988,10 +1026,9 @@ fn parse_forward(kind: ForwardKind, s: &str) -> Result<ForwardSpec> {
 }
 
 async fn keys(ws: &Workspace, cmd: KeysCmd, json: bool) -> Result<()> {
-    let owner = ws.owner();
     match cmd {
         KeysCmd::List => {
-            let list = ws.store.list::<SshKey>(owner).await?;
+            let list = ws.all::<SshKey>().await?;
             out(json, &list, || {
                 for k in &list {
                     println!(
@@ -1048,7 +1085,7 @@ async fn keys(ws: &Workspace, cmd: KeysCmd, json: bool) -> Result<()> {
         KeysCmd::Public { key } => println!("{}", find_key(ws, &key).await?.public_key),
         KeysCmd::Rm { key } => {
             let k = find_key(ws, &key).await?;
-            ws.store.delete::<SshKey>(owner, k.id).await?;
+            ws.remove::<SshKey>(k.id).await?;
             println!("Key deleted.");
         }
     }
@@ -1061,11 +1098,7 @@ async fn save_key(
     m: termoak_ssh::keys::KeyMaterial,
     device_only: bool,
 ) -> Result<Record<SshKey>> {
-    Ok(ws
-        .store
-        .save(
-            ws.owner(),
-            SshKey {
+    Ok(ws.put(SshKey {
                 id: Id::nil(),
                 label,
                 algorithm: m.algorithm.clone(),
@@ -1085,10 +1118,9 @@ async fn save_key(
 }
 
 async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {
-    let owner = ws.owner();
     match cmd {
         SnippetsCmd::List => {
-            let list = ws.store.list::<Snippet>(owner).await?;
+            let list = ws.all::<Snippet>().await?;
             out(json, &list, || {
                 for s in &list {
                     let vars = s.data.variables();
@@ -1117,11 +1149,7 @@ async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {
                 (None, Some(f)) => std::fs::read_to_string(f)?,
                 _ => bail!("specify --script or --file"),
             };
-            let rec = ws
-                .store
-                .save(
-                    owner,
-                    Snippet {
+            let rec = ws.put(Snippet {
                         id: Id::nil(),
                         name,
                         script,
@@ -1193,7 +1221,7 @@ async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {
         }
         SnippetsCmd::Rm { snippet } => {
             let s = find_snippet(ws, &snippet).await?;
-            ws.store.delete::<Snippet>(owner, s.id).await?;
+            ws.remove::<Snippet>(s.id).await?;
             println!("Snippet deleted.");
         }
     }

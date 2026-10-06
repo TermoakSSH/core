@@ -119,6 +119,19 @@ pub fn migrate(dir: &Path, device: &Store) -> Result<LayoutReport> {
         return Ok(LayoutReport::default());
     }
 
+    // A new install (nothing saved, no server): nothing to migrate.
+    let fresh = device.call_blocking(|c, _| {
+        let n: i64 = c.query_row("SELECT COUNT(*) FROM entities", [], |r| r.get(0))?;
+        Ok(n == 0 && meta_get(c, SERVER_URL)?.is_none() && meta_get(c, MIGRATING_KEY)?.is_none())
+    })?;
+    if fresh {
+        device.call_blocking(|c, _| Ok(meta_set(c, LAYOUT_VERSION_KEY, "2")?))?;
+        return Ok(LayoutReport {
+            migrated: true,
+            ..Default::default()
+        });
+    }
+
     // 1. Backup.
     let backup = dir.join(BACKUP_FILE);
     if !backup.exists() {

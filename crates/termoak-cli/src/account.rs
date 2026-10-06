@@ -3,7 +3,9 @@
 use anyhow::{Context, Result, bail};
 use clap::Subcommand;
 use serde_json::{Value, json};
-use termoak_client::{ApiClient, Workspace};
+use termoak_client::{
+    AccountStatus, AccountView, ApiClient, ServerChoice, SyncReport, Workspace,
+};
 
 use crate::data::need_server;
 use crate::{out, prompt};
@@ -108,6 +110,33 @@ pub enum TeamsCmd {
 
 #[derive(Subcommand)]
 pub enum AccountCmd {
+    /// Accounts signed in on this device.
+    List,
+    /// Signs in to another account (the official server without `--server`).
+    Add {
+        /// Your own server's URL.
+        #[arg(long)]
+        server: Option<String>,
+        #[arg(long)]
+        email: Option<String>,
+    },
+    /// Chooses the account the other commands use (`all`: every account).
+    Use { account: String },
+    /// Signs out of an account and deletes its data on this device (This
+    /// device items stay).
+    Remove {
+        account: String,
+        /// Delete it even with changes not uploaded yet.
+        #[arg(long)]
+        discard: bool,
+    },
+    /// Verifies the current account's email with the code from the email.
+    Verify {
+        code: String,
+        /// Resend the code instead.
+        #[arg(long)]
+        resend: bool,
+    },
     /// Your plan, its limits and your usage.
     Plan,
     /// Resends the email to confirm your address.
@@ -569,8 +598,153 @@ pub async fn teams(ws: &Workspace, cmd: TeamsCmd, json: bool) -> Result<()> {
     Ok(())
 }
 
+/// Signs in asking for what is missing (password, two-factor code).
+pub async fn sign_in_interactive(
+    ws: &Workspace,
+    server: ServerChoice,
+    email: Option<String>,
+) -> Result<std::sync::Arc<termoak_client::Account>> {
+    let email = match email {
+        Some(e) => e,
+        None => prompt::ask_line("Email: ")?,
+    };
+    let password = prompt::password_from_env_or("Password: ")?;
+    let mut code = std::env::var("TERMOAK_TOTP").ok().filter(|c| !c.is_empty());
+    loop {
+        match ws
+            .sign_in(server.clone(), &email, &password, code.as_deref())
+            .await
+        {
+            Ok(acc) => return Ok(acc),
+            Err(e) if (e.is_totp_required() || e.is_totp_invalid()) && code.is_none() => {
+                code = Some(prompt::ask_line(
+                    "Verification code (authenticator app or recovery code): ",
+                )?);
+            }
+            Err(e) => return Err(e.into()),
+        }
+    }
+}
+
+/// Notices of a sync: vaults gained or lost, changes discarded.
+pub fn print_sync_notices(r: &SyncReport) {
+    for v in &r.vaults_added {
+        println!("New vault: {}", v.name);
+    }
+    for v in &r.vaults_lost {
+        println!("You no longer have access to the vault {}.", v.name);
+    }
+    for d in &r.discarded {
+        println!(
+            "{} change(s) not uploaded were discarded ({}).",
+            d.count, d.vault_name
+        );
+    }
+    for x in &r.rejected {
+        println!("Not uploaded: {} ({}: {})", x.id, x.code, x.message);
+    }
+}
+
+/// Accounts on this device.
+async fn accounts(ws: &Workspace, cmd: AccountCmd, json: bool) -> Result<()> {
+    match cmd {
+        AccountCmd::List => {
+            let current = ws.current().map(|a| a.id);
+            let list = ws.accounts();
+            out(json, &list, || {
+                if list.is_empty() {
+                    println!("No accounts (use `termoak account add`).");
+                }
+                for a in &list {
+                    let mark = if Some(a.id) == current { "*" } else { " " };
+                    let status = match a.status {
+                        AccountStatus::Active => "",
+                        AccountStatus::NeedsSignIn => " (sign in again)",
+                        AccountStatus::Unverified => " (email not verified)",
+                        AccountStatus::Unknown => " (?)",
+                    };
+                    let vaults = if a.vaults_supported() { "" } else { " [no vaults: update the server]" };
+                    println!(
+                        "{mark} {}  {}  {}{status}{vaults}",
+                        &a.id.to_string()[..8],
+                        a.email,
+                        a.server_host()
+                    );
+                }
+            });
+        }
+        AccountCmd::Add { server, email } => {
+            let choice = match server {
+                Some(u) => ServerChoice::Custom(u),
+                None => ServerChoice::Official,
+            };
+            let acc = sign_in_interactive(ws, choice, email).await?;
+            let info = acc.info();
+            println!("Added {} on {} (now current).", info.email, info.server_url);
+            if info.status == AccountStatus::Unverified {
+                println!("Enter the code from the email with `termoak account verify <code>`.");
+            } else if let Ok(r) = acc.sync_once().await {
+                println!("Synced: {} received.", r.pulled);
+                print_sync_notices(&r);
+            }
+        }
+        AccountCmd::Use { account } => {
+            if account.eq_ignore_ascii_case("all") {
+                ws.set_view(AccountView::All).await?;
+                println!("Showing every account.");
+            } else {
+                let acc = ws.find_account(&account)?;
+                ws.set_view(AccountView::One(acc.id)).await?;
+                let i = acc.info();
+                println!("Using {} on {}.", i.email, i.server_url);
+            }
+        }
+        AccountCmd::Remove { account, discard } => {
+            let acc = ws.find_account(&account)?;
+            let (id, info) = (acc.id, acc.info());
+            drop(acc);
+            let r = ws.sign_out(id, discard).await?;
+            if !r.signed_out {
+                bail!(
+                    "{} change(s) of {} are not uploaded yet: run `termoak sync --account {}` or repeat with --discard",
+                    r.unsynced,
+                    info.email,
+                    info.email
+                );
+            }
+            out(json, &r, || {
+                println!("Signed out of {} and deleted its data on this device.", info.email);
+            });
+        }
+        AccountCmd::Verify { code, resend } => {
+            let acc = ws.current().context("there is no account on this device")?;
+            if resend {
+                ws.resend_account_code(acc.id).await?;
+                println!("We sent a new code to {}.", acc.info().email);
+            } else {
+                let code: String = code.chars().filter(char::is_ascii_digit).collect();
+                let totp = std::env::var("TERMOAK_TOTP").ok().filter(|c| !c.is_empty());
+                ws.verify_account(acc.id, &code, totp.as_deref()).await?;
+                println!("Email verified.");
+            }
+        }
+        _ => unreachable!(),
+    }
+    Ok(())
+}
+
 /// Your account: plan, email, forgotten password and account deletion.
 pub async fn account(ws: &Workspace, cmd: AccountCmd, json: bool) -> Result<()> {
+    if matches!(
+        cmd,
+        AccountCmd::List
+            | AccountCmd::Add { .. }
+            | AccountCmd::Use { .. }
+            | AccountCmd::Remove { .. }
+            | AccountCmd::Verify { .. }
+    ) {
+        return accounts(ws, cmd, json).await;
+    }
     if let AccountCmd::ForgotPassword { server, email } = &cmd {
         let api = ApiClient::new(server)?;
         let v: Value = api
@@ -585,7 +759,12 @@ pub async fn account(ws: &Workspace, cmd: AccountCmd, json: bool) -> Result<()> 
     }
     let api = need_server(ws).await?;
     match cmd {
-        AccountCmd::ForgotPassword { .. } => unreachable!(),
+        AccountCmd::ForgotPassword { .. }
+        | AccountCmd::List
+        | AccountCmd::Add { .. }
+        | AccountCmd::Use { .. }
+        | AccountCmd::Remove { .. }
+        | AccountCmd::Verify { .. } => unreachable!(),
         AccountCmd::Plan => {
             let v: Value = api.get("/api/v1/me/plan").await?;
             out(json, &v, || {

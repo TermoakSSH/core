@@ -3,16 +3,71 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result, bail};
-use termoak_client::{ApiClient, Workspace};
+use termoak_client::{ApiClient, SaveTarget, Workspace};
 use termoak_core::Id;
 use termoak_core::model::*;
+
+/// The items the CLI works with: the current account (`--account`, or the
+/// one chosen with `termoak account use`) and This device.
+pub(crate) trait Items {
+    /// Live items of a kind.
+    async fn all<T: Entity>(&self) -> Result<Vec<Record<T>>>;
+    /// Deletes an item wherever it is.
+    async fn remove<T: Entity>(&self, id: Id) -> Result<()>;
+    /// Saves an item: an existing one where it is; a new one in the current
+    /// account (This device for `DeviceOnly` or without an account).
+    async fn put<T: Entity>(
+        &self,
+        data: T,
+        secret: SecretUpdate<T::Secret>,
+        sync_mode: Option<SyncMode>,
+    ) -> Result<Record<T>>;
+    /// A host's effective settings (its groups', in its own store).
+    async fn effective(&self, host: &Host) -> Result<HostSettings>;
+}
+
+impl Items for Workspace {
+    async fn all<T: Entity>(&self) -> Result<Vec<Record<T>>> {
+        Ok(self
+            .list_items::<T>(&self.default_filter())
+            .await?
+            .into_iter()
+            .map(|s| s.record)
+            .collect())
+    }
+
+    async fn remove<T: Entity>(&self, id: Id) -> Result<()> {
+        let item = self.locate(id).await?;
+        Ok(self.delete_item::<T>(item).await?)
+    }
+
+    async fn put<T: Entity>(
+        &self,
+        data: T,
+        secret: SecretUpdate<T::Secret>,
+        sync_mode: Option<SyncMode>,
+    ) -> Result<Record<T>> {
+        Ok(self
+            .save_item(SaveTarget::Auto, data, secret, sync_mode)
+            .await?
+            .record)
+    }
+
+    async fn effective(&self, host: &Host) -> Result<HostSettings> {
+        let store = match self.locate(host.id).await {
+            Ok(item) => self.store_of(item.scope)?,
+            Err(_) => self.store.clone(),
+        };
+        Ok(store.effective_settings(self.owner(), host).await?)
+    }
+}
 
 fn matches(id: Id, label: &str, reference: &str) -> bool {
     id.to_string() == reference || label.eq_ignore_ascii_case(reference)
 }
 
 pub async fn find_host(ws: &Workspace, reference: &str) -> Result<Host> {
-    let hosts = ws.store.list::<Host>(ws.owner()).await?;
+    let hosts = ws.all::<Host>().await?;
     hosts
         .iter()
         .map(|h| &h.data)
@@ -29,7 +84,7 @@ pub async fn find_host(ws: &Workspace, reference: &str) -> Result<Host> {
 
 /// Several comma-separated hosts; `@tag` selects by tag.
 pub async fn find_hosts(ws: &Workspace, list: &str) -> Result<Vec<Host>> {
-    let all = ws.store.list::<Host>(ws.owner()).await?;
+    let all = ws.all::<Host>().await?;
     let mut out: Vec<Host> = Vec::new();
     for r in list.split(',').map(str::trim).filter(|s| !s.is_empty()) {
         if let Some(tag) = r.strip_prefix('@') {
@@ -54,8 +109,7 @@ pub async fn find_hosts(ws: &Workspace, list: &str) -> Result<Vec<Host>> {
 }
 
 pub async fn find_key(ws: &Workspace, reference: &str) -> Result<SshKey> {
-    ws.store
-        .list::<SshKey>(ws.owner())
+    ws.all::<SshKey>()
         .await?
         .into_iter()
         .map(|k| k.data)
@@ -64,8 +118,7 @@ pub async fn find_key(ws: &Workspace, reference: &str) -> Result<SshKey> {
 }
 
 pub async fn find_group(ws: &Workspace, reference: &str) -> Result<Group> {
-    ws.store
-        .list::<Group>(ws.owner())
+    ws.all::<Group>()
         .await?
         .into_iter()
         .map(|g| g.data)
@@ -74,8 +127,7 @@ pub async fn find_group(ws: &Workspace, reference: &str) -> Result<Group> {
 }
 
 pub async fn find_snippet(ws: &Workspace, reference: &str) -> Result<Snippet> {
-    ws.store
-        .list::<Snippet>(ws.owner())
+    ws.all::<Snippet>()
         .await?
         .into_iter()
         .map(|s| s.data)
@@ -86,7 +138,7 @@ pub async fn find_snippet(ws: &Workspace, reference: &str) -> Result<Snippet> {
 pub async fn need_server(ws: &Workspace) -> Result<ApiClient> {
     ws.server()
         .await?
-        .context("not signed in to any server: use `termoak login <url>`")
+        .context("not signed in to any server: use `termoak login <url>` (or `termoak account add`)")
 }
 
 pub enum HostsAction {
@@ -109,14 +161,11 @@ pub enum HostsAction {
 }
 
 pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()> {
-    let owner = ws.owner();
     match action {
         HostsAction::List(query) => {
             let q = query.unwrap_or_default().to_lowercase();
-            let groups = ws.store.list::<Group>(owner).await?;
-            let mut list: Vec<Record<Host>> = ws
-                .store
-                .list::<Host>(owner)
+            let groups = ws.all::<Group>().await?;
+            let mut list: Vec<Record<Host>> = ws.all::<Host>()
                 .await?
                 .into_iter()
                 .filter(|h| {
@@ -145,7 +194,7 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
                 );
             }
             for h in &list {
-                let s = ws.store.effective_settings(owner, &h.data).await?;
+                let s = ws.effective(&h.data).await?;
                 let group = h
                     .data
                     .group_id
@@ -209,11 +258,7 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
             } else {
                 SecretUpdate::Keep
             };
-            let rec = ws
-                .store
-                .save(
-                    owner,
-                    Host {
+            let rec = ws.put(Host {
                         id: Id::nil(),
                         label,
                         address,
@@ -240,13 +285,13 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
         }
         HostsAction::Show(r) => {
             let h = find_host(ws, &r).await?;
-            let s = ws.store.effective_settings(owner, &h).await?;
+            let s = ws.effective(&h).await?;
             let v = serde_json::json!({"host": h, "effective": s});
             println!("{}", serde_json::to_string_pretty(&v)?);
         }
         HostsAction::Rm(r) => {
             let h = find_host(ws, &r).await?;
-            ws.store.delete::<Host>(owner, h.id).await?;
+            ws.remove::<Host>(h.id).await?;
             println!("Host \"{}\" deleted.", h.label);
         }
         HostsAction::Test(r) => {
@@ -262,7 +307,7 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
                 let mut host = h.clone();
                 host.os = Some(i.id.clone());
                 host.os_version = Some(i.display());
-                ws.store.save(owner, host, SecretUpdate::Keep, None).await?;
+                ws.put(host, SecretUpdate::Keep, None).await?;
             }
             let info = conn.info().clone();
             conn.disconnect().await;
