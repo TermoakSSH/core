@@ -29,6 +29,7 @@ use crate::Id;
 use crate::error::{CoreError, Result, codes};
 use crate::model::{EntityKind, HostSettings};
 use crate::store::references;
+use uuid::Uuid;
 
 /// Move (keeps the ids) or copy (new ids).
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -55,7 +56,7 @@ pub enum Dependencies {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct ItemRef {
     pub kind: EntityKind,
-    pub id: Id,
+    pub id: Uuid,
 }
 
 /// `POST /vaults/{target}/transfer`.
@@ -79,15 +80,15 @@ pub struct TransferRequest {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct CopiedItem {
     pub kind: EntityKind,
-    pub from: Id,
-    pub to: Id,
+    pub from: Uuid,
+    pub to: Uuid,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct DetachedRef {
     pub kind: EntityKind,
-    pub id: Id,
+    pub id: Uuid,
     pub field: String,
 }
 
@@ -96,7 +97,7 @@ pub struct DetachedRef {
 pub struct TransferWarning {
     pub code: String,
     pub kind: EntityKind,
-    pub id: Id,
+    pub id: Uuid,
 }
 
 /// Outcome (or plan, with `dry_run`).

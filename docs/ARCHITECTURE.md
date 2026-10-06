@@ -31,10 +31,40 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
   `dirty`, `deleted` and `updated_at` columns. Clients use the same schema
   with `owner = Uuid::nil()`. All SQLite access goes through
   `spawn_blocking`.
+- **Vaults** (`store/vaults.rs`, schema v9). Every entity is in a vault
+  (`entities.vault_id`); every user has a personal vault whose id is the
+  user id, users own `shared` vaults and teams own `team` vaults. On the
+  server access is decided only by the vault: `VaultAccess` (the user's
+  effective role in every vault, the maximum by rank of owner, team role,
+  team member role and grants) is cached per user and invalidated by every
+  change to vaults, grants, teams or team members. The vault-scoped
+  functions (`list_in`, `get_in`, `save_in`, `delete_in`, `vault_changes`,
+  `apply_remote_v2`, `move_entities`, `transfer`, `resolve_in`) take it;
+  the owner-based ones (`list`, `get`, `save`, `apply_remote`...) stay for
+  the clients' own stores. Every secret opened for a user goes through one
+  check, `VaultAccess::authorize_secret` (`Reveal` needs Editor, `Server`
+  any role, `Credentials` Editor or a non-Strict Use-only).
+- **Vault keys.** On the server each vault has its own key (VK), created on
+  the first secret written to it and wrapped with the master key
+  (`vault_key_wraps`, recipient `server`; per-member wraps are reserved for
+  end-to-end encrypted vaults). New secrets use the AAD
+  `termoak:vault:{vault}:{version}:{kind}:{id}`; older ones
+  (`key_version IS NULL`, master key and `aceitunoak:{kind}:{id}`) still
+  open and are resealed in the background. Unwrapped keys are cached (LRU,
+  wiped on drop). Moving an item reseals its secret; deleting a vault
+  deletes its key. Clients keep sealing with their device key.
+- **Transfers** (`transfer.rs`). A pure planner for moving or copying items
+  between vaults (selection of groups, hosts, forwards, memories and known
+  hosts; dependencies moved, copied or detached; groups flattened), shared
+  by the server and the clients.
 - **Resolution.** `resolve_host` merges, in order, the settings of the host,
   of its group and parent groups, the identity and the keys, and also
   resolves the jump chain. The result is a `ResolvedHost` whose `Debug`
-  hides the secrets.
+  hides the secrets. `resolve_in` (server) looks every reference up in the
+  host's vault only: a reference to another vault resolves as missing, so
+  nobody can make the server use a key from a vault they cannot see.
+  `resolve_local` (clients) does the same in an account store and falls back
+  to the device store for "This device" items.
 - **Users and devices.** Passwords use Argon2id. Each device has an access
   token and a refresh token, and the database only stores their SHA-256
   hash. Refreshing rotates both tokens.
@@ -56,7 +86,12 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
 - Other modules: `exec` (with a timeout), `sftp`, `forward` (L, R and a
   built-in SOCKS5 for D), `keys` (generation, import and fingerprints),
   `recording` (asciicast v2), `detect` (remote operating system) and `pool`
-  (reuses connections for exec and SFTP).
+  (reuses connections for exec, SFTP and the AI on the server; it checks the
+  user's vault access on every call and drops connections when it is
+  revoked).
+- `StoreVerifier` keeps known hosts in the store: owner-based on clients;
+  on the server it looks in the host's vault and then the user's personal
+  vault, and saves a new key where the user is Editor.
 
 ### `termoak-server`
 
@@ -142,6 +177,15 @@ See [AI.md](AI.md).
 3. Deletions travel as tombstones (`deleted`).
 4. Secrets are encrypted with the master key of each side: in transit they
    travel in plain text inside TLS and are encrypted again when stored.
+
+Sync v2 (`POST /api/v1/vaults/sync`) keeps one cursor per vault (the
+highest global `rev` delivered for it), returns the authoritative list of
+vaults the user can access (a missing one was lost: the client wipes it),
+departures of moved items (`entity_departures`), explicit rejections, a
+`resync` list when the role changes between Use-only and Editor, and pages
+with `more`. Use-only vaults never send secrets (`has_secret` instead). The
+legacy `/api/v1/sync` serves only the personal vault, with departures as
+deletions, for apps before vaults.
 
 ## Clients
 

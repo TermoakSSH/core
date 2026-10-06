@@ -24,6 +24,7 @@ use crate::model::{
 use crate::time::now_ms;
 use crate::transfer::{self, Item, TransferMode, TransferRequest, TransferResult};
 use crate::{Id, new_id};
+use uuid::Uuid;
 
 struct Row {
     id: Id,
@@ -300,7 +301,7 @@ impl VaultChanges {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct SyncRejection {
-    pub id: Id,
+    pub id: Uuid,
     pub code: String,
     pub message: String,
 }
@@ -309,7 +310,7 @@ pub struct SyncRejection {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct SyncWarning {
-    pub id: Id,
+    pub id: Uuid,
     pub code: String,
     pub field: String,
 }
@@ -901,6 +902,19 @@ impl Store {
                 open_secret(c, keys, &row, T::KIND)
             }
             _ => Err(not_found::<T>(id)),
+        })
+        .await
+    }
+
+    /// Kind and vault of a live entity `access` can see (any kind).
+    pub async fn locate_in(&self, access: &VaultAccess, id: Id) -> Result<(EntityKind, Id)> {
+        let access = access.clone();
+        self.call(move |c, _| match load_row(c, id)? {
+            Some(row) if !row.deleted && access.role(row.vault()).is_some() => match row.kind {
+                Some(kind) => Ok((kind, row.vault())),
+                None => Err(CoreError::NotFound(format!("item {id}"))),
+            },
+            _ => Err(CoreError::NotFound(format!("item {id}"))),
         })
         .await
     }

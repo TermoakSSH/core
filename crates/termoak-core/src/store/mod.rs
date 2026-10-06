@@ -601,6 +601,26 @@ const MIGRATIONS: &[&str] = &[
     "#,
 ];
 
+/// Schema version of the latest migration.
+pub fn schema_version() -> usize {
+    MIGRATIONS.len()
+}
+
+/// Creates (or upgrades) the database at `path` only up to schema
+/// `version`, without opening a store: for upgrade tests and dry runs of a
+/// migration on a copy.
+pub fn create_at_version(path: &Path, version: usize) -> Result<()> {
+    let conn = Connection::open(path)?;
+    let current: i64 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
+    for (i, sql) in MIGRATIONS.iter().enumerate().take(version) {
+        let v = i as i64 + 1;
+        if v > current {
+            conn.execute_batch(&format!("BEGIN; {sql}; PRAGMA user_version = {v}; COMMIT;"))?;
+        }
+    }
+    Ok(())
+}
+
 fn migrate(conn: &Connection) -> Result<()> {
     let current: i64 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
     for (i, sql) in MIGRATIONS.iter().enumerate() {
