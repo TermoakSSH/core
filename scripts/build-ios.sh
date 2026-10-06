@@ -5,13 +5,14 @@
 # Requirements: macOS with Xcode (xcodebuild, lipo) and rustup.
 # NOT TESTED in CI (no Mac there): see docs/MOBILE.md.
 #
-# Usage: scripts/build-ios.sh [release|debug]   (release by default)
+# Usage: scripts/build-ios.sh [release|debug]   (release by default;
+# release uses the size-optimized `mobile` Cargo profile)
 set -euo pipefail
 
 profile="${1:-release}"
 case "$profile" in
-  release) cargo_flags=(--release) ;;
-  debug) cargo_flags=() ;;
+  release) cargo_flags=(--profile mobile); out_dir=mobile ;;
+  debug) cargo_flags=(); out_dir=debug ;;
   *) echo "unknown profile: $profile (use release or debug)" >&2; exit 1 ;;
 esac
 
@@ -43,8 +44,8 @@ mkdir -p "$work/simulator" "$work/headers/termoak_ffiFFI"
 
 # A single simulator library with both architectures.
 lipo -create \
-  "target/aarch64-apple-ios-sim/$profile/$lib" \
-  "target/x86_64-apple-ios/$profile/$lib" \
+  "target/aarch64-apple-ios-sim/$out_dir/$lib" \
+  "target/x86_64-apple-ios/$out_dir/$lib" \
   -output "$work/simulator/$lib"
 
 # C module header and modulemap. They go in a subdirectory named after the
@@ -56,7 +57,7 @@ cp "$swift_dir/termoak_ffiFFI.modulemap" "$work/headers/termoak_ffiFFI/module.mo
 xcframework="bindings/swift/termoak_ffiFFI.xcframework"
 rm -rf "$xcframework"
 xcodebuild -create-xcframework \
-  -library "target/aarch64-apple-ios/$profile/$lib" -headers "$work/headers" \
+  -library "target/aarch64-apple-ios/$out_dir/$lib" -headers "$work/headers" \
   -library "$work/simulator/$lib" -headers "$work/headers" \
   -output "$xcframework"
 

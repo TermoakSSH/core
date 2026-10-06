@@ -257,7 +257,7 @@ build_ffi() {
         export PATH=/usr/local/cargo/bin:\$PATH
         rm -rf bindings/kotlin/src/main/jniLibs
         cargo ndk ${targets[*]} --platform 26 -o bindings/kotlin/src/main/jniLibs \
-          build -p termoak-ffi --lib --release --locked"
+          build -p termoak-ffi --lib --profile mobile --locked"
     (cd bindings/kotlin/src/main && zip -qr "$dist/termoak-ffi-v$version-android-jniLibs.zip" jniLibs)
   else
     echo "Without Docker the Android libraries are not built." >&2

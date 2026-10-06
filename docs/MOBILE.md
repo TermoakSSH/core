@@ -76,6 +76,14 @@ the result.
 > repositories: Android in Docker with `scripts/release-local.sh build android`
 > and iOS with `scripts/build-ipa.sh` on a Mac.
 
+Release builds of the library use the `mobile` Cargo profile (in the
+workspace `Cargo.toml`: `opt-level = "z"`, fat LTO, one codegen unit,
+stripped; `panic` stays `unwind` so UniFFI can turn panics into errors), so
+the output is in `target/<triple>/mobile`. On Android the library is also
+linked with packed relocations (`crates/termoak-ffi/build.rs`). UniFFI's
+bindings generator is behind the crate's `bindgen` feature (only the
+`uniffi-bindgen` binary needs it), so it stays out of the library.
+
 ### iOS
 
 Requirements: macOS with Xcode and [rustup](https://rustup.rs).

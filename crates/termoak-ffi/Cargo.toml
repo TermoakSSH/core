@@ -16,9 +16,16 @@ crate-type = ["lib", "staticlib", "cdylib"]
 
 [[bin]]
 # Bindings generator (Swift/Kotlin) using the same UniFFI version as the
-# library: `cargo run -p termoak-ffi --bin uniffi-bindgen -- generate ...`
+# library: `cargo run -p termoak-ffi --features bindgen --bin uniffi-bindgen
+# -- generate ...` (scripts/generate-bindings.sh).
 name = "uniffi-bindgen"
 path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]
+
+[features]
+# Only for the uniffi-bindgen binary: UniFFI's generator (and its CLI,
+# templates and cargo metadata reader) stays out of the mobile library.
+bindgen = ["uniffi/cli", "uniffi/cargo-metadata"]
 
 [dependencies]
 termoak-core.workspace = true
@@ -28,7 +35,7 @@ url.workspace = true
 # Android Keystore) and passes it over FFI.
 # (path dependency because the workspace one enables the default features)
 termoak-client = { path = "../termoak-client", default-features = false }
-uniffi = { version = "0.32", features = ["cli"] }
+uniffi = { version = "0.32", default-features = false }
 tokio.workspace = true
 futures.workspace = true
 base64.workspace = true
