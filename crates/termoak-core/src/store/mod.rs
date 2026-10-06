@@ -601,6 +601,14 @@ const MIGRATIONS: &[&str] = &[
     UPDATE entities SET vault_id = owner_id
         WHERE vault_id IS NULL AND owner_id IN (SELECT id FROM users);
     "#,
+    // v10: sessions and devices. The last IP a device was used from and a
+    // short description of its client (`Firefox 131 on Linux`,
+    // `Termoak 0.4.0`...). NULL on devices signed in before this version
+    // until they are used again.
+    r#"
+    ALTER TABLE devices ADD COLUMN last_ip TEXT;
+    ALTER TABLE devices ADD COLUMN user_agent TEXT;
+    "#,
 ];
 
 /// Schema version of the latest migration.

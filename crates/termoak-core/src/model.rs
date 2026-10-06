@@ -997,6 +997,14 @@ pub struct Device {
     /// Receives push notifications (`apns` or `fcm`), if enabled.
     #[serde(default)]
     pub push: Option<String>,
+    /// Last IP address the device was used from (updated at most once a
+    /// minute, with `last_seen_at`).
+    #[serde(default)]
+    pub last_ip: Option<String>,
+    /// Short description of the client (`Firefox 131 on Linux`,
+    /// `Termoak 0.4.0`...).
+    #[serde(default)]
+    pub user_agent: Option<String>,
 }
 
 /// Token pair issued on sign-in or refresh.

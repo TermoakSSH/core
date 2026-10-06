@@ -59,7 +59,41 @@ pub enum SecondFactor {
 }
 
 const DEVICE_COLUMNS: &str = "id, user_id, name, platform, created_at, last_seen_at, \
-                              access_expires_at, refresh_expires_at, push_platform";
+                              access_expires_at, refresh_expires_at, push_platform, last_ip, user_agent";
+
+/// Longest IP address and client description kept for a device.
+const CLIENT_IP_MAX: usize = 64;
+const CLIENT_UA_MAX: usize = 128;
+
+/// Where a device is being used from: recorded on sign-in, on refresh and,
+/// at most once a minute (with "last seen"), when its access token is used.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ClientInfo {
+    /// Client IP address.
+    pub ip: Option<String>,
+    /// Short description of the client (`Firefox 131 on Linux`...).
+    pub user_agent: Option<String>,
+}
+
+impl ClientInfo {
+    /// Trimmed, without control characters and cut to the maximum lengths.
+    fn clean(&self) -> (Option<String>, Option<String>) {
+        fn cut(v: &Option<String>, max: usize) -> Option<String> {
+            let v: String = v
+                .as_deref()?
+                .chars()
+                .filter(|c| !c.is_control())
+                .take(max)
+                .collect();
+            let v = v.trim();
+            (!v.is_empty()).then(|| v.to_string())
+        }
+        (
+            cut(&self.ip, CLIENT_IP_MAX),
+            cut(&self.user_agent, CLIENT_UA_MAX),
+        )
+    }
+}
 
 /// Device that receives push notifications.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,6 +117,8 @@ fn map_device(r: &rusqlite::Row<'_>) -> rusqlite::Result<Device> {
         access_expires_at: r.get(6)?,
         refresh_expires_at: r.get(7)?,
         push: r.get(8)?,
+        last_ip: r.get(9)?,
+        user_agent: r.get(10)?,
     })
 }
 
@@ -560,7 +596,21 @@ impl Store {
         platform: &str,
         ttl: TokenTtl,
     ) -> Result<TokenPair> {
+        self.issue_device_from(user_id, name, platform, ttl, None)
+            .await
+    }
+
+    /// Issues tokens for a new device, recording where it signed in from.
+    pub async fn issue_device_from(
+        &self,
+        user_id: Id,
+        name: &str,
+        platform: &str,
+        ttl: TokenTtl,
+        client: Option<&ClientInfo>,
+    ) -> Result<TokenPair> {
         let (name, platform) = (name.trim().to_string(), platform.trim().to_string());
+        let (ip, ua) = client.map(ClientInfo::clean).unwrap_or_default();
         self.call(move |c, _| {
             let now = now_ms();
             let id = new_id();
@@ -575,8 +625,9 @@ impl Store {
             };
             c.execute(
                 "INSERT INTO devices (id, user_id, name, platform, access_hash, access_expires_at,
-                                      refresh_hash, refresh_expires_at, created_at, last_seen_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9)",
+                                      refresh_hash, refresh_expires_at, created_at, last_seen_at,
+                                      last_ip, user_agent)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9, ?10, ?11)",
                 params![
                     id.to_string(),
                     user_id.to_string(),
@@ -590,7 +641,9 @@ impl Store {
                     pair.access_expires_at,
                     sha256_hex(pair.refresh_token.as_bytes()),
                     pair.refresh_expires_at,
-                    now
+                    now,
+                    ip,
+                    ua
                 ],
             )?;
             Ok(pair)
@@ -600,7 +653,19 @@ impl Store {
 
     /// Validates an access token and returns its user and device.
     pub async fn authenticate(&self, access_token: &str) -> Result<Option<(User, Device)>> {
+        self.authenticate_from(access_token, None).await
+    }
+
+    /// Validates an access token and returns its user and device. With
+    /// `client`, its IP and description are recorded with "last seen" (at
+    /// most once a minute, or right away if the device has no IP yet).
+    pub async fn authenticate_from(
+        &self,
+        access_token: &str,
+        client: Option<&ClientInfo>,
+    ) -> Result<Option<(User, Device)>> {
         let hash = sha256_hex(access_token.as_bytes());
+        let (ip, ua) = client.map(ClientInfo::clean).unwrap_or_default();
         self.call(move |c, _| {
             let now = now_ms();
             let found = c
@@ -613,7 +678,9 @@ impl Store {
                     map_device,
                 )
                 .optional()?;
-            let Some(device) = found else { return Ok(None) };
+            let Some(mut device) = found else {
+                return Ok(None);
+            };
             let user = c
                 .query_row(
                     &format!("SELECT {USER_COLUMNS} FROM users WHERE id = ?1"),
@@ -625,12 +692,18 @@ impl Store {
             if user.disabled {
                 return Ok(None);
             }
-            // Updates "last seen" at most once a minute.
-            if now - device.last_seen_at > 60_000 {
+            // Updates "last seen" (and where from) at most once a minute.
+            let first_ip = ip.is_some() && device.last_ip.is_none();
+            if now - device.last_seen_at > 60_000 || first_ip {
                 c.execute(
-                    "UPDATE devices SET last_seen_at = ?2 WHERE id = ?1",
-                    params![device.id.to_string(), now],
+                    "UPDATE devices SET last_seen_at = ?2, last_ip = COALESCE(?3, last_ip),
+                            user_agent = COALESCE(?4, user_agent)
+                     WHERE id = ?1",
+                    params![device.id.to_string(), now, ip, ua],
                 )?;
+                device.last_seen_at = now;
+                device.last_ip = ip.or(device.last_ip);
+                device.user_agent = ua.or(device.user_agent);
             }
             Ok(Some((user, device)))
         })
@@ -643,7 +716,18 @@ impl Store {
         refresh_token: &str,
         ttl: TokenTtl,
     ) -> Result<Option<TokenPair>> {
+        self.refresh_device_from(refresh_token, ttl, None).await
+    }
+
+    /// Rotates the tokens using the refresh token, recording where from.
+    pub async fn refresh_device_from(
+        &self,
+        refresh_token: &str,
+        ttl: TokenTtl,
+        client: Option<&ClientInfo>,
+    ) -> Result<Option<TokenPair>> {
         let hash = sha256_hex(refresh_token.as_bytes());
+        let (ip, ua) = client.map(ClientInfo::clean).unwrap_or_default();
         self.call(move |c, _| {
             let now = now_ms();
             let device: Option<(String, String)> = c
@@ -668,7 +752,8 @@ impl Store {
             };
             c.execute(
                 "UPDATE devices SET access_hash = ?2, access_expires_at = ?3, refresh_hash = ?4,
-                        refresh_expires_at = ?5, last_seen_at = ?6
+                        refresh_expires_at = ?5, last_seen_at = ?6,
+                        last_ip = COALESCE(?7, last_ip), user_agent = COALESCE(?8, user_agent)
                  WHERE id = ?1",
                 params![
                     device_id,
@@ -676,7 +761,9 @@ impl Store {
                     pair.access_expires_at,
                     sha256_hex(pair.refresh_token.as_bytes()),
                     pair.refresh_expires_at,
-                    now
+                    now,
+                    ip,
+                    ua
                 ],
             )?;
             Ok(Some(pair))
@@ -703,6 +790,23 @@ impl Store {
                 "DELETE FROM devices WHERE user_id = ?1",
                 [user_id.to_string()],
             )?)
+        })
+        .await
+    }
+
+    /// Signs a user out of all their devices but `keep` (if any) and returns
+    /// the ones signed out.
+    pub async fn revoke_devices_except(&self, user_id: Id, keep: Option<Id>) -> Result<Vec<Id>> {
+        self.call(move |c, _| {
+            let mut stmt =
+                c.prepare("DELETE FROM devices WHERE user_id = ?1 AND id IS NOT ?2 RETURNING id")?;
+            let ids = stmt
+                .query_map(
+                    params![user_id.to_string(), keep.map(|k| k.to_string())],
+                    |r| parse_id(&r.get::<_, String>(0)?),
+                )?
+                .collect::<rusqlite::Result<Vec<_>>>()?;
+            Ok(ids)
         })
         .await
     }
@@ -984,7 +1088,7 @@ mod tests {
             SecondFactor::Invalid
         );
     }
-    use super::TokenTtl;
+    use super::{CLIENT_UA_MAX, ClientInfo, TokenTtl};
 
     #[tokio::test]
     async fn users_and_tokens() {
@@ -1079,5 +1183,88 @@ mod tests {
                 .unwrap()
                 .is_none()
         );
+    }
+
+    #[tokio::test]
+    async fn devices_record_where_they_are_used_from() {
+        let store = crate::store::test_store();
+        let user = store
+            .create_user("bea@example.com", "Bea", "long-password", false)
+            .await
+            .unwrap();
+        let from = |ip: &str, ua: &str| ClientInfo {
+            ip: Some(ip.into()),
+            user_agent: Some(ua.into()),
+        };
+        let pair = store
+            .issue_device_from(
+                user.id,
+                "Laptop",
+                "web",
+                TokenTtl::default(),
+                Some(&from("203.0.113.7", "Firefox 131 on Linux")),
+            )
+            .await
+            .unwrap();
+        let (_, dev) = store
+            .authenticate_from(&pair.access_token, Some(&from("198.51.100.1", "x")))
+            .await
+            .unwrap()
+            .unwrap();
+        // Used again within the minute: not updated yet.
+        assert_eq!(dev.last_ip.as_deref(), Some("203.0.113.7"));
+        assert_eq!(dev.user_agent.as_deref(), Some("Firefox 131 on Linux"));
+        // A refresh records it right away; a missing user agent keeps the old one.
+        let rotated = store
+            .refresh_device_from(
+                &pair.refresh_token,
+                TokenTtl::default(),
+                Some(&ClientInfo {
+                    ip: Some(" 198.51.100.1 ".into()),
+                    user_agent: None,
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+        let list = store.list_devices(user.id).await.unwrap();
+        assert_eq!(list[0].last_ip.as_deref(), Some("198.51.100.1"));
+        assert_eq!(list[0].user_agent.as_deref(), Some("Firefox 131 on Linux"));
+
+        // A device without an IP gets it on its first use.
+        let other = store
+            .issue_device(user.id, "Phone", "android", TokenTtl::default())
+            .await
+            .unwrap();
+        let long = "a".repeat(500);
+        let (_, dev) = store
+            .authenticate_from(&other.access_token, Some(&from("2001:db8::1", &long)))
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(dev.last_ip.as_deref(), Some("2001:db8::1"));
+        assert_eq!(dev.user_agent.as_deref().map(str::len), Some(CLIENT_UA_MAX));
+
+        // Signing out the others keeps the current one.
+        let third = store
+            .issue_device(user.id, "Tablet", "ios", TokenTtl::default())
+            .await
+            .unwrap();
+        let mut gone = store
+            .revoke_devices_except(user.id, Some(rotated.device_id))
+            .await
+            .unwrap();
+        gone.sort();
+        let mut want = vec![other.device_id, third.device_id];
+        want.sort();
+        assert_eq!(gone, want);
+        let left = store.list_devices(user.id).await.unwrap();
+        assert_eq!(left.len(), 1);
+        assert_eq!(left[0].id, rotated.device_id);
+        assert_eq!(
+            store.revoke_devices_except(user.id, None).await.unwrap(),
+            vec![rotated.device_id]
+        );
+        assert!(store.list_devices(user.id).await.unwrap().is_empty());
     }
 }
