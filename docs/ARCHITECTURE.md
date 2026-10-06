@@ -156,8 +156,30 @@ See [AI.md](AI.md).
   `RemoteEvent::Ended` carries the code when the server sends you away (no
   reconnection then). `RelayShare::subscribe` reports participants, requests
   and the driver's size to the host, which acts as the owner.
-- `Workspace` puts together the vault, the store, the server and the known
-  hosts verifier. The CLI, the desktop app and the FFI use it.
+- `Workspace` puts together the vault key, the stores, the servers and the
+  known hosts verifier. The CLI, the desktop app and the FFI use it.
+- **Several accounts** (one per server and user): the device store
+  (`termoak.db`: "This device" items, settings, command history and the
+  `accounts` registry) plus one store per account (`accounts/<id>.db`, the
+  same schema, a mirror of the vaults the account can access). Every store
+  uses the device key; account tokens are sealed with AAD
+  `termoak:account-tokens:<id>`. `Account` has its own API client, sync
+  (v2 when `/info.features.sync_v2`, otherwise the legacy sync with one
+  implicit personal vault) and events WebSocket (reconnects; `vault` events
+  trigger a sync). `items` lists, saves, deletes, resolves and transfers
+  across the stores: `Scope::Device` or `Scope::Account(id)`. Hosts resolve
+  inside their vault, then in the device store; Use-only hosts get
+  just-in-time credentials from the server (memory only, wiped once
+  connected). Signing out of an account deletes its store.
+- `servers::canonical` is the form of every server URL (and the moved
+  `aceitunoak.ohz.ovh` → `termoak.com` rule); `OFFICIAL_SERVER` can be
+  overridden at build time with `TERMOAK_OFFICIAL_SERVER`.
+- `layout::migrate` moves 0.3 data (one store, one server in `meta`) to
+  layout 2 once: a `VACUUM INTO` backup (`termoak.db.pre-accounts`, 30
+  days), an `accounts` row for the old server (signed in or not), its synced
+  rows copied to the account store and checked before they leave the device
+  store; `device_only` rows stay. It resumes with the same account if
+  interrupted.
 
 ### `termoak-cli`, `termoak-ffi` and `termoak-update`
 

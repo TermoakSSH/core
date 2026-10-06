@@ -170,7 +170,11 @@ not matter: the bindings are the same.
 | `connectTerminal(hostId, cols, rows, auth, listener)` → `TerminalHandle` | Shortcut: connect and open a terminal |
 | `TerminalScreen(cols, rows, scrollback)`: `feed`, `snapshot`, `key`, `character`, `paste`, `resize`, `scroll` | Terminal emulator (the desktop one): turns output into a screen ready to draw, and keystrokes into bytes |
 | `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection |
-| `login/register/logout/isLoggedIn/syncNow` | Server account and sync (with optional 2FA code and invitation) |
+| `login/register/logout/isLoggedIn/syncNow` | Server account and sync of the **current account** (with optional 2FA code and invitation) |
+| `officialServerUrl()`, `canonicalServerUrl(url)`, `signIn(server, email, password, totpCode)`, `signUp(...)`, `verifyAccount`, `resendAccountCode`, `signOutAccount(accountId, discardUnsynced)` | Several accounts (`ServerChoice.official` / `.custom(url:)`). Signing in again to the same server and user reuses the account; signing out deletes its data on the device (`SignOutReport.signedOut == false` when there are unsynced changes) |
+| `accounts()`, `currentAccount()`, `setAccountView(accountId)` (`nil`/`null` = all), `account(accountId)` → `AccountHandle` | Account switcher. `AccountHandle`: `syncNow`, `api*`, server sessions, AI, `subscribeEvents`, `serverSftp*` and vaults: `listVaults`, `createVault`, `updateVault`, `deleteVault`, `leaveVault`, `vaultMembers`, `addVaultMember`, `setVaultMemberRole`, `removeVaultMember`, `vaultAudit` |
+| `vaults(filter)`, `listHosts(filter)` (and every `list*`), `ItemFilter(accountIds, vaultIds, includeDevice)` | Vaults and items of the current view by default; records carry `accountId` (`nil`/`null` = This device), `vaultId`, `access` (`ItemAccess`) and `secretHidden` |
+| `transfer(items, targetAccount, targetVault, mode, dryRun)` | Move or copy between This device, vaults and accounts (`dryRun` = the plan to confirm) |
 | `verificationRequired`, `verifyCode(url, email, code)`, `resendCode(url, email)` | Email verification with the six-digit code from the email (signs in) |
 | `inviteInfo(url, token)` | Invitation details before signing up |
 | `twoFactorStatus/setupTwoFactor/enableTwoFactor/disableTwoFactor`, `qrCode(text)` | Two-step verification (TOTP) with its QR code |
@@ -204,6 +208,16 @@ Conventions:
   `hasPrivateKey` tell whether one is stored.
 - `syncMode` is `nil`/`null` when saving to keep the current one (`Synced`
   for new records); `DeviceOnly` means it never leaves the device.
+- Accounts: a record saved with `accountId` goes to that account (`vaultId`
+  for new items, default: the personal vault); without it, an existing item
+  stays where it is and a new one goes to the current account, or to This
+  device when it is `DeviceOnly` (or there is no account). Id-based calls
+  (`getHost`, `deleteHost`, `hostPassword`, `connect`...) take an optional
+  `accountId`; without it the item is looked up in the current account,
+  This device, then the other accounts.
+- Use-only items: `SecretHidden` (reveal/export), `VaultReadOnly` (save,
+  delete), `UseOnlyStrict` (Strict vault: open a server session instead)
+  and `UseOnlyNeedsServer` (offline). Events carry `"account_id"`.
 - Unsigned integers: ports, columns and rows are `UInt32` in Swift and `UInt`
   in Kotlin (`22u`).
 - Errors: a single error type, `TermoakError` in Swift and

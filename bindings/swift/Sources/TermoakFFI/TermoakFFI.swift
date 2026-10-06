@@ -672,6 +672,872 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
 
 
 /**
+ * One account: everything that talks to its server.
+ */
+public protocol AccountHandleProtocol: AnyObject, Sendable {
+    
+    /**
+     * Shares a vault with a user (by email) or a team, as `Editor` or
+     * `UseOnly`.
+     */
+    func addVaultMember(vaultId: String, target: VaultMemberTarget, role: VaultRole) async throws  -> VaultMember
+    
+    func aiAccess() async throws  -> AiAccessInfo
+    
+    func apiDelete(path: String) async throws  -> String
+    
+    func apiGet(path: String) async throws  -> String
+    
+    func apiPatch(path: String, bodyJson: String?) async throws  -> String
+    
+    func apiPost(path: String, bodyJson: String?) async throws  -> String
+    
+    func apiPut(path: String, bodyJson: String?) async throws  -> String
+    
+    func apiRequest(method: HttpMethod, path: String, bodyJson: String?) async throws  -> String
+    
+    func attachServerSession(sessionId: String, listener: ServerTerminalListener) async throws  -> ServerTerminalHandle
+    
+    func cancelAiTask(taskId: String) async throws 
+    
+    func closeServerSession(sessionId: String) async throws 
+    
+    func createAiTask(request: AiTaskRequest) async throws  -> AiTask
+    
+    /**
+     * Creates a vault (for a team: as a team owner or admin).
+     */
+    func createVault(vault: NewVault) async throws  -> VaultInfo
+    
+    func decideApproval(taskId: String, approvalId: String, approve: Bool, always: Bool) async throws 
+    
+    /**
+     * Deletes a vault and its items (managers). `confirm_name` is the
+     * vault's name, typed by the user.
+     */
+    func deleteVault(vaultId: String, confirmName: String) async throws 
+    
+    func getAiTask(taskId: String) async throws  -> AiTask
+    
+    func getServerSession(sessionId: String) async throws  -> ServerSession
+    
+    func id()  -> String
+    
+    func info() throws  -> AccountInfo
+    
+    /**
+     * Gives up your own grant on a vault.
+     */
+    func leaveVault(vaultId: String) async throws 
+    
+    func listAiTasks(limit: UInt32) async throws  -> [AiTask]
+    
+    func listPendingApprovals() async throws  -> [AiApproval]
+    
+    func listServerSessions() async throws  -> ServerSessionList
+    
+    /**
+     * This account's vaults from the server (with your role, owner and
+     * counts).
+     */
+    func listVaults() async throws  -> [VaultInfo]
+    
+    /**
+     * Opens a persistent terminal on this account's server.
+     */
+    func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?) async throws  -> ServerSession
+    
+    /**
+     * Asks the server for its features and your user data again.
+     */
+    func refreshInfo() async throws  -> AccountInfo
+    
+    func removeVaultMember(vaultId: String, memberId: String) async throws 
+    
+    func sendAiMessage(taskId: String, text: String) async throws  -> AiTask
+    
+    func serverSftpHome(hostId: String) async throws  -> String
+    
+    func serverSftpList(hostId: String, path: String) async throws  -> [RemoteFile]
+    
+    func sessionActivity(sessionId: String) async throws  -> SessionActivity?
+    
+    func setAiTaskMode(taskId: String, mode: AiPermissionMode) async throws 
+    
+    func setVaultMemberRole(vaultId: String, memberId: String, role: VaultRole) async throws  -> VaultMember
+    
+    /**
+     * This account's events (`"account_id"` is in every event).
+     */
+    func subscribeEvents(listener: ServerEventListener) async throws  -> EventSubscription
+    
+    /**
+     * One sync round of this account (vaults: sync v2; older servers: the
+     * legacy sync). Show a notice when `discarded`, `vaults_added` or
+     * `vaults_lost` is not empty.
+     */
+    func syncNow() async throws  -> SyncReport
+    
+    /**
+     * Changes a vault (managers; the personal vault: only name, color and
+     * icon).
+     */
+    func updateVault(vaultId: String, changes: VaultChanges) async throws  -> VaultInfo
+    
+    /**
+     * Audit of a vault (managers), newest first.
+     */
+    func vaultAudit(vaultId: String, limit: UInt32, before: Int64?) async throws  -> [AuditEvent]
+    
+    /**
+     * Members of a vault, owners and team admins included (`implicit`).
+     */
+    func vaultMembers(vaultId: String) async throws  -> [VaultMember]
+    
+}
+/**
+ * One account: everything that talks to its server.
+ */
+open class AccountHandle: AccountHandleProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_accounthandle(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_accounthandle(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Shares a vault with a user (by email) or a team, as `Editor` or
+     * `UseOnly`.
+     */
+open func addVaultMember(vaultId: String, target: VaultMemberTarget, role: VaultRole)async throws  -> VaultMember  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_add_vault_member(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterTypeVaultMemberTarget_lower(target),FfiConverterTypeVaultRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeVaultMember_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func aiAccess()async throws  -> AiAccessInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_ai_access(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiAccessInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiDelete(path: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_delete(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiGet(path: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_get(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiPatch(path: String, bodyJson: String?)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_patch(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path),FfiConverterOptionString.lower(bodyJson)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiPost(path: String, bodyJson: String?)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_post(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path),FfiConverterOptionString.lower(bodyJson)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiPut(path: String, bodyJson: String?)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_put(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path),FfiConverterOptionString.lower(bodyJson)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func apiRequest(method: HttpMethod, path: String, bodyJson: String?)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_api_request(
+                        self.uniffiCloneHandle(),FfiConverterTypeHttpMethod_lower(method),FfiConverterString.lower(path),FfiConverterOptionString.lower(bodyJson)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func attachServerSession(sessionId: String, listener: ServerTerminalListener)async throws  -> ServerTerminalHandle  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_attach_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterTypeServerTerminalListener_lower(listener)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeServerTerminalHandle_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func cancelAiTask(taskId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_cancel_ai_task(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func closeServerSession(sessionId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_close_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func createAiTask(request: AiTaskRequest)async throws  -> AiTask  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_create_ai_task(
+                        self.uniffiCloneHandle(),FfiConverterTypeAiTaskRequest_lower(request)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiTask_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Creates a vault (for a team: as a team owner or admin).
+     */
+open func createVault(vault: NewVault)async throws  -> VaultInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_create_vault(
+                        self.uniffiCloneHandle(),FfiConverterTypeNewVault_lower(vault)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeVaultInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func decideApproval(taskId: String, approvalId: String, approve: Bool, always: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_decide_approval(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterString.lower(approvalId),FfiConverterBool.lower(approve),FfiConverterBool.lower(always)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Deletes a vault and its items (managers). `confirm_name` is the
+     * vault's name, typed by the user.
+     */
+open func deleteVault(vaultId: String, confirmName: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_delete_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterString.lower(confirmName)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func getAiTask(taskId: String)async throws  -> AiTask  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_get_ai_task(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiTask_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func getServerSession(sessionId: String)async throws  -> ServerSession  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_get_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerSession_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func id() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_accounthandle_id(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func info()throws  -> AccountInfo  {
+    return try  FfiConverterTypeAccountInfo_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_accounthandle_info(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Gives up your own grant on a vault.
+     */
+open func leaveVault(vaultId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_leave_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listAiTasks(limit: UInt32)async throws  -> [AiTask]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_ai_tasks(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(limit)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAiTask.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listPendingApprovals()async throws  -> [AiApproval]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_pending_approvals(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAiApproval.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listServerSessions()async throws  -> ServerSessionList  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_server_sessions(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerSessionList_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * This account's vaults from the server (with your role, owner and
+     * counts).
+     */
+open func listVaults()async throws  -> [VaultInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_vaults(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeVaultInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Opens a persistent terminal on this account's server.
+     */
+open func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?)async throws  -> ServerSession  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_open_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterOptionString.lower(title),FfiConverterOptionBool.lower(record)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerSession_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Asks the server for its features and your user data again.
+     */
+open func refreshInfo()async throws  -> AccountInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_refresh_info(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAccountInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func removeVaultMember(vaultId: String, memberId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_remove_vault_member(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterString.lower(memberId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func sendAiMessage(taskId: String, text: String)async throws  -> AiTask  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_send_ai_message(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterString.lower(text)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiTask_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpHome(hostId: String)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_home(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpList(hostId: String, path: String)async throws  -> [RemoteFile]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_list(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeRemoteFile.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func sessionActivity(sessionId: String)async throws  -> SessionActivity?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_session_activity(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeSessionActivity.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setAiTaskMode(taskId: String, mode: AiPermissionMode)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_ai_task_mode(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterTypeAiPermissionMode_lower(mode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setVaultMemberRole(vaultId: String, memberId: String, role: VaultRole)async throws  -> VaultMember  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_vault_member_role(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterString.lower(memberId),FfiConverterTypeVaultRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeVaultMember_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * This account's events (`"account_id"` is in every event).
+     */
+open func subscribeEvents(listener: ServerEventListener)async throws  -> EventSubscription  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_subscribe_events(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerEventListener_lower(listener)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeEventSubscription_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * One sync round of this account (vaults: sync v2; older servers: the
+     * legacy sync). Show a notice when `discarded`, `vaults_added` or
+     * `vaults_lost` is not empty.
+     */
+open func syncNow()async throws  -> SyncReport  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_sync_now(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSyncReport_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Changes a vault (managers; the personal vault: only name, color and
+     * icon).
+     */
+open func updateVault(vaultId: String, changes: VaultChanges)async throws  -> VaultInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_update_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterTypeVaultChanges_lower(changes)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeVaultInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Audit of a vault (managers), newest first.
+     */
+open func vaultAudit(vaultId: String, limit: UInt32, before: Int64? = nil)async throws  -> [AuditEvent]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_vault_audit(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterUInt32.lower(limit),FfiConverterOptionInt64.lower(before)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAuditEvent.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Members of a vault, owners and team admins included (`implicit`).
+     */
+open func vaultMembers(vaultId: String)async throws  -> [VaultMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_vault_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeVaultMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccountHandle: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = AccountHandle
+
+    public static func lift(_ handle: UInt64) throws -> AccountHandle {
+        return AccountHandle(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: AccountHandle) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountHandle {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: AccountHandle, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountHandle_lift(_ handle: UInt64) throws -> AccountHandle {
+    return try FfiConverterTypeAccountHandle.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountHandle_lower(_ value: AccountHandle) -> UInt64 {
+    return FfiConverterTypeAccountHandle.lower(value)
+}
+
+
+
+
+
+
+/**
  * Running tunnel. It is stopped with [`ActiveForward::stop`] or when dropped.
  */
 public protocol ActiveForwardProtocol: AnyObject, Sendable {
@@ -1728,12 +2594,14 @@ public func FfiConverterTypeLogListener_lower(_ value: LogListener) -> UInt64 {
 public protocol ServerEventListener: AnyObject, Sendable {
     
     /**
-     * Event as JSON. Types (`type`): `hello` (user and pending approvals),
+     * Event as JSON, with `"account_id"` (the account it comes from).
+     * Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
      * `prompt_pending`, `join_request`, `control_request`,
-     * `control_granted`, `control_revoked`) and `lagged` (events were
-     * lost: refresh).
+     * `control_granted`, `control_revoked`), `vault` (`event`: `changed`
+     * or `access`, with `vault_id`; the account syncs by itself) and
+     * `lagged` (events were lost: refresh).
      */
     func onEvent(eventJson: String) 
     
@@ -1805,12 +2673,14 @@ open class ServerEventListenerImpl: ServerEventListener, @unchecked Sendable {
 
     
     /**
-     * Event as JSON. Types (`type`): `hello` (user and pending approvals),
+     * Event as JSON, with `"account_id"` (the account it comes from).
+     * Types (`type`): `hello` (user and pending approvals),
      * `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
      * `session_opened`, `session_closed`, `session_shared`,
      * `prompt_pending`, `join_request`, `control_request`,
-     * `control_granted`, `control_revoked`) and `lagged` (events were
-     * lost: refresh).
+     * `control_granted`, `control_revoked`), `vault` (`event`: `changed`
+     * or `access`, with `vault_id`; the account syncs by itself) and
+     * `lagged` (events were lost: refresh).
      */
 open func onEvent(eventJson: String)  {try! rustCall() {
         uniffiCallStatus in
@@ -3473,6 +4343,12 @@ public func FfiConverterTypeSharedTerminalListener_lower(_ value: SharedTerminal
  */
 public protocol SshSessionProtocol: AnyObject, Sendable {
     
+    /**
+     * Host it is connected to.
+     * Account of the host (`None`: This device).
+     */
+    func accountId()  -> String?
+    
     func details()  -> ConnectionDetails
     
     /**
@@ -3500,9 +4376,6 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
      */
     func exec(command: String, timeoutSecs: UInt32) async throws  -> ExecResult
     
-    /**
-     * Host it is connected to.
-     */
     func hostId()  -> String
     
     func isClosed()  -> Bool
@@ -3643,6 +4516,19 @@ open class SshSession: SshSessionProtocol, @unchecked Sendable {
     
 
     
+    /**
+     * Host it is connected to.
+     * Account of the host (`None`: This device).
+     */
+open func accountId() -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_sshsession_account_id(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
 open func details() -> ConnectionDetails  {
     return try!  FfiConverterTypeConnectionDetails_lift(try! rustCall() {
         uniffiCallStatus in
@@ -3733,9 +4619,6 @@ open func exec(command: String, timeoutSecs: UInt32)async throws  -> ExecResult 
         )
 }
     
-    /**
-     * Host it is connected to.
-     */
 open func hostId() -> String  {
     return try!  FfiConverterString.lift(try! rustCall() {
         uniffiCallStatus in
@@ -5188,6 +6071,91 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges) async throws  -> SessionShareInfo
     
     /**
+     * One account: its sync, API, server sessions, AI, events and vaults.
+     */
+    func account(accountId: String) throws  -> AccountHandle
+    
+    /**
+     * The account shown (`None`: all of them).
+     */
+    func accountView()  -> String?
+    
+    /**
+     * The accounts on this device, in order.
+     */
+    func accounts()  -> [AccountInfo]
+    
+    /**
+     * The current account (the one of the view; in the "all accounts"
+     * view, the first active one).
+     */
+    func currentAccount()  -> AccountInfo?
+    
+    /**
+     * Emails a new verification code to an account.
+     */
+    func resendAccountCode(accountId: String) async throws 
+    
+    /**
+     * Shows one account (`Some`) or every account together (`None`). No
+     * network needed; saved for the next start.
+     */
+    func setAccountView(accountId: String?) throws 
+    
+    /**
+     * Syncs an account shortly after its items change on this device, and
+     * when its server announces changes (off by default).
+     */
+    func setAutoSync(enabled: Bool) 
+    
+    /**
+     * Signs in (adds the account, or signs the same account in again) and
+     * makes it current. With two-factor authentication and no code it
+     * fails with `TotpRequired`. Then sync it (`account(id).sync_now()`).
+     */
+    func signIn(server: ServerChoice, email: String, password: String, totpCode: String?) async throws  -> AccountInfo
+    
+    /**
+     * Signs out of one account and deletes its data on this device (other
+     * accounts and This-device items stay). Unregister the push token on
+     * that server first. With unsynced changes and `discard_unsynced =
+     * false`, nothing happens: see [`SignOutReport::signed_out`].
+     */
+    func signOutAccount(accountId: String, discardUnsynced: Bool) async throws  -> SignOutReport
+    
+    /**
+     * Creates an account (official server, or your own with open
+     * registration or an invitation). If the server verifies emails, the
+     * account is `Unverified` until `verify_account`.
+     */
+    func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String?) async throws  -> AccountInfo
+    
+    /**
+     * Moves or copies items (all from the same place) to an account's vault
+     * (`target_account` + `target_vault`, default: its personal vault) or
+     * to This device (`target_account = None`). Inside one account it is
+     * an online operation; between This device and an account, or across
+     * accounts, it happens here and syncs. `dry_run` returns the plan.
+     */
+    func transfer(items: [ItemRef], targetAccount: String?, targetVault: String?, mode: TransferMode, dryRun: Bool) async throws  -> TransferResult
+    
+    /**
+     * Changes not uploaded yet of an account.
+     */
+    func unsyncedChanges(accountId: String) throws  -> UnsyncedChanges
+    
+    /**
+     * The vaults of the accounts of `filter` (default: the current view),
+     * as of their last sync.
+     */
+    func vaults(filter: ItemFilter?) throws  -> [VaultInfo]
+    
+    /**
+     * Verifies an account's email with the six-digit code.
+     */
+    func verifyAccount(accountId: String, code: String, totpCode: String?) async throws  -> AccountInfo
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
     func clearCommandHistory(hostId: String?) throws 
@@ -5238,39 +6206,39 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Deletes a remote file or directory (`recursive` for non-empty
      * directories).
      */
-    func serverSftpDelete(hostId: String, path: String, recursive: Bool) async throws 
+    func serverSftpDelete(hostId: String, path: String, recursive: Bool, accountId: String?) async throws 
     
     /**
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
      */
-    func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?) async throws  -> UInt64
+    func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String?) async throws  -> UInt64
     
     /**
      * The user's home directory on a host, over SFTP from the server.
      */
-    func serverSftpHome(hostId: String) async throws  -> String
+    func serverSftpHome(hostId: String, accountId: String?) async throws  -> String
     
     /**
      * Lists a directory over SFTP from the server.
      */
-    func serverSftpList(hostId: String, path: String) async throws  -> [RemoteFile]
+    func serverSftpList(hostId: String, path: String, accountId: String?) async throws  -> [RemoteFile]
     
     /**
      * Creates a remote directory (`parents` = also the intermediate ones).
      */
-    func serverSftpMkdir(hostId: String, path: String, parents: Bool) async throws 
+    func serverSftpMkdir(hostId: String, path: String, parents: Bool, accountId: String?) async throws 
     
     /**
      * Renames or moves a remote file.
      */
-    func serverSftpRename(hostId: String, from: String, to: String) async throws 
+    func serverSftpRename(hostId: String, from: String, to: String, accountId: String?) async throws 
     
     /**
      * Uploads a local file to `remote_path` (replacing it if it exists).
      * Returns the number of bytes.
      */
-    func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?) async throws  -> UInt64
+    func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String?) async throws  -> UInt64
     
     /**
      * Attaches to a server session (yours or shared with you). `Hello`
@@ -5361,7 +6329,7 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func getServerSession(sessionId: String) async throws  -> ServerSession
     
     /**
-     * Whether signed in (with saved tokens).
+     * Whether the current account is signed in (with saved tokens).
      */
     func isLoggedIn() async throws  -> Bool
     
@@ -5401,16 +6369,19 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func login(url: String, email: String, password: String, totpCode: String?) async throws 
     
     /**
-     * Signs this device out of the server. Local data is kept.
+     * Signs the current account out of its server. Its local data is kept
+     * (the account asks to sign in again); `sign_out_account` also deletes
+     * it.
      */
     func logout() async throws 
     
     /**
      * Opens a persistent terminal on the server to a synced host. It stays
      * alive even if the phone disconnects; to see it, use
-     * `attach_server_session`.
+     * `attach_server_session`. The session opens on the host's account
+     * (`account_id`, or the account that has the host).
      */
-    func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?) async throws  -> ServerSession
+    func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?, accountId: String?) async throws  -> ServerSession
     
     /**
      * Creates an account (the server's first user is the admin) and signs in.
@@ -5435,7 +6406,8 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func resendCode(url: String, email: String) async throws 
     
     /**
-     * Forgets the sync revision: the next round downloads everything.
+     * Forgets the sync position of the current account: the next round
+     * downloads everything.
      */
     func resetSync() async throws 
     
@@ -5445,12 +6417,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func sendAiMessage(taskId: String, text: String) async throws  -> AiTask
     
     /**
-     * URL of the signed-in server.
+     * URL of the current account's server (if signed in).
      */
     func serverUrl() async throws  -> String?
     
     /**
-     * Email used for the last sign-in.
+     * Email of the current account.
      */
     func serverUser() async throws  -> String?
     
@@ -5483,8 +6455,9 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func setDeviceName(name: String) throws 
     
     /**
-     * One sync round: uploads local changes and downloads the server's (last
-     * writer wins). `DeviceOnly` records never leave the device.
+     * One sync round of the current account: uploads local changes and
+     * downloads the server's (last writer wins). `DeviceOnly` records never
+     * leave the device.
      */
     func syncNow() async throws  -> SyncReport
     
@@ -5520,113 +6493,126 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     /**
      * Connects to a host over SSH from this device (through its jumps).
      * `auth` answers the prompts (fingerprint, 2FA, password...).
+     * `account_id`: the account of the host (default: wherever it is). A
+     * Use-only host gets its credentials from the server just for this
+     * connection (`UseOnlyStrict`: open a server session instead;
+     * `UseOnlyNeedsServer`: offline).
      */
-    func connect(hostId: String, auth: AuthHandler) async throws  -> SshSession
+    func connect(hostId: String, auth: AuthHandler, accountId: String?) async throws  -> SshSession
     
     /**
      * Shortcut: connects and opens a terminal. The connection remains
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
      */
-    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener) async throws  -> TerminalHandle
+    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String?) async throws  -> TerminalHandle
     
     /**
      * The vault's data directory.
      */
     func dataDir()  -> String
     
-    func deleteForward(id: String) throws 
+    func deleteForward(id: String, accountId: String?) throws 
     
-    func deleteGroup(id: String) throws 
+    func deleteGroup(id: String, accountId: String?) throws 
     
-    func deleteHost(id: String) throws 
+    func deleteHost(id: String, accountId: String?) throws 
     
-    func deleteIdentity(id: String) throws 
+    func deleteIdentity(id: String, accountId: String?) throws 
     
-    func deleteKey(id: String) throws 
+    func deleteKey(id: String, accountId: String?) throws 
     
     /**
      * Forgets a server key (e.g. after reinstalling the server).
      */
-    func deleteKnownHost(id: String) throws 
+    func deleteKnownHost(id: String, accountId: String?) throws 
     
-    func deleteMemory(id: String) throws 
+    func deleteMemory(id: String, accountId: String?) throws 
     
-    func deleteSnippet(id: String) throws 
+    func deleteSnippet(id: String, accountId: String?) throws 
     
     /**
      * The host's effective settings: those of its groups (outermost to
      * innermost) with the host's own on top.
      */
-    func effectiveSettings(hostId: String) throws  -> HostSettings
+    func effectiveSettings(hostId: String, accountId: String?) throws  -> HostSettings
     
     /**
-     * The saved private key (OpenSSH/PEM format), to export it.
+     * The saved private key (OpenSSH/PEM format), to export it. Use-only
+     * keys fail with `SecretHidden`.
      */
-    func exportPrivateKey(id: String) throws  -> String?
+    func exportPrivateKey(id: String, accountId: String?) throws  -> String?
     
     /**
      * Generates a new key and saves it in the vault. With a `passphrase`, the
      * private key is encrypted with it; `store_passphrase` decides whether the
      * passphrase is saved too (otherwise it is asked for when connecting).
+     * `account_id`/`vault_id`: where to save it (see `SshHost.account_id`).
      */
-    func generateKey(label: String, keyType: KeyType, comment: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?) async throws  -> SshKey
+    func generateKey(label: String, keyType: KeyType, comment: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?, accountId: String?, vaultId: String?) async throws  -> SshKey
     
-    func getForward(id: String) throws  -> PortForward
+    func getForward(id: String, accountId: String?) throws  -> PortForward
     
-    func getGroup(id: String) throws  -> HostGroup
+    func getGroup(id: String, accountId: String?) throws  -> HostGroup
     
-    func getHost(id: String) throws  -> SshHost
+    /**
+     * A host. `account_id`: where to look (default: the current account,
+     * This device, then the other accounts).
+     */
+    func getHost(id: String, accountId: String?) throws  -> SshHost
     
-    func getIdentity(id: String) throws  -> SshIdentity
+    func getIdentity(id: String, accountId: String?) throws  -> SshIdentity
     
-    func getKey(id: String) throws  -> SshKey
+    func getKey(id: String, accountId: String?) throws  -> SshKey
     
-    func getSnippet(id: String) throws  -> Snippet
+    func getSnippet(id: String, accountId: String?) throws  -> Snippet
     
     /**
      * Whether a proxy password is saved.
      */
-    func hostHasProxyPassword(id: String) throws  -> Bool
+    func hostHasProxyPassword(id: String, accountId: String?) throws  -> Bool
     
     /**
-     * The host's saved password (to show or copy it).
+     * The host's saved password (to show or copy it). Use-only hosts fail
+     * with `SecretHidden`.
      */
-    func hostPassword(id: String) throws  -> String?
+    func hostPassword(id: String, accountId: String?) throws  -> String?
     
-    func identityPassword(id: String) throws  -> String?
+    func identityPassword(id: String, accountId: String?) throws  -> String?
     
     /**
      * Imports a private key (OpenSSH, PEM PKCS#1/PKCS#8 or unencrypted PuTTY)
      * and saves it in the vault.
      */
-    func importKey(label: String, privateKey: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?) async throws  -> SshKey
+    func importKey(label: String, privateKey: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?, accountId: String?, vaultId: String?) async throws  -> SshKey
     
     /**
      * Saved tunnels; with `host_id`, only that host's.
      */
-    func listForwards(hostId: String?) throws  -> [PortForward]
+    func listForwards(hostId: String?, filter: ItemFilter?) throws  -> [PortForward]
     
-    func listGroups() throws  -> [HostGroup]
+    func listGroups(filter: ItemFilter?) throws  -> [HostGroup]
     
     /**
-     * Hosts, in creation order.
+     * Hosts of `filter` (default: the current view, i.e. the current
+     * account, or every account, plus This device), in creation order.
+     * The same host seen through two accounts appears twice.
      */
-    func listHosts() throws  -> [SshHost]
+    func listHosts(filter: ItemFilter?) throws  -> [SshHost]
     
-    func listIdentities() throws  -> [SshIdentity]
+    func listIdentities(filter: ItemFilter?) throws  -> [SshIdentity]
     
-    func listKeys() throws  -> [SshKey]
+    func listKeys(filter: ItemFilter?) throws  -> [SshKey]
     
     /**
      * Trusted server keys (added when accepting a new fingerprint while
      * connecting).
      */
-    func listKnownHosts() throws  -> [KnownHost]
+    func listKnownHosts(filter: ItemFilter?) throws  -> [KnownHost]
     
-    func listMemories() throws  -> [AiMemory]
+    func listMemories(filter: ItemFilter?) throws  -> [AiMemory]
     
-    func listSnippets() throws  -> [Snippet]
+    func listSnippets(filter: ItemFilter?) throws  -> [Snippet]
     
     func saveForward(forward: PortForward) throws  -> PortForward
     
@@ -5654,7 +6640,7 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     /**
      * Changes a host's proxy password (`HostSettings.proxy`).
      */
-    func setHostProxyPassword(id: String, password: SecretChange) throws 
+    func setHostProxyPassword(id: String, password: SecretChange, accountId: String?) throws 
     
 }
 /**
@@ -6385,6 +7371,234 @@ open func updateServerSessionShare(sessionId: String, shareId: String, changes: 
 }
     
     /**
+     * One account: its sync, API, server sessions, AI, events and vaults.
+     */
+open func account(accountId: String)throws  -> AccountHandle  {
+    return try  FfiConverterTypeAccountHandle_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_account(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(accountId),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The account shown (`None`: all of them).
+     */
+open func accountView() -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_account_view(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The accounts on this device, in order.
+     */
+open func accounts() -> [AccountInfo]  {
+    return try!  FfiConverterSequenceTypeAccountInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_accounts(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The current account (the one of the view; in the "all accounts"
+     * view, the first active one).
+     */
+open func currentAccount() -> AccountInfo?  {
+    return try!  FfiConverterOptionTypeAccountInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_current_account(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Emails a new verification code to an account.
+     */
+open func resendAccountCode(accountId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_resend_account_code(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(accountId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Shows one account (`Some`) or every account together (`None`). No
+     * network needed; saved for the next start.
+     */
+open func setAccountView(accountId: String?)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_set_account_view(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Syncs an account shortly after its items change on this device, and
+     * when its server announces changes (off by default).
+     */
+open func setAutoSync(enabled: Bool)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_set_auto_sync(
+            self.uniffiCloneHandle(),
+        FfiConverterBool.lower(enabled),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Signs in (adds the account, or signs the same account in again) and
+     * makes it current. With two-factor authentication and no code it
+     * fails with `TotpRequired`. Then sync it (`account(id).sync_now()`).
+     */
+open func signIn(server: ServerChoice, email: String, password: String, totpCode: String? = nil)async throws  -> AccountInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sign_in(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterString.lower(email),FfiConverterString.lower(password),FfiConverterOptionString.lower(totpCode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAccountInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Signs out of one account and deletes its data on this device (other
+     * accounts and This-device items stay). Unregister the push token on
+     * that server first. With unsynced changes and `discard_unsynced =
+     * false`, nothing happens: see [`SignOutReport::signed_out`].
+     */
+open func signOutAccount(accountId: String, discardUnsynced: Bool)async throws  -> SignOutReport  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sign_out_account(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(accountId),FfiConverterBool.lower(discardUnsynced)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSignOutReport_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Creates an account (official server, or your own with open
+     * registration or an invitation). If the server verifies emails, the
+     * account is `Unverified` until `verify_account`.
+     */
+open func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String? = nil)async throws  -> AccountInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sign_up(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterString.lower(email),FfiConverterString.lower(name),FfiConverterString.lower(password),FfiConverterOptionString.lower(invite)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAccountInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Moves or copies items (all from the same place) to an account's vault
+     * (`target_account` + `target_vault`, default: its personal vault) or
+     * to This device (`target_account = None`). Inside one account it is
+     * an online operation; between This device and an account, or across
+     * accounts, it happens here and syncs. `dry_run` returns the plan.
+     */
+open func transfer(items: [ItemRef], targetAccount: String?, targetVault: String?, mode: TransferMode, dryRun: Bool = false)async throws  -> TransferResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_transfer(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeItemRef.lower(items),FfiConverterOptionString.lower(targetAccount),FfiConverterOptionString.lower(targetVault),FfiConverterTypeTransferMode_lower(mode),FfiConverterBool.lower(dryRun)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTransferResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Changes not uploaded yet of an account.
+     */
+open func unsyncedChanges(accountId: String)throws  -> UnsyncedChanges  {
+    return try  FfiConverterTypeUnsyncedChanges_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_unsynced_changes(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(accountId),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The vaults of the accounts of `filter` (default: the current view),
+     * as of their last sync.
+     */
+open func vaults(filter: ItemFilter? = nil)throws  -> [VaultInfo]  {
+    return try  FfiConverterSequenceTypeVaultInfo.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_vaults(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Verifies an account's email with the six-digit code.
+     */
+open func verifyAccount(accountId: String, code: String, totpCode: String? = nil)async throws  -> AccountInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_verify_account(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(accountId),FfiConverterString.lower(code),FfiConverterOptionString.lower(totpCode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAccountInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
 open func clearCommandHistory(hostId: String?)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
@@ -6504,12 +7718,12 @@ open func downloadRecording(sessionId: String, localPath: String, listener: Tran
      * Deletes a remote file or directory (`recursive` for non-empty
      * directories).
      */
-open func serverSftpDelete(hostId: String, path: String, recursive: Bool)async throws   {
+open func serverSftpDelete(hostId: String, path: String, recursive: Bool, accountId: String? = nil)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_delete(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(recursive)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(recursive),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -6524,12 +7738,12 @@ open func serverSftpDelete(hostId: String, path: String, recursive: Bool)async t
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
      */
-open func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?)async throws  -> UInt64  {
+open func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_download(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -6543,12 +7757,12 @@ open func serverSftpDownload(hostId: String, remotePath: String, localPath: Stri
     /**
      * The user's home directory on a host, over SFTP from the server.
      */
-open func serverSftpHome(hostId: String)async throws  -> String  {
+open func serverSftpHome(hostId: String, accountId: String? = nil)async throws  -> String  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_home(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -6562,12 +7776,12 @@ open func serverSftpHome(hostId: String)async throws  -> String  {
     /**
      * Lists a directory over SFTP from the server.
      */
-open func serverSftpList(hostId: String, path: String)async throws  -> [RemoteFile]  {
+open func serverSftpList(hostId: String, path: String, accountId: String? = nil)async throws  -> [RemoteFile]  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_list(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -6581,12 +7795,12 @@ open func serverSftpList(hostId: String, path: String)async throws  -> [RemoteFi
     /**
      * Creates a remote directory (`parents` = also the intermediate ones).
      */
-open func serverSftpMkdir(hostId: String, path: String, parents: Bool)async throws   {
+open func serverSftpMkdir(hostId: String, path: String, parents: Bool, accountId: String? = nil)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_mkdir(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(parents)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(parents),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -6600,12 +7814,12 @@ open func serverSftpMkdir(hostId: String, path: String, parents: Bool)async thro
     /**
      * Renames or moves a remote file.
      */
-open func serverSftpRename(hostId: String, from: String, to: String)async throws   {
+open func serverSftpRename(hostId: String, from: String, to: String, accountId: String? = nil)async throws   {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_rename(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(from),FfiConverterString.lower(to)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(from),FfiConverterString.lower(to),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -6620,12 +7834,12 @@ open func serverSftpRename(hostId: String, from: String, to: String)async throws
      * Uploads a local file to `remote_path` (replacing it if it exists).
      * Returns the number of bytes.
      */
-open func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?)async throws  -> UInt64  {
+open func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -6984,7 +8198,7 @@ open func getServerSession(sessionId: String)async throws  -> ServerSession  {
 }
     
     /**
-     * Whether signed in (with saved tokens).
+     * Whether the current account is signed in (with saved tokens).
      */
 open func isLoggedIn()async throws  -> Bool  {
     return
@@ -7108,7 +8322,9 @@ open func login(url: String, email: String, password: String, totpCode: String? 
 }
     
     /**
-     * Signs this device out of the server. Local data is kept.
+     * Signs the current account out of its server. Its local data is kept
+     * (the account asks to sign in again); `sign_out_account` also deletes
+     * it.
      */
 open func logout()async throws   {
     return
@@ -7129,14 +8345,15 @@ open func logout()async throws   {
     /**
      * Opens a persistent terminal on the server to a synced host. It stays
      * alive even if the phone disconnects; to see it, use
-     * `attach_server_session`.
+     * `attach_server_session`. The session opens on the host's account
+     * (`account_id`, or the account that has the host).
      */
-open func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?)async throws  -> ServerSession  {
+open func openServerSession(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?, accountId: String? = nil)async throws  -> ServerSession  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_open_server_session(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterOptionString.lower(title),FfiConverterOptionBool.lower(record)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterOptionString.lower(title),FfiConverterOptionBool.lower(record),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -7198,7 +8415,8 @@ open func resendCode(url: String, email: String)async throws   {
 }
     
     /**
-     * Forgets the sync revision: the next round downloads everything.
+     * Forgets the sync position of the current account: the next round
+     * downloads everything.
      */
 open func resetSync()async throws   {
     return
@@ -7236,7 +8454,7 @@ open func sendAiMessage(taskId: String, text: String)async throws  -> AiTask  {
 }
     
     /**
-     * URL of the signed-in server.
+     * URL of the current account's server (if signed in).
      */
 open func serverUrl()async throws  -> String?  {
     return
@@ -7255,7 +8473,7 @@ open func serverUrl()async throws  -> String?  {
 }
     
     /**
-     * Email used for the last sign-in.
+     * Email of the current account.
      */
 open func serverUser()async throws  -> String?  {
     return
@@ -7351,8 +8569,9 @@ open func setDeviceName(name: String)throws   {try rustCallWithError(FfiConverte
 }
     
     /**
-     * One sync round: uploads local changes and downloads the server's (last
-     * writer wins). `DeviceOnly` records never leave the device.
+     * One sync round of the current account: uploads local changes and
+     * downloads the server's (last writer wins). `DeviceOnly` records never
+     * leave the device.
      */
 open func syncNow()async throws  -> SyncReport  {
     return
@@ -7444,13 +8663,17 @@ open func verifyCode(url: String, email: String, code: String, totpCode: String?
     /**
      * Connects to a host over SSH from this device (through its jumps).
      * `auth` answers the prompts (fingerprint, 2FA, password...).
+     * `account_id`: the account of the host (default: wherever it is). A
+     * Use-only host gets its credentials from the server just for this
+     * connection (`UseOnlyStrict`: open a server session instead;
+     * `UseOnlyNeedsServer`: offline).
      */
-open func connect(hostId: String, auth: AuthHandler)async throws  -> SshSession  {
+open func connect(hostId: String, auth: AuthHandler, accountId: String? = nil)async throws  -> SshSession  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_connect(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterTypeAuthHandler_lower(auth)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterTypeAuthHandler_lower(auth),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -7466,12 +8689,12 @@ open func connect(hostId: String, auth: AuthHandler)async throws  -> SshSession 
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
      */
-open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener)async throws  -> TerminalHandle  {
+open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String? = nil)async throws  -> TerminalHandle  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener),FfiConverterOptionString.lower(accountId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -7494,47 +8717,52 @@ open func dataDir() -> String  {
 })
 }
     
-open func deleteForward(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteForward(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_forward(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteGroup(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteGroup(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_group(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteHost(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteHost(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_host(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteIdentity(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteIdentity(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_identity(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteKey(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteKey(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_key(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
@@ -7542,29 +8770,32 @@ open func deleteKey(id: String)throws   {try rustCallWithError(FfiConverterTypeT
     /**
      * Forgets a server key (e.g. after reinstalling the server).
      */
-open func deleteKnownHost(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteKnownHost(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_known_host(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteMemory(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteMemory(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_memory(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
     
-open func deleteSnippet(id: String)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func deleteSnippet(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_snippet(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
@@ -7573,25 +8804,28 @@ open func deleteSnippet(id: String)throws   {try rustCallWithError(FfiConverterT
      * The host's effective settings: those of its groups (outermost to
      * innermost) with the host's own on top.
      */
-open func effectiveSettings(hostId: String)throws  -> HostSettings  {
+open func effectiveSettings(hostId: String, accountId: String? = nil)throws  -> HostSettings  {
     return try  FfiConverterTypeHostSettings_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_effective_settings(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(hostId),uniffiCallStatus
+        FfiConverterString.lower(hostId),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
     /**
-     * The saved private key (OpenSSH/PEM format), to export it.
+     * The saved private key (OpenSSH/PEM format), to export it. Use-only
+     * keys fail with `SecretHidden`.
      */
-open func exportPrivateKey(id: String)throws  -> String?  {
+open func exportPrivateKey(id: String, accountId: String? = nil)throws  -> String?  {
     return try  FfiConverterOptionString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_export_private_key(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
@@ -7600,13 +8834,14 @@ open func exportPrivateKey(id: String)throws  -> String?  {
      * Generates a new key and saves it in the vault. With a `passphrase`, the
      * private key is encrypted with it; `store_passphrase` decides whether the
      * passphrase is saved too (otherwise it is asked for when connecting).
+     * `account_id`/`vault_id`: where to save it (see `SshHost.account_id`).
      */
-open func generateKey(label: String, keyType: KeyType, comment: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?)async throws  -> SshKey  {
+open func generateKey(label: String, keyType: KeyType, comment: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?, accountId: String? = nil, vaultId: String? = nil)async throws  -> SshKey  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_generate_key(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(label),FfiConverterTypeKeyType_lower(keyType),FfiConverterString.lower(comment),FfiConverterOptionString.lower(passphrase),FfiConverterBool.lower(storePassphrase),FfiConverterOptionTypeSyncMode.lower(syncMode)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(label),FfiConverterTypeKeyType_lower(keyType),FfiConverterString.lower(comment),FfiConverterOptionString.lower(passphrase),FfiConverterBool.lower(storePassphrase),FfiConverterOptionTypeSyncMode.lower(syncMode),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -7617,62 +8852,72 @@ open func generateKey(label: String, keyType: KeyType, comment: String, passphra
         )
 }
     
-open func getForward(id: String)throws  -> PortForward  {
+open func getForward(id: String, accountId: String? = nil)throws  -> PortForward  {
     return try  FfiConverterTypePortForward_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_forward(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func getGroup(id: String)throws  -> HostGroup  {
+open func getGroup(id: String, accountId: String? = nil)throws  -> HostGroup  {
     return try  FfiConverterTypeHostGroup_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_group(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func getHost(id: String)throws  -> SshHost  {
+    /**
+     * A host. `account_id`: where to look (default: the current account,
+     * This device, then the other accounts).
+     */
+open func getHost(id: String, accountId: String? = nil)throws  -> SshHost  {
     return try  FfiConverterTypeSshHost_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_host(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func getIdentity(id: String)throws  -> SshIdentity  {
+open func getIdentity(id: String, accountId: String? = nil)throws  -> SshIdentity  {
     return try  FfiConverterTypeSshIdentity_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_identity(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func getKey(id: String)throws  -> SshKey  {
+open func getKey(id: String, accountId: String? = nil)throws  -> SshKey  {
     return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_key(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func getSnippet(id: String)throws  -> Snippet  {
+open func getSnippet(id: String, accountId: String? = nil)throws  -> Snippet  {
     return try  FfiConverterTypeSnippet_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_snippet(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
@@ -7680,35 +8925,39 @@ open func getSnippet(id: String)throws  -> Snippet  {
     /**
      * Whether a proxy password is saved.
      */
-open func hostHasProxyPassword(id: String)throws  -> Bool  {
+open func hostHasProxyPassword(id: String, accountId: String? = nil)throws  -> Bool  {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_host_has_proxy_password(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
     /**
-     * The host's saved password (to show or copy it).
+     * The host's saved password (to show or copy it). Use-only hosts fail
+     * with `SecretHidden`.
      */
-open func hostPassword(id: String)throws  -> String?  {
+open func hostPassword(id: String, accountId: String? = nil)throws  -> String?  {
     return try  FfiConverterOptionString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_host_password(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
     
-open func identityPassword(id: String)throws  -> String?  {
+open func identityPassword(id: String, accountId: String? = nil)throws  -> String?  {
     return try  FfiConverterOptionString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_identity_password(
             self.uniffiCloneHandle(),
-        FfiConverterString.lower(id),uniffiCallStatus
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
@@ -7717,12 +8966,12 @@ open func identityPassword(id: String)throws  -> String?  {
      * Imports a private key (OpenSSH, PEM PKCS#1/PKCS#8 or unencrypted PuTTY)
      * and saves it in the vault.
      */
-open func importKey(label: String, privateKey: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?)async throws  -> SshKey  {
+open func importKey(label: String, privateKey: String, passphrase: String?, storePassphrase: Bool, syncMode: SyncMode?, accountId: String? = nil, vaultId: String? = nil)async throws  -> SshKey  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_import_key(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(label),FfiConverterString.lower(privateKey),FfiConverterOptionString.lower(passphrase),FfiConverterBool.lower(storePassphrase),FfiConverterOptionTypeSyncMode.lower(syncMode)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(label),FfiConverterString.lower(privateKey),FfiConverterOptionString.lower(passphrase),FfiConverterBool.lower(storePassphrase),FfiConverterOptionTypeSyncMode.lower(syncMode),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -7736,51 +8985,58 @@ open func importKey(label: String, privateKey: String, passphrase: String?, stor
     /**
      * Saved tunnels; with `host_id`, only that host's.
      */
-open func listForwards(hostId: String?)throws  -> [PortForward]  {
+open func listForwards(hostId: String?, filter: ItemFilter? = nil)throws  -> [PortForward]  {
     return try  FfiConverterSequenceTypePortForward.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_forwards(
             self.uniffiCloneHandle(),
-        FfiConverterOptionString.lower(hostId),uniffiCallStatus
+        FfiConverterOptionString.lower(hostId),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
-open func listGroups()throws  -> [HostGroup]  {
+open func listGroups(filter: ItemFilter? = nil)throws  -> [HostGroup]  {
     return try  FfiConverterSequenceTypeHostGroup.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_groups(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
     /**
-     * Hosts, in creation order.
+     * Hosts of `filter` (default: the current view, i.e. the current
+     * account, or every account, plus This device), in creation order.
+     * The same host seen through two accounts appears twice.
      */
-open func listHosts()throws  -> [SshHost]  {
+open func listHosts(filter: ItemFilter? = nil)throws  -> [SshHost]  {
     return try  FfiConverterSequenceTypeSshHost.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_hosts(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
-open func listIdentities()throws  -> [SshIdentity]  {
+open func listIdentities(filter: ItemFilter? = nil)throws  -> [SshIdentity]  {
     return try  FfiConverterSequenceTypeSshIdentity.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_identities(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
-open func listKeys()throws  -> [SshKey]  {
+open func listKeys(filter: ItemFilter? = nil)throws  -> [SshKey]  {
     return try  FfiConverterSequenceTypeSshKey.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_keys(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
@@ -7789,29 +9045,32 @@ open func listKeys()throws  -> [SshKey]  {
      * Trusted server keys (added when accepting a new fingerprint while
      * connecting).
      */
-open func listKnownHosts()throws  -> [KnownHost]  {
+open func listKnownHosts(filter: ItemFilter? = nil)throws  -> [KnownHost]  {
     return try  FfiConverterSequenceTypeKnownHost.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_known_hosts(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
-open func listMemories()throws  -> [AiMemory]  {
+open func listMemories(filter: ItemFilter? = nil)throws  -> [AiMemory]  {
     return try  FfiConverterSequenceTypeAiMemory.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_memories(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
     
-open func listSnippets()throws  -> [Snippet]  {
+open func listSnippets(filter: ItemFilter? = nil)throws  -> [Snippet]  {
     return try  FfiConverterSequenceTypeSnippet.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_snippets(
-            self.uniffiCloneHandle(),uniffiCallStatus
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
     )
 })
 }
@@ -7901,12 +9160,13 @@ open func saveSnippet(snippet: Snippet)throws  -> Snippet  {
     /**
      * Changes a host's proxy password (`HostSettings.proxy`).
      */
-open func setHostProxyPassword(id: String, password: SecretChange)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+open func setHostProxyPassword(id: String, password: SecretChange, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_set_host_proxy_password(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(id),
-        FfiConverterTypeSecretChange_lower(password),uniffiCallStatus
+        FfiConverterTypeSecretChange_lower(password),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 }
 }
@@ -8170,6 +9430,157 @@ public func FfiConverterTypeTransferListener_lower(_ value: TransferListener) ->
 }
 
 
+
+
+/**
+ * An account signed in on this device.
+ */
+public struct AccountInfo: Equatable, Hashable {
+    public var id: String
+    /**
+     * Canonical server URL.
+     */
+    public var serverUrl: String
+    /**
+     * The server's host, to show it ("ssh.example.com").
+     */
+    public var serverName: String
+    /**
+     * It is the official server (hide its address).
+     */
+    public var official: Bool
+    /**
+     * The connection is not encrypted (`http://`): show a warning.
+     */
+    public var insecure: Bool
+    public var email: String
+    public var name: String
+    /**
+     * The user's id on that server (also the id of their personal vault).
+     */
+    public var userId: String?
+    public var status: AccountStatus
+    public var color: String?
+    /**
+     * The current account.
+     */
+    public var isCurrent: Bool
+    /**
+     * The server has vaults; otherwise hide the vault UI for this account
+     * ("Update the server to use vaults").
+     */
+    public var vaultsSupported: Bool
+    /**
+     * Last successful sync (ms).
+     */
+    public var lastSyncAt: Int64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, 
+        /**
+         * Canonical server URL.
+         */serverUrl: String, 
+        /**
+         * The server's host, to show it ("ssh.example.com").
+         */serverName: String, 
+        /**
+         * It is the official server (hide its address).
+         */official: Bool, 
+        /**
+         * The connection is not encrypted (`http://`): show a warning.
+         */insecure: Bool, email: String, name: String, 
+        /**
+         * The user's id on that server (also the id of their personal vault).
+         */userId: String?, status: AccountStatus, color: String?, 
+        /**
+         * The current account.
+         */isCurrent: Bool, 
+        /**
+         * The server has vaults; otherwise hide the vault UI for this account
+         * ("Update the server to use vaults").
+         */vaultsSupported: Bool, 
+        /**
+         * Last successful sync (ms).
+         */lastSyncAt: Int64?) {
+        self.id = id
+        self.serverUrl = serverUrl
+        self.serverName = serverName
+        self.official = official
+        self.insecure = insecure
+        self.email = email
+        self.name = name
+        self.userId = userId
+        self.status = status
+        self.color = color
+        self.isCurrent = isCurrent
+        self.vaultsSupported = vaultsSupported
+        self.lastSyncAt = lastSyncAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AccountInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccountInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountInfo {
+        return
+            try AccountInfo(
+                id: FfiConverterString.read(from: &buf), 
+                serverUrl: FfiConverterString.read(from: &buf), 
+                serverName: FfiConverterString.read(from: &buf), 
+                official: FfiConverterBool.read(from: &buf), 
+                insecure: FfiConverterBool.read(from: &buf), 
+                email: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                userId: FfiConverterOptionString.read(from: &buf), 
+                status: FfiConverterTypeAccountStatus.read(from: &buf), 
+                color: FfiConverterOptionString.read(from: &buf), 
+                isCurrent: FfiConverterBool.read(from: &buf), 
+                vaultsSupported: FfiConverterBool.read(from: &buf), 
+                lastSyncAt: FfiConverterOptionInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AccountInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.serverUrl, into: &buf)
+        FfiConverterString.write(value.serverName, into: &buf)
+        FfiConverterBool.write(value.official, into: &buf)
+        FfiConverterBool.write(value.insecure, into: &buf)
+        FfiConverterString.write(value.email, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.userId, into: &buf)
+        FfiConverterTypeAccountStatus.write(value.status, into: &buf)
+        FfiConverterOptionString.write(value.color, into: &buf)
+        FfiConverterBool.write(value.isCurrent, into: &buf)
+        FfiConverterBool.write(value.vaultsSupported, into: &buf)
+        FfiConverterOptionInt64.write(value.lastSyncAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountInfo_lift(_ buf: RustBuffer) throws -> AccountInfo {
+    return try FfiConverterTypeAccountInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountInfo_lower(_ value: AccountInfo) -> RustBuffer {
+    return FfiConverterTypeAccountInfo.lower(value)
+}
 
 
 /**
@@ -8747,6 +10158,26 @@ public struct AiMemory: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -8756,11 +10187,31 @@ public struct AiMemory: Equatable, Hashable {
          */hostId: String? = nil, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.content = content
         self.hostId = hostId
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -8782,7 +10233,11 @@ public struct FfiConverterTypeAiMemory: FfiConverterRustBuffer {
                 id: FfiConverterString.read(from: &buf), 
                 content: FfiConverterString.read(from: &buf), 
                 hostId: FfiConverterOptionString.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -8791,6 +10246,10 @@ public struct FfiConverterTypeAiMemory: FfiConverterRustBuffer {
         FfiConverterString.write(value.content, into: &buf)
         FfiConverterOptionString.write(value.hostId, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -9593,6 +11052,67 @@ public func FfiConverterTypeConnectionDetails_lower(_ value: ConnectionDetails) 
 
 
 /**
+ * An item copied (or reused) with a new id.
+ */
+public struct CopiedItem: Equatable, Hashable {
+    public var kind: String
+    public var fromId: String
+    public var toId: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(kind: String, fromId: String, toId: String) {
+        self.kind = kind
+        self.fromId = fromId
+        self.toId = toId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CopiedItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCopiedItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CopiedItem {
+        return
+            try CopiedItem(
+                kind: FfiConverterString.read(from: &buf), 
+                fromId: FfiConverterString.read(from: &buf), 
+                toId: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CopiedItem, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.fromId, into: &buf)
+        FfiConverterString.write(value.toId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCopiedItem_lift(_ buf: RustBuffer) throws -> CopiedItem {
+    return try FfiConverterTypeCopiedItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCopiedItem_lower(_ value: CopiedItem) -> RustBuffer {
+    return FfiConverterTypeCopiedItem.lower(value)
+}
+
+
+/**
  * Newly created invitation: the code can only be seen now.
  */
 public struct CreatedAccountInvite: Equatable, Hashable {
@@ -9672,6 +11192,129 @@ public func FfiConverterTypeCreatedAccountInvite_lift(_ buf: RustBuffer) throws 
 #endif
 public func FfiConverterTypeCreatedAccountInvite_lower(_ value: CreatedAccountInvite) -> RustBuffer {
     return FfiConverterTypeCreatedAccountInvite.lower(value)
+}
+
+
+/**
+ * A reference cleared by the transfer.
+ */
+public struct DetachedReference: Equatable, Hashable {
+    public var kind: String
+    public var id: String
+    public var field: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(kind: String, id: String, field: String) {
+        self.kind = kind
+        self.id = id
+        self.field = field
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DetachedReference: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDetachedReference: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DetachedReference {
+        return
+            try DetachedReference(
+                kind: FfiConverterString.read(from: &buf), 
+                id: FfiConverterString.read(from: &buf), 
+                field: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DetachedReference, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.field, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetachedReference_lift(_ buf: RustBuffer) throws -> DetachedReference {
+    return try FfiConverterTypeDetachedReference.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDetachedReference_lower(_ value: DetachedReference) -> RustBuffer {
+    return FfiConverterTypeDetachedReference.lower(value)
+}
+
+
+/**
+ * Local changes lost in a vault (show "2 unsynced changes were
+ * discarded").
+ */
+public struct DiscardedChanges: Equatable, Hashable {
+    public var vaultId: String
+    public var vaultName: String
+    public var count: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(vaultId: String, vaultName: String, count: UInt64) {
+        self.vaultId = vaultId
+        self.vaultName = vaultName
+        self.count = count
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension DiscardedChanges: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDiscardedChanges: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DiscardedChanges {
+        return
+            try DiscardedChanges(
+                vaultId: FfiConverterString.read(from: &buf), 
+                vaultName: FfiConverterString.read(from: &buf), 
+                count: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: DiscardedChanges, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.vaultId, into: &buf)
+        FfiConverterString.write(value.vaultName, into: &buf)
+        FfiConverterUInt64.write(value.count, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDiscardedChanges_lift(_ buf: RustBuffer) throws -> DiscardedChanges {
+    return try FfiConverterTypeDiscardedChanges.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDiscardedChanges_lower(_ value: DiscardedChanges) -> RustBuffer {
+    return FfiConverterTypeDiscardedChanges.lower(value)
 }
 
 
@@ -9837,13 +11480,49 @@ public struct HostGroup: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(id: String = "", name: String, parentId: String? = nil, color: String? = nil, settings: HostSettings = HostSettings(), syncMode: SyncMode? = nil, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.name = name
         self.parentId = parentId
@@ -9851,6 +11530,10 @@ public struct HostGroup: Equatable, Hashable {
         self.settings = settings
         self.syncMode = syncMode
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -9875,7 +11558,11 @@ public struct FfiConverterTypeHostGroup: FfiConverterRustBuffer {
                 color: FfiConverterOptionString.read(from: &buf), 
                 settings: FfiConverterTypeHostSettings.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -9887,6 +11574,10 @@ public struct FfiConverterTypeHostGroup: FfiConverterRustBuffer {
         FfiConverterTypeHostSettings.write(value.settings, into: &buf)
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -10206,6 +11897,148 @@ public func FfiConverterTypeInviteInfo_lower(_ value: InviteInfo) -> RustBuffer 
 
 
 /**
+ * Which items a listing shows.
+ */
+public struct ItemFilter: Equatable, Hashable {
+    /**
+     * Accounts (`None`: every account; empty: none).
+     */
+    public var accountIds: [String]?
+    /**
+     * Vaults (`None`: every vault).
+     */
+    public var vaultIds: [String]?
+    /**
+     * Include This-device items.
+     */
+    public var includeDevice: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Accounts (`None`: every account; empty: none).
+         */accountIds: [String]? = nil, 
+        /**
+         * Vaults (`None`: every vault).
+         */vaultIds: [String]? = nil, 
+        /**
+         * Include This-device items.
+         */includeDevice: Bool = true) {
+        self.accountIds = accountIds
+        self.vaultIds = vaultIds
+        self.includeDevice = includeDevice
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ItemFilter: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeItemFilter: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ItemFilter {
+        return
+            try ItemFilter(
+                accountIds: FfiConverterOptionSequenceString.read(from: &buf), 
+                vaultIds: FfiConverterOptionSequenceString.read(from: &buf), 
+                includeDevice: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ItemFilter, into buf: inout [UInt8]) {
+        FfiConverterOptionSequenceString.write(value.accountIds, into: &buf)
+        FfiConverterOptionSequenceString.write(value.vaultIds, into: &buf)
+        FfiConverterBool.write(value.includeDevice, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemFilter_lift(_ buf: RustBuffer) throws -> ItemFilter {
+    return try FfiConverterTypeItemFilter.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemFilter_lower(_ value: ItemFilter) -> RustBuffer {
+    return FfiConverterTypeItemFilter.lower(value)
+}
+
+
+/**
+ * An item to move or copy.
+ */
+public struct ItemRef: Equatable, Hashable {
+    /**
+     * `None`: This device.
+     */
+    public var accountId: String?
+    public var id: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `None`: This device.
+         */accountId: String? = nil, id: String) {
+        self.accountId = accountId
+        self.id = id
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ItemRef: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeItemRef: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ItemRef {
+        return
+            try ItemRef(
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                id: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ItemRef, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterString.write(value.id, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemRef_lift(_ buf: RustBuffer) throws -> ItemRef {
+    return try FfiConverterTypeItemRef.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemRef_lower(_ value: ItemRef) -> RustBuffer {
+    return FfiConverterTypeItemRef.lower(value)
+}
+
+
+/**
  * Public data of a private key (preview when importing).
  */
 public struct KeyDetails: Equatable, Hashable {
@@ -10361,6 +12194,26 @@ public struct KnownHost: Equatable, Hashable {
      */
     public var fingerprint: String
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -10376,7 +12229,23 @@ public struct KnownHost: Equatable, Hashable {
          */publicKey: String, 
         /**
          * `SHA256:...` fingerprint.
-         */fingerprint: String, updatedAt: Int64) {
+         */fingerprint: String, updatedAt: Int64, 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.host = host
         self.port = port
@@ -10384,6 +12253,10 @@ public struct KnownHost: Equatable, Hashable {
         self.publicKey = publicKey
         self.fingerprint = fingerprint
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -10408,7 +12281,11 @@ public struct FfiConverterTypeKnownHost: FfiConverterRustBuffer {
                 keyType: FfiConverterString.read(from: &buf), 
                 publicKey: FfiConverterString.read(from: &buf), 
                 fingerprint: FfiConverterString.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -10420,6 +12297,10 @@ public struct FfiConverterTypeKnownHost: FfiConverterRustBuffer {
         FfiConverterString.write(value.publicKey, into: &buf)
         FfiConverterString.write(value.fingerprint, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -10541,6 +12422,101 @@ public func FfiConverterTypeLinkInvite_lower(_ value: LinkInvite) -> RustBuffer 
 
 
 /**
+ * A new vault.
+ */
+public struct NewVault: Equatable, Hashable {
+    public var name: String
+    public var description: String?
+    public var color: String?
+    public var icon: String?
+    /**
+     * Owned by this team (you must be a team owner or admin).
+     */
+    public var teamId: String?
+    /**
+     * Team vaults: role of plain team members (default `Editor`).
+     */
+    public var teamMemberRole: VaultRole?
+    /**
+     * Use-only members only connect through the server.
+     */
+    public var strict: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(name: String, description: String? = nil, color: String? = nil, icon: String? = nil, 
+        /**
+         * Owned by this team (you must be a team owner or admin).
+         */teamId: String? = nil, 
+        /**
+         * Team vaults: role of plain team members (default `Editor`).
+         */teamMemberRole: VaultRole? = nil, 
+        /**
+         * Use-only members only connect through the server.
+         */strict: Bool = false) {
+        self.name = name
+        self.description = description
+        self.color = color
+        self.icon = icon
+        self.teamId = teamId
+        self.teamMemberRole = teamMemberRole
+        self.strict = strict
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension NewVault: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNewVault: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NewVault {
+        return
+            try NewVault(
+                name: FfiConverterString.read(from: &buf), 
+                description: FfiConverterOptionString.read(from: &buf), 
+                color: FfiConverterOptionString.read(from: &buf), 
+                icon: FfiConverterOptionString.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf), 
+                teamMemberRole: FfiConverterOptionTypeVaultRole.read(from: &buf), 
+                strict: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NewVault, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.description, into: &buf)
+        FfiConverterOptionString.write(value.color, into: &buf)
+        FfiConverterOptionString.write(value.icon, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
+        FfiConverterOptionTypeVaultRole.write(value.teamMemberRole, into: &buf)
+        FfiConverterBool.write(value.strict, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNewVault_lift(_ buf: RustBuffer) throws -> NewVault {
+    return try FfiConverterTypeNewVault.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNewVault_lower(_ value: NewVault) -> RustBuffer {
+    return FfiConverterTypeNewVault.lower(value)
+}
+
+
+/**
  * Port forwarding rule.
  */
 public struct PortForward: Equatable, Hashable {
@@ -10567,6 +12543,26 @@ public struct PortForward: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -10582,7 +12578,23 @@ public struct PortForward: Equatable, Hashable {
          */autoStart: Bool = false, syncMode: SyncMode? = nil, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.label = label
         self.hostId = hostId
@@ -10594,6 +12606,10 @@ public struct PortForward: Equatable, Hashable {
         self.autoStart = autoStart
         self.syncMode = syncMode
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -10622,7 +12638,11 @@ public struct FfiConverterTypePortForward: FfiConverterRustBuffer {
                 destPort: FfiConverterOptionUInt32.read(from: &buf), 
                 autoStart: FfiConverterBool.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -10638,6 +12658,10 @@ public struct FfiConverterTypePortForward: FfiConverterRustBuffer {
         FfiConverterBool.write(value.autoStart, into: &buf)
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -12643,6 +14667,77 @@ public func FfiConverterTypeShareOptions_lower(_ value: ShareOptions) -> RustBuf
 
 
 /**
+ * What signing out did.
+ */
+public struct SignOutReport: Equatable, Hashable {
+    /**
+     * Signed out and its data deleted. `false` when there are changes not
+     * uploaded yet: ask "N changes are not uploaded yet: Sync now /
+     * Discard" and call again with `discard_unsynced` (or sync first).
+     */
+    public var signedOut: Bool
+    public var unsynced: UInt64
+    public var discarded: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Signed out and its data deleted. `false` when there are changes not
+         * uploaded yet: ask "N changes are not uploaded yet: Sync now /
+         * Discard" and call again with `discard_unsynced` (or sync first).
+         */signedOut: Bool, unsynced: UInt64, discarded: UInt64) {
+        self.signedOut = signedOut
+        self.unsynced = unsynced
+        self.discarded = discarded
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SignOutReport: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSignOutReport: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SignOutReport {
+        return
+            try SignOutReport(
+                signedOut: FfiConverterBool.read(from: &buf), 
+                unsynced: FfiConverterUInt64.read(from: &buf), 
+                discarded: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SignOutReport, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.signedOut, into: &buf)
+        FfiConverterUInt64.write(value.unsynced, into: &buf)
+        FfiConverterUInt64.write(value.discarded, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignOutReport_lift(_ buf: RustBuffer) throws -> SignOutReport {
+    return try FfiConverterTypeSignOutReport.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSignOutReport_lower(_ value: SignOutReport) -> RustBuffer {
+    return FfiConverterTypeSignOutReport.lower(value)
+}
+
+
+/**
  * A host that was not imported.
  */
 public struct SkippedImport: Equatable, Hashable {
@@ -12713,13 +14808,49 @@ public struct Snippet: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(id: String = "", name: String, script: String, description: String = "", tags: [String] = [], syncMode: SyncMode? = nil, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.name = name
         self.script = script
@@ -12727,6 +14858,10 @@ public struct Snippet: Equatable, Hashable {
         self.tags = tags
         self.syncMode = syncMode
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -12751,7 +14886,11 @@ public struct FfiConverterTypeSnippet: FfiConverterRustBuffer {
                 description: FfiConverterString.read(from: &buf), 
                 tags: FfiConverterSequenceString.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -12763,6 +14902,10 @@ public struct FfiConverterTypeSnippet: FfiConverterRustBuffer {
         FfiConverterSequenceString.write(value.tags, into: &buf)
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -12989,6 +15132,26 @@ public struct SshHost: Equatable, Hashable {
      * Read-only: last modification (ms since 1970).
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -13013,7 +15176,23 @@ public struct SshHost: Equatable, Hashable {
          */hasPassword: Bool = false, 
         /**
          * Read-only: last modification (ms since 1970).
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.label = label
         self.address = address
@@ -13028,6 +15207,10 @@ public struct SshHost: Equatable, Hashable {
         self.syncMode = syncMode
         self.hasPassword = hasPassword
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -13059,7 +15242,11 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
                 favorite: FfiConverterBool.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
                 hasPassword: FfiConverterBool.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -13078,6 +15265,10 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterBool.write(value.hasPassword, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -13114,6 +15305,26 @@ public struct SshIdentity: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -13123,7 +15334,23 @@ public struct SshIdentity: Equatable, Hashable {
          */hasPassword: Bool = false, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.label = label
         self.username = username
@@ -13131,6 +15358,10 @@ public struct SshIdentity: Equatable, Hashable {
         self.syncMode = syncMode
         self.hasPassword = hasPassword
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -13155,7 +15386,11 @@ public struct FfiConverterTypeSshIdentity: FfiConverterRustBuffer {
                 keyId: FfiConverterOptionString.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
                 hasPassword: FfiConverterBool.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -13167,6 +15402,10 @@ public struct FfiConverterTypeSshIdentity: FfiConverterRustBuffer {
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterBool.write(value.hasPassword, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -13222,6 +15461,26 @@ public struct SshKey: Equatable, Hashable {
      * Read-only.
      */
     public var updatedAt: Int64
+    /**
+     * Read-only: account the item belongs to (`None`: This device). On
+     * save, the account to save a new item into (`None`: the current
+     * account for `Synced` items, This device for `DeviceOnly` ones).
+     */
+    public var accountId: String?
+    /**
+     * Vault of the item (`None`: This device, or a server without vaults).
+     * On save, the vault for a new item (default: the personal vault);
+     * changing it for an existing item goes through `transfer`.
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it (`None` on records made by the app).
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: a secret exists but you cannot see it (Use-only vault).
+     */
+    public var secretHidden: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -13246,7 +15505,23 @@ public struct SshKey: Equatable, Hashable {
          */hasPrivateKey: Bool = false, 
         /**
          * Read-only.
-         */updatedAt: Int64 = Int64(0)) {
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Read-only: account the item belongs to (`None`: This device). On
+         * save, the account to save a new item into (`None`: the current
+         * account for `Synced` items, This device for `DeviceOnly` ones).
+         */accountId: String? = nil, 
+        /**
+         * Vault of the item (`None`: This device, or a server without vaults).
+         * On save, the vault for a new item (default: the personal vault);
+         * changing it for an existing item goes through `transfer`.
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it (`None` on records made by the app).
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: a secret exists but you cannot see it (Use-only vault).
+         */secretHidden: Bool = false) {
         self.id = id
         self.label = label
         self.algorithm = algorithm
@@ -13258,6 +15533,10 @@ public struct SshKey: Equatable, Hashable {
         self.syncMode = syncMode
         self.hasPrivateKey = hasPrivateKey
         self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
     }
 
     
@@ -13286,7 +15565,11 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
                 certificate: FfiConverterOptionString.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
                 hasPrivateKey: FfiConverterBool.read(from: &buf), 
-                updatedAt: FfiConverterInt64.read(from: &buf)
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -13302,6 +15585,10 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterBool.write(value.hasPrivateKey, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
     }
 }
 
@@ -13322,7 +15609,9 @@ public func FfiConverterTypeSshKey_lower(_ value: SshKey) -> RustBuffer {
 
 
 /**
- * Result of a sync.
+ * Result of a sync. Show a notice when `discarded`, `vaults_added` or
+ * `vaults_lost` is not empty ("You no longer have access to Ops; 2
+ * unsynced changes were discarded").
  */
 public struct SyncReport: Equatable, Hashable {
     /**
@@ -13334,9 +15623,33 @@ public struct SyncReport: Equatable, Hashable {
      */
     public var pulled: UInt64
     /**
-     * Server revision after syncing.
+     * Server revision after syncing (vaults: the highest vault cursor).
      */
     public var rev: Int64
+    /**
+     * Account synced.
+     */
+    public var accountId: String?
+    /**
+     * Items removed because they left their vault.
+     */
+    public var removed: UInt64
+    /**
+     * Local changes lost (the vault was lost, or became Use-only).
+     */
+    public var discarded: [DiscardedChanges]
+    /**
+     * Vaults shared with you since the last sync.
+     */
+    public var vaultsAdded: [VaultRef]
+    /**
+     * Vaults you no longer have access to (their items were removed).
+     */
+    public var vaultsLost: [VaultRef]
+    /**
+     * `v2` (vaults) or `legacy`.
+     */
+    public var `protocol`: String
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -13348,11 +15661,35 @@ public struct SyncReport: Equatable, Hashable {
          * Changes received from the server.
          */pulled: UInt64, 
         /**
-         * Server revision after syncing.
-         */rev: Int64) {
+         * Server revision after syncing (vaults: the highest vault cursor).
+         */rev: Int64, 
+        /**
+         * Account synced.
+         */accountId: String? = nil, 
+        /**
+         * Items removed because they left their vault.
+         */removed: UInt64 = UInt64(0), 
+        /**
+         * Local changes lost (the vault was lost, or became Use-only).
+         */discarded: [DiscardedChanges] = [], 
+        /**
+         * Vaults shared with you since the last sync.
+         */vaultsAdded: [VaultRef] = [], 
+        /**
+         * Vaults you no longer have access to (their items were removed).
+         */vaultsLost: [VaultRef] = [], 
+        /**
+         * `v2` (vaults) or `legacy`.
+         */`protocol`: String = "") {
         self.pushed = pushed
         self.pulled = pulled
         self.rev = rev
+        self.accountId = accountId
+        self.removed = removed
+        self.discarded = discarded
+        self.vaultsAdded = vaultsAdded
+        self.vaultsLost = vaultsLost
+        self.`protocol` = `protocol`
     }
 
     
@@ -13373,7 +15710,13 @@ public struct FfiConverterTypeSyncReport: FfiConverterRustBuffer {
             try SyncReport(
                 pushed: FfiConverterUInt64.read(from: &buf), 
                 pulled: FfiConverterUInt64.read(from: &buf), 
-                rev: FfiConverterInt64.read(from: &buf)
+                rev: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                removed: FfiConverterUInt64.read(from: &buf), 
+                discarded: FfiConverterSequenceTypeDiscardedChanges.read(from: &buf), 
+                vaultsAdded: FfiConverterSequenceTypeVaultRef.read(from: &buf), 
+                vaultsLost: FfiConverterSequenceTypeVaultRef.read(from: &buf), 
+                protocol: FfiConverterString.read(from: &buf)
         )
     }
 
@@ -13381,6 +15724,12 @@ public struct FfiConverterTypeSyncReport: FfiConverterRustBuffer {
         FfiConverterUInt64.write(value.pushed, into: &buf)
         FfiConverterUInt64.write(value.pulled, into: &buf)
         FfiConverterInt64.write(value.rev, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterUInt64.write(value.removed, into: &buf)
+        FfiConverterSequenceTypeDiscardedChanges.write(value.discarded, into: &buf)
+        FfiConverterSequenceTypeVaultRef.write(value.vaultsAdded, into: &buf)
+        FfiConverterSequenceTypeVaultRef.write(value.vaultsLost, into: &buf)
+        FfiConverterString.write(value.`protocol`, into: &buf)
     }
 }
 
@@ -13545,6 +15894,212 @@ public func FfiConverterTypeTeamMember_lower(_ value: TeamMember) -> RustBuffer 
 
 
 /**
+ * Outcome of a move or copy (or its plan, with `dry_run`: show "This will
+ * also copy key `deploy`" before confirming).
+ */
+public struct TransferResult: Equatable, Hashable {
+    public var moved: [TransferredItem]
+    public var copied: [CopiedItem]
+    /**
+     * Existing items of the target used instead of a copy (same key).
+     */
+    public var reused: [CopiedItem]
+    public var detached: [DetachedReference]
+    public var warnings: [TransferWarning]
+    public var dryRun: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(moved: [TransferredItem], copied: [CopiedItem], 
+        /**
+         * Existing items of the target used instead of a copy (same key).
+         */reused: [CopiedItem], detached: [DetachedReference], warnings: [TransferWarning], dryRun: Bool) {
+        self.moved = moved
+        self.copied = copied
+        self.reused = reused
+        self.detached = detached
+        self.warnings = warnings
+        self.dryRun = dryRun
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TransferResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransferResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransferResult {
+        return
+            try TransferResult(
+                moved: FfiConverterSequenceTypeTransferredItem.read(from: &buf), 
+                copied: FfiConverterSequenceTypeCopiedItem.read(from: &buf), 
+                reused: FfiConverterSequenceTypeCopiedItem.read(from: &buf), 
+                detached: FfiConverterSequenceTypeDetachedReference.read(from: &buf), 
+                warnings: FfiConverterSequenceTypeTransferWarning.read(from: &buf), 
+                dryRun: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TransferResult, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeTransferredItem.write(value.moved, into: &buf)
+        FfiConverterSequenceTypeCopiedItem.write(value.copied, into: &buf)
+        FfiConverterSequenceTypeCopiedItem.write(value.reused, into: &buf)
+        FfiConverterSequenceTypeDetachedReference.write(value.detached, into: &buf)
+        FfiConverterSequenceTypeTransferWarning.write(value.warnings, into: &buf)
+        FfiConverterBool.write(value.dryRun, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferResult_lift(_ buf: RustBuffer) throws -> TransferResult {
+    return try FfiConverterTypeTransferResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferResult_lower(_ value: TransferResult) -> RustBuffer {
+    return FfiConverterTypeTransferResult.lower(value)
+}
+
+
+/**
+ * A remark about a transferred item.
+ */
+public struct TransferWarning: Equatable, Hashable {
+    public var code: String
+    public var kind: String
+    public var id: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(code: String, kind: String, id: String) {
+        self.code = code
+        self.kind = kind
+        self.id = id
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TransferWarning: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransferWarning: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransferWarning {
+        return
+            try TransferWarning(
+                code: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterString.read(from: &buf), 
+                id: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TransferWarning, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.id, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferWarning_lift(_ buf: RustBuffer) throws -> TransferWarning {
+    return try FfiConverterTypeTransferWarning.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferWarning_lower(_ value: TransferWarning) -> RustBuffer {
+    return FfiConverterTypeTransferWarning.lower(value)
+}
+
+
+/**
+ * An item that moved.
+ */
+public struct TransferredItem: Equatable, Hashable {
+    /**
+     * `host`, `group`, `identity`, `key`, `snippet`, `forward`,
+     * `known_host` or `memory`.
+     */
+    public var kind: String
+    public var id: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `host`, `group`, `identity`, `key`, `snippet`, `forward`,
+         * `known_host` or `memory`.
+         */kind: String, id: String) {
+        self.kind = kind
+        self.id = id
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TransferredItem: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransferredItem: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransferredItem {
+        return
+            try TransferredItem(
+                kind: FfiConverterString.read(from: &buf), 
+                id: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TransferredItem, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.id, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferredItem_lift(_ buf: RustBuffer) throws -> TransferredItem {
+    return try FfiConverterTypeTransferredItem.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferredItem_lower(_ value: TransferredItem) -> RustBuffer {
+    return FfiConverterTypeTransferredItem.lower(value)
+}
+
+
+/**
  * Data to set up the authenticator app (Google Authenticator, 1Password,
  * Aegis...). Show the QR code of `otpauth_url` (see
  * [`qr_code`](crate::qr_code)) or the secret to type it in, then confirm
@@ -13677,6 +16232,546 @@ public func FfiConverterTypeTwoFactorStatus_lift(_ buf: RustBuffer) throws -> Tw
 public func FfiConverterTypeTwoFactorStatus_lower(_ value: TwoFactorStatus) -> RustBuffer {
     return FfiConverterTypeTwoFactorStatus.lower(value)
 }
+
+
+/**
+ * Pending local changes of an account.
+ */
+public struct UnsyncedChanges: Equatable, Hashable {
+    public var total: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(total: UInt64) {
+        self.total = total
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension UnsyncedChanges: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeUnsyncedChanges: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UnsyncedChanges {
+        return
+            try UnsyncedChanges(
+                total: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: UnsyncedChanges, into buf: inout [UInt8]) {
+        FfiConverterUInt64.write(value.total, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnsyncedChanges_lift(_ buf: RustBuffer) throws -> UnsyncedChanges {
+    return try FfiConverterTypeUnsyncedChanges.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeUnsyncedChanges_lower(_ value: UnsyncedChanges) -> RustBuffer {
+    return FfiConverterTypeUnsyncedChanges.lower(value)
+}
+
+
+/**
+ * Changes to a vault (`None`: unchanged).
+ */
+public struct VaultChanges: Equatable, Hashable {
+    public var name: String?
+    public var description: String?
+    public var color: String?
+    public var clearColor: Bool
+    public var icon: String?
+    public var clearIcon: Bool
+    public var strict: Bool?
+    /**
+     * Team vaults: role of plain team members.
+     */
+    public var teamMemberRole: VaultRole?
+    /**
+     * Team vaults: plain team members get no access.
+     */
+    public var noTeamAccess: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(name: String? = nil, description: String? = nil, color: String? = nil, clearColor: Bool = false, icon: String? = nil, clearIcon: Bool = false, strict: Bool? = nil, 
+        /**
+         * Team vaults: role of plain team members.
+         */teamMemberRole: VaultRole? = nil, 
+        /**
+         * Team vaults: plain team members get no access.
+         */noTeamAccess: Bool = false) {
+        self.name = name
+        self.description = description
+        self.color = color
+        self.clearColor = clearColor
+        self.icon = icon
+        self.clearIcon = clearIcon
+        self.strict = strict
+        self.teamMemberRole = teamMemberRole
+        self.noTeamAccess = noTeamAccess
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension VaultChanges: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultChanges: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultChanges {
+        return
+            try VaultChanges(
+                name: FfiConverterOptionString.read(from: &buf), 
+                description: FfiConverterOptionString.read(from: &buf), 
+                color: FfiConverterOptionString.read(from: &buf), 
+                clearColor: FfiConverterBool.read(from: &buf), 
+                icon: FfiConverterOptionString.read(from: &buf), 
+                clearIcon: FfiConverterBool.read(from: &buf), 
+                strict: FfiConverterOptionBool.read(from: &buf), 
+                teamMemberRole: FfiConverterOptionTypeVaultRole.read(from: &buf), 
+                noTeamAccess: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VaultChanges, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.description, into: &buf)
+        FfiConverterOptionString.write(value.color, into: &buf)
+        FfiConverterBool.write(value.clearColor, into: &buf)
+        FfiConverterOptionString.write(value.icon, into: &buf)
+        FfiConverterBool.write(value.clearIcon, into: &buf)
+        FfiConverterOptionBool.write(value.strict, into: &buf)
+        FfiConverterOptionTypeVaultRole.write(value.teamMemberRole, into: &buf)
+        FfiConverterBool.write(value.noTeamAccess, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultChanges_lift(_ buf: RustBuffer) throws -> VaultChanges {
+    return try FfiConverterTypeVaultChanges.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultChanges_lower(_ value: VaultChanges) -> RustBuffer {
+    return FfiConverterTypeVaultChanges.lower(value)
+}
+
+
+/**
+ * A vault of an account.
+ */
+public struct VaultInfo: Equatable, Hashable {
+    public var id: String
+    public var accountId: String
+    public var name: String
+    public var description: String
+    public var kind: VaultKind
+    /**
+     * Your role.
+     */
+    public var role: VaultRole
+    public var teamId: String?
+    /**
+     * Team vaults: the team's name.
+     */
+    public var teamName: String?
+    /**
+     * Name of the owner (user or team).
+     */
+    public var ownerName: String?
+    public var color: String?
+    public var icon: String?
+    /**
+     * Explicit grants (users and teams).
+     */
+    public var memberCount: Int64
+    public var hostCount: Int64
+    /**
+     * Strict: Use-only members only connect through the server.
+     */
+    public var strict: Bool
+    /**
+     * Team vaults: role of plain team members (`None`: no access).
+     */
+    public var teamMemberRole: VaultRole?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, accountId: String, name: String, description: String, kind: VaultKind, 
+        /**
+         * Your role.
+         */role: VaultRole, teamId: String?, 
+        /**
+         * Team vaults: the team's name.
+         */teamName: String?, 
+        /**
+         * Name of the owner (user or team).
+         */ownerName: String?, color: String?, icon: String?, 
+        /**
+         * Explicit grants (users and teams).
+         */memberCount: Int64, hostCount: Int64, 
+        /**
+         * Strict: Use-only members only connect through the server.
+         */strict: Bool, 
+        /**
+         * Team vaults: role of plain team members (`None`: no access).
+         */teamMemberRole: VaultRole?) {
+        self.id = id
+        self.accountId = accountId
+        self.name = name
+        self.description = description
+        self.kind = kind
+        self.role = role
+        self.teamId = teamId
+        self.teamName = teamName
+        self.ownerName = ownerName
+        self.color = color
+        self.icon = icon
+        self.memberCount = memberCount
+        self.hostCount = hostCount
+        self.strict = strict
+        self.teamMemberRole = teamMemberRole
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension VaultInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultInfo {
+        return
+            try VaultInfo(
+                id: FfiConverterString.read(from: &buf), 
+                accountId: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                description: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeVaultKind.read(from: &buf), 
+                role: FfiConverterTypeVaultRole.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf), 
+                teamName: FfiConverterOptionString.read(from: &buf), 
+                ownerName: FfiConverterOptionString.read(from: &buf), 
+                color: FfiConverterOptionString.read(from: &buf), 
+                icon: FfiConverterOptionString.read(from: &buf), 
+                memberCount: FfiConverterInt64.read(from: &buf), 
+                hostCount: FfiConverterInt64.read(from: &buf), 
+                strict: FfiConverterBool.read(from: &buf), 
+                teamMemberRole: FfiConverterOptionTypeVaultRole.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VaultInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.accountId, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.description, into: &buf)
+        FfiConverterTypeVaultKind.write(value.kind, into: &buf)
+        FfiConverterTypeVaultRole.write(value.role, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
+        FfiConverterOptionString.write(value.teamName, into: &buf)
+        FfiConverterOptionString.write(value.ownerName, into: &buf)
+        FfiConverterOptionString.write(value.color, into: &buf)
+        FfiConverterOptionString.write(value.icon, into: &buf)
+        FfiConverterInt64.write(value.memberCount, into: &buf)
+        FfiConverterInt64.write(value.hostCount, into: &buf)
+        FfiConverterBool.write(value.strict, into: &buf)
+        FfiConverterOptionTypeVaultRole.write(value.teamMemberRole, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultInfo_lift(_ buf: RustBuffer) throws -> VaultInfo {
+    return try FfiConverterTypeVaultInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultInfo_lower(_ value: VaultInfo) -> RustBuffer {
+    return FfiConverterTypeVaultInfo.lower(value)
+}
+
+
+/**
+ * A member of a vault.
+ */
+public struct VaultMember: Equatable, Hashable {
+    /**
+     * Grant id (for implicit members, the user id).
+     */
+    public var id: String
+    public var kind: VaultMemberKind
+    public var userId: String?
+    public var email: String?
+    public var name: String
+    public var teamId: String?
+    public var role: VaultRole
+    /**
+     * The owner or a team admin: cannot be changed or removed.
+     */
+    public var implicit: Bool
+    public var addedAt: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Grant id (for implicit members, the user id).
+         */id: String, kind: VaultMemberKind, userId: String?, email: String?, name: String, teamId: String?, role: VaultRole, 
+        /**
+         * The owner or a team admin: cannot be changed or removed.
+         */implicit: Bool, addedAt: Int64) {
+        self.id = id
+        self.kind = kind
+        self.userId = userId
+        self.email = email
+        self.name = name
+        self.teamId = teamId
+        self.role = role
+        self.implicit = implicit
+        self.addedAt = addedAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension VaultMember: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultMember: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultMember {
+        return
+            try VaultMember(
+                id: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeVaultMemberKind.read(from: &buf), 
+                userId: FfiConverterOptionString.read(from: &buf), 
+                email: FfiConverterOptionString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf), 
+                role: FfiConverterTypeVaultRole.read(from: &buf), 
+                implicit: FfiConverterBool.read(from: &buf), 
+                addedAt: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VaultMember, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterTypeVaultMemberKind.write(value.kind, into: &buf)
+        FfiConverterOptionString.write(value.userId, into: &buf)
+        FfiConverterOptionString.write(value.email, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
+        FfiConverterTypeVaultRole.write(value.role, into: &buf)
+        FfiConverterBool.write(value.implicit, into: &buf)
+        FfiConverterInt64.write(value.addedAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMember_lift(_ buf: RustBuffer) throws -> VaultMember {
+    return try FfiConverterTypeVaultMember.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMember_lower(_ value: VaultMember) -> RustBuffer {
+    return FfiConverterTypeVaultMember.lower(value)
+}
+
+
+/**
+ * A vault by id and name.
+ */
+public struct VaultRef: Equatable, Hashable {
+    public var id: String
+    public var name: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, name: String) {
+        self.id = id
+        self.name = name
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension VaultRef: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultRef: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultRef {
+        return
+            try VaultRef(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VaultRef, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultRef_lift(_ buf: RustBuffer) throws -> VaultRef {
+    return try FfiConverterTypeVaultRef.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultRef_lower(_ value: VaultRef) -> RustBuffer {
+    return FfiConverterTypeVaultRef.lower(value)
+}
+
+
+/**
+ * State of an account on this device.
+ */
+
+public enum AccountStatus: Equatable, Hashable {
+    
+    case active
+    /**
+     * The session ended: its data stays readable; show "Sign in again to
+     * sync" with the sign-in form prefilled.
+     */
+    case needsSignIn
+    /**
+     * The email is not verified yet: show the code screen
+     * (`verify_account`, `resend_account_code`).
+     */
+    case unverified
+    case unknown
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AccountStatus: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccountStatus: FfiConverterRustBuffer {
+    typealias SwiftType = AccountStatus
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountStatus {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .active
+        
+        case 2: return .needsSignIn
+        
+        case 3: return .unverified
+        
+        case 4: return .unknown
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AccountStatus, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .active:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .needsSignIn:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .unverified:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .unknown:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountStatus_lift(_ buf: RustBuffer) throws -> AccountStatus {
+    return try FfiConverterTypeAccountStatus.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountStatus_lower(_ value: AccountStatus) -> RustBuffer {
+    return FfiConverterTypeAccountStatus.lower(value)
+}
+
 
 
 /**
@@ -14140,6 +17235,109 @@ public func FfiConverterTypeHttpMethod_lift(_ buf: RustBuffer) throws -> HttpMet
 #endif
 public func FfiConverterTypeHttpMethod_lower(_ value: HttpMethod) -> RustBuffer {
     return FfiConverterTypeHttpMethod.lower(value)
+}
+
+
+
+/**
+ * What you can do with an item.
+ */
+
+public enum ItemAccess: Equatable, Hashable {
+    
+    /**
+     * A This-device item: everything.
+     */
+    case device
+    /**
+     * Manager of its vault.
+     */
+    case manager
+    /**
+     * Reads secrets and changes it.
+     */
+    case editor
+    /**
+     * Uses it (connect, run) but never sees its secrets nor changes it:
+     * hide reveal, copy password, export key and duplicate; show a lock.
+     */
+    case useOnly
+    case unknown
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ItemAccess: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeItemAccess: FfiConverterRustBuffer {
+    typealias SwiftType = ItemAccess
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ItemAccess {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .device
+        
+        case 2: return .manager
+        
+        case 3: return .editor
+        
+        case 4: return .useOnly
+        
+        case 5: return .unknown
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ItemAccess, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .device:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .manager:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .editor:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .useOnly:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .unknown:
+            writeInt(&buf, Int32(5))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemAccess_lift(_ buf: RustBuffer) throws -> ItemAccess {
+    return try FfiConverterTypeItemAccess.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeItemAccess_lower(_ value: ItemAccess) -> RustBuffer {
+    return FfiConverterTypeItemAccess.lower(value)
 }
 
 
@@ -14932,6 +18130,84 @@ public func FfiConverterTypeSecretChange_lift(_ buf: RustBuffer) throws -> Secre
 #endif
 public func FfiConverterTypeSecretChange_lower(_ value: SecretChange) -> RustBuffer {
     return FfiConverterTypeSecretChange.lower(value)
+}
+
+
+
+/**
+ * Which server to sign in to.
+ */
+
+public enum ServerChoice: Equatable, Hashable {
+    
+    /**
+     * The official server ([`official_server_url`]).
+     */
+    case official
+    /**
+     * Your own server.
+     */
+    case custom(url: String
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ServerChoice: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeServerChoice: FfiConverterRustBuffer {
+    typealias SwiftType = ServerChoice
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ServerChoice {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .official
+        
+        case 2: return .custom(url: try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ServerChoice, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .official:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .custom(url):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(url, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeServerChoice_lift(_ buf: RustBuffer) throws -> ServerChoice {
+    return try FfiConverterTypeServerChoice.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeServerChoice_lower(_ value: ServerChoice) -> RustBuffer {
+    return FfiConverterTypeServerChoice.lower(value)
 }
 
 
@@ -16389,6 +19665,29 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case EmailNotVerified(message: String)
     
+    /**
+     * Use-only vault: you can use its items but not change them.
+     */
+    case VaultReadOnly(message: String)
+    
+    /**
+     * Use-only vault: its secrets are never shown (hide reveal, copy and
+     * export).
+     */
+    case SecretHidden(message: String)
+    
+    /**
+     * Strict vault: Use-only members only connect through the server: open
+     * a server session for this host instead.
+     */
+    case UseOnlyStrict(message: String)
+    
+    /**
+     * A Use-only host needs its server (offline, or signed out): connect
+     * when online, or through a server session.
+     */
+    case UseOnlyNeedsServer(message: String)
+    
 
     
 
@@ -16502,6 +19801,22 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 22: return .VaultReadOnly(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 23: return .SecretHidden(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 24: return .UseOnlyStrict(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 25: return .UseOnlyNeedsServer(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -16555,6 +19870,14 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(20))
         case .EmailNotVerified(_ /* message is ignored*/):
             writeInt(&buf, Int32(21))
+        case .VaultReadOnly(_ /* message is ignored*/):
+            writeInt(&buf, Int32(22))
+        case .SecretHidden(_ /* message is ignored*/):
+            writeInt(&buf, Int32(23))
+        case .UseOnlyStrict(_ /* message is ignored*/):
+            writeInt(&buf, Int32(24))
+        case .UseOnlyNeedsServer(_ /* message is ignored*/):
+            writeInt(&buf, Int32(25))
 
         
         }
@@ -16575,6 +19898,413 @@ public func FfiConverterTypeTermoakError_lift(_ buf: RustBuffer) throws -> Termo
 public func FfiConverterTypeTermoakError_lower(_ value: TermoakError) -> RustBuffer {
     return FfiConverterTypeTermoakError.lower(value)
 }
+
+
+/**
+ * Move (same ids) or copy (new ids).
+ */
+
+public enum TransferMode: Equatable, Hashable {
+    
+    case move
+    case copy
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension TransferMode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransferMode: FfiConverterRustBuffer {
+    typealias SwiftType = TransferMode
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransferMode {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .move
+        
+        case 2: return .copy
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: TransferMode, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .move:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .copy:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferMode_lift(_ buf: RustBuffer) throws -> TransferMode {
+    return try FfiConverterTypeTransferMode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferMode_lower(_ value: TransferMode) -> RustBuffer {
+    return FfiConverterTypeTransferMode.lower(value)
+}
+
+
+
+/**
+ * Kind of vault.
+ */
+
+public enum VaultKind: Equatable, Hashable {
+    
+    /**
+     * Yours alone (translate "Personal"); it cannot be shared or deleted.
+     */
+    case personal
+    /**
+     * Owned by a user, shared with members.
+     */
+    case shared
+    /**
+     * Owned by a team.
+     */
+    case team
+    case unknown
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension VaultKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultKind: FfiConverterRustBuffer {
+    typealias SwiftType = VaultKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .personal
+        
+        case 2: return .shared
+        
+        case 3: return .team
+        
+        case 4: return .unknown
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: VaultKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .personal:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .shared:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .team:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .unknown:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultKind_lift(_ buf: RustBuffer) throws -> VaultKind {
+    return try FfiConverterTypeVaultKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultKind_lower(_ value: VaultKind) -> RustBuffer {
+    return FfiConverterTypeVaultKind.lower(value)
+}
+
+
+
+/**
+ * Who a vault member is.
+ */
+
+public enum VaultMemberKind: Equatable, Hashable {
+    
+    case user
+    case team
+    case unknown
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension VaultMemberKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultMemberKind: FfiConverterRustBuffer {
+    typealias SwiftType = VaultMemberKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultMemberKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .user
+        
+        case 2: return .team
+        
+        case 3: return .unknown
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: VaultMemberKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .user:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .team:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .unknown:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMemberKind_lift(_ buf: RustBuffer) throws -> VaultMemberKind {
+    return try FfiConverterTypeVaultMemberKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMemberKind_lower(_ value: VaultMemberKind) -> RustBuffer {
+    return FfiConverterTypeVaultMemberKind.lower(value)
+}
+
+
+
+/**
+ * Who to share a vault with.
+ */
+
+public enum VaultMemberTarget: Equatable, Hashable {
+    
+    /**
+     * A user of the same server.
+     */
+    case user(email: String
+    )
+    /**
+     * A team you belong to.
+     */
+    case team(teamId: String
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension VaultMemberTarget: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultMemberTarget: FfiConverterRustBuffer {
+    typealias SwiftType = VaultMemberTarget
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultMemberTarget {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .user(email: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .team(teamId: try FfiConverterString.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: VaultMemberTarget, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .user(email):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(email, into: &buf)
+            
+        
+        case let .team(teamId):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(teamId, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMemberTarget_lift(_ buf: RustBuffer) throws -> VaultMemberTarget {
+    return try FfiConverterTypeVaultMemberTarget.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultMemberTarget_lower(_ value: VaultMemberTarget) -> RustBuffer {
+    return FfiConverterTypeVaultMemberTarget.lower(value)
+}
+
+
+
+/**
+ * Role in a vault (`UseOnly` < `Editor` < `Manager`).
+ */
+
+public enum VaultRole: Equatable, Hashable {
+    
+    /**
+     * Uses the items, never sees their secrets nor changes them.
+     */
+    case useOnly
+    case editor
+    /**
+     * Owner, or a team owner/admin of a team vault.
+     */
+    case manager
+    case unknown
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension VaultRole: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultRole: FfiConverterRustBuffer {
+    typealias SwiftType = VaultRole
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultRole {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .useOnly
+        
+        case 2: return .editor
+        
+        case 3: return .manager
+        
+        case 4: return .unknown
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: VaultRole, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .useOnly:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .editor:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .manager:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .unknown:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultRole_lift(_ buf: RustBuffer) throws -> VaultRole {
+    return try FfiConverterTypeVaultRole.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultRole_lower(_ value: VaultRole) -> RustBuffer {
+    return FfiConverterTypeVaultRole.lower(value)
+}
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -16771,6 +20501,30 @@ fileprivate struct FfiConverterOptionTypeTransferListener: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeAccountInfo: FfiConverterRustBuffer {
+    typealias SwiftType = AccountInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAccountInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAccountInfo.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeHostProxy: FfiConverterRustBuffer {
     typealias SwiftType = HostProxy?
 
@@ -16787,6 +20541,30 @@ fileprivate struct FfiConverterOptionTypeHostProxy: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeHostProxy.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeItemFilter: FfiConverterRustBuffer {
+    typealias SwiftType = ItemFilter?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeItemFilter.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeItemFilter.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -16915,6 +20693,30 @@ fileprivate struct FfiConverterOptionTypeAiPermissionMode: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeItemAccess: FfiConverterRustBuffer {
+    typealias SwiftType = ItemAccess?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeItemAccess.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeItemAccess.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSyncMode: FfiConverterRustBuffer {
     typealias SwiftType = SyncMode?
 
@@ -16955,6 +20757,30 @@ fileprivate struct FfiConverterOptionTypeTeamRole: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeTeamRole.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeVaultRole: FfiConverterRustBuffer {
+    typealias SwiftType = VaultRole?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeVaultRole.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeVaultRole.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -17054,6 +20880,31 @@ fileprivate struct FfiConverterSequenceTypeActiveForward: FfiConverterRustBuffer
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeActiveForward.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeAccountInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [AccountInfo]
+
+    public static func write(_ value: [AccountInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAccountInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AccountInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AccountInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAccountInfo.read(from: &buf))
         }
         return seq
     }
@@ -17312,6 +21163,81 @@ fileprivate struct FfiConverterSequenceTypeCommandSuggestion: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeCopiedItem: FfiConverterRustBuffer {
+    typealias SwiftType = [CopiedItem]
+
+    public static func write(_ value: [CopiedItem], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCopiedItem.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CopiedItem] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CopiedItem]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCopiedItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeDetachedReference: FfiConverterRustBuffer {
+    typealias SwiftType = [DetachedReference]
+
+    public static func write(_ value: [DetachedReference], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeDetachedReference.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [DetachedReference] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [DetachedReference]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeDetachedReference.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeDiscardedChanges: FfiConverterRustBuffer {
+    typealias SwiftType = [DiscardedChanges]
+
+    public static func write(_ value: [DiscardedChanges], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeDiscardedChanges.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [DiscardedChanges] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [DiscardedChanges]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeDiscardedChanges.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeHostGroup: FfiConverterRustBuffer {
     typealias SwiftType = [HostGroup]
 
@@ -17329,6 +21255,31 @@ fileprivate struct FfiConverterSequenceTypeHostGroup: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeHostGroup.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeItemRef: FfiConverterRustBuffer {
+    typealias SwiftType = [ItemRef]
+
+    public static func write(_ value: [ItemRef], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeItemRef.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ItemRef] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ItemRef]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeItemRef.read(from: &buf))
         }
         return seq
     }
@@ -17837,6 +21788,131 @@ fileprivate struct FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeTransferWarning: FfiConverterRustBuffer {
+    typealias SwiftType = [TransferWarning]
+
+    public static func write(_ value: [TransferWarning], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTransferWarning.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TransferWarning] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TransferWarning]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTransferWarning.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeTransferredItem: FfiConverterRustBuffer {
+    typealias SwiftType = [TransferredItem]
+
+    public static func write(_ value: [TransferredItem], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTransferredItem.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TransferredItem] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TransferredItem]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTransferredItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeVaultInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [VaultInfo]
+
+    public static func write(_ value: [VaultInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeVaultInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [VaultInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [VaultInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeVaultInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeVaultMember: FfiConverterRustBuffer {
+    typealias SwiftType = [VaultMember]
+
+    public static func write(_ value: [VaultMember], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeVaultMember.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [VaultMember] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [VaultMember]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeVaultMember.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeVaultRef: FfiConverterRustBuffer {
+    typealias SwiftType = [VaultRef]
+
+    public static func write(_ value: [VaultRef], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeVaultRef.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [VaultRef] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [VaultRef]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeVaultRef.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeScreenEvent: FfiConverterRustBuffer {
     typealias SwiftType = [ScreenEvent]
 
@@ -17967,6 +22043,29 @@ public func serverLocales(url: String)async throws  -> [ServerLocale]  {
             liftFunc: FfiConverterSequenceTypeServerLocale.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+/**
+ * The canonical form of a server URL as the accounts store it (trimmed,
+ * `https://` added, no path). Fails if it is not a valid address.
+ */
+public func canonicalServerUrl(url: String)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_canonical_server_url(
+        FfiConverterString.lower(url),uniffiCallStatus
+    )
+})
+}
+/**
+ * The canonical URL of the official server (`https://termoak.com`, or
+ * the build's override). Show it as "Termoak (termoak.com)".
+ */
+public func officialServerUrl() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_official_server_url(uniffiCallStatus
+    )
+})
 }
 /**
  * Does the screen show the typed line? `before` is the text before the
@@ -18169,6 +22268,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_server_locales() != 6717) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_canonical_server_url() != 28030) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_official_server_url() != 38077) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_command_echoed() != 6510) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18205,6 +22310,120 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_snippet_variables() != 31152) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_add_vault_member() != 28653) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_ai_access() != 15818) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_delete() != 3985) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_get() != 2457) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_patch() != 7305) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_post() != 43637) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_put() != 29152) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_api_request() != 37584) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_attach_server_session() != 37818) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_cancel_ai_task() != 41101) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_close_server_session() != 26031) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_create_ai_task() != 21502) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_create_vault() != 24849) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_decide_approval() != 54094) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_delete_vault() != 27265) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_get_ai_task() != 6251) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_get_server_session() != 57935) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_id() != 36023) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_info() != 12115) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_leave_vault() != 22669) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_ai_tasks() != 30699) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_pending_approvals() != 63788) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_server_sessions() != 16435) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_vaults() != 8732) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_open_server_session() != 60117) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_refresh_info() != 27409) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_remove_vault_member() != 10520) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_send_ai_message() != 10490) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_home() != 39105) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_list() != 27764) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_session_activity() != 28598) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_ai_task_mode() != 50767) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_vault_member_role() != 34245) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_subscribe_events() != 44162) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_sync_now() != 32096) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_update_vault() != 46112) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_vault_audit() != 40222) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_vault_members() != 17505) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_linetracker_at_end() != 39551) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18232,7 +22451,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_eventsubscription_unsubscribe() != 64736) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() != 25443) {
+    if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_event() != 38224) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_servereventlistener_on_closed() != 27770) {
@@ -18427,6 +22646,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_activeforward_stop() != 4990) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_sshsession_account_id() != 9295) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_sshsession_details() != 20213) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18442,7 +22664,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_exec() != 49554) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_host_id() != 64688) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_host_id() != 12664) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_is_closed() != 14205) {
@@ -18628,6 +22850,48 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_update_server_session_share() != 25731) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_account() != 45538) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_account_view() != 16495) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_accounts() != 56812) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_current_account() != 49481) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_resend_account_code() != 11151) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_account_view() != 46421) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_auto_sync() != 10873) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_in() != 42132) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_out_account() != 25887) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_up() != 3511) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_transfer() != 57573) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_unsynced_changes() != 44480) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_vaults() != 28731) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_account() != 61967) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history() != 33858) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18649,25 +22913,25 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() != 63583) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete() != 39634) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete() != 12108) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() != 9862) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() != 46969) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_home() != 31263) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_home() != 6174) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_list() != 6603) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_list() != 63505) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_mkdir() != 12358) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_mkdir() != 64712) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename() != 49729) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename() != 41132) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() != 3416) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() != 54240) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() != 65058) {
@@ -18727,7 +22991,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_get_server_session() != 31126) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_is_logged_in() != 51835) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_is_logged_in() != 53322) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_ai_keys() != 60476) {
@@ -18745,10 +23009,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_login() != 29702) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_logout() != 15911) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_logout() != 26472) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session() != 120) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session() != 45347) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_register() != 5670) {
@@ -18757,16 +23021,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_resend_code() != 16903) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync() != 9745) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_reset_sync() != 13192) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_send_ai_message() != 19745) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_url() != 44766) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_url() != 19016) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_user() != 1575) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_user() != 44297) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_session_activity() != 30711) {
@@ -18781,7 +23045,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_set_device_name() != 1451) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_sync_now() != 61814) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sync_now() != 19278) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_test_ai_key() != 33509) {
@@ -18793,100 +23057,100 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() != 65042) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 41104) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 23384) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 60929) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 62785) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() != 56000) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_forward() != 47622) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_forward() != 4508) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_group() != 60616) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_group() != 44306) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_host() != 17977) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_host() != 17334) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_identity() != 27746) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_identity() != 21653) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_key() != 12328) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_key() != 27895) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_known_host() != 33982) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_known_host() != 4976) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory() != 16411) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory() != 38456) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet() != 42490) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet() != 33037) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_effective_settings() != 40464) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_effective_settings() != 47151) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_export_private_key() != 65120) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_export_private_key() != 48027) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_generate_key() != 12080) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_generate_key() != 11811) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_forward() != 44392) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_forward() != 54744) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_group() != 24159) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_group() != 13296) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_host() != 9551) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_host() != 49455) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_identity() != 41269) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_identity() != 59949) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_key() != 27307) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_key() != 33591) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_snippet() != 2235) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_snippet() != 9177) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_host_has_proxy_password() != 16925) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_host_has_proxy_password() != 59410) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_host_password() != 50852) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_host_password() != 14274) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_identity_password() != 36363) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_identity_password() != 21672) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_import_key() != 2786) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_import_key() != 24437) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_forwards() != 50053) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_forwards() != 16554) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_groups() != 53487) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_groups() != 37320) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_hosts() != 18782) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_hosts() != 5773) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_identities() != 37797) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_identities() != 61043) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_keys() != 35248) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_keys() != 33844) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_known_hosts() != 23477) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_known_hosts() != 6817) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_memories() != 38548) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_memories() != 39316) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets() != 11815) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets() != 45493) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_save_forward() != 6122) {
@@ -18910,7 +23174,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_save_snippet() != 21032) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_host_proxy_password() != 25738) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_host_proxy_password() != 59028) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_constructor_linetracker_new() != 65260) {
