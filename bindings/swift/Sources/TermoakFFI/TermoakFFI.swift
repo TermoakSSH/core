@@ -6127,8 +6127,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Creates an account (official server, or your own with open
      * registration or an invitation). If the server verifies emails, the
      * account is `Unverified` until `verify_account`.
+     *
+     * `accept_terms`: the person ticked "I accept the terms of use and the
+     * privacy policy" (`terms_url`/`privacy_url` from `server_info`); the
+     * server records it, with `terms_version` if the app knows it.
      */
-    func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String?) async throws  -> AccountInfo
+    func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String?, acceptTerms: Bool, termsVersion: String?) async throws  -> AccountInfo
     
     /**
      * Moves or copies items (all from the same place) to an account's vault
@@ -7512,13 +7516,17 @@ open func signOutAccount(accountId: String, discardUnsynced: Bool)async throws  
      * Creates an account (official server, or your own with open
      * registration or an invitation). If the server verifies emails, the
      * account is `Unverified` until `verify_account`.
+     *
+     * `accept_terms`: the person ticked "I accept the terms of use and the
+     * privacy policy" (`terms_url`/`privacy_url` from `server_info`); the
+     * server records it, with `terms_version` if the app knows it.
      */
-open func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String? = nil)async throws  -> AccountInfo  {
+open func signUp(server: ServerChoice, email: String, name: String, password: String, invite: String? = nil, acceptTerms: Bool = false, termsVersion: String? = nil)async throws  -> AccountInfo  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_sign_up(
-                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterString.lower(email),FfiConverterString.lower(name),FfiConverterString.lower(password),FfiConverterOptionString.lower(invite)
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterString.lower(email),FfiConverterString.lower(name),FfiConverterString.lower(password),FfiConverterOptionString.lower(invite),FfiConverterBool.lower(acceptTerms),FfiConverterOptionString.lower(termsVersion)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
@@ -22877,7 +22885,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_out_account() != 25887) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_up() != 3511) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sign_up() != 5379) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_transfer() != 57573) {

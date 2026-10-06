@@ -603,7 +603,11 @@ impl TermoakCore {
     /// Creates an account (official server, or your own with open
     /// registration or an invitation). If the server verifies emails, the
     /// account is `Unverified` until `verify_account`.
-    #[uniffi::method(default(invite))]
+    ///
+    /// `accept_terms`: the person ticked "I accept the terms of use and the
+    /// privacy policy" (`terms_url`/`privacy_url` from `server_info`); the
+    /// server records it, with `terms_version` if the app knows it.
+    #[uniffi::method(default(invite = None, accept_terms = false, terms_version = None))]
     pub async fn sign_up(
         &self,
         server: ServerChoice,
@@ -611,6 +615,8 @@ impl TermoakCore {
         name: String,
         password: String,
         invite: Option<String>,
+        accept_terms: bool,
+        terms_version: Option<String>,
     ) -> Result<AccountInfo> {
         crate::vault::install_crypto_provider();
         let ws = self.ws.clone();
@@ -618,8 +624,16 @@ impl TermoakCore {
             .map(|c| c.trim().to_string())
             .filter(|c| !c.is_empty());
         run(async move {
+            let terms = accept_terms.then_some(terms_version.as_deref());
             let acc = ws
-                .sign_up(server.into(), &email, &name, &password, invite.as_deref())
+                .sign_up_accepting(
+                    server.into(),
+                    &email,
+                    &name,
+                    &password,
+                    invite.as_deref(),
+                    terms,
+                )
                 .await?;
             Ok(account_info(&ws, acc.info()))
         })

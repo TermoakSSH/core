@@ -1965,7 +1965,7 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_sign_out_account(`ptr`: Long,`accountId`: RustBuffer.ByValue,`discardUnsynced`: Byte,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_sign_up(`ptr`: Long,`server`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`password`: RustBuffer.ByValue,`invite`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_sign_up(`ptr`: Long,`server`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`password`: RustBuffer.ByValue,`invite`: RustBuffer.ByValue,`acceptTerms`: Byte,`termsVersion`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_transfer(`ptr`: Long,`items`: RustBuffer.ByValue,`targetAccount`: RustBuffer.ByValue,`targetVault`: RustBuffer.ByValue,`mode`: RustBuffer.ByValue,`dryRun`: Byte,
     ): Long
@@ -2931,7 +2931,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sign_out_account() and 0xFFFF) != 25887) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sign_up() and 0xFFFF) != 3511) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sign_up() and 0xFFFF) != 5379) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_transfer() and 0xFFFF) != 57573) {
@@ -11910,8 +11910,12 @@ public interface TermoakCoreInterface {
      * Creates an account (official server, or your own with open
      * registration or an invitation). If the server verifies emails, the
      * account is `Unverified` until `verify_account`.
+     *
+     * `accept_terms`: the person ticked "I accept the terms of use and the
+     * privacy policy" (`terms_url`/`privacy_url` from `server_info`); the
+     * server records it, with `terms_version` if the app knows it.
      */
-    suspend fun `signUp`(`server`: ServerChoice, `email`: kotlin.String, `name`: kotlin.String, `password`: kotlin.String, `invite`: kotlin.String? = null): AccountInfo
+    suspend fun `signUp`(`server`: ServerChoice, `email`: kotlin.String, `name`: kotlin.String, `password`: kotlin.String, `invite`: kotlin.String? = null, `acceptTerms`: kotlin.Boolean = false, `termsVersion`: kotlin.String? = null): AccountInfo
     
     /**
      * Moves or copies items (all from the same place) to an account's vault
@@ -13623,10 +13627,14 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * Creates an account (official server, or your own with open
      * registration or an invitation). If the server verifies emails, the
      * account is `Unverified` until `verify_account`.
+     *
+     * `accept_terms`: the person ticked "I accept the terms of use and the
+     * privacy policy" (`terms_url`/`privacy_url` from `server_info`); the
+     * server records it, with `terms_version` if the app knows it.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `signUp`(`server`: ServerChoice, `email`: kotlin.String, `name`: kotlin.String, `password`: kotlin.String, `invite`: kotlin.String?) : AccountInfo {
+    override suspend fun `signUp`(`server`: ServerChoice, `email`: kotlin.String, `name`: kotlin.String, `password`: kotlin.String, `invite`: kotlin.String?, `acceptTerms`: kotlin.Boolean, `termsVersion`: kotlin.String?) : AccountInfo {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_sign_up(
@@ -13637,6 +13645,8 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`name`),
         FfiConverterString.lower(`password`),
         FfiConverterOptionalString.lower(`invite`),
+        FfiConverterBoolean.lower(`acceptTerms`),
+        FfiConverterOptionalString.lower(`termsVersion`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },

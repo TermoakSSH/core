@@ -574,10 +574,35 @@ impl ApiClient {
         device_name: &str,
         platform: &str,
     ) -> Result<AuthResponse> {
+        self.register_accepting(email, name, password, invite, None, device_name, platform)
+            .await
+    }
+
+    /// Creates the account, recording that the person accepted the server's
+    /// terms of use and privacy policy (`terms_url` and `privacy_url` in
+    /// `/info`) when `terms` is `Some` (with the accepted version, if known).
+    #[allow(clippy::too_many_arguments)]
+    pub async fn register_accepting(
+        &self,
+        email: &str,
+        name: &str,
+        password: &str,
+        invite: Option<&str>,
+        terms: Option<Option<&str>>,
+        device_name: &str,
+        platform: &str,
+    ) -> Result<AuthResponse> {
+        let mut body = json!({"email": email, "name": name, "password": password, "invite": invite, "device_name": device_name, "platform": platform});
+        if let Some(version) = terms {
+            body["accept_terms"] = json!(true);
+            if let Some(v) = version.map(str::trim).filter(|v| !v.is_empty()) {
+                body["terms_version"] = json!(v);
+            }
+        }
         let resp = self
             .http
             .post(self.url("/api/v1/auth/register"))
-            .json(&json!({"email": email, "name": name, "password": password, "invite": invite, "device_name": device_name, "platform": platform}))
+            .json(&body)
             .send()
             .await?;
         let auth: AuthResponse = Self::parse(resp).await?;

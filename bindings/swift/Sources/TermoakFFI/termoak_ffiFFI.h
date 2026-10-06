@@ -1547,7 +1547,7 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_sign_out_account(uint64_t ptr,
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SIGN_UP
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SIGN_UP
-uint64_t uniffi_termoak_ffi_fn_method_termoakcore_sign_up(uint64_t ptr, RustBuffer server, RustBuffer email, RustBuffer name, RustBuffer password, RustBuffer invite
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_sign_up(uint64_t ptr, RustBuffer server, RustBuffer email, RustBuffer name, RustBuffer password, RustBuffer invite, int8_t accept_terms, RustBuffer terms_version
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TRANSFER

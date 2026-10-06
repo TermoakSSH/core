@@ -441,15 +441,32 @@ impl Workspace {
         password: &str,
         invite: Option<&str>,
     ) -> Result<Arc<Account>> {
+        self.sign_up_accepting(server, email, name, password, invite, None)
+            .await
+    }
+
+    /// [`sign_up`](Self::sign_up) recording that the person accepted the
+    /// server's terms and privacy policy (`terms` = `Some(version)`, the
+    /// version being optional). Apps that show the checkbox use this.
+    pub async fn sign_up_accepting(
+        &self,
+        server: ServerChoice,
+        email: &str,
+        name: &str,
+        password: &str,
+        invite: Option<&str>,
+        terms: Option<Option<&str>>,
+    ) -> Result<Arc<Account>> {
         let url = server.url()?;
         let api = ApiClient::new(&url)?;
         let device = self.device_name().await?;
         let auth = api
-            .register_with_invite(
+            .register_accepting(
                 email.trim(),
                 name,
                 password,
                 invite,
+                terms,
                 &device,
                 &api::platform(),
             )
