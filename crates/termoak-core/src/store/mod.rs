@@ -11,6 +11,7 @@ pub mod email_tokens;
 mod entities;
 pub mod history;
 pub mod invites;
+mod local;
 pub mod sessions;
 pub mod teams;
 pub mod users;
@@ -26,6 +27,7 @@ pub use ai::{AiApprovalRow, AiEventRow, AiTaskRow, AiUsageRow};
 pub use entities::{
     ApplyReport, SyncRejection, SyncWarning, VaultChange, VaultChanges, references,
 };
+pub use local::{DirtySummary, LocalItem, LocalVault, SyncV2Applied, SyncV2Apply};
 pub use vaults::{
     NewVault, SecretUse, VaultAccess, VaultGrantee, VaultPatch, VaultTransfer, VaultTransferResult,
 };

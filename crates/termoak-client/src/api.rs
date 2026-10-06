@@ -9,8 +9,9 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use termoak_core::Id;
-use termoak_core::model::{SyncRecord, TokenPair, User};
+use termoak_core::model::{AuditEntry, SyncRecord, TokenPair, User, Vault, VaultMember, VaultRole};
 use termoak_core::time::now_ms;
+use termoak_core::transfer::{TransferRequest, TransferResult};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
 use crate::error::{ClientError, Result};
@@ -143,6 +144,58 @@ fn provider_segment(provider: &str) -> Result<&str> {
 }
 
 type TokenCallback = Arc<dyn Fn(&TokenPair) + Send + Sync>;
+type ExpiredCallback = Arc<dyn Fn() + Send + Sync>;
+
+/// Credentials of one hop of a host (`POST /hosts/{id}/credentials`). Wiped
+/// from memory on drop.
+#[derive(Clone, Deserialize, zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
+pub struct CredentialHop {
+    #[zeroize(skip)]
+    pub host_id: Id,
+    #[serde(default)]
+    pub address: String,
+    #[serde(default)]
+    pub port: u16,
+    #[serde(default)]
+    pub username: String,
+    #[serde(default)]
+    pub password: Option<String>,
+    #[serde(default)]
+    pub key: Option<CredentialKey>,
+    #[serde(default)]
+    pub proxy_password: Option<String>,
+}
+
+/// A private key of [`CredentialHop`].
+#[derive(Clone, Deserialize, zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
+pub struct CredentialKey {
+    pub private_key: String,
+    #[serde(default)]
+    pub passphrase: Option<String>,
+    #[serde(default)]
+    pub certificate: Option<String>,
+}
+
+/// Just-in-time credentials of a host and its jumps (the jumps first, the
+/// host last), for a connection from this device to a host of a Use-only
+/// vault. Kept in memory only, until the connection is authenticated.
+#[derive(Clone, Deserialize)]
+pub struct Credentials {
+    pub vault_id: Id,
+    /// Keep them at most until this time (ms).
+    #[serde(default)]
+    pub expires_at: i64,
+    pub hops: Vec<CredentialHop>,
+}
+
+impl std::fmt::Debug for Credentials {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Credentials")
+            .field("vault_id", &self.vault_id)
+            .field("hops", &self.hops.len())
+            .finish_non_exhaustive()
+    }
+}
 
 /// API client. Cheap to clone.
 #[derive(Clone)]
@@ -151,6 +204,7 @@ pub struct ApiClient {
     http: reqwest::Client,
     tokens: Arc<Mutex<Option<TokenPair>>>,
     on_tokens: Option<TokenCallback>,
+    on_expired: Option<ExpiredCallback>,
     refresh_lock: Arc<tokio::sync::Mutex<()>>,
 }
 
@@ -172,6 +226,7 @@ impl ApiClient {
             http,
             tokens: Arc::new(Mutex::new(None)),
             on_tokens: None,
+            on_expired: None,
             refresh_lock: Arc::new(tokio::sync::Mutex::new(())),
         })
     }
@@ -190,6 +245,19 @@ impl ApiClient {
     pub fn on_tokens(mut self, f: impl Fn(&TokenPair) + Send + Sync + 'static) -> Self {
         self.on_tokens = Some(Arc::new(f));
         self
+    }
+
+    /// Callback called when the session expires (the refresh token was
+    /// refused): the account has to sign in again.
+    pub fn on_expired(mut self, f: impl Fn() + Send + Sync + 'static) -> Self {
+        self.on_expired = Some(Arc::new(f));
+        self
+    }
+
+    /// Replaces the tokens of this client and of its clones (signing in
+    /// again an account that already has a client).
+    pub fn replace_tokens(&self, tokens: Option<TokenPair>) {
+        *self.tokens.lock() = tokens;
     }
 
     pub fn tokens(&self) -> Option<TokenPair> {
@@ -259,6 +327,9 @@ impl ApiClient {
             .await?;
         if resp.status().as_u16() == 401 {
             *self.tokens.lock() = None;
+            if let Some(cb) = &self.on_expired {
+                cb();
+            }
             return Err(ClientError::SessionExpired);
         }
         let tokens: TokenPair = Self::parse(resp).await?;
@@ -575,6 +646,138 @@ impl ApiClient {
     pub async fn sync(&self, since: i64, changes: Vec<SyncRecord>) -> Result<SyncResponse> {
         self.post("/api/v1/sync", &json!({"since": since, "changes": changes}))
             .await
+    }
+
+    /// Sync protocol v2 (`POST /api/v1/vaults/sync`): per-vault cursors.
+    pub async fn sync_v2(
+        &self,
+        req: &crate::sync::SyncV2Request,
+    ) -> Result<crate::sync::SyncV2Response> {
+        self.post(
+            "/api/v1/vaults/sync",
+            &serde_json::to_value(req).map_err(|e| ClientError::Invalid(e.to_string()))?,
+        )
+        .await
+    }
+
+    // ----- Vaults -----
+
+    /// Vaults you can access, with your role, owner name and counts.
+    pub async fn vaults(&self) -> Result<Vec<Vault>> {
+        self.get("/api/v1/vaults").await
+    }
+
+    pub async fn vault(&self, id: Id) -> Result<Vault> {
+        self.get(&format!("/api/v1/vaults/{id}")).await
+    }
+
+    /// Creates a vault: `{name, description?, color?, icon?, team_id?,
+    /// team_member_role?, settings?}`.
+    pub async fn create_vault(&self, body: &Value) -> Result<Vault> {
+        self.post("/api/v1/vaults", body).await
+    }
+
+    /// Changes a vault (managers): `{name?, description?, color?, icon?,
+    /// team_member_role?, settings?}`.
+    pub async fn update_vault(&self, id: Id, patch: &Value) -> Result<Vault> {
+        self.patch(&format!("/api/v1/vaults/{id}"), patch).await
+    }
+
+    /// Deletes a vault and its items (managers). `confirm` is the vault's
+    /// name.
+    pub async fn delete_vault(&self, id: Id, confirm: &str) -> Result<()> {
+        let name: String = url::form_urlencoded::byte_serialize(confirm.as_bytes()).collect();
+        self.delete(&format!("/api/v1/vaults/{id}?confirm={name}"))
+            .await?;
+        Ok(())
+    }
+
+    /// Gives up your own grant on a vault.
+    pub async fn leave_vault(&self, id: Id) -> Result<()> {
+        let _: Value = self
+            .post(&format!("/api/v1/vaults/{id}/leave"), &json!({}))
+            .await?;
+        Ok(())
+    }
+
+    pub async fn vault_members(&self, id: Id) -> Result<Vec<VaultMember>> {
+        self.get(&format!("/api/v1/vaults/{id}/members")).await
+    }
+
+    /// Adds a member: `{email, role}` or `{team_id, role}`.
+    pub async fn add_vault_member(&self, id: Id, body: &Value) -> Result<VaultMember> {
+        self.post(&format!("/api/v1/vaults/{id}/members"), body)
+            .await
+    }
+
+    pub async fn set_vault_member_role(
+        &self,
+        id: Id,
+        member: Id,
+        role: VaultRole,
+    ) -> Result<VaultMember> {
+        self.patch(
+            &format!("/api/v1/vaults/{id}/members/{member}"),
+            &json!({"role": role}),
+        )
+        .await
+    }
+
+    pub async fn remove_vault_member(&self, id: Id, member: Id) -> Result<()> {
+        self.delete(&format!("/api/v1/vaults/{id}/members/{member}"))
+            .await?;
+        Ok(())
+    }
+
+    /// Audit of a vault (managers), newest first.
+    pub async fn vault_audit(
+        &self,
+        id: Id,
+        before: Option<i64>,
+        limit: u32,
+    ) -> Result<Vec<AuditEntry>> {
+        let mut path = format!("/api/v1/vaults/{id}/audit?limit={}", limit.clamp(1, 1000));
+        if let Some(b) = before {
+            path.push_str(&format!("&before={b}"));
+        }
+        self.get(&path).await
+    }
+
+    /// Moves or copies items into the vault `target` (online).
+    pub async fn transfer(&self, target: Id, req: &TransferRequest) -> Result<TransferResult> {
+        self.post(
+            &format!("/api/v1/vaults/{target}/transfer"),
+            &serde_json::to_value(req).map_err(|e| ClientError::Invalid(e.to_string()))?,
+        )
+        .await
+    }
+
+    /// Just-in-time credentials of a host of a Use-only vault (`purpose`:
+    /// `ssh`, `sftp` or `forward`). The response is never cached and is
+    /// parsed from a buffer that is wiped afterwards.
+    pub async fn credentials(&self, host_id: Id, purpose: &str) -> Result<Credentials> {
+        let path = format!("/api/v1/hosts/{host_id}/credentials");
+        let body = json!({"purpose": purpose});
+        let send = |token: String| {
+            self.http
+                .post(self.url(&path))
+                .bearer_auth(token)
+                .json(&body)
+                .send()
+        };
+        let mut resp = send(self.ensure_fresh().await?).await?;
+        if resp.status().as_u16() == 401 {
+            if let Some(t) = self.tokens.lock().as_mut() {
+                t.access_expires_at = 0;
+            }
+            resp = send(self.refresh().await?).await?;
+        }
+        if !resp.status().is_success() {
+            return Err(Self::error_of(resp).await);
+        }
+        let bytes = zeroize::Zeroizing::new(resp.bytes().await?.to_vec());
+        serde_json::from_slice(&bytes)
+            .map_err(|_| ClientError::Invalid("invalid credentials response".into()))
     }
 
     /// The signed-in user (`GET /api/v1/me`).

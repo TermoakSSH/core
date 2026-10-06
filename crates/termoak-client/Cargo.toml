@@ -31,6 +31,8 @@ parking_lot.workspace = true
 base64.workspace = true
 directories.workspace = true
 tokio-tungstenite.workspace = true
+zeroize.workspace = true
+rusqlite.workspace = true
 keyring = { workspace = true, optional = true }
 
 [dev-dependencies]

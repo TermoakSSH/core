@@ -78,6 +78,36 @@ impl std::fmt::Debug for ResolvedHost {
     }
 }
 
+impl ResolvedHost {
+    /// Wipes the credentials (password, private key, passphrase, proxy
+    /// password) of the host and its jumps from memory: just-in-time
+    /// credentials of Use-only items are dropped once the connection is
+    /// authenticated.
+    pub fn zeroize_secrets(&mut self) {
+        use zeroize::Zeroize;
+        if let Some(p) = self.password.as_mut() {
+            p.zeroize();
+        }
+        self.password = None;
+        if let Some(k) = self.key.as_mut() {
+            k.private_key.zeroize();
+            if let Some(p) = k.passphrase.as_mut() {
+                p.zeroize();
+            }
+        }
+        self.key = None;
+        if let Some(p) = self.proxy.as_mut().and_then(|p| p.password.as_mut()) {
+            p.zeroize();
+        }
+        if let Some(p) = self.proxy.as_mut() {
+            p.password = None;
+        }
+        for j in &mut self.jumps {
+            j.zeroize_secrets();
+        }
+    }
+}
+
 /// Maximum depth of nested groups and of jumps.
 const MAX_DEPTH: usize = 16;
 

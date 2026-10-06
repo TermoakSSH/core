@@ -66,6 +66,23 @@ fn parse_jump(entry: &str) -> (Option<String>, String, Option<u16>) {
 }
 
 impl Workspace {
+    /// Where imported items go: the current account's store (its personal
+    /// vault) or, for device-only imports or without an account, This
+    /// device.
+    fn import_target(&self, device_only: bool) -> (termoak_core::Store, Option<Id>) {
+        match self.current() {
+            Some(acc) if !device_only => {
+                let vault = acc
+                    .info()
+                    .vaults_supported()
+                    .then(|| acc.user_id())
+                    .flatten();
+                (acc.store.clone(), vault)
+            }
+            _ => (self.store.clone(), None),
+        }
+    }
+
     /// Imports an `ssh_config`. Hosts whose name already exists are skipped,
     /// so it can be repeated without duplicating anything.
     pub async fn import_ssh_config(
@@ -85,10 +102,11 @@ impl Workspace {
     ) -> Result<ImportReport> {
         let owner = self.owner();
         let sync = opts.device_only.then_some(SyncMode::DeviceOnly);
+        let (store, vault) = self.import_target(opts.device_only);
         let mut report = ImportReport::default();
 
         // What is already there.
-        let existing_hosts = self.store.list::<Host>(owner).await?;
+        let existing_hosts = store.list::<Host>(owner).await?;
         let mut by_label: HashMap<String, Id> = existing_hosts
             .iter()
             .map(|h| (h.data.label.to_lowercase(), h.data.id))
@@ -107,7 +125,7 @@ impl Workspace {
                 )
             })
             .collect();
-        let existing_keys = self.store.list::<SshKey>(owner).await?;
+        let existing_keys = store.list::<SshKey>(owner).await?;
         let mut key_by_fp: HashMap<String, Id> = existing_keys
             .iter()
             .map(|k| (k.data.fingerprint.clone(), k.data.id))
@@ -126,7 +144,7 @@ impl Workspace {
         {
             None => None,
             Some(name) => {
-                let groups = self.store.list::<Group>(owner).await?;
+                let groups = store.list::<Group>(owner).await?;
                 match groups
                     .iter()
                     .find(|g| g.data.name.eq_ignore_ascii_case(name))
@@ -134,9 +152,10 @@ impl Workspace {
                     Some(g) => Some(g.data.id),
                     None if opts.dry_run => Some(new_id()),
                     None => Some(
-                        self.store
-                            .save(
+                        store
+                            .save_local(
                                 owner,
+                                vault,
                                 Group {
                                     id: new_id(),
                                     name: name.to_string(),
@@ -234,8 +253,8 @@ impl Workspace {
             let host = if opts.dry_run {
                 host
             } else {
-                self.store
-                    .save(owner, host, SecretUpdate::Keep, sync)
+                store
+                    .save_local(owner, vault, host, SecretUpdate::Keep, sync)
                     .await?
                     .data
             };
@@ -295,8 +314,8 @@ impl Workspace {
                     let jump = if opts.dry_run {
                         jump
                     } else {
-                        self.store
-                            .save(owner, jump, SecretUpdate::Keep, sync)
+                        store
+                            .save_local(owner, vault, jump, SecretUpdate::Keep, sync)
                             .await?
                             .data
                     };
@@ -313,8 +332,8 @@ impl Workspace {
                 }
                 host.settings.jump_host_ids = Some(ids);
                 if !opts.dry_run {
-                    self.store
-                        .save(owner, host.clone(), SecretUpdate::Keep, sync)
+                    store
+                        .save_local(owner, vault, host.clone(), SecretUpdate::Keep, sync)
                         .await?;
                 }
             }
@@ -354,7 +373,9 @@ impl Workspace {
             report.forwards_created += forwards.len();
             if !opts.dry_run {
                 for f in forwards {
-                    self.store.save(owner, f, SecretUpdate::Keep, sync).await?;
+                    store
+                        .save_local(owner, vault, f, SecretUpdate::Keep, sync)
+                        .await?;
                 }
             }
         }
@@ -372,6 +393,7 @@ impl Workspace {
         key_labels: &mut Vec<String>,
         report: &mut ImportReport,
     ) -> Result<Option<Id>> {
+        let (store, vault) = self.import_target(opts.device_only);
         let pem = match std::fs::read_to_string(path) {
             Ok(p) => p,
             Err(e) => {
@@ -434,9 +456,10 @@ impl Workspace {
         let id = if opts.dry_run {
             key.id
         } else {
-            self.store
-                .save(
+            store
+                .save_local(
                     self.owner(),
+                    vault,
                     key,
                     SecretUpdate::Set(SshKeySecret {
                         private_key: Some(m.private_openssh.clone()),

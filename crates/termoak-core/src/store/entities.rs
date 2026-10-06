@@ -26,26 +26,26 @@ use crate::transfer::{self, Item, TransferMode, TransferRequest, TransferResult}
 use crate::{Id, new_id};
 use uuid::Uuid;
 
-struct Row {
-    id: Id,
-    owner_id: Id,
-    data: String,
-    secret: Option<Vec<u8>>,
-    sync_mode: SyncMode,
-    rev: i64,
-    updated_at: i64,
-    deleted: bool,
-    vault_id: Option<Id>,
-    key_version: Option<u32>,
-    updated_by: Option<Id>,
-    secret_hidden: bool,
-    kind: Option<EntityKind>,
+pub(super) struct Row {
+    pub(super) id: Id,
+    pub(super) owner_id: Id,
+    pub(super) data: String,
+    pub(super) secret: Option<Vec<u8>>,
+    pub(super) sync_mode: SyncMode,
+    pub(super) rev: i64,
+    pub(super) updated_at: i64,
+    pub(super) deleted: bool,
+    pub(super) vault_id: Option<Id>,
+    pub(super) key_version: Option<u32>,
+    pub(super) updated_by: Option<Id>,
+    pub(super) secret_hidden: bool,
+    pub(super) kind: Option<EntityKind>,
 }
 
-const COLUMNS: &str = "id, owner_id, data, secret, sync_mode, rev, updated_at, deleted, vault_id, \
+pub(super) const COLUMNS: &str = "id, owner_id, data, secret, sync_mode, rev, updated_at, deleted, vault_id, \
      key_version, updated_by, secret_hidden, kind";
 
-fn map_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
+pub(super) fn map_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
     Ok(Row {
         id: parse_id(&r.get::<_, String>(0)?)?,
         owner_id: parse_id(&r.get::<_, String>(1)?)?,
@@ -87,14 +87,14 @@ impl Row {
     }
 }
 
-fn to_record<T: Entity>(row: Row, role: Option<VaultRole>) -> Result<Record<T>> {
+pub(super) fn to_record<T: Entity>(row: Row, role: Option<VaultRole>) -> Result<Record<T>> {
     let meta = row.meta(role);
     let mut data: T = serde_json::from_str(&row.data)?;
     data.set_id(row.id);
     Ok(Record { data, meta })
 }
 
-fn load_row(conn: &Connection, id: Id) -> Result<Option<Row>> {
+pub(super) fn load_row(conn: &Connection, id: Id) -> Result<Option<Row>> {
     Ok(conn
         .query_row(
             &format!("SELECT {COLUMNS} FROM entities WHERE id = ?1"),
@@ -131,7 +131,7 @@ fn visible_row<T: Entity>(
     }
 }
 
-fn open_secret<S: serde::de::DeserializeOwned + Default>(
+pub(super) fn open_secret<S: serde::de::DeserializeOwned + Default>(
     conn: &Connection,
     keys: &Keyring,
     row: &Row,
@@ -378,6 +378,21 @@ impl Store {
     pub async fn save<T: Entity>(
         &self,
         owner: Id,
+        data: T,
+        secret: SecretUpdate<T::Secret>,
+        sync_mode: Option<SyncMode>,
+    ) -> Result<Record<T>> {
+        self.save_local(owner, None, data, secret, sync_mode).await
+    }
+
+    /// [`save`](Self::save) on a client's account store: a new entity goes
+    /// into `vault` (`None`: no vault yet, i.e. the personal vault once
+    /// synced). An existing entity stays in its vault (changing it goes
+    /// through a transfer).
+    pub async fn save_local<T: Entity>(
+        &self,
+        owner: Id,
+        vault_hint: Option<Id>,
         mut data: T,
         secret: SecretUpdate<T::Secret>,
         sync_mode: Option<SyncMode>,
@@ -398,7 +413,10 @@ impl Store {
                 }
                 let vault = match &existing {
                     Some(row) => row.vault_id,
-                    None => default_vault(&tx, owner)?,
+                    None => match vault_hint {
+                        Some(v) => Some(v),
+                        None => default_vault(&tx, owner)?,
+                    },
                 };
                 let mode = sync_mode
                     .or_else(|| existing.as_ref().map(|r| r.sync_mode))
@@ -1429,7 +1447,7 @@ fn move_row(
     Ok(())
 }
 
-fn row_to_sync(
+pub(super) fn row_to_sync(
     conn: &Connection,
     keys: &Keyring,
     row: Row,
@@ -1468,7 +1486,7 @@ fn row_to_sync(
 }
 
 /// Checks that the received data matches the declared kind.
-fn validate_record(rec: &SyncRecord) -> Result<()> {
+pub(super) fn validate_record(rec: &SyncRecord) -> Result<()> {
     use crate::model::*;
     fn check<T: Entity>(rec: &SyncRecord) -> Result<()> {
         let mut data: T = serde_json::from_value(rec.data.clone())

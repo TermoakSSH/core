@@ -4120,6 +4120,7 @@ dependencies = [
  "keyring",
  "parking_lot",
  "reqwest",
+ "rusqlite",
  "serde",
  "serde_json",
  "tempfile",
@@ -4132,6 +4133,7 @@ dependencies = [
  "tracing",
  "url",
  "uuid",
+ "zeroize",
 ]
 
 [[package]]

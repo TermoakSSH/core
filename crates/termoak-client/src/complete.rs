@@ -338,7 +338,8 @@ impl Workspace {
             );
         }
         if out.len() < limit {
-            for s in self.store.list::<Snippet>(self.owner()).await? {
+            for s in self.list_items::<Snippet>(&self.default_filter()).await? {
+                let s = s.record;
                 let script = s.data.script.trim_end();
                 if script.contains('\n') || !s.data.variables().is_empty() {
                     continue;
