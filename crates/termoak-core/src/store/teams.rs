@@ -35,6 +35,16 @@ fn map_team(r: &rusqlite::Row<'_>) -> rusqlite::Result<Team> {
     })
 }
 
+/// Deletes the vaults a team owns and its grants on other vaults (inside the
+/// caller's transaction).
+pub(crate) fn delete_team_vaults(conn: &rusqlite::Connection, team: &str) -> Result<()> {
+    for vault in super::vaults::team_vault_ids(conn, team)? {
+        super::vaults::delete_vault_tx(conn, &vault)?;
+    }
+    conn.execute("DELETE FROM vault_members WHERE team_id = ?1", [team])?;
+    Ok(())
+}
+
 impl Store {
     /// Creates a team with its creator as owner.
     pub async fn create_team(&self, owner: Id, name: &str) -> Result<Team> {
@@ -191,7 +201,8 @@ impl Store {
         .await
     }
 
-    /// Deletes the team and revokes the sessions shared with it.
+    /// Deletes the team, its vaults (with their items) and its grants on
+    /// other vaults, and revokes the sessions shared with it.
     pub async fn delete_team(&self, team_id: Id) -> Result<()> {
         self.call(move |c, _| {
             let tx = c.transaction()?;
@@ -199,6 +210,7 @@ impl Store {
                 "UPDATE session_shares SET revoked = 1 WHERE team_id = ?1",
                 [team_id.to_string()],
             )?;
+            delete_team_vaults(&tx, &team_id.to_string())?;
             let n = tx.execute("DELETE FROM teams WHERE id = ?1", [team_id.to_string()])?;
             if n == 0 {
                 return Err(CoreError::NotFound(format!("team {team_id}")));
@@ -206,7 +218,9 @@ impl Store {
             tx.commit()?;
             Ok(())
         })
-        .await
+        .await?;
+        self.bump_access();
+        Ok(())
     }
 
     pub async fn team_members(&self, team_id: Id) -> Result<Vec<TeamMember>> {
@@ -253,7 +267,9 @@ impl Store {
             )?;
             Ok(())
         })
-        .await
+        .await?;
+        self.bump_access();
+        Ok(())
     }
 
     /// Removes a member. Never leaves the team without an owner.
@@ -287,7 +303,9 @@ impl Store {
             )?;
             Ok(())
         })
-        .await
+        .await?;
+        self.bump_access();
+        Ok(())
     }
 
     /// How many owners a team has.

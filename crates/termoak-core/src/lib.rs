@@ -10,6 +10,7 @@ pub mod resolve;
 pub mod store;
 pub mod time;
 pub mod totp;
+pub mod transfer;
 
 pub use error::{CoreError, Result};
 pub use model::*;

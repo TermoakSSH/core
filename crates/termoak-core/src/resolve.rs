@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::Id;
 use crate::error::{CoreError, Result};
-use crate::model::{Group, Host, HostSettings, Identity, ProxySettings, Snippet, SshKey};
-use crate::store::Store;
+use crate::model::{Entity, Group, Host, HostSettings, Identity, ProxySettings, Snippet, SshKey};
+use crate::store::{SecretUse, Store, VaultAccess};
 
 /// Private key ready to use.
 #[derive(Clone, Serialize, Deserialize)]
@@ -81,9 +81,92 @@ impl std::fmt::Debug for ResolvedHost {
 /// Maximum depth of nested groups and of jumps.
 const MAX_DEPTH: usize = 16;
 
+/// Where the references of a host are looked up.
+#[derive(Clone, Copy)]
+enum Scope<'a> {
+    /// Owner-based (a client's own store).
+    Owner(Id),
+    /// Same-vault rule: only items of this vault (`None`: rows without a
+    /// vault); then, optionally, a fallback store (a client's device store,
+    /// owner-based).
+    Vault {
+        vault: Option<Id>,
+        fallback: Option<(&'a Store, Id)>,
+    },
+}
+
 impl Store {
+    /// A live entity in the scope; `None` if missing there. The flag tells
+    /// whether it came from the fallback store.
+    async fn scoped_get<T: Entity>(&self, scope: Scope<'_>, id: Id) -> Result<Option<(T, bool)>> {
+        let found = match scope {
+            Scope::Owner(owner) => match self.get::<T>(owner, id).await {
+                Ok(r) => Some(r.data),
+                Err(CoreError::NotFound(_)) => None,
+                Err(e) => return Err(e),
+            },
+            Scope::Vault { vault, .. } => self.get_in_vault::<T>(vault, id).await?,
+        };
+        if let Some(d) = found {
+            return Ok(Some((d, false)));
+        }
+        if let Scope::Vault {
+            fallback: Some((store, owner)),
+            ..
+        } = scope
+        {
+            return match store.get::<T>(owner, id).await {
+                Ok(r) => Ok(Some((r.data, true))),
+                Err(CoreError::NotFound(_)) => Ok(None),
+                Err(e) => Err(e),
+            };
+        }
+        Ok(None)
+    }
+
+    /// The secret of an entity found with [`Store::scoped_get`]. Only called
+    /// after the access to the whole scope was authorized.
+    async fn scoped_secret<T: Entity>(
+        &self,
+        scope: Scope<'_>,
+        id: Id,
+        from_fallback: bool,
+    ) -> Result<T::Secret> {
+        match scope {
+            Scope::Owner(owner) => self.secret::<T>(owner, id).await,
+            Scope::Vault {
+                fallback: Some((store, owner)),
+                ..
+            } if from_fallback => store.secret::<T>(owner, id).await,
+            Scope::Vault { vault, .. } => self.secret_in_vault::<T>(vault, id).await,
+        }
+    }
+
     /// Effective settings of a host (without credentials).
     pub async fn effective_settings(&self, owner: Id, host: &Host) -> Result<HostSettings> {
+        self.effective_scoped(Scope::Owner(owner), host).await
+    }
+
+    /// Effective settings of a host of `vault` (groups of the same vault
+    /// only). Needs any access to the vault.
+    pub async fn effective_settings_in(
+        &self,
+        access: &VaultAccess,
+        vault: Id,
+        host: &Host,
+    ) -> Result<HostSettings> {
+        access.require(vault, crate::model::VaultRole::UseOnly)?;
+        self.effective_scoped(
+            Scope::Vault {
+                vault: Some(vault),
+                fallback: None,
+            },
+            host,
+        )
+        .await
+    }
+
+    async fn effective_scoped(&self, scope: Scope<'_>, host: &Host) -> Result<HostSettings> {
         let mut chain: Vec<Group> = Vec::new();
         let mut seen = HashSet::new();
         let mut next = host.group_id;
@@ -91,13 +174,12 @@ impl Store {
             if !seen.insert(gid) || chain.len() >= MAX_DEPTH {
                 break;
             }
-            match self.get::<Group>(owner, gid).await {
-                Ok(g) => {
-                    next = g.data.parent_id;
-                    chain.push(g.data);
+            match self.scoped_get::<Group>(scope, gid).await? {
+                Some((g, _)) => {
+                    next = g.parent_id;
+                    chain.push(g);
                 }
-                Err(CoreError::NotFound(_)) => break,
-                Err(e) => return Err(e),
+                None => break,
             }
         }
         let mut settings = HostSettings::default();
@@ -109,7 +191,47 @@ impl Store {
 
     /// Resolves a host and its jump chain.
     pub async fn resolve_host(&self, owner: Id, host_id: Id) -> Result<ResolvedHost> {
-        let resolved = self.resolve_single(owner, host_id).await?;
+        self.resolve_scoped(Scope::Owner(owner), host_id).await
+    }
+
+    /// Resolves a host of a vault `access` reaches, for `purpose` (checked
+    /// once with [`VaultAccess::authorize_secret`] for the host's vault).
+    /// Every reference (groups, identity, key, jumps, snippet) is looked up
+    /// in the same vault only: one outside it resolves as missing, so nobody
+    /// can make the server use a key from a vault they cannot see.
+    pub async fn resolve_in(
+        &self,
+        access: &VaultAccess,
+        host_id: Id,
+        purpose: SecretUse,
+    ) -> Result<ResolvedHost> {
+        let vault = self.vault_of::<Host>(access, host_id).await?;
+        access.authorize_secret(vault, purpose)?;
+        self.resolve_scoped(
+            Scope::Vault {
+                vault: Some(vault),
+                fallback: None,
+            },
+            host_id,
+        )
+        .await
+    }
+
+    /// Client side: resolves a host of this store's `vault` (same-vault
+    /// rule), looking up missing references in `fallback` (the device
+    /// store, owner-based). For a client's own data only: no access check.
+    pub async fn resolve_local(
+        &self,
+        vault: Option<Id>,
+        host_id: Id,
+        fallback: Option<(&Store, Id)>,
+    ) -> Result<ResolvedHost> {
+        self.resolve_scoped(Scope::Vault { vault, fallback }, host_id)
+            .await
+    }
+
+    async fn resolve_scoped(&self, scope: Scope<'_>, host_id: Id) -> Result<ResolvedHost> {
+        let resolved = self.resolve_single(scope, host_id).await?;
         let mut jumps = Vec::new();
         if let Some(ids) = resolved.settings.jump_host_ids.clone() {
             if ids.len() > MAX_DEPTH {
@@ -122,22 +244,24 @@ impl Store {
                     ));
                 }
                 // A jump's own jumps are ignored: the chain is the one set by the final host.
-                jumps.push(self.resolve_single(owner, jid).await?);
+                jumps.push(self.resolve_single(scope, jid).await?);
             }
         }
         Ok(ResolvedHost { jumps, ..resolved })
     }
 
-    async fn resolve_single(&self, owner: Id, host_id: Id) -> Result<ResolvedHost> {
-        let host = self.get::<Host>(owner, host_id).await?.data;
-        let settings = self.effective_settings(owner, &host).await?;
-        let host_secret = self.secret::<Host>(owner, host_id).await?;
+    async fn resolve_single(&self, scope: Scope<'_>, host_id: Id) -> Result<ResolvedHost> {
+        let (host, host_fb) = self
+            .scoped_get::<Host>(scope, host_id)
+            .await?
+            .ok_or_else(|| CoreError::NotFound(format!("host {host_id}")))?;
+        let settings = self.effective_scoped(scope, &host).await?;
+        let host_secret = self.scoped_secret::<Host>(scope, host_id, host_fb).await?;
 
         let identity = match settings.identity_id {
-            Some(iid) => match self.get::<Identity>(owner, iid).await {
-                Ok(i) => Some((i.data, self.secret::<Identity>(owner, iid).await?)),
-                Err(CoreError::NotFound(_)) => None,
-                Err(e) => return Err(e),
+            Some(iid) => match self.scoped_get::<Identity>(scope, iid).await? {
+                Some((i, fb)) => Some((i, self.scoped_secret::<Identity>(scope, iid, fb).await?)),
+                None => None,
             },
             None => None,
         };
@@ -164,28 +288,27 @@ impl Store {
             .or_else(|| identity.as_ref().and_then(|(i, _)| i.key_id));
         let key = match key_id {
             Some(kid) => {
-                let meta = self.get::<SshKey>(owner, kid).await?.data;
-                let secret = self.secret::<SshKey>(owner, kid).await?;
-                match secret.private_key {
-                    Some(private_key) => Some(ResolvedKey {
-                        id: kid,
-                        label: meta.label,
-                        private_key,
-                        passphrase: secret.passphrase,
-                        certificate: meta.certificate,
-                    }),
-                    None => None,
-                }
+                let (meta, fb) = self
+                    .scoped_get::<SshKey>(scope, kid)
+                    .await?
+                    .ok_or_else(|| CoreError::NotFound(format!("key {kid}")))?;
+                let secret = self.scoped_secret::<SshKey>(scope, kid, fb).await?;
+                secret.private_key.map(|private_key| ResolvedKey {
+                    id: kid,
+                    label: meta.label,
+                    private_key,
+                    passphrase: secret.passphrase,
+                    certificate: meta.certificate,
+                })
             }
             None => None,
         };
 
         let startup_script = match settings.startup_snippet_id {
-            Some(sid) => match self.get::<Snippet>(owner, sid).await {
-                Ok(s) => Some(s.data.script),
-                Err(CoreError::NotFound(_)) => None,
-                Err(e) => return Err(e),
-            },
+            Some(sid) => self
+                .scoped_get::<Snippet>(scope, sid)
+                .await?
+                .map(|(s, _)| s.script),
             None => None,
         };
 

@@ -129,6 +129,17 @@ pub struct RecordMeta {
     pub deleted: bool,
     /// Whether the record has a stored secret.
     pub has_secret: bool,
+    /// Vault the record belongs to (`None`: the personal vault of this
+    /// account on a client that has not synced with vaults yet, or a
+    /// "This device" item).
+    #[serde(default)]
+    pub vault_id: Option<Uuid>,
+    /// Last user who changed it (server).
+    #[serde(default)]
+    pub updated_by: Option<Uuid>,
+    /// A secret exists but this member cannot see it (Use-only).
+    #[serde(default)]
+    pub secret_hidden: bool,
 }
 
 /// Entity with its metadata.
@@ -650,6 +661,278 @@ pub struct SyncRecord {
     /// Server revision (assigned by the server).
     #[serde(default)]
     pub rev: i64,
+    /// Vault of the record (`None`: the personal vault).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vault_id: Option<Uuid>,
+    /// Set when `secret` is withheld (Use-only members): a secret exists.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub has_secret: Option<bool>,
+    /// Reserved for end-to-end encrypted vaults.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sealed: Option<SealedSecret>,
+    /// Reserved: revision the client based its change on (conflict detection).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_rev: Option<i64>,
+}
+
+/// Secret sealed with a vault key by a client (end-to-end encrypted vaults;
+/// reserved, not used yet).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct SealedSecret {
+    pub key_version: u32,
+    pub blob_b64: String,
+}
+
+// ---------------------------------------------------------------------------
+// Vaults
+// ---------------------------------------------------------------------------
+
+/// Kind of vault.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum VaultKind {
+    /// One per user (id = user id): private, cannot be deleted or shared.
+    Personal,
+    /// Owned by a user, can have members.
+    Shared,
+    /// Owned by a team.
+    Team,
+    /// Sent by a newer server.
+    #[serde(other)]
+    Unknown,
+}
+
+impl VaultKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            VaultKind::Personal => "personal",
+            VaultKind::Shared => "shared",
+            VaultKind::Team => "team",
+            VaultKind::Unknown => "unknown",
+        }
+    }
+
+    pub fn parse(s: &str) -> Self {
+        match s {
+            "personal" => VaultKind::Personal,
+            "shared" => VaultKind::Shared,
+            "team" => VaultKind::Team,
+            _ => VaultKind::Unknown,
+        }
+    }
+}
+
+/// Role in a vault. Ordered by rank (`Unknown` < `UseOnly` < `Editor` <
+/// `Manager`): compare roles with `<`/`>`, never as text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum VaultRole {
+    /// Uses the items (connections through the server, or just-in-time
+    /// credentials) but never sees their secrets and cannot change them.
+    UseOnly,
+    /// Reads secrets and changes items.
+    Editor,
+    /// Also manages the vault and its members (computed: the owner, or the
+    /// team owners and admins of a team vault).
+    Manager,
+    /// Sent by a newer server: treated as no access (lowest rank).
+    #[serde(other)]
+    Unknown,
+}
+
+impl VaultRole {
+    /// Rank used for ordering.
+    pub fn rank(self) -> u8 {
+        match self {
+            VaultRole::Unknown => 0,
+            VaultRole::UseOnly => 1,
+            VaultRole::Editor => 2,
+            VaultRole::Manager => 3,
+        }
+    }
+}
+
+impl PartialOrd for VaultRole {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for VaultRole {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.rank().cmp(&other.rank())
+    }
+}
+
+impl VaultRole {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            VaultRole::Unknown => "unknown",
+            VaultRole::UseOnly => "use_only",
+            VaultRole::Editor => "editor",
+            VaultRole::Manager => "manager",
+        }
+    }
+
+    pub fn parse(s: &str) -> Self {
+        match s {
+            "use_only" => VaultRole::UseOnly,
+            "editor" => VaultRole::Editor,
+            "manager" => VaultRole::Manager,
+            _ => VaultRole::Unknown,
+        }
+    }
+
+    /// Any access at all.
+    pub fn can_use(self) -> bool {
+        self >= VaultRole::UseOnly
+    }
+
+    pub fn can_read_secrets(self) -> bool {
+        self >= VaultRole::Editor
+    }
+
+    pub fn can_write(self) -> bool {
+        self >= VaultRole::Editor
+    }
+
+    pub fn can_manage(self) -> bool {
+        self == VaultRole::Manager
+    }
+}
+
+/// How the vault's secrets are protected.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum VaultCrypto {
+    /// The vault key is wrapped with the server master key.
+    #[default]
+    Server,
+    /// Reserved: end-to-end encrypted (seed phrase).
+    E2ee,
+    #[serde(other)]
+    Unknown,
+}
+
+impl VaultCrypto {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            VaultCrypto::Server => "server",
+            VaultCrypto::E2ee => "e2ee",
+            VaultCrypto::Unknown => "unknown",
+        }
+    }
+
+    pub fn parse(s: &str) -> Self {
+        match s {
+            "server" => VaultCrypto::Server,
+            "e2ee" => VaultCrypto::E2ee,
+            _ => VaultCrypto::Unknown,
+        }
+    }
+}
+
+/// Vault settings (all optional, with defaults).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(default)]
+pub struct VaultSettings {
+    /// Use-only members may connect from their own device with
+    /// just-in-time credentials. `false` (Strict): only through the server.
+    pub use_only_local: bool,
+}
+
+impl Default for VaultSettings {
+    fn default() -> Self {
+        Self {
+            use_only_local: true,
+        }
+    }
+}
+
+/// Vault: unit of ownership, sharing and sync of entities.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct Vault {
+    pub id: Uuid,
+    pub kind: VaultKind,
+    pub name: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub owner_user_id: Option<Uuid>,
+    #[serde(default)]
+    pub owner_team_id: Option<Uuid>,
+    /// Team vaults: role of plain team members (`None`: no access).
+    #[serde(default)]
+    pub team_member_role: Option<VaultRole>,
+    #[serde(default)]
+    pub crypto: VaultCrypto,
+    /// Current vault key version (0: no key yet).
+    #[serde(default)]
+    pub key_version: u32,
+    #[serde(default)]
+    pub settings: VaultSettings,
+    /// Revision of the metadata and membership.
+    #[serde(default)]
+    pub rev: i64,
+    pub created_by: Uuid,
+    pub created_at: i64,
+    pub updated_at: i64,
+    /// Your effective role (in user listings).
+    #[serde(default)]
+    pub role: Option<VaultRole>,
+    /// Name of the owner (user or team), in user listings.
+    #[serde(default)]
+    pub owner_name: Option<String>,
+    /// Explicit grants (users and teams).
+    #[serde(default)]
+    pub member_count: i64,
+    /// Live items per kind (`host`, `key`...), in listings.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub item_counts: BTreeMap<String, i64>,
+}
+
+/// Who a vault grant is for.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum VaultPrincipal {
+    User {
+        id: Uuid,
+        email: String,
+        name: String,
+    },
+    Team {
+        id: Uuid,
+        name: String,
+    },
+    #[serde(other)]
+    Unknown,
+}
+
+/// Member of a vault (explicit grant, or implicit: owner and team
+/// owners/admins).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct VaultMember {
+    /// Grant id (for implicit members, the user id).
+    pub id: Uuid,
+    pub principal: VaultPrincipal,
+    pub role: VaultRole,
+    pub added_by: Uuid,
+    pub added_at: i64,
+    /// Owner or team admin: not a grant, cannot be changed or removed.
+    #[serde(default)]
+    pub implicit: bool,
 }
 
 // ---------------------------------------------------------------------------
@@ -940,6 +1223,9 @@ pub struct AuditEntry {
     #[cfg_attr(feature = "openapi", schema(value_type = Object))]
     pub detail: serde_json::Value,
     pub created_at: i64,
+    /// Vault the entry is about (vault and secret actions).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vault_id: Option<Uuid>,
 }
 
 fn non_empty(field: &str, value: &str) -> Result<()> {

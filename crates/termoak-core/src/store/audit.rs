@@ -2,7 +2,7 @@
 
 use rusqlite::params;
 
-use super::{Store, parse_id};
+use super::{Store, parse_id, parse_opt_id};
 use crate::Id;
 use crate::error::Result;
 use crate::model::AuditEntry;
@@ -59,7 +59,8 @@ impl Store {
     ) -> Result<Vec<AuditEntry>> {
         self.call(move |c, _| {
             let mut stmt = c.prepare(
-                "SELECT id, owner_id, actor, action, target, detail, created_at FROM audit_log
+                "SELECT id, owner_id, actor, action, target, detail, created_at, vault_id
+                 FROM audit_log
                  WHERE (?1 IS NULL OR owner_id = ?1) AND id < ?2 ORDER BY id DESC LIMIT ?3",
             )?;
             let rows = stmt
@@ -69,22 +70,25 @@ impl Store {
                         before.unwrap_or(i64::MAX),
                         limit
                     ],
-                    |r| {
-                        let detail: String = r.get(5)?;
-                        Ok(AuditEntry {
-                            id: r.get(0)?,
-                            owner_id: parse_id(&r.get::<_, String>(1)?)?,
-                            actor: r.get(2)?,
-                            action: r.get(3)?,
-                            target: r.get(4)?,
-                            detail: serde_json::from_str(&detail).unwrap_or_default(),
-                            created_at: r.get(6)?,
-                        })
-                    },
+                    map_audit,
                 )?
                 .collect::<rusqlite::Result<Vec<_>>>()?;
             Ok(rows)
         })
         .await
     }
+}
+
+pub(super) fn map_audit(r: &rusqlite::Row<'_>) -> rusqlite::Result<AuditEntry> {
+    let detail: String = r.get(5)?;
+    Ok(AuditEntry {
+        id: r.get(0)?,
+        owner_id: parse_id(&r.get::<_, String>(1)?)?,
+        actor: r.get(2)?,
+        action: r.get(3)?,
+        target: r.get(4)?,
+        detail: serde_json::from_str(&detail).unwrap_or_default(),
+        created_at: r.get(6)?,
+        vault_id: parse_opt_id(r.get(7)?)?,
+    })
 }

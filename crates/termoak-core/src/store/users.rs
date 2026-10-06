@@ -174,7 +174,8 @@ impl Store {
                 email_verified,
                 locale: crate::model::default_locale(),
             };
-            let res = c.execute(
+            let tx = c.transaction()?;
+            let res = tx.execute(
                 "INSERT INTO users (id, email, name, password_hash, is_admin, disabled, created_at,
                                     email_verified)
                  VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7)",
@@ -189,7 +190,11 @@ impl Store {
                 ],
             );
             match res {
-                Ok(_) => Ok(user),
+                Ok(_) => {
+                    super::vaults::insert_personal_vault(&tx, user.id, user.created_at)?;
+                    tx.commit()?;
+                    Ok(user)
+                }
                 Err(rusqlite::Error::SqliteFailure(e, _))
                     if e.code == rusqlite::ErrorCode::ConstraintViolation =>
                 {
@@ -410,13 +415,34 @@ impl Store {
                      HAVING COUNT(*) = 1 AND MAX(user_id) = ?1)",
                 [&id],
             )?;
+            let lonely: Vec<String> = {
+                let mut stmt = tx.prepare(
+                    "SELECT team_id FROM team_members GROUP BY team_id
+                     HAVING COUNT(*) = 1 AND MAX(user_id) = ?1",
+                )?;
+                stmt.query_map([&id], |r| r.get::<_, String>(0))?
+                    .collect::<rusqlite::Result<Vec<_>>>()?
+            };
+            for team in &lonely {
+                super::teams::delete_team_vaults(&tx, team)?;
+            }
             tx.execute(
                 "DELETE FROM teams WHERE id IN (
                      SELECT team_id FROM team_members GROUP BY team_id
                      HAVING COUNT(*) = 1 AND MAX(user_id) = ?1)",
                 [&id],
             )?;
-            tx.execute("DELETE FROM entities WHERE owner_id = ?1", [&id])?;
+            // Their personal and shared vaults (entities, keys, grants) and
+            // their grants on other vaults. Items they created in vaults of
+            // others stay there.
+            for vault in super::vaults::user_vault_ids(&tx, &id)? {
+                super::vaults::delete_vault_tx(&tx, &vault)?;
+            }
+            tx.execute("DELETE FROM vault_members WHERE user_id = ?1", [&id])?;
+            tx.execute(
+                "DELETE FROM entities WHERE owner_id = ?1 AND vault_id IS NULL",
+                [&id],
+            )?;
             tx.execute(
                 "DELETE FROM session_shares WHERE user_id = ?1 OR created_by = ?1",
                 [&id],
@@ -438,7 +464,9 @@ impl Store {
             tx.commit()?;
             Ok(())
         })
-        .await
+        .await?;
+        self.bump_access();
+        Ok(())
     }
 
     /// Stores a device's push notification token. The same token is removed

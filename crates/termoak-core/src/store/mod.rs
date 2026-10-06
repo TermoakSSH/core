@@ -14,6 +14,7 @@ pub mod invites;
 pub mod sessions;
 pub mod teams;
 pub mod users;
+pub mod vaults;
 
 use std::path::Path;
 use std::sync::Arc;
@@ -22,6 +23,12 @@ use parking_lot::Mutex;
 use rusqlite::{Connection, OptionalExtension};
 
 pub use ai::{AiApprovalRow, AiEventRow, AiTaskRow, AiUsageRow};
+pub use entities::{
+    ApplyReport, SyncRejection, SyncWarning, VaultChange, VaultChanges, references,
+};
+pub use vaults::{
+    NewVault, SecretUse, VaultAccess, VaultGrantee, VaultPatch, VaultTransfer, VaultTransferResult,
+};
 
 use crate::Id;
 use crate::crypto::MasterKey;
@@ -35,8 +42,15 @@ pub struct Store {
 
 struct Inner {
     conn: Mutex<Connection>,
-    key: MasterKey,
+    keys: vaults::Keyring,
+    access: vaults::AccessCache,
+    /// Called after a commit that changed entities of these vaults.
+    on_change: parking_lot::RwLock<Option<ChangeListener>>,
 }
+
+/// Listener of entity changes per vault (the server sends `vault/changed`
+/// events with it).
+pub type ChangeListener = Arc<dyn Fn(&[Id]) + Send + Sync>;
 
 impl std::fmt::Debug for Store {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -68,14 +82,47 @@ impl Store {
         Ok(Self {
             inner: Arc::new(Inner {
                 conn: Mutex::new(conn),
-                key,
+                keys: vaults::Keyring::new(key),
+                access: Default::default(),
+                on_change: Default::default(),
             }),
         })
     }
 
     /// Master key used to encrypt secrets.
     pub fn master_key(&self) -> &MasterKey {
-        &self.inner.key
+        &self.inner.keys.master
+    }
+
+    /// Sets the function called after entities of some vaults change.
+    pub fn set_change_listener(&self, listener: Option<ChangeListener>) {
+        *self.inner.on_change.write() = listener;
+    }
+
+    /// Tells the listener (if any) that these vaults changed.
+    pub(crate) fn changed(&self, vaults: &[Id]) {
+        if vaults.is_empty() {
+            return;
+        }
+        let listener = self.inner.on_change.read().clone();
+        if let Some(l) = listener {
+            l(vaults);
+        }
+    }
+
+    /// Runs `f` with the connection and the keyring on a blocking thread.
+    pub(crate) async fn call_keys<F, R>(&self, f: F) -> Result<R>
+    where
+        F: FnOnce(&mut Connection, &vaults::Keyring) -> Result<R> + Send + 'static,
+        R: Send + 'static,
+    {
+        let inner = self.inner.clone();
+        tokio::task::spawn_blocking(move || {
+            let mut conn = inner.conn.lock();
+            f(&mut conn, &inner.keys)
+        })
+        .await
+        .map_err(|e| CoreError::Join(e.to_string()))?
     }
 
     /// Runs `f` with the connection on a blocking thread.
@@ -87,7 +134,7 @@ impl Store {
         let inner = self.inner.clone();
         tokio::task::spawn_blocking(move || {
             let mut conn = inner.conn.lock();
-            f(&mut conn, &inner.key)
+            f(&mut conn, &inner.keys.master)
         })
         .await
         .map_err(|e| CoreError::Join(e.to_string()))?
@@ -99,7 +146,7 @@ impl Store {
         F: FnOnce(&mut Connection, &MasterKey) -> Result<R>,
     {
         let mut conn = self.inner.conn.lock();
-        f(&mut conn, &self.inner.key)
+        f(&mut conn, &self.inner.keys.master)
     }
 
     /// Reads a value from the `meta` table.
@@ -427,6 +474,131 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE session_shares ADD COLUMN control_minutes INTEGER;
     "#,
+    // v9: vaults. Every user gets a personal vault (id = user id) and their
+    // entities go there; access is decided by `entities.vault_id` from now
+    // on (`owner_id` keeps "created by"). No foreign keys to `users` or
+    // `teams`: client stores have neither, the store code does the
+    // cascades. The vault keys are created lazily (no crypto here).
+    r#"
+    CREATE TABLE vaults (
+        id               TEXT PRIMARY KEY,
+        kind             TEXT NOT NULL,
+        name             TEXT NOT NULL,
+        description      TEXT NOT NULL DEFAULT '',
+        color            TEXT,
+        icon             TEXT,
+        owner_user_id    TEXT,
+        owner_team_id    TEXT,
+        team_member_role TEXT,
+        crypto_mode      TEXT NOT NULL DEFAULT 'server',
+        key_version      INTEGER NOT NULL DEFAULT 0,
+        settings         TEXT NOT NULL DEFAULT '{}',
+        rev              INTEGER NOT NULL DEFAULT 0,
+        created_by       TEXT NOT NULL,
+        created_at       INTEGER NOT NULL,
+        updated_at       INTEGER NOT NULL,
+        CHECK ((owner_user_id IS NULL) <> (owner_team_id IS NULL))
+    );
+    CREATE INDEX vaults_owner_user ON vaults(owner_user_id);
+    CREATE INDEX vaults_owner_team ON vaults(owner_team_id);
+
+    CREATE TABLE vault_members (
+        id        TEXT PRIMARY KEY,
+        vault_id  TEXT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
+        user_id   TEXT,
+        team_id   TEXT,
+        role      TEXT NOT NULL,
+        added_by  TEXT NOT NULL,
+        added_at  INTEGER NOT NULL,
+        CHECK ((user_id IS NULL) <> (team_id IS NULL)),
+        UNIQUE (vault_id, user_id),
+        UNIQUE (vault_id, team_id)
+    );
+    CREATE INDEX vault_members_user ON vault_members(user_id);
+    CREATE INDEX vault_members_team ON vault_members(team_id);
+
+    CREATE TABLE vault_keys (
+        vault_id   TEXT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
+        version    INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        retired_at INTEGER,
+        PRIMARY KEY (vault_id, version)
+    );
+    CREATE TABLE vault_key_wraps (
+        vault_id         TEXT NOT NULL,
+        version          INTEGER NOT NULL,
+        recipient        TEXT NOT NULL,
+        alg              TEXT NOT NULL,
+        recipient_key_id TEXT,
+        wrapped          BLOB NOT NULL,
+        created_at       INTEGER NOT NULL,
+        PRIMARY KEY (vault_id, version, recipient),
+        FOREIGN KEY (vault_id, version) REFERENCES vault_keys(vault_id, version) ON DELETE CASCADE
+    );
+    -- Reserved for end-to-end encrypted vaults (stays empty for now).
+    CREATE TABLE user_keys (
+        id             TEXT PRIMARY KEY,
+        user_id        TEXT NOT NULL,
+        alg            TEXT NOT NULL,
+        public_key     BLOB NOT NULL,
+        sealed_private BLOB,
+        created_at     INTEGER NOT NULL,
+        revoked_at     INTEGER
+    );
+
+    ALTER TABLE entities ADD COLUMN vault_id TEXT;
+    ALTER TABLE entities ADD COLUMN key_version INTEGER;
+    ALTER TABLE entities ADD COLUMN updated_by TEXT;
+    ALTER TABLE entities ADD COLUMN secret_hidden INTEGER NOT NULL DEFAULT 0;
+    CREATE INDEX entities_vault_rev ON entities(vault_id, rev);
+    CREATE INDEX entities_vault_kind ON entities(vault_id, kind, deleted);
+
+    -- "This entity left this vault" (moved, or the vault lost it).
+    CREATE TABLE entity_departures (
+        vault_id  TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        kind      TEXT NOT NULL,
+        rev       INTEGER NOT NULL,
+        at        INTEGER NOT NULL,
+        PRIMARY KEY (vault_id, entity_id)
+    );
+    CREATE INDEX entity_departures_rev ON entity_departures(vault_id, rev);
+
+    ALTER TABLE sessions ADD COLUMN vault_id TEXT;
+    ALTER TABLE audit_log ADD COLUMN vault_id TEXT;
+    CREATE INDEX audit_vault ON audit_log(vault_id, created_at);
+
+    -- Clients only: per-vault sync state of an account store.
+    CREATE TABLE vault_sync (
+        vault_id  TEXT PRIMARY KEY,
+        role      TEXT NOT NULL,
+        cursor    INTEGER NOT NULL DEFAULT 0,
+        synced_at INTEGER
+    );
+    -- Clients only (device store): signed-in accounts.
+    CREATE TABLE accounts (
+        id           TEXT PRIMARY KEY,
+        server_url   TEXT NOT NULL,
+        instance_id  TEXT,
+        official     INTEGER NOT NULL DEFAULT 0,
+        user_id      TEXT,
+        email        TEXT NOT NULL,
+        name         TEXT NOT NULL DEFAULT '',
+        status       TEXT NOT NULL,
+        tokens       BLOB,
+        features     TEXT NOT NULL DEFAULT '{}',
+        color        TEXT,
+        position     INTEGER NOT NULL DEFAULT 0,
+        added_at     INTEGER NOT NULL,
+        last_used_at INTEGER
+    );
+
+    -- Server data: one personal vault per user; existing entities go there.
+    INSERT INTO vaults (id, kind, name, owner_user_id, created_by, created_at, updated_at)
+        SELECT id, 'personal', 'Personal', id, id, created_at, created_at FROM users;
+    UPDATE entities SET vault_id = owner_id
+        WHERE vault_id IS NULL AND owner_id IN (SELECT id FROM users);
+    "#,
 ];
 
 fn migrate(conn: &Connection) -> Result<()> {
@@ -447,6 +619,9 @@ fn migrate(conn: &Connection) -> Result<()> {
 pub(crate) fn test_store() -> Store {
     Store::open_in_memory(MasterKey::generate()).unwrap()
 }
+
+#[cfg(test)]
+mod vault_tests;
 
 #[cfg(test)]
 mod migration_tests {
