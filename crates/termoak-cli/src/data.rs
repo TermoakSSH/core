@@ -136,9 +136,9 @@ pub async fn find_snippet(ws: &Workspace, reference: &str) -> Result<Snippet> {
 }
 
 pub async fn need_server(ws: &Workspace) -> Result<ApiClient> {
-    ws.server()
-        .await?
-        .context("not signed in to any server: use `termoak login <url>` (or `termoak account add`)")
+    ws.server().await?.context(
+        "not signed in to any server: use `termoak login <url>` (or `termoak account add`)",
+    )
 }
 
 pub enum HostsAction {
@@ -165,7 +165,8 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
         HostsAction::List(query) => {
             let q = query.unwrap_or_default().to_lowercase();
             let groups = ws.all::<Group>().await?;
-            let mut list: Vec<Record<Host>> = ws.all::<Host>()
+            let mut list: Vec<Record<Host>> = ws
+                .all::<Host>()
                 .await?
                 .into_iter()
                 .filter(|h| {
@@ -258,7 +259,9 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
             } else {
                 SecretUpdate::Keep
             };
-            let rec = ws.put(Host {
+            let rec = ws
+                .put(
+                    Host {
                         id: Id::nil(),
                         label,
                         address,

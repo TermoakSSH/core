@@ -8,7 +8,8 @@
 use reqwest::Method;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use termoak_client::{ApiClient, SyncEngine};
+use termoak_client::ApiClient;
+use termoak_core::Id;
 
 use crate::auth::PromptField;
 use crate::error::{Result, TermoakError};
@@ -20,15 +21,63 @@ use crate::vault::TermoakCore;
 // Types
 // ---------------------------------------------------------------------------
 
-/// Result of a sync.
+/// Result of a sync. Show a notice when `discarded`, `vaults_added` or
+/// `vaults_lost` is not empty ("You no longer have access to Ops; 2
+/// unsynced changes were discarded").
 #[derive(Debug, Clone, PartialEq, uniffi::Record)]
 pub struct SyncReport {
     /// Local changes uploaded.
     pub pushed: u64,
     /// Changes received from the server.
     pub pulled: u64,
-    /// Server revision after syncing.
+    /// Server revision after syncing (vaults: the highest vault cursor).
     pub rev: i64,
+    /// Account synced.
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Items removed because they left their vault.
+    #[uniffi(default)]
+    pub removed: u64,
+    /// Local changes lost (the vault was lost, or became Use-only).
+    #[uniffi(default)]
+    pub discarded: Vec<crate::accounts::DiscardedChanges>,
+    /// Vaults shared with you since the last sync.
+    #[uniffi(default)]
+    pub vaults_added: Vec<crate::accounts::VaultRef>,
+    /// Vaults you no longer have access to (their items were removed).
+    #[uniffi(default)]
+    pub vaults_lost: Vec<crate::accounts::VaultRef>,
+    /// `v2` (vaults) or `legacy`.
+    #[uniffi(default)]
+    pub protocol: String,
+}
+
+impl SyncReport {
+    pub(crate) fn from_client(r: termoak_client::SyncReport, account: Id) -> Self {
+        let vref = |v: &termoak_client::sync::VaultRef| crate::accounts::VaultRef {
+            id: v.id.to_string(),
+            name: v.name.clone(),
+        };
+        SyncReport {
+            pushed: r.pushed as u64,
+            pulled: r.pulled as u64,
+            rev: r.rev,
+            account_id: Some(account.to_string()),
+            removed: r.removed as u64,
+            discarded: r
+                .discarded
+                .iter()
+                .map(|d| crate::accounts::DiscardedChanges {
+                    vault_id: d.vault_id.to_string(),
+                    vault_name: d.vault_name.clone(),
+                    count: d.count as u64,
+                })
+                .collect(),
+            vaults_added: r.vaults_added.iter().map(vref).collect(),
+            vaults_lost: r.vaults_lost.iter().map(vref).collect(),
+            protocol: r.protocol.to_string(),
+        }
+    }
 }
 
 /// HTTP method for [`TermoakCore::api_request`].
@@ -683,9 +732,29 @@ pub async fn server_info(url: String) -> Result<String> {
 }
 
 impl TermoakCore {
+    /// The account this object works with: the bound one
+    /// ([`AccountHandle`](crate::AccountHandle)) or the current one.
+    pub(crate) fn account_now(&self) -> Result<std::sync::Arc<termoak_client::Account>> {
+        match self.pinned {
+            Some(id) => Ok(self.ws.require_account(id)?),
+            None => self.ws.current().ok_or_else(|| {
+                TermoakError::NotLoggedIn("you are not signed in to any server".into())
+            }),
+        }
+    }
+
     /// Signed-in server client.
     pub(crate) async fn api(&self) -> Result<ApiClient> {
-        run_api(self).await
+        let acc = self.account_now()?;
+        if acc.is_signed_in() {
+            return Ok(acc.api.clone());
+        }
+        Err(match acc.status() {
+            termoak_client::AccountStatus::NeedsSignIn => {
+                TermoakError::SessionExpired("the session has expired: sign in again".into())
+            }
+            _ => TermoakError::NotLoggedIn("you are not signed in to any server".into()),
+        })
     }
 
     /// Runs `f` with the server client, on the library's runtime.
@@ -698,28 +767,53 @@ impl TermoakCore {
         let api = self.api().await?;
         run(async move { f(api).await }).await
     }
-}
 
-/// Gets the client (reading the vault on the library's runtime if needed).
-async fn run_api(core: &TermoakCore) -> Result<ApiClient> {
-    if let Some(api) = core.api.lock().clone() {
-        return if api.is_logged_in() {
-            Ok(api)
-        } else {
-            Err(TermoakError::SessionExpired(
-                "the session has expired: sign in again".into(),
-            ))
+    /// Client of the account of a host: `account_id`, the bound account,
+    /// the account whose store has the host, or the current one.
+    pub(crate) async fn api_for_host(
+        &self,
+        host_id: Id,
+        account_id: &Option<String>,
+    ) -> Result<ApiClient> {
+        let account = match crate::models::parse_opt_id(account_id)?.or(self.pinned) {
+            Some(a) => Some(a),
+            None => {
+                let ws = self.ws.clone();
+                run(async move { Ok(ws.locate(host_id).await.ok()) })
+                    .await?
+                    .and_then(|item| item.scope.account())
+            }
         };
+        match account {
+            Some(a) => {
+                let acc = self.ws.require_account(a)?;
+                if acc.is_signed_in() {
+                    Ok(acc.api.clone())
+                } else {
+                    Err(TermoakError::SessionExpired(
+                        "the session has expired: sign in again".into(),
+                    ))
+                }
+            }
+            None => self.api().await,
+        }
     }
-    let ws = core.ws.clone();
-    let api = run(async move {
-        ws.server()
-            .await?
-            .ok_or_else(|| TermoakError::NotLoggedIn("you are not signed in to any server".into()))
-    })
-    .await?;
-    *core.api.lock() = Some(api.clone());
-    Ok(api)
+
+    /// Runs `f` with the client of a host's account.
+    pub(crate) async fn with_host_api<T, F, Fut>(
+        &self,
+        host_id: Id,
+        account_id: &Option<String>,
+        f: F,
+    ) -> Result<T>
+    where
+        T: Send + 'static,
+        F: FnOnce(ApiClient) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<T>> + Send,
+    {
+        let api = self.api_for_host(host_id, account_id).await?;
+        run(async move { f(api).await }).await
+    }
 }
 
 #[uniffi::export]
@@ -759,14 +853,13 @@ impl TermoakCore {
         let code = totp_code
             .map(|c| c.trim().to_string())
             .filter(|c| !c.is_empty());
-        let api = run(async move {
-            Ok(ws
-                .login_with_code(&url, &email, &password, code.as_deref())
-                .await?)
+        crate::vault::install_crypto_provider();
+        run(async move {
+            ws.login_with_code(&url, &email, &password, code.as_deref())
+                .await?;
+            Ok(())
         })
-        .await?;
-        *self.api.lock() = Some(api);
-        Ok(())
+        .await
     }
 
     /// Creates an account (the server's first user is the admin) and signs in.
@@ -792,14 +885,13 @@ impl TermoakCore {
         let invite = invite
             .map(|c| c.trim().to_string())
             .filter(|c| !c.is_empty());
-        let api = run(async move {
-            Ok(ws
-                .register_with_invite(&url, &email, &name, &password, invite.as_deref())
-                .await?)
+        crate::vault::install_crypto_provider();
+        run(async move {
+            ws.register_with_invite(&url, &email, &name, &password, invite.as_deref())
+                .await?;
+            Ok(())
         })
-        .await?;
-        *self.api.lock() = Some(api);
-        Ok(())
+        .await
     }
 
     /// Whether the signed-in account still has to verify its email before
@@ -836,11 +928,11 @@ impl TermoakCore {
             .filter(|c| !c.is_empty());
         // Codes are often pasted with spaces or dashes ("123 456").
         let code: String = code.chars().filter(char::is_ascii_digit).collect();
-        let api =
-            run(async move { Ok(ws.verify_code(&url, &email, &code, totp.as_deref()).await?) })
-                .await?;
-        *self.api.lock() = Some(api);
-        Ok(())
+        run(async move {
+            ws.verify_code(&url, &email, &code, totp.as_deref()).await?;
+            Ok(())
+        })
+        .await
     }
 
     /// Emails a new six-digit verification code to `email` on the server at
@@ -852,57 +944,56 @@ impl TermoakCore {
         run(async move { Ok(ws.resend_code(&url, &email).await?) }).await
     }
 
-    /// Signs this device out of the server. Local data is kept.
+    /// Signs the current account out of its server. Its local data is kept
+    /// (the account asks to sign in again); `sign_out_account` also deletes
+    /// it.
     pub async fn logout(&self) -> Result<()> {
         let ws = self.ws.clone();
-        self.api.lock().take();
         run(async move { Ok(ws.logout().await?) }).await
     }
 
-    /// Whether signed in (with saved tokens).
+    /// Whether the current account is signed in (with saved tokens).
     pub async fn is_logged_in(&self) -> Result<bool> {
-        match run_api(self).await {
+        match self.api().await {
             Ok(_) => Ok(true),
             Err(TermoakError::NotLoggedIn(_) | TermoakError::SessionExpired(_)) => Ok(false),
             Err(e) => Err(e),
         }
     }
 
-    /// URL of the signed-in server.
+    /// URL of the current account's server (if signed in).
     pub async fn server_url(&self) -> Result<Option<String>> {
-        match run_api(self).await {
+        match self.api().await {
             Ok(api) => Ok(Some(api.base_url().to_string())),
             Err(TermoakError::NotLoggedIn(_) | TermoakError::SessionExpired(_)) => Ok(None),
             Err(e) => Err(e),
         }
     }
 
-    /// Email used for the last sign-in.
+    /// Email of the current account.
     pub async fn server_user(&self) -> Result<Option<String>> {
-        let ws = self.ws.clone();
-        run(async move { Ok(ws.server_user().await?) }).await
+        Ok(self.account_now().ok().map(|a| a.info().email))
     }
 
-    /// One sync round: uploads local changes and downloads the server's (last
-    /// writer wins). `DeviceOnly` records never leave the device.
+    /// One sync round of the current account: uploads local changes and
+    /// downloads the server's (last writer wins). `DeviceOnly` records never
+    /// leave the device.
     pub async fn sync_now(&self) -> Result<SyncReport> {
-        let store = self.store().clone();
-        self.with_api(move |api| async move {
-            let r = SyncEngine::new(store, api).sync_once().await?;
-            Ok(SyncReport {
-                pushed: r.pushed as u64,
-                pulled: r.pulled as u64,
-                rev: r.rev,
-            })
+        let acc = self.account_now()?;
+        self.api().await?;
+        run(async move {
+            let r = acc.sync_once().await?;
+            Ok(SyncReport::from_client(r, acc.id))
         })
         .await
     }
 
-    /// Forgets the sync revision: the next round downloads everything.
+    /// Forgets the sync position of the current account: the next round
+    /// downloads everything.
     pub async fn reset_sync(&self) -> Result<()> {
-        let store = self.store().clone();
-        self.with_api(move |api| async move { Ok(SyncEngine::new(store, api).reset().await?) })
-            .await
+        let acc = self.account_now()?;
+        self.api().await?;
+        run(async move { Ok(acc.sync_engine().reset().await?) }).await
     }
 
     // ----- Generic API -----
@@ -992,7 +1083,9 @@ impl TermoakCore {
 
     /// Opens a persistent terminal on the server to a synced host. It stays
     /// alive even if the phone disconnects; to see it, use
-    /// `attach_server_session`.
+    /// `attach_server_session`. The session opens on the host's account
+    /// (`account_id`, or the account that has the host).
+    #[uniffi::method(default(account_id))]
     pub async fn open_server_session(
         &self,
         host_id: String,
@@ -1000,9 +1093,10 @@ impl TermoakCore {
         rows: u32,
         title: Option<String>,
         record: Option<bool>,
+        account_id: Option<String>,
     ) -> Result<ServerSession> {
-        parse_id(&host_id)?;
-        self.with_api(move |api| async move {
+        let hid = parse_id(&host_id)?;
+        self.with_host_api(hid, &account_id, move |api| async move {
             let v: Value = api
                 .post(
                     "/api/v1/sessions",

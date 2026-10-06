@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use bytes::Bytes;
 use parking_lot::Mutex;
-use termoak_client::{LOCAL_OWNER, Workspace};
+use termoak_client::{ItemRef, LOCAL_OWNER, Scope, Workspace};
 use termoak_core::Id;
 use termoak_core::model::{self as cm, SecretUpdate};
 use termoak_ssh::forward::{ForwardHandle, ForwardSpec};
@@ -171,6 +171,8 @@ pub struct ForwardStats {
 #[derive(uniffi::Object)]
 pub struct SshSession {
     host_id: Id,
+    /// Where the host lives (This device or an account).
+    scope: Scope,
     ws: Workspace,
     conn: InRuntime<Arc<Connection>>,
     sftp: tokio::sync::Mutex<Option<Arc<Sftp>>>,
@@ -188,6 +190,13 @@ impl Drop for SshSession {
 impl SshSession {
     fn conn(&self) -> Arc<Connection> {
         Arc::clone(&self.conn)
+    }
+
+    fn item(&self) -> ItemRef {
+        ItemRef {
+            scope: self.scope,
+            id: self.host_id,
+        }
     }
 
     async fn sftp(&self) -> Result<Arc<Sftp>> {
@@ -219,6 +228,11 @@ impl SshSession {
 #[uniffi::export]
 impl SshSession {
     /// Host it is connected to.
+    /// Account of the host (`None`: This device).
+    pub fn account_id(&self) -> Option<String> {
+        self.scope.account().map(|a| a.to_string())
+    }
+
     pub fn host_id(&self) -> String {
         self.host_id.to_string()
     }
@@ -255,7 +269,7 @@ impl SshSession {
         run(async move {
             let term = self
                 .ws
-                .open_terminal(self.host_id, self.conn(), dim(cols), dim(rows), record)
+                .open_terminal_item(self.item(), self.conn(), dim(cols), dim(rows), record)
                 .await?;
             Ok(TerminalHandle::start(term, self, listener))
         })
@@ -297,22 +311,33 @@ impl SshSession {
     /// (`os` and `os_version`).
     pub async fn detect_os_info(&self) -> Result<Option<crate::assist::RemoteOs>> {
         let conn = self.conn();
-        let store = self.ws.store.clone();
-        let host_id = self.host_id;
+        let ws = self.ws.clone();
+        let item = self.item();
         run(async move {
             let Some(info) = termoak_ssh::detect::detect_os_info(&conn).await else {
                 return Ok(None);
             };
-            let mut host = store.get::<cm::Host>(LOCAL_OWNER, host_id).await?.data;
+            let mut host = ws.get_item::<cm::Host>(item).await?.record.data;
             let display = info.display();
             if host.os.as_deref() != Some(info.id.as_str())
                 || host.os_version.as_deref() != Some(display.as_str())
             {
                 host.os = Some(info.id.clone());
                 host.os_version = Some(display);
-                store
-                    .save(LOCAL_OWNER, host, SecretUpdate::Keep, None)
-                    .await?;
+                // Use-only members cannot change the host: it is only metadata.
+                match ws
+                    .save_item(
+                        crate::vault::target_of_item(item),
+                        host,
+                        SecretUpdate::Keep,
+                        None,
+                    )
+                    .await
+                {
+                    Ok(_) => {}
+                    Err(termoak_client::ClientError::Core(e)) if e.vault_code().is_some() => {}
+                    Err(e) => return Err(e.into()),
+                }
             }
             Ok(Some(info.into()))
         })
@@ -440,10 +465,17 @@ impl SshSession {
     /// Starts a tunnel saved in the vault.
     pub async fn start_forward(&self, forward_id: String) -> Result<Arc<ActiveForward>> {
         let id = parse_id(&forward_id)?;
-        let store = self.ws.store.clone();
+        let store = self.ws.store_of(self.scope)?;
+        let device = self.ws.store.clone();
         let conn = self.conn();
         run(async move {
-            let fwd = store.get::<cm::PortForward>(LOCAL_OWNER, id).await?.data;
+            let fwd = match store.get::<cm::PortForward>(LOCAL_OWNER, id).await {
+                Ok(r) => r.data,
+                Err(termoak_core::CoreError::NotFound(_)) => {
+                    device.get::<cm::PortForward>(LOCAL_OWNER, id).await?.data
+                }
+                Err(e) => return Err(e.into()),
+            };
             start(conn, ForwardSpec::from(&fwd), fwd.label).await
         })
         .await
@@ -485,7 +517,7 @@ impl SshSession {
     /// Starts the host's tunnels marked `auto_start`. Those that fail are
     /// skipped (and the error is logged).
     pub async fn start_auto_forwards(&self) -> Result<Vec<Arc<ActiveForward>>> {
-        let store = self.ws.store.clone();
+        let store = self.ws.store_of(self.scope)?;
         let conn = self.conn();
         let host_id = self.host_id;
         run(async move {
@@ -783,18 +815,26 @@ impl ActiveForward {
 impl TermoakCore {
     /// Connects to a host over SSH from this device (through its jumps).
     /// `auth` answers the prompts (fingerprint, 2FA, password...).
+    /// `account_id`: the account of the host (default: wherever it is). A
+    /// Use-only host gets its credentials from the server just for this
+    /// connection (`UseOnlyStrict`: open a server session instead;
+    /// `UseOnlyNeedsServer`: offline).
+    #[uniffi::method(default(account_id))]
     pub async fn connect(
         &self,
         host_id: String,
         auth: Arc<dyn AuthHandler>,
+        account_id: Option<String>,
     ) -> Result<Arc<SshSession>> {
+        let item = self.item_of(parse_id(&host_id)?, &account_id)?;
         let ws = self.ws.clone();
-        run(async move { connect(ws, &host_id, auth).await }).await
+        run(async move { connect(ws, item, auth).await }).await
     }
 
     /// Shortcut: connects and opens a terminal. The connection remains
     /// reachable with `TerminalHandle::session()` (e.g. to open SFTP without
     /// reconnecting).
+    #[uniffi::method(default(account_id))]
     pub async fn connect_terminal(
         &self,
         host_id: String,
@@ -802,13 +842,15 @@ impl TermoakCore {
         rows: u32,
         auth: Arc<dyn AuthHandler>,
         listener: Arc<dyn TerminalListener>,
+        account_id: Option<String>,
     ) -> Result<Arc<TerminalHandle>> {
+        let item = self.item_of(parse_id(&host_id)?, &account_id)?;
         let ws = self.ws.clone();
         run(async move {
-            let session = connect(ws, &host_id, auth).await?;
+            let session = connect(ws, item, auth).await?;
             let term = session
                 .ws
-                .open_terminal(session.host_id, session.conn(), dim(cols), dim(rows), false)
+                .open_terminal_item(session.item(), session.conn(), dim(cols), dim(rows), false)
                 .await?;
             Ok(TerminalHandle::start(term, session, listener))
         })
@@ -818,14 +860,14 @@ impl TermoakCore {
 
 async fn connect(
     ws: Workspace,
-    host_id: &str,
+    item: ItemRef,
     auth: Arc<dyn AuthHandler>,
 ) -> Result<Arc<SshSession>> {
-    let host_id = parse_id(host_id)?;
     let prompter = Arc::new(FfiPrompter { handler: auth });
-    let conn = ws.connect(host_id, prompter, false).await?;
+    let conn = ws.connect_item(item, prompter, false).await?;
     Ok(Arc::new(SshSession {
-        host_id,
+        host_id: item.id,
+        scope: item.scope,
         ws,
         conn: InRuntime::new(conn),
         sftp: tokio::sync::Mutex::new(None),

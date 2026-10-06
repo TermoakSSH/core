@@ -3,9 +3,7 @@
 use anyhow::{Context, Result, bail};
 use clap::Subcommand;
 use serde_json::{Value, json};
-use termoak_client::{
-    AccountStatus, AccountView, ApiClient, ServerChoice, SyncReport, Workspace,
-};
+use termoak_client::{AccountStatus, AccountView, ApiClient, ServerChoice, SyncReport, Workspace};
 
 use crate::data::need_server;
 use crate::{out, prompt};
@@ -663,7 +661,11 @@ async fn accounts(ws: &Workspace, cmd: AccountCmd, json: bool) -> Result<()> {
                         AccountStatus::Unverified => " (email not verified)",
                         AccountStatus::Unknown => " (?)",
                     };
-                    let vaults = if a.vaults_supported() { "" } else { " [no vaults: update the server]" };
+                    let vaults = if a.vaults_supported() {
+                        ""
+                    } else {
+                        " [no vaults: update the server]"
+                    };
                     println!(
                         "{mark} {}  {}  {}{status}{vaults}",
                         &a.id.to_string()[..8],
@@ -713,7 +715,10 @@ async fn accounts(ws: &Workspace, cmd: AccountCmd, json: bool) -> Result<()> {
                 );
             }
             out(json, &r, || {
-                println!("Signed out of {} and deleted its data on this device.", info.email);
+                println!(
+                    "Signed out of {} and deleted its data on this device.",
+                    info.email
+                );
             });
         }
         AccountCmd::Verify { code, resend } => {

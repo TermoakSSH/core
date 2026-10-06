@@ -555,12 +555,14 @@ impl TermoakCore {
 /// **Threads**: its own background thread, in order; it must return quickly.
 #[uniffi::export(foreign)]
 pub trait ServerEventListener: Send + Sync {
-    /// Event as JSON. Types (`type`): `hello` (user and pending approvals),
+    /// Event as JSON, with `"account_id"` (the account it comes from).
+    /// Types (`type`): `hello` (user and pending approvals),
     /// `ai` (a task event: `task_id`, `seq`, `event`), `session` (`notice`:
     /// `session_opened`, `session_closed`, `session_shared`,
     /// `prompt_pending`, `join_request`, `control_request`,
-    /// `control_granted`, `control_revoked`) and `lagged` (events were
-    /// lost: refresh).
+    /// `control_granted`, `control_revoked`), `vault` (`event`: `changed`
+    /// or `access`, with `vault_id`; the account syncs by itself) and
+    /// `lagged` (events were lost: refresh).
     fn on_event(&self, event_json: String);
 
     /// The WebSocket closed (`reason` if it was due to an error). Nothing else
@@ -598,8 +600,12 @@ impl TermoakCore {
         &self,
         listener: Arc<dyn ServerEventListener>,
     ) -> Result<Arc<EventSubscription>> {
+        let account = self.account_now()?;
         let api = self.api().await?;
         let ws = run(async move { Ok(api.websocket("/api/v1/events/ws").await?) }).await?;
+        let weak = Arc::downgrade(&account);
+        let account_id = account.id;
+        drop(account);
         let stop = Arc::new(Notify::new());
         let thread_stop = stop.clone();
         spawn_callback_thread("termoak-events", move |rt| {
@@ -613,7 +619,21 @@ impl TermoakCore {
                 });
                 match msg {
                     None => break None,
-                    Some(Some(Ok(Message::Text(t)))) => listener.on_event(t.to_string()),
+                    Some(Some(Ok(Message::Text(t)))) => {
+                        match serde_json::from_str::<Value>(&t) {
+                            Ok(v) => {
+                                // Vault changes: sync that account.
+                                if termoak_client::events::wants_sync(&v)
+                                    && let Some(acc) = weak.upgrade()
+                                {
+                                    acc.sync_soon();
+                                }
+                                let v = termoak_client::events::tag_event(v, account_id);
+                                listener.on_event(v.to_string())
+                            }
+                            Err(_) => listener.on_event(t.to_string()),
+                        }
+                    }
                     Some(Some(Ok(Message::Close(frame)))) => {
                         break frame
                             .map(|f| f.reason.to_string())

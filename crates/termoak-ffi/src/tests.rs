@@ -32,6 +32,10 @@ fn host(label: &str, address: &str) -> SshHost {
         sync_mode: None,
         has_password: false,
         updated_at: 0,
+        account_id: None,
+        vault_id: None,
+        access: None,
+        secret_hidden: false,
     }
 }
 
@@ -59,7 +63,7 @@ fn vault_key_roundtrip() {
     // Same key: the secrets can be read.
     let core = new_core(dir.path(), &key);
     assert_eq!(
-        core.host_password(id.clone()).unwrap().as_deref(),
+        core.host_password(id.clone(), None).unwrap().as_deref(),
         Some("s3cr3t")
     );
     drop(core);
@@ -97,6 +101,10 @@ fn hosts_groups_and_secrets() {
             },
             sync_mode: None,
             updated_at: 0,
+            account_id: None,
+            vault_id: None,
+            access: None,
+            secret_hidden: false,
         })
         .unwrap();
     assert!(!group.id.is_empty());
@@ -114,30 +122,32 @@ fn hosts_groups_and_secrets() {
     assert!(saved.updated_at > 0);
 
     // Effective settings: group + host.
-    let eff = core.effective_settings(saved.id.clone()).unwrap();
+    let eff = core.effective_settings(saved.id.clone(), None).unwrap();
     assert_eq!(eff.port, Some(2222));
     assert_eq!(eff.username.as_deref(), Some("deploy"));
     assert_eq!(eff.term.as_deref(), Some("xterm"));
     assert_eq!(eff.env.get("LANG").map(String::as_str), Some("es_ES.UTF-8"));
 
     // Updating without touching the secret (or the mode) keeps them.
-    let mut upd = core.get_host(saved.id.clone()).unwrap();
+    let mut upd = core.get_host(saved.id.clone(), None).unwrap();
     upd.label = "web-01".into();
     upd.sync_mode = None;
     let upd = core.save_host(upd, SecretChange::Keep).unwrap();
     assert_eq!(upd.label, "web-01");
     assert_eq!(upd.sync_mode, Some(SyncMode::DeviceOnly));
     assert_eq!(
-        core.host_password(saved.id.clone()).unwrap().as_deref(),
+        core.host_password(saved.id.clone(), None)
+            .unwrap()
+            .as_deref(),
         Some("pw")
     );
     // Clear the secret.
     let cleared = core.save_host(upd, SecretChange::Clear).unwrap();
     assert!(!cleared.has_password);
-    assert_eq!(core.host_password(saved.id.clone()).unwrap(), None);
+    assert_eq!(core.host_password(saved.id.clone(), None).unwrap(), None);
 
-    assert_eq!(core.list_hosts().unwrap().len(), 1);
-    assert_eq!(core.list_groups().unwrap().len(), 1);
+    assert_eq!(core.list_hosts(None).unwrap().len(), 1);
+    assert_eq!(core.list_groups(None).unwrap().len(), 1);
 
     // Errors with useful variants.
     assert!(matches!(
@@ -155,21 +165,21 @@ fn hosts_groups_and_secrets() {
         Err(TermoakError::Invalid(_))
     ));
     assert!(matches!(
-        core.get_host("not-an-id".into()),
+        core.get_host("not-an-id".into(), None),
         Err(TermoakError::Invalid(_))
     ));
 
-    core.delete_host(saved.id.clone()).unwrap();
+    core.delete_host(saved.id.clone(), None).unwrap();
     assert!(matches!(
-        core.get_host(saved.id.clone()),
+        core.get_host(saved.id.clone(), None),
         Err(TermoakError::NotFound(_))
     ));
     assert!(matches!(
-        core.delete_host(saved.id),
+        core.delete_host(saved.id, None),
         Err(TermoakError::NotFound(_))
     ));
-    core.delete_group(group.id).unwrap();
-    assert!(core.list_groups().unwrap().is_empty());
+    core.delete_group(group.id, None).unwrap();
+    assert!(core.list_groups(None).unwrap().is_empty());
 }
 
 #[test]
@@ -254,16 +264,22 @@ fn identities_snippets_forwards_and_memories() {
                 sync_mode: None,
                 has_password: false,
                 updated_at: 0,
+                account_id: None,
+                vault_id: None,
+                access: None,
+                secret_hidden: false,
             },
             set("secret"),
         )
         .unwrap();
     assert!(ident.has_password);
     assert_eq!(
-        core.identity_password(ident.id.clone()).unwrap().as_deref(),
+        core.identity_password(ident.id.clone(), None)
+            .unwrap()
+            .as_deref(),
         Some("secret")
     );
-    assert_eq!(core.list_identities().unwrap().len(), 1);
+    assert_eq!(core.list_identities(None).unwrap().len(), 1);
 
     // Snippets and variables.
     let snip = core
@@ -275,9 +291,16 @@ fn identities_snippets_forwards_and_memories() {
             tags: vec!["systemd".into()],
             sync_mode: None,
             updated_at: 0,
+            account_id: None,
+            vault_id: None,
+            access: None,
+            secret_hidden: false,
         })
         .unwrap();
-    assert_eq!(core.get_snippet(snip.id.clone()).unwrap().name, "logs");
+    assert_eq!(
+        core.get_snippet(snip.id.clone(), None).unwrap().name,
+        "logs"
+    );
     assert_eq!(
         snippet_variables(snip.script.clone()),
         vec!["service", "lines"]
@@ -314,6 +337,10 @@ fn identities_snippets_forwards_and_memories() {
         auto_start: true,
         sync_mode: None,
         updated_at: 0,
+        account_id: None,
+        vault_id: None,
+        access: None,
+        secret_hidden: false,
     };
     let saved = core.save_forward(local.clone()).unwrap();
     assert_eq!(saved.bind_address, "127.0.0.1");
@@ -326,8 +353,11 @@ fn identities_snippets_forwards_and_memories() {
         ..local.clone()
     })
     .unwrap();
-    assert_eq!(core.list_forwards(None).unwrap().len(), 2);
-    assert_eq!(core.list_forwards(Some(h.id.clone())).unwrap().len(), 1);
+    assert_eq!(core.list_forwards(None, None).unwrap().len(), 2);
+    assert_eq!(
+        core.list_forwards(Some(h.id.clone()), None).unwrap().len(),
+        1
+    );
     // A local tunnel without a destination is invalid.
     assert!(matches!(
         core.save_forward(PortForward {
@@ -336,8 +366,8 @@ fn identities_snippets_forwards_and_memories() {
         }),
         Err(TermoakError::Invalid(_))
     ));
-    core.delete_forward(saved.id).unwrap();
-    assert_eq!(core.list_forwards(None).unwrap().len(), 1);
+    core.delete_forward(saved.id, None).unwrap();
+    assert_eq!(core.list_forwards(None, None).unwrap().len(), 1);
 
     // AI memories.
     let mem = core
@@ -346,12 +376,16 @@ fn identities_snippets_forwards_and_memories() {
             content: "The database is on db (10.0.0.2)".into(),
             host_id: Some(h.id.clone()),
             updated_at: 0,
+            account_id: None,
+            vault_id: None,
+            access: None,
+            secret_hidden: false,
         })
         .unwrap();
-    assert_eq!(core.list_memories().unwrap().len(), 1);
-    core.delete_memory(mem.id).unwrap();
-    assert!(core.list_memories().unwrap().is_empty());
-    assert!(core.list_known_hosts().unwrap().is_empty());
+    assert_eq!(core.list_memories(None).unwrap().len(), 1);
+    core.delete_memory(mem.id, None).unwrap();
+    assert!(core.list_memories(None).unwrap().is_empty());
+    assert!(core.list_known_hosts(None).unwrap().is_empty());
 }
 
 #[test]
@@ -367,6 +401,8 @@ fn key_generation_and_import() {
         Some("passphrase".into()),
         false,
         Some(SyncMode::DeviceOnly),
+        None,
+        None,
     ))
     .unwrap();
     assert!(k.public_key.starts_with("ssh-ed25519 "));
@@ -374,7 +410,10 @@ fn key_generation_and_import() {
     assert!(k.has_passphrase && k.has_private_key);
     assert_eq!(k.comment, "me@phone");
     assert_eq!(k.sync_mode, Some(SyncMode::DeviceOnly));
-    let pem = core.export_private_key(k.id.clone()).unwrap().unwrap();
+    let pem = core
+        .export_private_key(k.id.clone(), None)
+        .unwrap()
+        .unwrap();
     assert!(pem.contains("OPENSSH PRIVATE KEY"));
 
     // Preview: the public part matches; a wrong passphrase fails.
@@ -393,7 +432,12 @@ fn key_generation_and_import() {
     let edited = core.save_key(edit, set("passphrase")).unwrap();
     assert_eq!(edited.label, "iPhone");
     assert_eq!(edited.public_key, k.public_key);
-    assert_eq!(core.export_private_key(k.id.clone()).unwrap().unwrap(), pem);
+    assert_eq!(
+        core.export_private_key(k.id.clone(), None)
+            .unwrap()
+            .unwrap(),
+        pem
+    );
     assert!(matches!(
         core.save_key(
             SshKey {
@@ -415,19 +459,29 @@ fn key_generation_and_import() {
         None,
         false,
         None,
+        None,
+        None,
     ))
     .unwrap();
     assert_eq!(imported.fingerprint, material.fingerprint);
     assert!(!imported.has_passphrase);
     assert_eq!(imported.sync_mode, Some(SyncMode::Synced));
     assert!(matches!(
-        block_on(core.import_key("broken".into(), "garbage".into(), None, false, None)),
+        block_on(core.import_key(
+            "broken".into(),
+            "garbage".into(),
+            None,
+            false,
+            None,
+            None,
+            None
+        )),
         Err(TermoakError::Invalid(_))
     ));
 
-    assert_eq!(core.list_keys().unwrap().len(), 2);
-    core.delete_key(imported.id).unwrap();
-    assert_eq!(core.list_keys().unwrap().len(), 1);
+    assert_eq!(core.list_keys(None).unwrap().len(), 2);
+    core.delete_key(imported.id, None).unwrap();
+    assert_eq!(core.list_keys(None).unwrap().len(), 1);
 }
 
 #[test]
@@ -622,8 +676,16 @@ fn ssh_end_to_end() {
     };
     let dir = tempfile::tempdir().unwrap();
     let core = new_core(&dir.path().join("vault"), &generate_vault_key());
-    let key = block_on(core.import_key("test".into(), sshd.private_key.clone(), None, false, None))
-        .unwrap();
+    let key = block_on(core.import_key(
+        "test".into(),
+        sshd.private_key.clone(),
+        None,
+        false,
+        None,
+        None,
+        None,
+    ))
+    .unwrap();
     let mut h = host("local", "127.0.0.1");
     h.settings.port = Some(sshd.port.into());
     h.settings.username = Some(sshd.user.clone());
@@ -633,11 +695,17 @@ fn ssh_end_to_end() {
     // Terminal: the fingerprint is confirmed the first time.
     let auth = Arc::new(AcceptingAuth::default());
     let listener = Arc::new(Collector::default());
-    let term =
-        block_on(core.connect_terminal(h.id.clone(), 100, 30, auth.clone(), listener.clone()))
-            .unwrap();
+    let term = block_on(core.connect_terminal(
+        h.id.clone(),
+        100,
+        30,
+        auth.clone(),
+        listener.clone(),
+        None,
+    ))
+    .unwrap();
     assert_eq!(auth.host_keys.lock().len(), 1);
-    assert_eq!(core.list_known_hosts().unwrap().len(), 1);
+    assert_eq!(core.list_known_hosts(None).unwrap().len(), 1);
     assert_eq!(term.status(), TerminalStatus::Running);
     term.resize(120, 40).unwrap();
     term.write_text("echo termoak-$((40+2))\n".into()).unwrap();
@@ -740,7 +808,7 @@ fn ssh_end_to_end() {
     // Detecting the system stores it in the host.
     let os = block_on(session.detect_os()).unwrap();
     assert!(os.is_some());
-    assert_eq!(core.get_host(h.id.clone()).unwrap().os, os);
+    assert_eq!(core.get_host(h.id.clone(), None).unwrap().os, os);
 
     // Ad hoc local tunnel to the sshd itself.
     let fwd = block_on(session.start_forward_spec(
@@ -767,7 +835,7 @@ fn ssh_end_to_end() {
     block_on(session.disconnect()).unwrap();
 
     // Second connection: the fingerprint is already known and not asked.
-    let session = block_on(core.connect(h.id.clone(), auth.clone())).unwrap();
+    let session = block_on(core.connect(h.id.clone(), auth.clone(), None)).unwrap();
     assert_eq!(auth.host_keys.lock().len(), 1);
     let listener2 = Arc::new(Collector::default());
     let term2 = block_on(
@@ -789,7 +857,7 @@ fn ssh_end_to_end() {
     block_on(session.disconnect()).unwrap();
 
     // Known host with a changed key: rejected without asking.
-    for k in core.list_known_hosts().unwrap() {
+    for k in core.list_known_hosts(None).unwrap() {
         let mut fake = termoak_core::model::KnownHost {
             id: termoak_core::Id::nil(),
             host: k.host.clone(),
@@ -800,9 +868,9 @@ fn ssh_end_to_end() {
                 .public_openssh,
             fingerprint: "SHA256:fake".into(),
         };
-        core.delete_known_host(k.id).unwrap();
+        core.delete_known_host(k.id, None).unwrap();
         fake.id = termoak_core::new_id();
-        block_on(core.store().save(
+        block_on(core.ws.store.save(
             termoak_client::LOCAL_OWNER,
             fake,
             termoak_core::model::SecretUpdate::Keep,
@@ -810,7 +878,7 @@ fn ssh_end_to_end() {
         ))
         .unwrap();
     }
-    let err = block_on(core.connect(h.id.clone(), auth.clone()))
+    let err = block_on(core.connect(h.id.clone(), auth.clone(), None))
         .err()
         .unwrap();
     assert!(matches!(err, TermoakError::HostKey(_)), "{err:?}");
@@ -866,4 +934,241 @@ fn shared_session_owner_name_and_activity() {
     assert_eq!(a.periods[2].participant, None);
     let empty = SessionActivity::from_json(&serde_json::json!({}));
     assert!(empty.periods.is_empty() && empty.started_at.is_none());
+}
+
+/// A 0.3 data directory as the mobile apps left it: one store with the
+/// vault check marker, a server with tokens, a synced host and a
+/// device-only key.
+fn v03_dir(key_b64: &str, wrong_marker: bool) -> (tempfile::TempDir, String, String) {
+    use termoak_core::crypto::MasterKey;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("termoak.db");
+    termoak_core::store::create_at_version(&path, 8).unwrap();
+    let key = MasterKey::from_base64(key_b64).unwrap();
+    let marker_key = if wrong_marker {
+        MasterKey::generate()
+    } else {
+        key.clone()
+    };
+    let c = rusqlite_like::open(&path);
+    let b64 = |b: Vec<u8>| base64::engine::general_purpose::STANDARD.encode(b);
+    let meta = |k: &str, v: &str| rusqlite_like::meta(&c, k, v);
+    meta(
+        "ffi.vault_check",
+        &b64(marker_key
+            .seal(b"aceitunoak", b"aceitunoak:ffi-vault-check")
+            .unwrap()),
+    );
+    meta("server.url", "https://ssh.example.com");
+    meta("server.user", "ana@example.com");
+    let tokens = serde_json::json!({"access_token": "a", "access_expires_at": i64::MAX,
+        "refresh_token": "r", "refresh_expires_at": i64::MAX,
+        "device_id": termoak_core::Id::nil()});
+    meta(
+        "server.tokens",
+        &b64(key
+            .seal(tokens.to_string().as_bytes(), b"aceitunoak:server-tokens")
+            .unwrap()),
+    );
+    let host_id = termoak_core::new_id().to_string();
+    let key_id = termoak_core::new_id().to_string();
+    rusqlite_like::entity(
+        &c,
+        &host_id,
+        "host",
+        &serde_json::json!({"label": "web", "address": "web.example.com",
+            "settings": {"username": "root", "key_id": key_id}})
+        .to_string(),
+        "synced",
+    );
+    rusqlite_like::entity(
+        &c,
+        &key_id,
+        "key",
+        &serde_json::json!({"label": "laptop", "algorithm": "ssh-ed25519",
+            "public_key": "ssh-ed25519 AAAA", "fingerprint": "SHA256:x", "comment": "",
+            "has_passphrase": false})
+        .to_string(),
+        "device_only",
+    );
+    (dir, host_id, key_id)
+}
+
+/// Minimal SQL helpers for the fixtures (a 0.3 database is written as is).
+mod rusqlite_like {
+    use std::path::Path;
+
+    pub fn open(path: &Path) -> rusqlite::Connection {
+        rusqlite::Connection::open(path).unwrap()
+    }
+
+    pub fn meta(c: &rusqlite::Connection, k: &str, v: &str) {
+        c.execute(
+            "INSERT INTO meta(key, value) VALUES(?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [k, v],
+        )
+        .unwrap();
+    }
+
+    pub fn entity(c: &rusqlite::Connection, id: &str, kind: &str, data: &str, mode: &str) {
+        c.execute(
+            "INSERT INTO entities (id, owner_id, kind, data, sync_mode, rev, updated_at, deleted, dirty)
+             VALUES (?1, '00000000-0000-0000-0000-000000000000', ?2, ?3, ?4, 1, 1, 0, 0)",
+            [id, kind, data, mode],
+        )
+        .unwrap();
+    }
+}
+
+#[test]
+fn accounts_views_and_filters_after_the_upgrade() {
+    let key = generate_vault_key();
+
+    // A wrong key: refused before anything is migrated.
+    let (dir, _, _) = v03_dir(&key, true);
+    let err = TermoakCore::new(dir.path().to_string_lossy().into_owned(), key.clone())
+        .err()
+        .unwrap();
+    assert!(matches!(err, TermoakError::Vault(_)), "{err:?}");
+    assert!(!dir.path().join("accounts").exists());
+    assert!(!dir.path().join("termoak.db.pre-accounts").exists());
+
+    let (dir, host_id, key_id) = v03_dir(&key, false);
+    let core = new_core(dir.path(), &key);
+    let accounts = core.accounts();
+    assert_eq!(accounts.len(), 1);
+    let acc = &accounts[0];
+    assert_eq!(acc.server_url, "https://ssh.example.com");
+    assert_eq!(acc.server_name, "ssh.example.com");
+    assert_eq!(acc.email, "ana@example.com");
+    assert_eq!(acc.status, AccountStatus::Active);
+    assert!(acc.is_current && !acc.official && !acc.insecure);
+    assert!(!acc.vaults_supported);
+    assert_eq!(core.current_account().unwrap().id, acc.id);
+    assert_eq!(core.account_view(), Some(acc.id.clone()));
+    // The account store got the marker too.
+    let handle = core.account(acc.id.clone()).unwrap();
+    assert_eq!(handle.info().unwrap().id, acc.id);
+
+    // Legacy calls see everything of the current view: the synced host (in
+    // the account) and the device-only key (This device).
+    let hosts = core.list_hosts(None).unwrap();
+    assert_eq!(hosts.len(), 1);
+    assert_eq!(hosts[0].id, host_id);
+    assert_eq!(hosts[0].account_id.as_deref(), Some(acc.id.as_str()));
+    assert_eq!(hosts[0].access, Some(ItemAccess::Manager));
+    let keys = core.list_keys(None).unwrap();
+    assert_eq!(keys[0].id, key_id);
+    assert_eq!(keys[0].account_id, None);
+    assert_eq!(keys[0].access, Some(ItemAccess::Device));
+    // Filters.
+    let device_only = ItemFilter {
+        account_ids: Some(vec![]),
+        vault_ids: None,
+        include_device: true,
+    };
+    assert!(
+        core.list_hosts(Some(device_only.clone()))
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(core.list_keys(Some(device_only)).unwrap().len(), 1);
+    let only_account = ItemFilter {
+        account_ids: Some(vec![acc.id.clone()]),
+        vault_ids: None,
+        include_device: false,
+    };
+    assert!(core.list_keys(Some(only_account)).unwrap().is_empty());
+    assert!(core.vaults(None).unwrap().is_empty());
+    // The handle sees only its account.
+    assert_eq!(handle.id(), acc.id);
+
+    // New items: synced → the current account; device-only → This device.
+    let synced = core
+        .save_host(host("db", "db.example.com"), SecretChange::Keep)
+        .unwrap();
+    assert_eq!(synced.account_id.as_deref(), Some(acc.id.as_str()));
+    let mut local = host("pi", "192.168.1.2");
+    local.sync_mode = Some(SyncMode::DeviceOnly);
+    let local = core.save_host(local, set("pw")).unwrap();
+    assert_eq!(local.account_id, None);
+    assert_eq!(
+        core.host_password(local.id.clone(), None)
+            .unwrap()
+            .as_deref(),
+        Some("pw")
+    );
+    // Editing keeps each where it is.
+    let mut edited = core.get_host(synced.id.clone(), None).unwrap();
+    edited.notes = "n".into();
+    edited.account_id = None;
+    let edited = core.save_host(edited, SecretChange::Keep).unwrap();
+    assert_eq!(edited.account_id.as_deref(), Some(acc.id.as_str()));
+    // The synced host still connects with the device-only key (resolution
+    // falls back to This device).
+    let resolved = block_on(core.ws.resolve(host_id.parse().unwrap())).unwrap();
+    assert_eq!(resolved.username, "root");
+
+    // Moving the device host into the account (no vaults on that server:
+    // it goes to its implicit personal vault), then back.
+    let r = block_on(core.transfer(
+        vec![ItemRef {
+            account_id: None,
+            id: local.id.clone(),
+        }],
+        Some(acc.id.clone()),
+        None,
+        TransferMode::Move,
+        false,
+    ))
+    .unwrap();
+    assert_eq!(r.moved.len(), 1);
+    let moved = core.get_host(local.id.clone(), None).unwrap();
+    assert_eq!(moved.account_id.as_deref(), Some(acc.id.as_str()));
+    assert_eq!(
+        core.host_password(local.id.clone(), None)
+            .unwrap()
+            .as_deref(),
+        Some("pw")
+    );
+    let r = block_on(core.transfer(
+        vec![ItemRef {
+            account_id: Some(acc.id.clone()),
+            id: local.id.clone(),
+        }],
+        None,
+        None,
+        TransferMode::Copy,
+        true,
+    ))
+    .unwrap();
+    assert!(r.dry_run);
+    assert_eq!(r.copied.len(), 1);
+
+    // Views.
+    core.set_account_view(None).unwrap();
+    assert_eq!(core.account_view(), None);
+    assert_eq!(core.current_account().unwrap().id, acc.id);
+    core.set_account_view(Some(acc.id.clone())).unwrap();
+
+    // Signing out with unsynced changes asks first.
+    let report = block_on(core.sign_out_account(acc.id.clone(), false)).unwrap();
+    assert!(!report.signed_out);
+    assert!(report.unsynced >= 2);
+    assert_eq!(
+        core.unsynced_changes(acc.id.clone()).unwrap().total,
+        report.unsynced
+    );
+    let report = block_on(core.sign_out_account(acc.id.clone(), true)).unwrap();
+    assert!(report.signed_out);
+    assert!(core.accounts().is_empty());
+    assert!(core.current_account().is_none());
+    // This-device items stay.
+    assert_eq!(core.list_keys(None).unwrap().len(), 1);
+    assert!(official_server_url().starts_with("https://"));
+    assert_eq!(
+        canonical_server_url(" SSH.example.com/x ".into()).unwrap(),
+        "https://ssh.example.com"
+    );
 }

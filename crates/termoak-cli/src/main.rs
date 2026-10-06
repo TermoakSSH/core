@@ -611,7 +611,9 @@ async fn run(cli: Cli) -> Result<()> {
                     Some(k) => Some(find_key(&ws, &k).await?.id),
                     None => None,
                 };
-                let rec = ws.put(Group {
+                let rec = ws
+                    .put(
+                        Group {
                             id: Id::nil(),
                             name,
                             parent_id,
@@ -662,7 +664,9 @@ async fn run(cli: Cli) -> Result<()> {
                 } else {
                     SecretUpdate::Keep
                 };
-                let rec = ws.put(Identity {
+                let rec = ws
+                    .put(
+                        Identity {
                             id: Id::nil(),
                             label,
                             username,
@@ -1098,7 +1102,9 @@ async fn save_key(
     m: termoak_ssh::keys::KeyMaterial,
     device_only: bool,
 ) -> Result<Record<SshKey>> {
-    Ok(ws.put(SshKey {
+    Ok(ws
+        .put(
+            SshKey {
                 id: Id::nil(),
                 label,
                 algorithm: m.algorithm.clone(),
@@ -1149,7 +1155,9 @@ async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {
                 (None, Some(f)) => std::fs::read_to_string(f)?,
                 _ => bail!("specify --script or --file"),
             };
-            let rec = ws.put(Snippet {
+            let rec = ws
+                .put(
+                    Snippet {
                         id: Id::nil(),
                         name,
                         script,

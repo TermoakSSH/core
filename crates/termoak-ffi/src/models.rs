@@ -11,9 +11,9 @@
 
 use std::collections::HashMap;
 
+use termoak_core::Id;
 use termoak_core::model as cm;
 use termoak_core::model::{Record, SecretUpdate};
-use termoak_core::{Id, Store};
 
 use crate::error::{Result, TermoakError};
 
@@ -293,6 +293,22 @@ pub struct SshHost {
     /// Read-only: last modification (ms since 1970).
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::Host>> for SshHost {
@@ -313,6 +329,10 @@ impl From<Record<cm::Host>> for SshHost {
             sync_mode: Some(r.meta.sync_mode.into()),
             has_password: r.meta.has_secret,
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -355,6 +375,22 @@ pub struct HostGroup {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::Group>> for HostGroup {
@@ -368,6 +404,10 @@ impl From<Record<cm::Group>> for HostGroup {
             settings: g.settings.into(),
             sync_mode: Some(r.meta.sync_mode.into()),
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -404,6 +444,22 @@ pub struct SshIdentity {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::Identity>> for SshIdentity {
@@ -417,6 +473,10 @@ impl From<Record<cm::Identity>> for SshIdentity {
             sync_mode: Some(r.meta.sync_mode.into()),
             has_password: r.meta.has_secret,
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -466,6 +526,22 @@ pub struct SshKey {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::SshKey>> for SshKey {
@@ -483,6 +559,10 @@ impl From<Record<cm::SshKey>> for SshKey {
             sync_mode: Some(r.meta.sync_mode.into()),
             has_private_key: r.meta.has_secret,
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -574,6 +654,22 @@ pub struct Snippet {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::Snippet>> for Snippet {
@@ -587,6 +683,10 @@ impl From<Record<cm::Snippet>> for Snippet {
             tags: s.tags,
             sync_mode: Some(r.meta.sync_mode.into()),
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -663,6 +763,22 @@ pub struct PortForward {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::PortForward>> for PortForward {
@@ -680,6 +796,10 @@ impl From<Record<cm::PortForward>> for PortForward {
             auto_start: f.auto_start,
             sync_mode: Some(r.meta.sync_mode.into()),
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -727,6 +847,22 @@ pub struct KnownHost {
     /// `SHA256:...` fingerprint.
     pub fingerprint: String,
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::KnownHost>> for KnownHost {
@@ -740,6 +876,10 @@ impl From<Record<cm::KnownHost>> for KnownHost {
             public_key: k.public_key,
             fingerprint: k.fingerprint,
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -756,6 +896,22 @@ pub struct AiMemory {
     /// Read-only.
     #[uniffi(default)]
     pub updated_at: i64,
+    /// Read-only: account the item belongs to (`None`: This device). On
+    /// save, the account to save a new item into (`None`: the current
+    /// account for `Synced` items, This device for `DeviceOnly` ones).
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the item (`None`: This device, or a server without vaults).
+    /// On save, the vault for a new item (default: the personal vault);
+    /// changing it for an existing item goes through `transfer`.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it (`None` on records made by the app).
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: a secret exists but you cannot see it (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
 }
 
 impl From<Record<cm::Memory>> for AiMemory {
@@ -766,6 +922,10 @@ impl From<Record<cm::Memory>> for AiMemory {
             content: m.content,
             host_id: m.host_id.map(|i| i.to_string()),
             updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
         }
     }
 }
@@ -796,18 +956,59 @@ where
     }
 }
 
-/// Reads the secret of an existing entity (empty if new).
-pub(crate) async fn current_secret<T: cm::Entity>(
-    store: &Store,
-    owner: Id,
-    id: Id,
-) -> Result<T::Secret> {
-    if id.is_nil() {
-        return Ok(T::Secret::default());
-    }
-    match store.secret::<T>(owner, id).await {
-        Ok(s) => Ok(s),
-        Err(termoak_core::CoreError::NotFound(_)) => Ok(T::Secret::default()),
-        Err(e) => Err(e.into()),
+// ---------------------------------------------------------------------------
+// Items of the accounts
+// ---------------------------------------------------------------------------
+
+/// What you can do with an item.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum ItemAccess {
+    /// A This-device item: everything.
+    Device,
+    /// Manager of its vault.
+    Manager,
+    /// Reads secrets and changes it.
+    Editor,
+    /// Uses it (connect, run) but never sees its secrets nor changes it:
+    /// hide reveal, copy password, export key and duplicate; show a lock.
+    UseOnly,
+    Unknown,
+}
+
+impl From<termoak_client::ItemAccess> for ItemAccess {
+    fn from(a: termoak_client::ItemAccess) -> Self {
+        match a {
+            termoak_client::ItemAccess::Device => ItemAccess::Device,
+            termoak_client::ItemAccess::Manager => ItemAccess::Manager,
+            termoak_client::ItemAccess::Editor => ItemAccess::Editor,
+            termoak_client::ItemAccess::UseOnly => ItemAccess::UseOnly,
+        }
     }
 }
+
+/// Fills the account fields of an item record from where it lives.
+macro_rules! scoped_record {
+    ($($core:ty => $ffi:ty),* $(,)?) => {$(
+        impl From<termoak_client::Scoped<$core>> for $ffi {
+            fn from(s: termoak_client::Scoped<$core>) -> Self {
+                let account_id = s.scope.account().map(|a| a.to_string());
+                let access = Some(s.access.into());
+                let mut out: $ffi = s.record.into();
+                out.account_id = account_id;
+                out.access = access;
+                out
+            }
+        }
+    )*};
+}
+
+scoped_record!(
+    cm::Host => SshHost,
+    cm::Group => HostGroup,
+    cm::Identity => SshIdentity,
+    cm::SshKey => SshKey,
+    cm::Snippet => Snippet,
+    cm::PortForward => PortForward,
+    cm::KnownHost => KnownHost,
+    cm::Memory => AiMemory,
+);

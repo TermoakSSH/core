@@ -14,6 +14,10 @@
 //!   output into a screen ready to draw.
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
+//! - Several accounts (servers) on one device ([`AccountHandle`],
+//!   `sign_in`, `accounts`, `set_account_view`), vaults (`vaults`,
+//!   `AccountHandle::create_vault`...) and moving items between This device,
+//!   vaults and accounts (`transfer`).
 //!
 //! Threads: the library has its own tokio runtime. Synchronous functions can
 //! be called from any thread (they are fast); `async` ones show up as
@@ -24,6 +28,7 @@
 uniffi::setup_scaffolding!();
 
 mod account;
+mod accounts;
 mod assist;
 mod auth;
 mod error;
@@ -38,6 +43,7 @@ mod ssh;
 mod vault;
 
 pub use account::*;
+pub use accounts::*;
 pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};

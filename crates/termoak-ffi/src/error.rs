@@ -83,6 +83,33 @@ pub enum TermoakError {
     /// `server_user`.
     #[error("{0}")]
     EmailNotVerified(String),
+    /// Use-only vault: you can use its items but not change them.
+    #[error("{0}")]
+    VaultReadOnly(String),
+    /// Use-only vault: its secrets are never shown (hide reveal, copy and
+    /// export).
+    #[error("{0}")]
+    SecretHidden(String),
+    /// Strict vault: Use-only members only connect through the server: open
+    /// a server session for this host instead.
+    #[error("{0}")]
+    UseOnlyStrict(String),
+    /// A Use-only host needs its server (offline, or signed out): connect
+    /// when online, or through a server session.
+    #[error("{0}")]
+    UseOnlyNeedsServer(String),
+}
+
+/// Variant of a vault rule's stable code (core or server).
+fn vault_code(code: &str, msg: String) -> Option<TermoakError> {
+    use termoak_core::error::codes;
+    Some(match code {
+        codes::VAULT_READ_ONLY => TermoakError::VaultReadOnly(msg),
+        codes::SECRET_HIDDEN => TermoakError::SecretHidden(msg),
+        codes::USE_ONLY_STRICT => TermoakError::UseOnlyStrict(msg),
+        codes::USE_ONLY_NEEDS_SERVER => TermoakError::UseOnlyNeedsServer(msg),
+        _ => return None,
+    })
 }
 
 pub type Result<T, E = TermoakError> = std::result::Result<T, E>;
@@ -98,7 +125,9 @@ impl From<CoreError> for TermoakError {
             CoreError::Crypto(_) => Self::Vault(msg),
             CoreError::Io(_) => Self::Io(msg),
             CoreError::Db(_) | CoreError::Json(_) | CoreError::Join(_) => Self::Internal(msg),
-            // Vault rules (phase 4 may give them their own variants).
+            CoreError::Vault { code, .. } if vault_code(code, String::new()).is_some() => {
+                vault_code(code, msg).expect("checked")
+            }
             CoreError::Vault { code, .. } => match code {
                 termoak_core::error::codes::VAULT_NOT_FOUND => Self::NotFound(msg),
                 termoak_core::error::codes::INVALID_ROLE
@@ -146,6 +175,9 @@ impl From<ClientError> for TermoakError {
             ClientError::Api { .. } if e.is_ai_key_required() => Self::AiKeyRequired(msg),
             ClientError::Api { .. } if e.is_ai_budget_exceeded() => Self::AiBudgetExceeded(msg),
             ClientError::Api { .. } if e.is_email_not_verified() => Self::EmailNotVerified(msg),
+            ClientError::Api { ref code, .. } if vault_code(code, String::new()).is_some() => {
+                vault_code(code, msg).expect("checked")
+            }
             ClientError::Api { status, .. } => match status {
                 401 => Self::SessionExpired(msg),
                 403 => Self::Forbidden(msg),
@@ -210,5 +242,15 @@ mod tests {
             api(429, "too_many_attempts"),
             TermoakError::Server(_)
         ));
+        assert!(matches!(
+            api(403, "use_only_strict"),
+            TermoakError::UseOnlyStrict(_)
+        ));
+        assert!(matches!(
+            api(403, "secret_hidden"),
+            TermoakError::SecretHidden(_)
+        ));
+        let core: TermoakError = CoreError::vault("vault_read_only", "x").into();
+        assert!(matches!(core, TermoakError::VaultReadOnly(_)));
     }
 }

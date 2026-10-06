@@ -39,9 +39,14 @@ fn progress(listener: Option<Arc<dyn TransferListener>>) -> impl FnMut(u64, Opti
 #[uniffi::export]
 impl TermoakCore {
     /// The user's home directory on a host, over SFTP from the server.
-    pub async fn server_sftp_home(&self, host_id: String) -> Result<String> {
+    #[uniffi::method(default(account_id))]
+    pub async fn server_sftp_home(
+        &self,
+        host_id: String,
+        account_id: Option<String>,
+    ) -> Result<String> {
         let id = parse_id(&host_id)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let v: Value = api.get(&format!("/api/v1/hosts/{id}/sftp/home")).await?;
             Ok(v["path"].as_str().unwrap_or("/").to_string())
         })
@@ -49,10 +54,16 @@ impl TermoakCore {
     }
 
     /// Lists a directory over SFTP from the server.
-    pub async fn server_sftp_list(&self, host_id: String, path: String) -> Result<Vec<RemoteFile>> {
+    #[uniffi::method(default(account_id))]
+    pub async fn server_sftp_list(
+        &self,
+        host_id: String,
+        path: String,
+        account_id: Option<String>,
+    ) -> Result<Vec<RemoteFile>> {
         let id = parse_id(&host_id)?;
         check_remote(&path)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let list: Vec<FileEntry> = api
                 .get(&format!("/api/v1/hosts/{id}/sftp/list?path={}", enc(&path)))
                 .await?;
@@ -63,16 +74,18 @@ impl TermoakCore {
 
     /// Downloads a remote file to `local_path` (streamed; while in progress it
     /// is written to `local_path.part`). Returns the number of bytes.
+    #[uniffi::method(default(account_id))]
     pub async fn server_sftp_download(
         &self,
         host_id: String,
         remote_path: String,
         local_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        account_id: Option<String>,
     ) -> Result<u64> {
         let id = parse_id(&host_id)?;
         check_remote(&remote_path)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let path = format!(
                 "/api/v1/hosts/{id}/sftp/download?path={}",
                 enc(&remote_path)
@@ -86,16 +99,18 @@ impl TermoakCore {
 
     /// Uploads a local file to `remote_path` (replacing it if it exists).
     /// Returns the number of bytes.
+    #[uniffi::method(default(account_id))]
     pub async fn server_sftp_upload(
         &self,
         host_id: String,
         local_path: String,
         remote_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        account_id: Option<String>,
     ) -> Result<u64> {
         let id = parse_id(&host_id)?;
         check_remote(&remote_path)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let path = format!("/api/v1/hosts/{id}/sftp/upload?path={}", enc(&remote_path));
             let v = api
                 .upload_from(&path, &PathBuf::from(local_path), progress(listener))
@@ -106,15 +121,17 @@ impl TermoakCore {
     }
 
     /// Creates a remote directory (`parents` = also the intermediate ones).
+    #[uniffi::method(default(account_id))]
     pub async fn server_sftp_mkdir(
         &self,
         host_id: String,
         path: String,
         parents: bool,
+        account_id: Option<String>,
     ) -> Result<()> {
         let id = parse_id(&host_id)?;
         check_remote(&path)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let _: Value = api
                 .post(
                     &format!("/api/v1/hosts/{id}/sftp/mkdir"),
@@ -127,16 +144,18 @@ impl TermoakCore {
     }
 
     /// Renames or moves a remote file.
+    #[uniffi::method(default(account_id))]
     pub async fn server_sftp_rename(
         &self,
         host_id: String,
         from: String,
         to: String,
+        account_id: Option<String>,
     ) -> Result<()> {
         let id = parse_id(&host_id)?;
         check_remote(&from)?;
         check_remote(&to)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let _: Value = api
                 .post(
                     &format!("/api/v1/hosts/{id}/sftp/rename"),
@@ -150,15 +169,17 @@ impl TermoakCore {
 
     /// Deletes a remote file or directory (`recursive` for non-empty
     /// directories).
+    #[uniffi::method(default(account_id))]
     pub async fn server_sftp_delete(
         &self,
         host_id: String,
         path: String,
         recursive: bool,
+        account_id: Option<String>,
     ) -> Result<()> {
         let id = parse_id(&host_id)?;
         check_remote(&path)?;
-        self.with_api(move |api| async move {
+        self.with_host_api(id, &account_id, move |api| async move {
             let _: Value = api
                 .post(
                     &format!("/api/v1/hosts/{id}/sftp/delete"),
