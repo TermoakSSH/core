@@ -116,8 +116,10 @@ impl Workspace {
     pub fn open(dir: &Path, key: MasterKey) -> Result<Self> {
         let store = Store::open(&database_path(dir), key)?;
         layout::migrate(dir, &store)?;
+        let registry = accounts::load_registry(&store)?;
+        accounts::remove_orphans(dir, &registry.iter().map(|(i, _)| i.id).collect::<Vec<_>>());
         let mut accounts = Vec::new();
-        for (info, tokens) in accounts::load_registry(&store)? {
+        for (info, tokens) in registry {
             let acc_store = open_account_store(dir, &store, info.id)?;
             accounts.push(Account::new(info, tokens, acc_store, store.clone())?);
         }
@@ -506,7 +508,11 @@ impl Workspace {
         }
         accounts::delete_registry(&self.store, account)?;
         drop(acc);
-        accounts::remove_account_files(&self.dir, account)?;
+        // If the file is still open somewhere (Windows), it is removed on
+        // the next start (it is no longer in the registry).
+        if let Err(e) = accounts::remove_account_files(&self.dir, account) {
+            tracing::warn!(error = %e, "could not delete the account store yet");
+        }
         if self.view() == AccountView::One(account) {
             let next = self.account_list().first().map(|a| a.id);
             self.set_view(next.map_or(AccountView::All, AccountView::One))

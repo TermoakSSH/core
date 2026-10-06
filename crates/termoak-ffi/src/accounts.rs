@@ -786,14 +786,14 @@ impl AccountHandle {
         self.core.with_api(f).await
     }
 
-    /// Syncs in the background after a vault change (errors are logged).
-    fn sync_later(&self) {
+    /// Syncs after a vault change so the local stores know it at once
+    /// (errors are logged: the next sync catches up).
+    async fn sync_after(&self) {
         if let Ok(acc) = self.account() {
-            crate::runtime::runtime().spawn(async move {
-                if let Err(e) = acc.sync_once().await {
-                    tracing::warn!(error = %e, "sync after a vault change failed");
-                }
-            });
+            let res = run(async move { Ok(acc.sync_once().await?) }).await;
+            if let Err(e) = res {
+                tracing::warn!(error = %e, "sync after a vault change failed");
+            }
         }
     }
 }
@@ -1016,7 +1016,7 @@ impl AccountHandle {
         let v = self
             .with_api(move |api| async move { Ok(api.create_vault(&body).await?) })
             .await?;
-        self.sync_later();
+        self.sync_after().await;
         Ok(VaultInfo::from_core(id, &v))
     }
 
@@ -1054,7 +1054,7 @@ impl AccountHandle {
         let v = self
             .with_api(move |api| async move { Ok(api.update_vault(vault, &body).await?) })
             .await?;
-        self.sync_later();
+        self.sync_after().await;
         Ok(VaultInfo::from_core(id, &v))
     }
 
@@ -1064,7 +1064,7 @@ impl AccountHandle {
         let vault = parse_id(&vault_id)?;
         self.with_api(move |api| async move { Ok(api.delete_vault(vault, &confirm_name).await?) })
             .await?;
-        self.sync_later();
+        self.sync_after().await;
         Ok(())
     }
 
@@ -1073,7 +1073,7 @@ impl AccountHandle {
         let vault = parse_id(&vault_id)?;
         self.with_api(move |api| async move { Ok(api.leave_vault(vault).await?) })
             .await?;
-        self.sync_later();
+        self.sync_after().await;
         Ok(())
     }
 

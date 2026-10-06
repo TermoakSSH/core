@@ -749,11 +749,10 @@ impl TermoakCore {
         if acc.is_signed_in() {
             return Ok(acc.api.clone());
         }
-        Err(match acc.status() {
-            termoak_client::AccountStatus::NeedsSignIn => {
-                TermoakError::SessionExpired("the session has expired: sign in again".into())
-            }
-            _ => TermoakError::NotLoggedIn("you are not signed in to any server".into()),
+        Err(if acc.session_expired() {
+            TermoakError::SessionExpired("the session has expired: sign in again".into())
+        } else {
+            TermoakError::NotLoggedIn("you are not signed in to any server".into())
         })
     }
 
@@ -789,9 +788,13 @@ impl TermoakCore {
                 let acc = self.ws.require_account(a)?;
                 if acc.is_signed_in() {
                     Ok(acc.api.clone())
-                } else {
+                } else if acc.session_expired() {
                     Err(TermoakError::SessionExpired(
                         "the session has expired: sign in again".into(),
+                    ))
+                } else {
+                    Err(TermoakError::NotLoggedIn(
+                        "this account is signed out: sign in again".into(),
                     ))
                 }
             }

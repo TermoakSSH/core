@@ -426,8 +426,12 @@ async fn sign_out_deletes_the_account_store() {
     assert_eq!(report.discarded, 1);
     assert!(!file.exists());
     assert!(ws.accounts().is_empty());
+    // A store left behind (signed out while it was open) goes on the next start.
+    let orphan = fx.path().join(format!("accounts/{}.db", new_id()));
+    std::fs::write(&orphan, b"").unwrap();
     drop(ws);
     // Gone for good.
     let ws = fx.open();
     assert!(ws.accounts().is_empty());
+    assert!(!orphan.exists());
 }

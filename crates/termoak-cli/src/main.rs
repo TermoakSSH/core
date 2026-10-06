@@ -1102,25 +1102,24 @@ async fn save_key(
     m: termoak_ssh::keys::KeyMaterial,
     device_only: bool,
 ) -> Result<Record<SshKey>> {
-    Ok(ws
-        .put(
-            SshKey {
-                id: Id::nil(),
-                label,
-                algorithm: m.algorithm.clone(),
-                public_key: m.public_openssh.clone(),
-                fingerprint: m.fingerprint.clone(),
-                comment: m.comment.clone(),
-                has_passphrase: m.encrypted,
-                certificate: None,
-            },
-            SecretUpdate::Set(SshKeySecret {
-                private_key: Some(m.private_openssh.clone()),
-                passphrase: None,
-            }),
-            device_only.then_some(SyncMode::DeviceOnly),
-        )
-        .await?)
+    ws.put(
+        SshKey {
+            id: Id::nil(),
+            label,
+            algorithm: m.algorithm.clone(),
+            public_key: m.public_openssh.clone(),
+            fingerprint: m.fingerprint.clone(),
+            comment: m.comment.clone(),
+            has_passphrase: m.encrypted,
+            certificate: None,
+        },
+        SecretUpdate::Set(SshKeySecret {
+            private_key: Some(m.private_openssh.clone()),
+            passphrase: None,
+        }),
+        device_only.then_some(SyncMode::DeviceOnly),
+    )
+    .await
 }
 
 async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {

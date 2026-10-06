@@ -304,6 +304,33 @@ pub(crate) fn remove_account_files(dir: &Path, id: Id) -> Result<()> {
     Ok(())
 }
 
+/// Deletes the stores of accounts that are no longer in the registry
+/// (signed out while the file was still open).
+pub(crate) fn remove_orphans(dir: &Path, known: &[Id]) {
+    let Ok(entries) = std::fs::read_dir(accounts_dir(dir)) else {
+        return;
+    };
+    for e in entries.flatten() {
+        let name = e.file_name().to_string_lossy().into_owned();
+        let Some(id) = name
+            .strip_suffix(".db")
+            .and_then(|stem| stem.parse::<Id>().ok())
+        else {
+            continue;
+        };
+        if !known.contains(&id) {
+            match remove_account_files(dir, id) {
+                Ok(()) => {
+                    tracing::info!(account = %id, "removed the store of a signed-out account")
+                }
+                Err(e) => {
+                    tracing::warn!(account = %id, error = %e, "could not remove an old account store")
+                }
+            }
+        }
+    }
+}
+
 /// What a sign-out did.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 pub struct SignOutReport {
@@ -327,6 +354,8 @@ pub struct Account {
     info: Arc<RwLock<AccountInfo>>,
     sync_lock: tokio::sync::Mutex<()>,
     sync_pending: AtomicBool,
+    /// The server refused the session in this process (not a sign-out).
+    expired: Arc<AtomicBool>,
     pub(crate) events: Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
@@ -369,12 +398,15 @@ impl Account {
         let shared = Arc::new(RwLock::new(info));
         let (dev_tokens, dev_expired) = (device.clone(), device.clone());
         let expired_info = shared.clone();
+        let expired = Arc::new(AtomicBool::new(false));
+        let expired_flag = expired.clone();
         let url = shared.read().server_url.clone();
         let api = ApiClient::new(&url)?
             .with_tokens(tokens)
             .on_tokens(move |t| update_tokens(&dev_tokens, id, Some(t)))
             .on_expired(move || {
                 // The refresh token was refused: sign in again.
+                expired_flag.store(true, Ordering::SeqCst);
                 let snapshot = {
                     let mut i = expired_info.write();
                     i.status = AccountStatus::NeedsSignIn;
@@ -392,6 +424,7 @@ impl Account {
             info: shared,
             sync_lock: tokio::sync::Mutex::new(()),
             sync_pending: AtomicBool::new(false),
+            expired,
             events: Mutex::new(None),
         }))
     }
@@ -407,6 +440,12 @@ impl Account {
     /// Signed in with tokens.
     pub fn is_signed_in(&self) -> bool {
         self.api.is_logged_in()
+    }
+
+    /// The server ended the session (the refresh failed) since this process
+    /// started; `false` after signing out on purpose.
+    pub fn session_expired(&self) -> bool {
+        self.expired.load(Ordering::SeqCst)
     }
 
     /// The user's id on the server (and of their personal vault).
@@ -428,6 +467,7 @@ impl Account {
 
     /// Stores new tokens (after signing in again).
     pub(crate) fn set_tokens(&self, tokens: TokenPair) {
+        self.expired.store(false, Ordering::SeqCst);
         update_tokens(&self.device, self.id, Some(&tokens));
         let api = self.api.clone();
         // `with_tokens` consumes; set them on the shared client instead.
