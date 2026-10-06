@@ -220,6 +220,10 @@ pub struct ServerSession {
     /// When the driver's timed grant ends (ms since the epoch), if timed.
     #[uniffi(default)]
     pub driver_until: Option<i64>,
+    /// Name of the owner, in sessions shared with you (`None` in your own
+    /// sessions and on servers before 0.3).
+    #[uniffi(default)]
+    pub owner_name: Option<String>,
 }
 
 impl ServerSession {
@@ -240,6 +244,69 @@ impl ServerSession {
             participants: SessionParticipant::list_from_json(&v["participants"]),
             driver: v["driver"].as_str().map(str::to_string),
             driver_until: v["driver_until"].as_i64(),
+            owner_name: v["owner_name"]
+                .as_str()
+                .map(str::trim)
+                .filter(|n| !n.is_empty())
+                .map(str::to_string),
+        }
+    }
+}
+
+/// A stretch of a recording in which one person had the keyboard (from the
+/// author marks of `GET /api/v1/sessions/{id}/recording/authors`). Only who
+/// typed and when, not what.
+#[derive(Debug, Clone, PartialEq, uniffi::Record)]
+pub struct AuthorPeriod {
+    /// Participant id (`None` for the AI).
+    pub participant: Option<String>,
+    pub name: String,
+    /// `owner`, `user`, `guest` or `ai`.
+    pub kind: String,
+    /// Seconds since the start of the recording.
+    pub from_secs: f64,
+    /// Until the next person (`None`: the last one, until the end).
+    pub to_secs: Option<f64>,
+}
+
+/// Who typed in a recorded session, in order.
+#[derive(Debug, Clone, PartialEq, uniffi::Record)]
+pub struct SessionActivity {
+    /// When the recording started (ms since the epoch), if known.
+    pub started_at: Option<i64>,
+    /// Consecutive marks of the same person are merged into one period.
+    pub periods: Vec<AuthorPeriod>,
+}
+
+impl SessionActivity {
+    pub(crate) fn from_json(v: &Value) -> Self {
+        let mut periods: Vec<AuthorPeriod> = Vec::new();
+        let mut last: Option<(Option<String>, String)> = None;
+        for a in v["authors"].as_array().into_iter().flatten() {
+            let Some(time) = a["time"].as_f64() else {
+                continue;
+            };
+            let participant = a["participant"].as_str().map(str::to_string);
+            let name = a["name"].as_str().unwrap_or("").trim().to_string();
+            let who = (participant.clone(), name.clone());
+            if last.as_ref() == Some(&who) {
+                continue;
+            }
+            if let Some(prev) = periods.last_mut() {
+                prev.to_secs = Some(time);
+            }
+            periods.push(AuthorPeriod {
+                participant,
+                name,
+                kind: a["kind"].as_str().unwrap_or("user").to_string(),
+                from_secs: time,
+                to_secs: None,
+            });
+            last = Some(who);
+        }
+        SessionActivity {
+            started_at: v["started_at"].as_i64(),
+            periods,
         }
     }
 }
@@ -953,6 +1020,23 @@ impl TermoakCore {
         self.with_api(move |api| async move {
             let v: Value = api.get(&format!("/api/v1/sessions/{id}")).await?;
             Ok(ServerSession::from_json(&v))
+        })
+        .await
+    }
+
+    /// Who typed in a recorded session and when (owner only), from the
+    /// author marks of its recording. `None` if the session was not recorded.
+    pub async fn session_activity(&self, session_id: String) -> Result<Option<SessionActivity>> {
+        let id = parse_id(&session_id)?;
+        self.with_api(move |api| async move {
+            match api
+                .get::<Value>(&format!("/api/v1/sessions/{id}/recording/authors"))
+                .await
+            {
+                Ok(v) => Ok(Some(SessionActivity::from_json(&v))),
+                Err(e) if e.api_code() == Some("recording_not_found") => Ok(None),
+                Err(e) => Err(e.into()),
+            }
         })
         .await
     }

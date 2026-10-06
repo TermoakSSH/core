@@ -5455,6 +5455,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func serverUser() async throws  -> String?
     
     /**
+     * Who typed in a recorded session and when (owner only), from the
+     * author marks of its recording. `None` if the session was not recorded.
+     */
+    func sessionActivity(sessionId: String) async throws  -> SessionActivity?
+    
+    /**
      * Saves your own API key for `claude`, `gpt`, `openrouter` or
      * `opencode-api` (replacing the one you had). It is used instead of the
      * server's key for that provider and never spends your plan's AI credit.
@@ -7263,6 +7269,26 @@ open func serverUser()async throws  -> String?  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterOptionString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Who typed in a recorded session and when (owner only), from the
+     * author marks of its recording. `None` if the session was not recorded.
+     */
+open func sessionActivity(sessionId: String)async throws  -> SessionActivity?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_session_activity(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeSessionActivity.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -9219,6 +9245,101 @@ public func FfiConverterTypeAuthRequest_lift(_ buf: RustBuffer) throws -> AuthRe
 #endif
 public func FfiConverterTypeAuthRequest_lower(_ value: AuthRequest) -> RustBuffer {
     return FfiConverterTypeAuthRequest.lower(value)
+}
+
+
+/**
+ * A stretch of a recording in which one person had the keyboard (from the
+ * author marks of `GET /api/v1/sessions/{id}/recording/authors`). Only who
+ * typed and when, not what.
+ */
+public struct AuthorPeriod: Equatable, Hashable {
+    /**
+     * Participant id (`None` for the AI).
+     */
+    public var participant: String?
+    public var name: String
+    /**
+     * `owner`, `user`, `guest` or `ai`.
+     */
+    public var kind: String
+    /**
+     * Seconds since the start of the recording.
+     */
+    public var fromSecs: Double
+    /**
+     * Until the next person (`None`: the last one, until the end).
+     */
+    public var toSecs: Double?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Participant id (`None` for the AI).
+         */participant: String?, name: String, 
+        /**
+         * `owner`, `user`, `guest` or `ai`.
+         */kind: String, 
+        /**
+         * Seconds since the start of the recording.
+         */fromSecs: Double, 
+        /**
+         * Until the next person (`None`: the last one, until the end).
+         */toSecs: Double?) {
+        self.participant = participant
+        self.name = name
+        self.kind = kind
+        self.fromSecs = fromSecs
+        self.toSecs = toSecs
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuthorPeriod: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuthorPeriod: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuthorPeriod {
+        return
+            try AuthorPeriod(
+                participant: FfiConverterOptionString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterString.read(from: &buf), 
+                fromSecs: FfiConverterDouble.read(from: &buf), 
+                toSecs: FfiConverterOptionDouble.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuthorPeriod, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.participant, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterDouble.write(value.fromSecs, into: &buf)
+        FfiConverterOptionDouble.write(value.toSecs, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthorPeriod_lift(_ buf: RustBuffer) throws -> AuthorPeriod {
+    return try FfiConverterTypeAuthorPeriod.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuthorPeriod_lower(_ value: AuthorPeriod) -> RustBuffer {
+    return FfiConverterTypeAuthorPeriod.lower(value)
 }
 
 
@@ -11384,6 +11505,11 @@ public struct ServerSession: Equatable, Hashable {
      * When the driver's timed grant ends (ms since the epoch), if timed.
      */
     public var driverUntil: Int64?
+    /**
+     * Name of the owner, in sessions shared with you (`None` in your own
+     * sessions and on servers before 0.3).
+     */
+    public var ownerName: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -11402,7 +11528,11 @@ public struct ServerSession: Equatable, Hashable {
          */driver: String?, 
         /**
          * When the driver's timed grant ends (ms since the epoch), if timed.
-         */driverUntil: Int64? = nil) {
+         */driverUntil: Int64? = nil, 
+        /**
+         * Name of the owner, in sessions shared with you (`None` in your own
+         * sessions and on servers before 0.3).
+         */ownerName: String? = nil) {
         self.id = id
         self.ownerId = ownerId
         self.hostId = hostId
@@ -11418,6 +11548,7 @@ public struct ServerSession: Equatable, Hashable {
         self.participants = participants
         self.driver = driver
         self.driverUntil = driverUntil
+        self.ownerName = ownerName
     }
 
     
@@ -11450,7 +11581,8 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
                 viewers: FfiConverterSequenceTypeSessionViewer.read(from: &buf), 
                 participants: FfiConverterSequenceTypeSessionParticipant.read(from: &buf), 
                 driver: FfiConverterOptionString.read(from: &buf), 
-                driverUntil: FfiConverterOptionInt64.read(from: &buf)
+                driverUntil: FfiConverterOptionInt64.read(from: &buf), 
+                ownerName: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -11470,6 +11602,7 @@ public struct FfiConverterTypeServerSession: FfiConverterRustBuffer {
         FfiConverterSequenceTypeSessionParticipant.write(value.participants, into: &buf)
         FfiConverterOptionString.write(value.driver, into: &buf)
         FfiConverterOptionInt64.write(value.driverUntil, into: &buf)
+        FfiConverterOptionString.write(value.ownerName, into: &buf)
     }
 }
 
@@ -11751,6 +11884,75 @@ public func FfiConverterTypeServerUser_lift(_ buf: RustBuffer) throws -> ServerU
 #endif
 public func FfiConverterTypeServerUser_lower(_ value: ServerUser) -> RustBuffer {
     return FfiConverterTypeServerUser.lower(value)
+}
+
+
+/**
+ * Who typed in a recorded session, in order.
+ */
+public struct SessionActivity: Equatable, Hashable {
+    /**
+     * When the recording started (ms since the epoch), if known.
+     */
+    public var startedAt: Int64?
+    /**
+     * Consecutive marks of the same person are merged into one period.
+     */
+    public var periods: [AuthorPeriod]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * When the recording started (ms since the epoch), if known.
+         */startedAt: Int64?, 
+        /**
+         * Consecutive marks of the same person are merged into one period.
+         */periods: [AuthorPeriod]) {
+        self.startedAt = startedAt
+        self.periods = periods
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SessionActivity: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSessionActivity: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SessionActivity {
+        return
+            try SessionActivity(
+                startedAt: FfiConverterOptionInt64.read(from: &buf), 
+                periods: FfiConverterSequenceTypeAuthorPeriod.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SessionActivity, into buf: inout [UInt8]) {
+        FfiConverterOptionInt64.write(value.startedAt, into: &buf)
+        FfiConverterSequenceTypeAuthorPeriod.write(value.periods, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionActivity_lift(_ buf: RustBuffer) throws -> SessionActivity {
+    return try FfiConverterTypeSessionActivity.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSessionActivity_lower(_ value: SessionActivity) -> RustBuffer {
+    return FfiConverterTypeSessionActivity.lower(value)
 }
 
 
@@ -16665,6 +16867,30 @@ fileprivate struct FfiConverterOptionTypeScreenCursor: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeSessionActivity: FfiConverterRustBuffer {
+    typealias SwiftType = SessionActivity?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSessionActivity.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSessionActivity.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeAiPermissionMode: FfiConverterRustBuffer {
     typealias SwiftType = AiPermissionMode?
 
@@ -17003,6 +17229,31 @@ fileprivate struct FfiConverterSequenceTypeAuditEvent: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeAuditEvent.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeAuthorPeriod: FfiConverterRustBuffer {
+    typealias SwiftType = [AuthorPeriod]
+
+    public static func write(_ value: [AuthorPeriod], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAuthorPeriod.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AuthorPeriod] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AuthorPeriod]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAuthorPeriod.read(from: &buf))
         }
         return seq
     }
@@ -18516,6 +18767,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_user() != 1575) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_session_activity() != 30711) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_set_ai_key() != 18874) {

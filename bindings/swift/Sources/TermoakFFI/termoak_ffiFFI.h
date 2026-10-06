@@ -1530,6 +1530,11 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_server_url(uint64_t ptr
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_server_user(uint64_t ptr
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SESSION_ACTIVITY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SESSION_ACTIVITY
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_session_activity(uint64_t ptr, RustBuffer session_id
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_AI_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_AI_KEY
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_set_ai_key(uint64_t ptr, RustBuffer provider, RustBuffer key, RustBuffer model
@@ -3306,6 +3311,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_server_url(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SERVER_USER
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SERVER_USER
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_server_user(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SESSION_ACTIVITY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SESSION_ACTIVITY
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_session_activity(void
     
 );
 #endif

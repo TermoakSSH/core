@@ -816,3 +816,54 @@ fn ssh_end_to_end() {
     assert!(matches!(err, TermoakError::HostKey(_)), "{err:?}");
     assert_eq!(auth.host_keys.lock().len(), 1);
 }
+
+#[test]
+fn shared_session_owner_name_and_activity() {
+    let shared = serde_json::json!({
+        "id": "s", "owner_id": "o", "title": "t", "kind": "server",
+        "state": {"state": "running"}, "created_at": 1, "cols": 132, "rows": 40,
+        "recording": true, "access": "view", "viewers": [], "participants": [],
+        "owner_name": " Ana ",
+    });
+    let s = crate::server::ServerSession::from_json(&shared);
+    assert_eq!(s.owner_name.as_deref(), Some("Ana"));
+    assert_eq!(s.access, SessionAccess::View);
+    assert_eq!((s.cols, s.rows), (132, 40));
+    let mut own = shared.clone();
+    own.as_object_mut().unwrap().remove("owner_name");
+    assert_eq!(
+        crate::server::ServerSession::from_json(&own).owner_name,
+        None
+    );
+
+    let v = serde_json::json!({
+        "started_at": 1000,
+        "authors": [
+            {"time": 0.0, "participant": "p1", "name": "Ana", "kind": "owner"},
+            {"time": 3.0, "participant": "p1", "name": "Ana", "kind": "owner"},
+            {"time": 5.5, "participant": "p2", "name": "Zoe", "kind": "guest"},
+            {"time": 9.0, "name": "AI", "kind": "ai"},
+            {"name": "no time"},
+            {"time": 12.0, "participant": "p1", "name": "Ana", "kind": "owner"},
+        ],
+    });
+    let a = SessionActivity::from_json(&v);
+    assert_eq!(a.started_at, Some(1000));
+    let spans: Vec<_> = a
+        .periods
+        .iter()
+        .map(|p| (p.name.as_str(), p.kind.as_str(), p.from_secs, p.to_secs))
+        .collect();
+    assert_eq!(
+        spans,
+        vec![
+            ("Ana", "owner", 0.0, Some(5.5)),
+            ("Zoe", "guest", 5.5, Some(9.0)),
+            ("AI", "ai", 9.0, Some(12.0)),
+            ("Ana", "owner", 12.0, None),
+        ]
+    );
+    assert_eq!(a.periods[2].participant, None);
+    let empty = SessionActivity::from_json(&serde_json::json!({}));
+    assert!(empty.periods.is_empty() && empty.started_at.is_none());
+}

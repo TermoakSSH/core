@@ -176,6 +176,7 @@ not matter: the bindings are the same.
 | `registerPushToken(platform, token, sandbox)`, `unregisterPushToken`, `sendTestPush` | Push notifications (APNs and FCM) |
 | `serverSftpHome/List/Download/Upload/Mkdir/Rename/Delete`, `downloadRecording` | Files and recordings through the server, streamed with progress |
 | `listServerSessions/openServerSession/attachServerSession/closeServerSession` | Persistent sessions |
+| `ServerSession.ownerName`, `sessionActivity(sessionId)` | Who shares a session with you (in `shared`); who typed in a recorded session of yours and when (`SessionActivity.periods`, consecutive marks already merged; `nil`/`null` if it was not recorded) |
 | `linkInviteInfo(serverUrl, token)` → `LinkInvite` | What a link offers (title, owner, access, waiting room, people inside) |
 | `joinSharedSession(serverUrl, token, listener)`, `joinSharedSessionAs(serverUrl, token, name, listener)`, `core.joinLink(token, listener)` | Join with an invitation link: without an account (as "Guest N" or with a name) or with your account |
 | `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `controlUntil`, `requestControl`, `releaseControl`, `setName` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway). `controlUntil()` (and `until` in `Control`) is when a timed grant ends; `ControlExpired` arrives when it does |

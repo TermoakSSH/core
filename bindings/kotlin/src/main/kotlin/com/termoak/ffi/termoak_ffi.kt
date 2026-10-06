@@ -1260,6 +1260,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_user(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_session_activity(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_ai_key(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_ai_task_mode(
@@ -1846,6 +1848,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_url(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_user(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_session_activity(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_set_ai_key(`ptr`: Long,`provider`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,`model`: RustBuffer.ByValue,
     ): Long
@@ -2692,6 +2696,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_user() and 0xFFFF) != 1575) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_session_activity() and 0xFFFF) != 30711) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_ai_key() and 0xFFFF) != 18874) {
@@ -10453,6 +10460,12 @@ public interface TermoakCoreInterface {
     suspend fun `serverUser`(): kotlin.String?
     
     /**
+     * Who typed in a recorded session and when (owner only), from the
+     * author marks of its recording. `None` if the session was not recorded.
+     */
+    suspend fun `sessionActivity`(`sessionId`: kotlin.String): SessionActivity?
+    
+    /**
      * Saves your own API key for `claude`, `gpt`, `openrouter` or
      * `opencode-api` (replacing the one you had). It is used instead of the
      * server's key for that provider and never spends your plan's AI credit.
@@ -12861,6 +12874,32 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * Who typed in a recorded session and when (owner only), from the
+     * author marks of its recording. `None` if the session was not recorded.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `sessionActivity`(`sessionId`: kotlin.String) : SessionActivity? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_session_activity(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalTypeSessionActivity.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Saves your own API key for `claude`, `gpt`, `openrouter` or
      * `opencode-api` (replacing the one you had). It is used instead of the
      * server's key for that provider and never spends your plan's AI credit.
@@ -14943,6 +14982,76 @@ public object FfiConverterTypeAuthRequest: FfiConverterRustBuffer<AuthRequest> {
 
 
 /**
+ * A stretch of a recording in which one person had the keyboard (from the
+ * author marks of `GET /api/v1/sessions/{id}/recording/authors`). Only who
+ * typed and when, not what.
+ */
+data class AuthorPeriod (
+    /**
+     * Participant id (`None` for the AI).
+     */
+    var `participant`: kotlin.String?
+    , 
+    var `name`: kotlin.String
+    , 
+    /**
+     * `owner`, `user`, `guest` or `ai`.
+     */
+    var `kind`: kotlin.String
+    , 
+    /**
+     * Seconds since the start of the recording.
+     */
+    var `fromSecs`: kotlin.Double
+    , 
+    /**
+     * Until the next person (`None`: the last one, until the end).
+     */
+    var `toSecs`: kotlin.Double?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuthorPeriod: FfiConverterRustBuffer<AuthorPeriod> {
+    override fun read(buf: ByteBuffer): AuthorPeriod {
+        return AuthorPeriod(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuthorPeriod) = (
+            FfiConverterOptionalString.allocationSize(value.`participant`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterDouble.allocationSize(value.`fromSecs`) +
+            FfiConverterOptionalDouble.allocationSize(value.`toSecs`)
+    )
+
+    override fun write(value: AuthorPeriod, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`participant`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterDouble.write(value.`fromSecs`, buf)
+            FfiConverterOptionalDouble.write(value.`toSecs`, buf)
+    }
+}
+
+
+
+/**
  * A command from the history.
  */
 data class CommandHistoryItem (
@@ -16628,6 +16737,12 @@ data class ServerSession (
      * When the driver's timed grant ends (ms since the epoch), if timed.
      */
     var `driverUntil`: kotlin.Long? = null 
+    , 
+    /**
+     * Name of the owner, in sessions shared with you (`None` in your own
+     * sessions and on servers before 0.3).
+     */
+    var `ownerName`: kotlin.String? = null 
     
 ){
     
@@ -16659,6 +16774,7 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterSequenceTypeSessionParticipant.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -16677,7 +16793,8 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterSequenceTypeSessionViewer.allocationSize(value.`viewers`) +
             FfiConverterSequenceTypeSessionParticipant.allocationSize(value.`participants`) +
             FfiConverterOptionalString.allocationSize(value.`driver`) +
-            FfiConverterOptionalLong.allocationSize(value.`driverUntil`)
+            FfiConverterOptionalLong.allocationSize(value.`driverUntil`) +
+            FfiConverterOptionalString.allocationSize(value.`ownerName`)
     )
 
     override fun write(value: ServerSession, buf: ByteBuffer) {
@@ -16696,6 +16813,7 @@ public object FfiConverterTypeServerSession: FfiConverterRustBuffer<ServerSessio
             FfiConverterSequenceTypeSessionParticipant.write(value.`participants`, buf)
             FfiConverterOptionalString.write(value.`driver`, buf)
             FfiConverterOptionalLong.write(value.`driverUntil`, buf)
+            FfiConverterOptionalString.write(value.`ownerName`, buf)
     }
 }
 
@@ -16908,6 +17026,53 @@ public object FfiConverterTypeServerUser: FfiConverterRustBuffer<ServerUser> {
             FfiConverterBoolean.write(value.`twoFactor`, buf)
             FfiConverterLong.write(value.`createdAt`, buf)
             FfiConverterString.write(value.`locale`, buf)
+    }
+}
+
+
+
+/**
+ * Who typed in a recorded session, in order.
+ */
+data class SessionActivity (
+    /**
+     * When the recording started (ms since the epoch), if known.
+     */
+    var `startedAt`: kotlin.Long?
+    , 
+    /**
+     * Consecutive marks of the same person are merged into one period.
+     */
+    var `periods`: List<AuthorPeriod>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSessionActivity: FfiConverterRustBuffer<SessionActivity> {
+    override fun read(buf: ByteBuffer): SessionActivity {
+        return SessionActivity(
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterSequenceTypeAuthorPeriod.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SessionActivity) = (
+            FfiConverterOptionalLong.allocationSize(value.`startedAt`) +
+            FfiConverterSequenceTypeAuthorPeriod.allocationSize(value.`periods`)
+    )
+
+    override fun write(value: SessionActivity, buf: ByteBuffer) {
+            FfiConverterOptionalLong.write(value.`startedAt`, buf)
+            FfiConverterSequenceTypeAuthorPeriod.write(value.`periods`, buf)
     }
 }
 
@@ -21367,6 +21532,38 @@ public object FfiConverterOptionalTypeScreenCursor: FfiConverterRustBuffer<Scree
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeSessionActivity: FfiConverterRustBuffer<SessionActivity?> {
+    override fun read(buf: ByteBuffer): SessionActivity? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeSessionActivity.read(buf)
+    }
+
+    override fun allocationSize(value: SessionActivity?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeSessionActivity.allocationSize(value)
+        }
+    }
+
+    override fun write(value: SessionActivity?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeSessionActivity.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeAiPermissionMode: FfiConverterRustBuffer<AiPermissionMode?> {
     override fun read(buf: ByteBuffer): AiPermissionMode? {
         if (buf.get().toInt() == 0) {
@@ -21765,6 +21962,34 @@ public object FfiConverterSequenceTypeAuditEvent: FfiConverterRustBuffer<List<Au
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeAuditEvent.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeAuthorPeriod: FfiConverterRustBuffer<List<AuthorPeriod>> {
+    override fun read(buf: ByteBuffer): List<AuthorPeriod> {
+        val len = buf.getInt()
+        return List<AuthorPeriod>(len) {
+            FfiConverterTypeAuthorPeriod.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AuthorPeriod>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAuthorPeriod.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AuthorPeriod>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAuthorPeriod.write(it, buf)
         }
     }
 }
