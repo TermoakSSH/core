@@ -10,7 +10,8 @@ use std::time::{Duration, Instant};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use termoak_core::model::{Group, Host, Memory, SecretUpdate, Snippet};
+use termoak_core::model::{Group, Host, Memory, Record, SecretUpdate, Snippet};
+use termoak_core::store::VaultAccess;
 use termoak_core::{Id, Store};
 use termoak_ssh::exec::ExecOptions;
 use termoak_ssh::{ConnectionPool, FileKind};
@@ -380,11 +381,29 @@ impl ToolRuntime {
         }
     }
 
-    /// Resolves a host by id, label or address, honouring the task scope.
+    /// What the caller can reach (every vault they can use).
+    async fn access(&self, ctx: &ToolContext) -> Result<std::sync::Arc<VaultAccess>, String> {
+        self.store
+            .vault_access(ctx.owner)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    /// Resolves a host by id, label or address (in any vault the user can
+    /// use), honouring the task scope.
     async fn resolve_host(&self, ctx: &ToolContext, reference: &str) -> Result<Host, String> {
+        Ok(self.resolve_host_record(ctx, reference).await?.data)
+    }
+
+    async fn resolve_host_record(
+        &self,
+        ctx: &ToolContext,
+        reference: &str,
+    ) -> Result<Record<Host>, String> {
+        let access = self.access(ctx).await?;
         let hosts = self
             .store
-            .list::<Host>(ctx.owner)
+            .list_in::<Host>(&access, None)
             .await
             .map_err(|e| e.to_string())?;
         let r = reference.trim();
@@ -398,14 +417,14 @@ impl ToolRuntime {
                     .iter()
                     .find(|h| h.data.address.eq_ignore_ascii_case(r))
             })
-            .map(|h| h.data.clone())
+            .cloned()
             .ok_or_else(|| format!("there is no host \"{r}\"; use list_hosts"))?;
         if let Some(scope) = &ctx.host_scope
-            && !scope.contains(&found.id)
+            && !scope.contains(&found.data.id)
         {
             return Err(format!(
                 "host \"{}\" is outside the scope of this task",
-                found.label
+                found.data.label
             ));
         }
         Ok(found)
@@ -442,14 +461,15 @@ impl ToolRuntime {
 
     async fn list_hosts(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ListHostsIn = parse(input)?;
+        let access = self.access(ctx).await?;
         let hosts = self
             .store
-            .list::<Host>(ctx.owner)
+            .list_in::<Host>(&access, None)
             .await
             .map_err(|e| e.to_string())?;
         let groups = self
             .store
-            .list::<Group>(ctx.owner)
+            .list_in::<Group>(&access, None)
             .await
             .map_err(|e| e.to_string())?;
         let group_name = |id: Option<Id>| {
@@ -458,8 +478,9 @@ impl ToolRuntime {
         };
         let q = args.query.unwrap_or_default().to_lowercase();
         let mut out = Vec::new();
-        for h in hosts {
-            let h = h.data;
+        for rec in hosts {
+            let vault = rec.meta.vault_id.unwrap_or(access.personal());
+            let h = rec.data;
             if let Some(scope) = &ctx.host_scope
                 && !scope.contains(&h.id)
             {
@@ -467,7 +488,7 @@ impl ToolRuntime {
             }
             let settings = self
                 .store
-                .effective_settings(ctx.owner, &h)
+                .effective_settings_in(&access, vault, &h)
                 .await
                 .map_err(|e| e.to_string())?;
             let group = group_name(h.group_id);
@@ -493,6 +514,7 @@ impl ToolRuntime {
                 "os": h.os,
                 "notes": truncate_middle(&h.notes, 300),
                 "via_jump": settings.jump_host_ids.map(|j| !j.is_empty()).unwrap_or(false),
+                "vault_id": vault,
             }));
         }
         if out.is_empty() {
@@ -672,9 +694,10 @@ impl ToolRuntime {
     async fn list_snippets(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ListSnippetsIn = parse(input)?;
         let q = args.query.unwrap_or_default().to_lowercase();
+        let access = self.access(ctx).await?;
         let snippets = self
             .store
-            .list::<Snippet>(ctx.owner)
+            .list_in::<Snippet>(&access, None)
             .await
             .map_err(|e| e.to_string())?;
         let out: Vec<Value> = snippets
@@ -702,15 +725,23 @@ impl ToolRuntime {
         Ok(serde_json::to_string_pretty(&out).unwrap_or_default())
     }
 
+    /// Saves a memory: into the host's vault when the user is Editor there,
+    /// otherwise (or without a host) into their personal vault.
     async fn remember(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: RememberIn = parse(input)?;
-        let host_id = match args.host.as_deref() {
-            Some(h) if !h.trim().is_empty() => Some(self.resolve_host(ctx, h).await?.id),
+        let access = self.access(ctx).await?;
+        let host = match args.host.as_deref() {
+            Some(h) if !h.trim().is_empty() => Some(self.resolve_host_record(ctx, h).await?),
             _ => None,
         };
+        let vault = host
+            .as_ref()
+            .and_then(|h| h.meta.vault_id)
+            .filter(|v| access.role(*v).is_some_and(|r| r.can_write()))
+            .unwrap_or(access.personal());
         let existing = self
             .store
-            .list::<Memory>(ctx.owner)
+            .list_in::<Memory>(&access, None)
             .await
             .map_err(|e| e.to_string())?;
         if existing.iter().any(|m| {
@@ -721,12 +752,21 @@ impl ToolRuntime {
         }) {
             return Ok("Already noted.".into());
         }
+        // References stay inside a vault: a memory about a host of a vault
+        // the user cannot write names the host instead.
+        let content = args.content.trim().to_string();
+        let (host_id, content) = match &host {
+            Some(h) if h.meta.vault_id == Some(vault) => (Some(h.data.id), content),
+            Some(h) => (None, format!("{}: {content}", h.data.label)),
+            None => (None, content),
+        };
         self.store
-            .save(
-                ctx.owner,
+            .save_in(
+                &access,
+                vault,
                 Memory {
                     id: Id::nil(),
-                    content: args.content.trim().to_string(),
+                    content,
                     host_id,
                 },
                 SecretUpdate::Keep,

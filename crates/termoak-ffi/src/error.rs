@@ -98,6 +98,17 @@ impl From<CoreError> for TermoakError {
             CoreError::Crypto(_) => Self::Vault(msg),
             CoreError::Io(_) => Self::Io(msg),
             CoreError::Db(_) | CoreError::Json(_) | CoreError::Join(_) => Self::Internal(msg),
+            // Vault rules (phase 4 may give them their own variants).
+            CoreError::Vault { code, .. } => match code {
+                termoak_core::error::codes::VAULT_NOT_FOUND => Self::NotFound(msg),
+                termoak_core::error::codes::INVALID_ROLE
+                | termoak_core::error::codes::CROSS_VAULT_REFERENCE => Self::Invalid(msg),
+                termoak_core::error::codes::MEMBER_EXISTS
+                | termoak_core::error::codes::ID_IN_USE
+                | termoak_core::error::codes::USE_TRANSFER
+                | termoak_core::error::codes::STILL_REFERENCED => Self::Conflict(msg),
+                _ => Self::Forbidden(msg),
+            },
         }
     }
 }

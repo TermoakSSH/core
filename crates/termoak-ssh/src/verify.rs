@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use russh::keys::PublicKey;
 use serde::{Deserialize, Serialize};
 use termoak_core::model::{KnownHost, SecretUpdate};
+use termoak_core::store::VaultAccess;
 use termoak_core::{Id, Store};
 
 use crate::error::{Result, SshError};
@@ -41,12 +42,102 @@ impl HostKeyVerifier for AcceptAll {
     }
 }
 
+/// Where known hosts are looked up and saved.
+#[derive(Clone)]
+pub enum KnownHostScope {
+    /// Owner-based (a client's own store).
+    Owner(Id),
+    /// Vaults (server): looked up in `lookup` in order (the host's vault,
+    /// then the personal vault); a new key is saved into `write_vault`.
+    Vaults {
+        access: Arc<VaultAccess>,
+        lookup: Vec<Id>,
+        write_vault: Id,
+    },
+}
+
 /// Verifier backed by the store's `KnownHost` entities.
 pub struct StoreVerifier {
     pub store: Store,
-    pub owner: Id,
+    pub scope: KnownHostScope,
     pub policy: HostKeyPolicy,
     pub prompter: Option<Arc<dyn AuthPrompter>>,
+}
+
+impl StoreVerifier {
+    /// Known hosts of `owner` (clients).
+    pub fn for_owner(
+        store: Store,
+        owner: Id,
+        policy: HostKeyPolicy,
+        prompter: Option<Arc<dyn AuthPrompter>>,
+    ) -> Self {
+        Self {
+            store,
+            scope: KnownHostScope::Owner(owner),
+            policy,
+            prompter,
+        }
+    }
+
+    /// Known hosts for connecting to a host of `host_vault` (server): looks
+    /// in the host's vault, then in the user's personal vault. A new key is
+    /// saved into the host's vault when the user is Editor there, otherwise
+    /// into their personal vault. A key that changed against a pin of the
+    /// host's vault always fails (only Editors can replace it).
+    pub fn for_host(
+        store: Store,
+        access: Arc<VaultAccess>,
+        host_vault: Id,
+        policy: HostKeyPolicy,
+        prompter: Option<Arc<dyn AuthPrompter>>,
+    ) -> Self {
+        let personal = access.personal();
+        let mut lookup = vec![host_vault];
+        if personal != host_vault && access.role(personal).is_some() {
+            lookup.push(personal);
+        }
+        let write_vault = if access.role(host_vault).is_some_and(|r| r.can_write()) {
+            host_vault
+        } else {
+            personal
+        };
+        Self {
+            store,
+            scope: KnownHostScope::Vaults {
+                access,
+                lookup,
+                write_vault,
+            },
+            policy,
+            prompter,
+        }
+    }
+
+    async fn known(&self, host: &str, port: u16) -> Result<Vec<Vec<KnownHost>>> {
+        let keep = |list: Vec<termoak_core::model::Record<KnownHost>>| -> Vec<KnownHost> {
+            list.into_iter()
+                .map(|r| r.data)
+                .filter(|k| k.host.eq_ignore_ascii_case(host) && k.port == port)
+                .collect()
+        };
+        Ok(match &self.scope {
+            KnownHostScope::Owner(owner) => {
+                vec![keep(self.store.list::<KnownHost>(*owner).await?)]
+            }
+            KnownHostScope::Vaults { access, lookup, .. } => {
+                let mut out = Vec::new();
+                for v in lookup {
+                    match self.store.list_in::<KnownHost>(access, Some(*v)).await {
+                        Ok(list) => out.push(keep(list)),
+                        Err(termoak_core::CoreError::Vault { .. }) => {}
+                        Err(e) => return Err(e.into()),
+                    }
+                }
+                out
+            }
+        })
+    }
 }
 
 #[async_trait]
@@ -57,24 +148,19 @@ impl HostKeyVerifier for StoreVerifier {
         let alg = algorithm_name(key);
         let host_norm = host.trim().to_ascii_lowercase();
 
-        let known: Vec<KnownHost> = self
-            .store
-            .list::<KnownHost>(self.owner)
-            .await?
-            .into_iter()
-            .map(|r| r.data)
-            .filter(|k| k.host.eq_ignore_ascii_case(&host_norm) && k.port == port)
-            .collect();
-
-        if known.iter().any(|k| same_key(&k.public_key, &presented)) {
-            return Ok(());
-        }
-        if let Some(old) = known.iter().find(|k| k.key_type == alg) {
-            return Err(SshError::HostKeyChanged {
-                host: format!("{host_norm}:{port}"),
-                expected: old.fingerprint.clone(),
-                actual: fp,
-            });
+        // Vault by vault, in order: a match accepts, a different key of the
+        // same type is a change.
+        for known in self.known(&host_norm, port).await? {
+            if known.iter().any(|k| same_key(&k.public_key, &presented)) {
+                return Ok(());
+            }
+            if let Some(old) = known.iter().find(|k| k.key_type == alg) {
+                return Err(SshError::HostKeyChanged {
+                    host: format!("{host_norm}:{port}"),
+                    expected: old.fingerprint.clone(),
+                    actual: fp,
+                });
+            }
         }
 
         let accept = match self.policy {
@@ -100,21 +186,30 @@ impl HostKeyVerifier for StoreVerifier {
                 key_type: alg,
             });
         }
-        self.store
-            .save(
-                self.owner,
-                KnownHost {
-                    id: Id::nil(),
-                    host: host_norm,
-                    port,
-                    key_type: alg,
-                    public_key: presented,
-                    fingerprint: fp,
-                },
-                SecretUpdate::Keep,
-                None,
-            )
-            .await?;
+        let entry = KnownHost {
+            id: Id::nil(),
+            host: host_norm,
+            port,
+            key_type: alg,
+            public_key: presented,
+            fingerprint: fp,
+        };
+        match &self.scope {
+            KnownHostScope::Owner(owner) => {
+                self.store
+                    .save(*owner, entry, SecretUpdate::Keep, None)
+                    .await?;
+            }
+            KnownHostScope::Vaults {
+                access,
+                write_vault,
+                ..
+            } => {
+                self.store
+                    .save_in(access, *write_vault, entry, SecretUpdate::Keep, None)
+                    .await?;
+            }
+        }
         Ok(())
     }
 }
@@ -135,12 +230,7 @@ mod tests {
     async fn tofu_then_detects_change() {
         let store = Store::open_in_memory(MasterKey::generate()).unwrap();
         let owner = termoak_core::new_id();
-        let v = StoreVerifier {
-            store: store.clone(),
-            owner,
-            policy: HostKeyPolicy::AcceptNew,
-            prompter: None,
-        };
+        let v = StoreVerifier::for_owner(store.clone(), owner, HostKeyPolicy::AcceptNew, None);
         let k1 =
             parse_public(&generate(KeyType::Ed25519, "", None).unwrap().public_openssh).unwrap();
         let k2 =
@@ -154,12 +244,7 @@ mod tests {
         // Another port is another host.
         v.verify("example.com", 2222, &k2).await.unwrap();
 
-        let strict = StoreVerifier {
-            store,
-            owner,
-            policy: HostKeyPolicy::Strict,
-            prompter: None,
-        };
+        let strict = StoreVerifier::for_owner(store, owner, HostKeyPolicy::Strict, None);
         assert!(matches!(
             strict.verify("new.example.com", 22, &k1).await,
             Err(SshError::HostKeyUnknown { .. })

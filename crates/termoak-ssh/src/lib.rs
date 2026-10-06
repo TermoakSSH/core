@@ -28,7 +28,7 @@ pub use pool::ConnectionPool;
 pub use prompt::{AuthPrompter, NoPrompter};
 pub use sftp::{FileEntry, FileKind, Sftp};
 pub use terminal::{PtyOptions, TermStatus, TerminalSession};
-pub use verify::{AcceptAll, HostKeyPolicy, HostKeyVerifier, StoreVerifier};
+pub use verify::{AcceptAll, HostKeyPolicy, HostKeyVerifier, KnownHostScope, StoreVerifier};
 
 /// Re-export of the public key type.
 pub use russh::keys::PublicKey;

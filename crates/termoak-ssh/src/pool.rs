@@ -1,11 +1,14 @@
 //! Reusable connections per (user, host). Used by the AI and the server's SFTP
-//! so they do not open a new connection for every command.
+//! so they do not open a new connection for every command. Server only: the
+//! hosts are resolved inside their vault with the user's access.
 
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use parking_lot::Mutex;
+use termoak_core::model::Host;
+use termoak_core::store::SecretUse;
 use termoak_core::{Id, Store};
 
 use crate::client::{ConnectOptions, Connection};
@@ -15,6 +18,8 @@ use crate::verify::{HostKeyPolicy, StoreVerifier};
 struct Slot {
     conn: Option<Arc<Connection>>,
     last_used: Instant,
+    /// Vault of the host when the connection was opened.
+    vault: Option<Id>,
 }
 
 type SlotMap = HashMap<(Id, Id), Arc<tokio::sync::Mutex<Slot>>>;
@@ -48,16 +53,21 @@ impl ConnectionPool {
         pool
     }
 
-    /// Live connection to `host_id` (reused or opened).
-    pub async fn get(&self, owner: Id, host_id: Id) -> Result<Arc<Connection>> {
+    /// Live connection of `user` to `host_id` (reused or opened). Checks the
+    /// user's access to the host's vault on every call (cached roles): no
+    /// access, or a host that moved to another vault, means no reuse.
+    pub async fn get(&self, user: Id, host_id: Id) -> Result<Arc<Connection>> {
+        let access = self.store.vault_access(user).await?;
+        let vault = self.store.vault_of::<Host>(&access, host_id).await?;
         let slot = self
             .slots
             .lock()
-            .entry((owner, host_id))
+            .entry((user, host_id))
             .or_insert_with(|| {
                 Arc::new(tokio::sync::Mutex::new(Slot {
                     conn: None,
                     last_used: Instant::now(),
+                    vault: None,
                 }))
             })
             .clone();
@@ -65,18 +75,27 @@ impl ConnectionPool {
         slot.last_used = Instant::now();
         if let Some(conn) = &slot.conn
             && !conn.is_closed()
+            && slot.vault == Some(vault)
         {
             return Ok(conn.clone());
         }
-        let resolved = self.store.resolve_host(owner, host_id).await?;
-        let opts = ConnectOptions::new(Arc::new(StoreVerifier {
-            store: self.store.clone(),
-            owner,
-            policy: self.policy,
-            prompter: None,
-        }));
+        if let Some(old) = slot.conn.take() {
+            old.disconnect().await;
+        }
+        let resolved = self
+            .store
+            .resolve_in(&access, host_id, SecretUse::Server)
+            .await?;
+        let opts = ConnectOptions::new(Arc::new(StoreVerifier::for_host(
+            self.store.clone(),
+            access,
+            vault,
+            self.policy,
+            None,
+        )));
         let conn = Connection::connect(&resolved, &opts).await?;
         slot.conn = Some(conn.clone());
+        slot.vault = Some(vault);
         Ok(conn)
     }
 
@@ -89,6 +108,39 @@ impl ConnectionPool {
                 conn.disconnect().await;
             }
         }
+    }
+
+    /// Closes the connections to hosts of `vault` (of one user, or of
+    /// everyone): access was revoked or the vault is gone.
+    pub async fn invalidate_vault(&self, vault: Id, user: Option<Id>) {
+        let slots: Vec<_> = self
+            .slots
+            .lock()
+            .iter()
+            .filter(|((u, _), _)| user.is_none_or(|x| x == *u))
+            .map(|(_, s)| s.clone())
+            .collect();
+        for slot in slots {
+            let mut s = slot.lock().await;
+            if s.vault == Some(vault)
+                && let Some(conn) = s.conn.take()
+            {
+                conn.disconnect().await;
+            }
+        }
+    }
+
+    /// Open connections (tests).
+    pub fn open_count(&self) -> usize {
+        self.slots
+            .lock()
+            .values()
+            .filter(|s| {
+                s.try_lock()
+                    .map(|s| s.conn.as_ref().is_some_and(|c| !c.is_closed()))
+                    .unwrap_or(true)
+            })
+            .count()
     }
 
     async fn reap(&self) {

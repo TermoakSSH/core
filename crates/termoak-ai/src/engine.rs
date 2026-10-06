@@ -726,11 +726,13 @@ impl AiEngine {
 
     /// Context block that precedes the first request.
     async fn context_block(&self, owner: Id, ctx: &TaskContext, mode: PermissionMode) -> String {
-        let hosts = match &ctx.host_ids {
-            Some(ids) => {
+        // Hosts and memories of every vault the user can use.
+        let access = self.store.vault_access(owner).await.ok();
+        let hosts = match (&ctx.host_ids, &access) {
+            (Some(ids), Some(access)) => {
                 let hosts = self
                     .store
-                    .list::<termoak_core::model::Host>(owner)
+                    .list_in::<termoak_core::model::Host>(access, None)
                     .await
                     .unwrap_or_default();
                 Some(
@@ -741,16 +743,20 @@ impl AiEngine {
                         .collect::<Vec<_>>(),
                 )
             }
-            None => None,
+            (Some(_), None) => Some(Vec::new()),
+            (None, _) => None,
         };
-        let memories: Vec<String> = self
-            .store
-            .list::<Memory>(owner)
-            .await
-            .unwrap_or_default()
-            .into_iter()
-            .map(|m| m.data.content)
-            .collect();
+        let memories: Vec<String> = match &access {
+            Some(access) => self
+                .store
+                .list_in::<Memory>(access, None)
+                .await
+                .unwrap_or_default()
+                .into_iter()
+                .map(|m| m.data.content)
+                .collect(),
+            None => Vec::new(),
+        };
         crate::agent::context_block(
             mode,
             hosts.as_deref(),

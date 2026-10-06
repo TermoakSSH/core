@@ -275,12 +275,12 @@ impl Workspace {
         prompter: Option<Arc<dyn AuthPrompter>>,
         policy: HostKeyPolicy,
     ) -> Arc<StoreVerifier> {
-        Arc::new(StoreVerifier {
-            store: self.store.clone(),
-            owner: LOCAL_OWNER,
+        Arc::new(StoreVerifier::for_owner(
+            self.store.clone(),
+            LOCAL_OWNER,
             policy,
             prompter,
-        })
+        ))
     }
 
     pub async fn resolve(&self, host_id: Id) -> Result<ResolvedHost> {

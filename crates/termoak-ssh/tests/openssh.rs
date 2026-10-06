@@ -168,12 +168,12 @@ fn resolved(sshd: &Sshd, jumps: Vec<ResolvedHost>) -> ResolvedHost {
 }
 
 fn options(store: &Store, owner: Id) -> ConnectOptions {
-    ConnectOptions::new(Arc::new(StoreVerifier {
-        store: store.clone(),
+    ConnectOptions::new(Arc::new(StoreVerifier::for_owner(
+        store.clone(),
         owner,
-        policy: HostKeyPolicy::AcceptNew,
-        prompter: None,
-    }))
+        HostKeyPolicy::AcceptNew,
+        None,
+    )))
 }
 
 async fn echo_server() -> u16 {
