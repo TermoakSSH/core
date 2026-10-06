@@ -7,14 +7,15 @@
 # cargo-ndk (`cargo install cargo-ndk`).
 # NOT TESTED in CI (no NDK there): see docs/MOBILE.md.
 #
-# Usage: scripts/build-android.sh [release|debug]   (release by default)
+# Usage: scripts/build-android.sh [release|debug]   (release by default;
+# release uses the size-optimized `mobile` Cargo profile)
 # Variables: ANDROID_API (minimum API, 24 by default), ABIS (space-separated
 # list, "arm64-v8a armeabi-v7a x86_64" by default).
 set -euo pipefail
 
 profile="${1:-release}"
 case "$profile" in
-  release) cargo_flags=(--release) ;;
+  release) cargo_flags=(--profile mobile) ;;
   debug) cargo_flags=() ;;
   *) echo "unknown profile: $profile (use release or debug)" >&2; exit 1 ;;
 esac

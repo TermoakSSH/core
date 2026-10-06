@@ -97,3 +97,15 @@ debug = false
 lto = "thin"
 codegen-units = 4
 strip = "symbols"
+
+# Mobile library (termoak-ffi for Android and iOS: scripts/build-android.sh,
+# scripts/build-ios.sh and the apps' release scripts), with
+# `--profile mobile`: optimized for size, it goes into every APK and .ipa.
+# The output is in target/<triple>/mobile. `panic` stays `unwind` (the
+# release default): UniFFI turns a Rust panic into an exception in the app.
+[profile.mobile]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+strip = "symbols"

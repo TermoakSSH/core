@@ -14,15 +14,16 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
 cargo build -p termoak-ffi --lib
+target_dir="${CARGO_TARGET_DIR:-target}"
 case "$(uname -s)" in
-  Darwin) lib="target/debug/libtermoak_ffi.dylib" ;;
-  *) lib="target/debug/libtermoak_ffi.so" ;;
+  Darwin) lib="$target_dir/debug/libtermoak_ffi.dylib" ;;
+  *) lib="$target_dir/debug/libtermoak_ffi.so" ;;
 esac
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 bindgen() {
-  cargo run -q -p termoak-ffi --bin uniffi-bindgen -- \
+  cargo run -q -p termoak-ffi --features bindgen --bin uniffi-bindgen -- \
     generate --no-format --library "$lib" --language "$1" --out-dir "$tmp/$1"
 }
 bindgen swift
