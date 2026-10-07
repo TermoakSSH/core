@@ -686,3 +686,293 @@ async fn write_file_previews_and_refuses_redacted_content() {
     assert!(!out.ok);
     assert!(out.content.contains("[redacted]"), "{}", out.content);
 }
+
+/// Hosts of two places (like This device and an account) from a provider
+/// instead of the engine's store; connections are recorded, not opened.
+#[derive(Default)]
+struct TwoStores {
+    inventory: crate::hosts::Inventory,
+    connects: Mutex<Vec<Id>>,
+    memories: Mutex<Vec<(Option<Id>, String)>>,
+}
+
+#[async_trait]
+impl crate::hosts::HostProvider for TwoStores {
+    async fn inventory(&self, _: Id) -> Result<crate::hosts::Inventory, String> {
+        Ok(self.inventory.clone())
+    }
+    async fn connect(
+        &self,
+        _: Id,
+        host: &crate::hosts::HostEntry,
+    ) -> Result<Arc<termoak_ssh::Connection>, String> {
+        self.connects.lock().push(host.id);
+        Err(format!("test connection to {}", host.address))
+    }
+    async fn invalidate(&self, _: Id, _: &crate::hosts::HostEntry) {}
+    async fn snippets(&self, _: Id) -> Result<Vec<Snippet>, String> {
+        Ok(Vec::new())
+    }
+    async fn memories(&self, _: Id) -> Result<Vec<termoak_core::model::Memory>, String> {
+        Ok(self
+            .memories
+            .lock()
+            .iter()
+            .map(|(h, c)| termoak_core::model::Memory {
+                id: new_id(),
+                content: c.clone(),
+                host_id: *h,
+            })
+            .collect())
+    }
+    async fn remember(
+        &self,
+        _: Id,
+        host: Option<&crate::hosts::HostEntry>,
+        content: &str,
+    ) -> Result<(), String> {
+        self.memories
+            .lock()
+            .push((host.map(|h| h.id), content.to_string()));
+        Ok(())
+    }
+    async fn save_snippet(&self, _: Id, snippet: Snippet) -> Result<Snippet, String> {
+        Ok(snippet)
+    }
+}
+
+#[tokio::test]
+async fn hosts_come_from_the_provider() {
+    use crate::hosts::{GroupEntry, HostEntry, Inventory};
+    let store = Store::open_in_memory(MasterKey::generate()).unwrap();
+    // A client's own store: nothing in any vault.
+    let owner = Id::nil();
+    let account = new_id();
+    let (servers, web) = (new_id(), new_id());
+    let entry = |label: &str, address: &str, place: Option<Id>| HostEntry {
+        location: Some(match place {
+            None => "This device".to_string(),
+            Some(_) => "Acme".to_string(),
+        }),
+        source: place,
+        ..HostEntry::new(new_id(), label, address)
+    };
+    let web1 = HostEntry {
+        group_id: Some(web),
+        tags: vec!["prod".into()],
+        user: Some("deploy".into()),
+        ..entry("web-1", "10.0.0.1", None)
+    };
+    let web2 = HostEntry {
+        group_id: Some(web),
+        tags: vec!["prod".into()],
+        ..entry("web-2", "10.0.0.2", Some(account))
+    };
+    let db = HostEntry {
+        tags: vec!["Prod".into()],
+        ..entry("db", "10.0.0.9", Some(account))
+    };
+    let router = HostEntry {
+        protocol: "telnet".into(),
+        port: 23,
+        ..entry("router", "192.168.1.1", None)
+    };
+    let strict = HostEntry {
+        use_only: true,
+        unavailable: Some("its vault is Strict: only connections through the server".into()),
+        ..entry("vault-box", "10.0.1.1", Some(account))
+    };
+    let api_a = entry("api", "10.0.2.1", None);
+    let api_b = entry("api", "10.0.2.2", Some(account));
+    let provider = Arc::new(TwoStores {
+        inventory: Inventory {
+            hosts: vec![
+                web1.clone(),
+                web2.clone(),
+                db.clone(),
+                router.clone(),
+                strict.clone(),
+                api_a.clone(),
+                api_b.clone(),
+            ],
+            groups: vec![
+                GroupEntry {
+                    id: servers,
+                    name: "Servers".into(),
+                    parent_id: None,
+                },
+                GroupEntry {
+                    id: web,
+                    name: "Web".into(),
+                    parent_id: Some(servers),
+                },
+            ],
+        },
+        ..Default::default()
+    });
+    let engine = AiEngine::with_hosts(store.clone(), provider.clone(), None, AiConfig::default())
+        .await
+        .unwrap();
+    engine
+        .registry
+        .test_backends
+        .lock()
+        .insert("fake".into(), Backend::Chat(FakeProvider::new(vec![])));
+    engine.set_chain_source(Arc::new(FakeChain));
+    let tools = engine.tools();
+    let ctx = ToolContext {
+        owner,
+        task_id: None,
+        host_scope: None,
+    };
+
+    // Every host of both places, with where it is, its protocol and why it
+    // cannot be used.
+    let out = tools.execute(&ctx, "list_hosts", &json!({})).await;
+    assert!(out.ok, "{}", out.content);
+    let list: Vec<Value> = serde_json::from_str(&out.content).unwrap();
+    assert_eq!(list.len(), 7);
+    let row = |label: &str| {
+        list.iter()
+            .find(|r| r["label"] == label)
+            .unwrap_or_else(|| panic!("{label} not listed"))
+            .clone()
+    };
+    assert_eq!(row("web-1")["location"], "This device");
+    assert_eq!(row("web-1")["group"], "Web");
+    assert_eq!(row("web-1")["user"], "deploy");
+    assert_eq!(row("web-2")["location"], "Acme");
+    assert_eq!(row("router")["protocol"], "telnet");
+    assert!(
+        row("router")["unavailable"]
+            .as_str()
+            .unwrap()
+            .contains("Telnet")
+    );
+    assert_eq!(row("vault-box")["access"], "use_only");
+    assert!(
+        row("vault-box")["unavailable"]
+            .as_str()
+            .unwrap()
+            .contains("Strict")
+    );
+    assert!(row("web-1").get("unavailable").is_none());
+    let out = tools
+        .execute(&ctx, "list_hosts", &json!({"query": "acme"}))
+        .await;
+    assert_eq!(
+        serde_json::from_str::<Vec<Value>>(&out.content)
+            .unwrap()
+            .len(),
+        4
+    );
+
+    // run_command finds "web-1" (and the account's host by address) and
+    // connects through the provider.
+    let out = tools
+        .execute(
+            &ctx,
+            "run_command",
+            &json!({"host": "web-1", "command": "uptime"}),
+        )
+        .await;
+    assert!(!out.ok);
+    assert!(
+        out.content
+            .contains("could not connect to web-1: test connection to 10.0.0.1"),
+        "{}",
+        out.content
+    );
+    let out = tools
+        .execute(
+            &ctx,
+            "list_directory",
+            &json!({"host": "10.0.0.2", "path": "/"}),
+        )
+        .await;
+    assert!(
+        out.content.contains("could not connect to web-2"),
+        "{}",
+        out.content
+    );
+    assert_eq!(*provider.connects.lock(), vec![web1.id, web2.id]);
+
+    // Telnet and Strict hosts are refused before connecting; same-named
+    // hosts are listed, not guessed.
+    let out = tools
+        .execute(
+            &ctx,
+            "run_command",
+            &json!({"host": "router", "command": "show ver"}),
+        )
+        .await;
+    assert!(
+        !out.ok && out.content.contains("only work over SSH"),
+        "{}",
+        out.content
+    );
+    let out = tools
+        .execute(
+            &ctx,
+            "read_file",
+            &json!({"host": "vault-box", "path": "/etc/hosts"}),
+        )
+        .await;
+    assert!(!out.ok && out.content.contains("Strict"), "{}", out.content);
+    let out = tools
+        .execute(
+            &ctx,
+            "run_command",
+            &json!({"host": "api", "command": "uptime"}),
+        )
+        .await;
+    assert!(out.content.contains("matches 2 hosts"), "{}", out.content);
+    assert!(
+        out.content.contains(&api_a.id.to_string()) && out.content.contains(&api_b.id.to_string())
+    );
+    let out = tools
+        .execute(
+            &ctx,
+            "run_command",
+            &json!({"host": api_b.id.to_string(), "command": "uptime"}),
+        )
+        .await;
+    assert!(
+        out.content.contains("test connection to 10.0.2.2"),
+        "{}",
+        out.content
+    );
+    assert_eq!(provider.connects.lock().len(), 3);
+
+    // Memories go through the provider.
+    let out = tools
+        .execute(
+            &ctx,
+            "remember",
+            &json!({"content": "nginx in /etc/nginx", "host": "web-2"}),
+        )
+        .await;
+    assert_eq!(out.content, "Noted.");
+    assert_eq!(provider.memories.lock()[0].0, Some(web2.id));
+
+    // Multi-host tasks by group (with subgroups) and by tag, across places.
+    let mut req = task("check uptime");
+    req.group_id = Some(servers);
+    req.fan_out = Some(true);
+    let view = engine.create_task(owner, req).await.unwrap();
+    let mut ids = view.host_ids.clone().unwrap();
+    ids.sort();
+    let mut want = vec![web1.id, web2.id];
+    want.sort();
+    assert_eq!(ids, want);
+    let mut req = task("check uptime");
+    req.tag = Some("prod".into());
+    req.fan_out = Some(true);
+    let view = engine.create_task(owner, req).await.unwrap();
+    assert_eq!(view.host_ids.as_ref().map(Vec::len), Some(3));
+    let mut req = task("check uptime");
+    req.host_ids = Some(vec![web1.id, db.id]);
+    req.fan_out = Some(true);
+    let view = engine.create_task(owner, req).await.unwrap();
+    assert_eq!(view.host_ids, Some(vec![web1.id, db.id]));
+}

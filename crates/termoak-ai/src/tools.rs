@@ -10,13 +10,12 @@ use std::time::{Duration, Instant};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use termoak_core::model::{Group, Host, Memory, Record, SecretUpdate, Snippet};
-use termoak_core::store::VaultAccess;
 use termoak_core::{Id, Store};
 use termoak_ssh::exec::ExecOptions;
-use termoak_ssh::{ConnectionPool, FileKind};
+use termoak_ssh::{Connection, ConnectionPool, FileKind};
 
 use crate::approval::{ApprovalPreview, MAX_DIFF_BYTES, MAX_DIFF_SOURCE_BYTES};
+use crate::hosts::{HostEntry, HostProvider, VaultHosts};
 use crate::policy::{Effect, classify_command, classify_write, is_read_only_command};
 use crate::provider::ToolSpec;
 use crate::provider::anthropic::INVALID_JSON_KEY;
@@ -105,8 +104,8 @@ pub struct ToolLimits {
 
 /// Tool runner.
 pub struct ToolRuntime {
-    store: Store,
-    pool: Arc<ConnectionPool>,
+    /// The user's hosts, connections, snippets and memories.
+    hosts: Arc<dyn HostProvider>,
     sessions: Option<Arc<dyn SessionAccess>>,
     limits: ToolLimits,
     /// Hide secrets in what the tools return (on by default; see [`redact`]).
@@ -223,15 +222,24 @@ pub fn truncate_middle(s: &str, max_chars: usize) -> String {
 }
 
 impl ToolRuntime {
+    /// Tools over the vaults of a store (the server).
     pub fn new(
         store: Store,
         pool: Arc<ConnectionPool>,
         sessions: Option<Arc<dyn SessionAccess>>,
         limits: ToolLimits,
     ) -> Self {
+        Self::with_hosts(Arc::new(VaultHosts::new(store, pool)), sessions, limits)
+    }
+
+    /// Tools over the hosts of a [`HostProvider`] (a client app's stores).
+    pub fn with_hosts(
+        hosts: Arc<dyn HostProvider>,
+        sessions: Option<Arc<dyn SessionAccess>>,
+        limits: ToolLimits,
+    ) -> Self {
         Self {
-            store,
-            pool,
+            hosts,
             sessions,
             limits,
             redact: true,
@@ -248,13 +256,18 @@ impl ToolRuntime {
         self.redact
     }
 
+    /// Where the hosts come from.
+    pub fn hosts(&self) -> &Arc<dyn HostProvider> {
+        &self.hosts
+    }
+
     /// Definitions offered to the model.
     pub fn specs(&self) -> Vec<ToolSpec> {
-        let host_prop = json!({"type": "string", "description": "Host: its id, exact label or address (use list_hosts to see them)."});
+        let host_prop = json!({"type": "string", "description": "Host: its id, exact label or address (use list_hosts to see them; when two hosts share a label, use the id)."});
         let mut specs = vec![
             ToolSpec {
                 name: "list_hosts".into(),
-                description: "Lists the user's SSH hosts (id, label, address, user, group, tags, OS). Call it first when you do not know which host to act on.".into(),
+                description: "Lists the user's hosts (id, label, address, protocol, user, group, tags, OS, where it is). Call it first when you do not know which host to act on. Commands and files only work on SSH hosts that are not marked unavailable.".into(),
                 schema: json!({"type": "object", "properties": {"query": {"type": "string", "description": "Optional text filter (label, address, group or tag)."}}, "additionalProperties": false}),
             },
             ToolSpec {
@@ -396,53 +409,35 @@ impl ToolRuntime {
         }
     }
 
-    /// What the caller can reach (every vault they can use).
-    async fn access(&self, ctx: &ToolContext) -> Result<std::sync::Arc<VaultAccess>, String> {
-        self.store
-            .vault_access(ctx.owner)
-            .await
-            .map_err(|e| e.to_string())
+    /// Resolves a host by id, label or address (among the hosts the user
+    /// sees), honouring the task scope. Ambiguous names are an error that
+    /// lists the candidates.
+    async fn resolve_host(&self, ctx: &ToolContext, reference: &str) -> Result<HostEntry, String> {
+        let inventory = self.hosts.inventory(ctx.owner).await?;
+        inventory
+            .resolve(reference, ctx.host_scope.as_deref())
+            .cloned()
     }
 
-    /// Resolves a host by id, label or address (in any vault the user can
-    /// use), honouring the task scope.
-    async fn resolve_host(&self, ctx: &ToolContext, reference: &str) -> Result<Host, String> {
-        Ok(self.resolve_host_record(ctx, reference).await?.data)
+    /// A host for the SSH tools: resolved, and refused with the reason when
+    /// it is not SSH (Telnet) or cannot be used from here (Strict vault...).
+    async fn ssh_host(&self, ctx: &ToolContext, reference: &str) -> Result<HostEntry, String> {
+        let host = self.resolve_host(ctx, reference).await?;
+        match host.ssh_blocker() {
+            Some(why) => Err(why),
+            None => Ok(host),
+        }
     }
 
-    async fn resolve_host_record(
+    async fn connect(
         &self,
         ctx: &ToolContext,
-        reference: &str,
-    ) -> Result<Record<Host>, String> {
-        let access = self.access(ctx).await?;
-        let hosts = self
-            .store
-            .list_in::<Host>(&access, None)
+        host: &HostEntry,
+    ) -> Result<Arc<Connection>, String> {
+        self.hosts
+            .connect(ctx.owner, host)
             .await
-            .map_err(|e| e.to_string())?;
-        let r = reference.trim();
-        let found = r
-            .parse::<Id>()
-            .ok()
-            .and_then(|id| hosts.iter().find(|h| h.data.id == id))
-            .or_else(|| hosts.iter().find(|h| h.data.label.eq_ignore_ascii_case(r)))
-            .or_else(|| {
-                hosts
-                    .iter()
-                    .find(|h| h.data.address.eq_ignore_ascii_case(r))
-            })
-            .cloned()
-            .ok_or_else(|| format!("there is no host \"{r}\"; use list_hosts"))?;
-        if let Some(scope) = &ctx.host_scope
-            && !scope.contains(&found.data.id)
-        {
-            return Err(format!(
-                "host \"{}\" is outside the scope of this task",
-                found.data.label
-            ));
-        }
-        Ok(found)
+            .map_err(|e| format!("could not connect to {}: {e}", host.label))
     }
 
     /// Runs a tool.
@@ -564,12 +559,8 @@ impl ToolRuntime {
         input: &Value,
     ) -> Result<Option<String>, String> {
         let args: WriteFileIn = parse(input)?;
-        let host = self.resolve_host(ctx, &args.host).await?;
-        let conn = self
-            .pool
-            .get(ctx.owner, host.id)
-            .await
-            .map_err(|e| format!("could not connect to {}: {e}", host.label))?;
+        let host = self.ssh_host(ctx, &args.host).await?;
+        let conn = self.connect(ctx, &host).await?;
         let sftp = conn.sftp().await.map_err(|e| e.to_string())?;
         let result = async {
             if !sftp.exists(&args.path).await.map_err(|e| e.to_string())? {
@@ -599,64 +590,62 @@ impl ToolRuntime {
 
     async fn list_hosts(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ListHostsIn = parse(input)?;
-        let access = self.access(ctx).await?;
-        let hosts = self
-            .store
-            .list_in::<Host>(&access, None)
-            .await
-            .map_err(|e| e.to_string())?;
-        let groups = self
-            .store
-            .list_in::<Group>(&access, None)
-            .await
-            .map_err(|e| e.to_string())?;
-        let group_name = |id: Option<Id>| {
-            id.and_then(|g| groups.iter().find(|x| x.data.id == g))
-                .map(|g| g.data.name.clone())
-        };
+        let inventory = self.hosts.inventory(ctx.owner).await?;
         let q = args.query.unwrap_or_default().to_lowercase();
         let mut out = Vec::new();
-        for rec in hosts {
-            let vault = rec.meta.vault_id.unwrap_or(access.personal());
-            let h = rec.data;
+        for h in &inventory.hosts {
             if let Some(scope) = &ctx.host_scope
                 && !scope.contains(&h.id)
             {
                 continue;
             }
-            let settings = self
-                .store
-                .effective_settings_in(&access, vault, &h)
-                .await
-                .map_err(|e| e.to_string())?;
-            let group = group_name(h.group_id);
+            let group = inventory.group_name(h.group_id);
             let haystack = format!(
-                "{} {} {} {}",
+                "{} {} {} {} {} {}",
                 h.label,
                 h.address,
                 group.clone().unwrap_or_default(),
-                h.tags.join(" ")
+                h.tags.join(" "),
+                h.protocol,
+                h.location.clone().unwrap_or_default(),
             )
             .to_lowercase();
             if !q.is_empty() && !haystack.contains(&q) {
                 continue;
             }
-            out.push(json!({
+            let mut row = json!({
                 "id": h.id,
                 "label": h.label,
                 "address": h.address,
-                "port": settings.port.unwrap_or(22),
-                "user": settings.username,
+                "port": h.port,
+                "protocol": h.protocol,
+                "user": h.user,
                 "group": group,
                 "tags": h.tags,
                 "os": h.os,
                 "notes": truncate_middle(&h.notes, 300),
-                "via_jump": settings.jump_host_ids.map(|j| !j.is_empty()).unwrap_or(false),
-                "vault_id": vault,
-            }));
+                "via_jump": h.via_jump,
+            });
+            if let Some(v) = h.vault_id {
+                row["vault_id"] = json!(v);
+            }
+            if let Some(l) = &h.location {
+                row["location"] = json!(l);
+            }
+            if h.use_only {
+                row["access"] = json!("use_only");
+            }
+            if let Some(why) = h.ssh_blocker() {
+                row["unavailable"] = json!(why);
+            }
+            out.push(row);
         }
         if out.is_empty() {
-            return Ok("No matching hosts.".into());
+            return Ok(if inventory.hosts.is_empty() {
+                "The user has no hosts.".into()
+            } else {
+                "No matching hosts.".into()
+            });
         }
         Ok(serde_json::to_string_pretty(&out).unwrap_or_default())
     }
@@ -664,17 +653,13 @@ impl ToolRuntime {
     async fn run_command(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: RunCommandIn = parse(input)?;
         let _ = args.reason;
-        let host = self.resolve_host(ctx, &args.host).await?;
+        let host = self.ssh_host(ctx, &args.host).await?;
         let timeout = Duration::from_secs(
             args.timeout_secs
                 .unwrap_or(self.limits.command_timeout.as_secs())
                 .clamp(1, 1800),
         );
-        let conn = self
-            .pool
-            .get(ctx.owner, host.id)
-            .await
-            .map_err(|e| format!("could not connect to {}: {e}", host.label))?;
+        let conn = self.connect(ctx, &host).await?;
         let opts = ExecOptions {
             timeout,
             max_output: 2 * 1024 * 1024,
@@ -683,7 +668,7 @@ impl ToolRuntime {
         let out = match conn.exec(&args.command, &opts).await {
             Ok(o) => o,
             Err(e) => {
-                self.pool.invalidate(ctx.owner, host.id).await;
+                self.hosts.invalidate(ctx.owner, &host).await;
                 return Err(format!("error running on {}: {e}", host.label));
             }
         };
@@ -722,12 +707,8 @@ impl ToolRuntime {
 
     async fn read_file(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ReadFileIn = parse(input)?;
-        let host = self.resolve_host(ctx, &args.host).await?;
-        let conn = self
-            .pool
-            .get(ctx.owner, host.id)
-            .await
-            .map_err(|e| e.to_string())?;
+        let host = self.ssh_host(ctx, &args.host).await?;
+        let conn = self.connect(ctx, &host).await?;
         let sftp = conn.sftp().await.map_err(|e| e.to_string())?;
         let max = args
             .max_bytes
@@ -764,12 +745,8 @@ impl ToolRuntime {
             ),
             None => None,
         };
-        let host = self.resolve_host(ctx, &args.host).await?;
-        let conn = self
-            .pool
-            .get(ctx.owner, host.id)
-            .await
-            .map_err(|e| e.to_string())?;
+        let host = self.ssh_host(ctx, &args.host).await?;
+        let conn = self.connect(ctx, &host).await?;
         let sftp = conn.sftp().await.map_err(|e| e.to_string())?;
         let mut note = String::new();
         let result = async {
@@ -806,12 +783,8 @@ impl ToolRuntime {
 
     async fn list_directory(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ListDirIn = parse(input)?;
-        let host = self.resolve_host(ctx, &args.host).await?;
-        let conn = self
-            .pool
-            .get(ctx.owner, host.id)
-            .await
-            .map_err(|e| e.to_string())?;
+        let host = self.ssh_host(ctx, &args.host).await?;
+        let conn = self.connect(ctx, &host).await?;
         let sftp = conn.sftp().await.map_err(|e| e.to_string())?;
         let entries = sftp.list(&args.path).await.map_err(|e| e.to_string());
         sftp.close().await;
@@ -841,15 +814,9 @@ impl ToolRuntime {
     async fn list_snippets(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: ListSnippetsIn = parse(input)?;
         let q = args.query.unwrap_or_default().to_lowercase();
-        let access = self.access(ctx).await?;
-        let snippets = self
-            .store
-            .list_in::<Snippet>(&access, None)
-            .await
-            .map_err(|e| e.to_string())?;
+        let snippets = self.hosts.snippets(ctx.owner).await?;
         let out: Vec<Value> = snippets
             .into_iter()
-            .map(|s| s.data)
             .filter(|s| {
                 q.is_empty()
                     || format!("{} {} {}", s.name, s.description, s.tags.join(" "))
@@ -872,55 +839,24 @@ impl ToolRuntime {
         Ok(serde_json::to_string_pretty(&out).unwrap_or_default())
     }
 
-    /// Saves a memory: into the host's vault when the user is Editor there,
-    /// otherwise (or without a host) into their personal vault.
+    /// Saves a memory (where the provider keeps the host's, or the user's
+    /// own place; see [`HostProvider::remember`]).
     async fn remember(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: RememberIn = parse(input)?;
-        let access = self.access(ctx).await?;
         let host = match args.host.as_deref() {
-            Some(h) if !h.trim().is_empty() => Some(self.resolve_host_record(ctx, h).await?),
+            Some(h) if !h.trim().is_empty() => Some(self.resolve_host(ctx, h).await?),
             _ => None,
         };
-        let vault = host
-            .as_ref()
-            .and_then(|h| h.meta.vault_id)
-            .filter(|v| access.role(*v).is_some_and(|r| r.can_write()))
-            .unwrap_or(access.personal());
-        let existing = self
-            .store
-            .list_in::<Memory>(&access, None)
-            .await
-            .map_err(|e| e.to_string())?;
-        if existing.iter().any(|m| {
-            m.data
-                .content
-                .trim()
-                .eq_ignore_ascii_case(args.content.trim())
-        }) {
+        let existing = self.hosts.memories(ctx.owner).await?;
+        if existing
+            .iter()
+            .any(|m| m.content.trim().eq_ignore_ascii_case(args.content.trim()))
+        {
             return Ok("Already noted.".into());
         }
-        // References stay inside a vault: a memory about a host of a vault
-        // the user cannot write names the host instead.
-        let content = args.content.trim().to_string();
-        let (host_id, content) = match &host {
-            Some(h) if h.meta.vault_id == Some(vault) => (Some(h.data.id), content),
-            Some(h) => (None, format!("{}: {content}", h.data.label)),
-            None => (None, content),
-        };
-        self.store
-            .save_in(
-                &access,
-                vault,
-                Memory {
-                    id: Id::nil(),
-                    content,
-                    host_id,
-                },
-                SecretUpdate::Keep,
-                None,
-            )
-            .await
-            .map_err(|e| e.to_string())?;
+        self.hosts
+            .remember(ctx.owner, host.as_ref(), &args.content)
+            .await?;
         Ok("Noted.".into())
     }
 

@@ -13,6 +13,8 @@
 //!   tracking.
 //! - **Secret redaction**: tool results go through [`redact()`] before the
 //!   provider sees them.
+//! - **Hosts from a provider** ([`HostProvider`]): the server's vaults, or
+//!   whatever a client app shows (its device and account stores).
 //! - **Per-user access**: each user's own API keys first; the server's
 //!   providers only when the server allows it (see [`access`]).
 //! - **MCP server** so Codex (or other agents) can use the same tools, always
@@ -26,6 +28,7 @@ pub mod config;
 pub mod diff;
 pub mod engine;
 pub mod error;
+pub mod hosts;
 pub mod mcp;
 pub mod mcp_http;
 pub mod message;
@@ -44,6 +47,7 @@ pub use engine::{
     AccessInfo, AiEngine, CreateTask, HostRun, TaskEvent, TaskPlan, TaskStatus, TaskView, UserEvent,
 };
 pub use error::AiError;
+pub use hosts::{GroupEntry, HostEntry, HostProvider, Inventory, VaultHosts};
 pub use policy::{CommandRisk, PermissionMode, RiskLevel, RiskReason};
 pub use redact::redact;
 pub use runbook::{ExecutedStep, Runbook};

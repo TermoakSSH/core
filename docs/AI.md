@@ -342,6 +342,20 @@ A task can be limited to specific hosts with `host_ids` (or a `group_id` or
 `tag`, see [Multi-host tasks](#multi-host-tasks)). Then the tools cannot
 leave them.
 
+The tools take a host by id, label or address. A label or address shared by
+several hosts (the same name in two accounts, for example) is not guessed:
+the tool answers with the candidates (label, address, where it is, id) and
+the model uses the id or asks. `list_hosts` gives each host's `protocol`;
+Telnet hosts are listed but `run_command`, `read_file`, `write_file` and
+`list_directory` refuse them (and any host marked `unavailable`, such as one
+of a Strict vault on a client) with the reason.
+
+The hosts, groups, snippets and memories come from a
+`termoak_ai::hosts::HostProvider`: on the server, `VaultHosts` (every vault
+the user can use, with the server's connection pool; `AiEngine::new`); a
+client app passes its own to `AiEngine::with_hosts` /
+`ToolRuntime::with_hosts`.
+
 ## Terminal assistant
 
 - `POST /ai/suggest` turns a natural-language request into a command, with
@@ -409,8 +423,11 @@ sent to the Termoak server in this mode, even when signed in.
 - **With an agent installed** (Codex, Claude Code, Antigravity, OpenCode),
   the agent runs on its own and gets the tools through a local MCP endpoint
   (`termoak_ai::mcp_http::LocalMcpServer`).
-- The **tools** are the server copilot's: hosts, commands, files and
-  memories from the local vault over the app's SSH engine (known host keys
+- The **tools** are the server copilot's: the hosts the app shows in the
+  current view (This device and the accounts in sight, each resolved in its
+  own store with its keys, identities and jump hosts; Use-only hosts with
+  just-in-time credentials from their server, Strict vaults refused),
+  commands, files and memories over the app's SSH engine (known host keys
   only), and the terminals open in the app (`list_sessions`,
   `read_terminal`, `send_to_terminal`). The same permission modes apply and
   approvals appear in the copilot.

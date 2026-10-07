@@ -15,7 +15,6 @@ use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use termoak_core::crypto::{prefixed_token, sha256_hex};
-use termoak_core::model::Memory;
 use termoak_core::store::{AiApprovalRow, AiEventRow, AiTaskRow, AiUsageRow};
 use termoak_core::time::now_ms;
 use termoak_core::{Id, Store, new_id};
@@ -415,9 +414,23 @@ pub fn month_start_ms() -> i64 {
 }
 
 impl AiEngine {
+    /// The engine over the vaults of `store` (the server).
     pub async fn new(
         store: Store,
         pool: Arc<ConnectionPool>,
+        sessions: Option<Arc<dyn SessionAccess>>,
+        config: AiConfig,
+    ) -> Result<Arc<Self>, AiError> {
+        let hosts = Arc::new(crate::hosts::VaultHosts::new(store.clone(), pool));
+        Self::with_hosts(store, hosts, sessions, config).await
+    }
+
+    /// The engine with the hosts of a [`HostProvider`](crate::hosts::HostProvider)
+    /// (a client app: its device and account stores); tasks, usage and
+    /// audit stay in `store`.
+    pub async fn with_hosts(
+        store: Store,
+        hosts: Arc<dyn crate::hosts::HostProvider>,
         sessions: Option<Arc<dyn SessionAccess>>,
         config: AiConfig,
     ) -> Result<Arc<Self>, AiError> {
@@ -430,7 +443,7 @@ impl AiEngine {
             max_output_chars: config.max_tool_output_chars,
         };
         let (bus, _) = broadcast::channel(4096);
-        let mut tools = ToolRuntime::new(store.clone(), pool, sessions, limits);
+        let mut tools = ToolRuntime::with_hosts(hosts, sessions, limits);
         tools.set_redact(config.redact_secrets);
         Ok(Arc::new(Self {
             tools,
@@ -815,46 +828,37 @@ impl AiEngine {
         if req.group_id.is_none() && tag.is_none() && req.host_ids.is_none() {
             return Ok(None);
         }
-        let access = self.store.vault_access(owner).await?;
-        let hosts = self
-            .store
-            .list_in::<termoak_core::model::Host>(&access, None)
-            .await?;
-        let groups = self
-            .store
-            .list_in::<termoak_core::model::Group>(&access, None)
-            .await?;
+        let inventory = self
+            .tools
+            .hosts()
+            .inventory(owner)
+            .await
+            .map_err(AiError::Invalid)?;
         // The group and its subgroups.
-        let mut group_ids: Vec<Id> = req.group_id.into_iter().collect();
-        let mut i = 0;
-        while i < group_ids.len() {
-            let parent = group_ids[i];
-            for g in &groups {
-                if g.data.parent_id == Some(parent) && !group_ids.contains(&g.data.id) {
-                    group_ids.push(g.data.id);
-                }
-            }
-            i += 1;
-        }
+        let group_ids: Vec<Id> = req
+            .group_id
+            .map(|g| inventory.group_tree(g))
+            .unwrap_or_default();
         let mut out: Vec<(Id, String)> = Vec::new();
         for id in req.host_ids.iter().flatten() {
-            if let Some(h) = hosts.iter().find(|h| h.data.id == *id)
+            if let Some(h) = inventory.host(*id)
                 && !out.iter().any(|(x, _)| x == id)
             {
-                out.push((*id, h.data.label.clone()));
+                out.push((*id, h.label.clone()));
             }
         }
-        let mut by_label: Vec<&termoak_core::model::Record<termoak_core::model::Host>> = hosts
+        let mut by_label: Vec<&crate::hosts::HostEntry> = inventory
+            .hosts
             .iter()
             .filter(|h| {
-                h.data.group_id.is_some_and(|g| group_ids.contains(&g))
-                    || tag.is_some_and(|t| h.data.tags.iter().any(|x| x.eq_ignore_ascii_case(t)))
+                h.group_id.is_some_and(|g| group_ids.contains(&g))
+                    || tag.is_some_and(|t| h.tags.iter().any(|x| x.trim().eq_ignore_ascii_case(t)))
             })
             .collect();
-        by_label.sort_by_key(|h| h.data.label.to_lowercase());
+        by_label.sort_by_key(|h| h.label.to_lowercase());
         for h in by_label {
-            if !out.iter().any(|(x, _)| *x == h.data.id) {
-                out.push((h.data.id, h.data.label.clone()));
+            if !out.iter().any(|(x, _)| *x == h.id) {
+                out.push((h.id, h.label.clone()));
             }
         }
         if out.is_empty() {
@@ -1039,37 +1043,29 @@ impl AiEngine {
 
     /// Context block that precedes the first request.
     async fn context_block(&self, owner: Id, ctx: &TaskContext, mode: PermissionMode) -> String {
-        // Hosts and memories of every vault the user can use.
-        let access = self.store.vault_access(owner).await.ok();
-        let hosts = match (&ctx.host_ids, &access) {
-            (Some(ids), Some(access)) => {
-                let hosts = self
-                    .store
-                    .list_in::<termoak_core::model::Host>(access, None)
-                    .await
-                    .unwrap_or_default();
+        // Hosts and memories the user sees.
+        let provider = self.tools.hosts();
+        let hosts = match &ctx.host_ids {
+            Some(ids) => {
+                let inventory = provider.inventory(owner).await.unwrap_or_default();
                 Some(
-                    hosts
+                    inventory
+                        .hosts
                         .iter()
-                        .filter(|h| ids.contains(&h.data.id))
-                        .map(|h| format!("{} ({})", h.data.label, h.data.id))
+                        .filter(|h| ids.contains(&h.id))
+                        .map(|h| format!("{} ({})", h.label, h.id))
                         .collect::<Vec<_>>(),
                 )
             }
-            (Some(_), None) => Some(Vec::new()),
-            (None, _) => None,
+            None => None,
         };
-        let memories: Vec<String> = match &access {
-            Some(access) => self
-                .store
-                .list_in::<Memory>(access, None)
-                .await
-                .unwrap_or_default()
-                .into_iter()
-                .map(|m| m.data.content)
-                .collect(),
-            None => Vec::new(),
-        };
+        let memories: Vec<String> = provider
+            .memories(owner)
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|m| m.content)
+            .collect();
         crate::agent::context_block(
             mode,
             hosts.as_deref(),
@@ -1854,22 +1850,18 @@ impl AiEngine {
         ctx: &TaskContext,
         steps: &[ExecutedStep],
     ) -> Vec<HostNames> {
-        let Ok(access) = self.store.vault_access(owner).await else {
+        let Ok(inventory) = self.tools.hosts().inventory(owner).await else {
             return Vec::new();
         };
-        let hosts = self
-            .store
-            .list_in::<termoak_core::model::Host>(&access, None)
-            .await
-            .unwrap_or_default();
-        let known: Vec<(Id, HostNames)> = hosts
+        let known: Vec<(Id, HostNames)> = inventory
+            .hosts
             .iter()
             .map(|h| {
                 (
-                    h.data.id,
+                    h.id,
                     HostNames {
-                        label: h.data.label.clone(),
-                        address: h.data.address.clone(),
+                        label: h.label.clone(),
+                        address: h.address.clone(),
                     },
                 )
             })
@@ -1901,31 +1893,12 @@ impl AiEngine {
             description: rb.description,
             tags: vec!["ai".into(), "runbook".into()],
         };
-        let access = self.store.vault_access(owner).await?;
-        let saved = match self
-            .store
-            .save_in(
-                &access,
-                access.personal(),
-                snippet.clone(),
-                termoak_core::model::SecretUpdate::Keep,
-                None,
-            )
+        let saved = self
+            .tools
+            .hosts()
+            .save_snippet(owner, snippet)
             .await
-        {
-            Ok(r) => r,
-            // A client's local store (no vaults yet).
-            Err(_) => {
-                self.store
-                    .save(
-                        owner,
-                        snippet,
-                        termoak_core::model::SecretUpdate::Keep,
-                        None,
-                    )
-                    .await?
-            }
-        };
+            .map_err(AiError::Invalid)?;
         let _ = self
             .store
             .audit(
@@ -1933,10 +1906,10 @@ impl AiEngine {
                 &format!("user:{owner}"),
                 "ai.task.runbook",
                 Some(id.to_string()),
-                json!({"snippet": saved.data.id}),
+                json!({"snippet": saved.id}),
             )
             .await;
-        Ok(saved.data)
+        Ok(saved)
     }
 
     /// Resolves a task MCP token.
