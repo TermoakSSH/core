@@ -284,6 +284,15 @@ pub struct SshHost {
     pub os_version: Option<String>,
     #[uniffi(default)]
     pub favorite: bool,
+    /// `ssh` or `telnet` (a later app's protocol comes as it is and must be
+    /// kept). Telnet hosts have no keys, jump hosts, SFTP or tunnels, and
+    /// their default port is 23.
+    #[uniffi(default = "ssh")]
+    pub protocol: String,
+    /// Logo id (`ubuntu`, `debian`, `server`, `router`...); `nil`: automatic
+    /// (the detected system's, else the initial).
+    #[uniffi(default)]
+    pub icon: Option<String>,
     /// `nil` on save = keep the current one (or `Synced` if new).
     #[uniffi(default)]
     pub sync_mode: Option<SyncMode>,
@@ -326,6 +335,8 @@ impl From<Record<cm::Host>> for SshHost {
             os: h.os,
             os_version: h.os_version,
             favorite: h.favorite,
+            protocol: h.protocol.as_str().to_string(),
+            icon: h.icon,
             sync_mode: Some(r.meta.sync_mode.into()),
             has_password: r.meta.has_secret,
             updated_at: r.meta.updated_at,
@@ -352,6 +363,8 @@ impl SshHost {
                 os: self.os,
                 os_version: self.os_version,
                 favorite: self.favorite,
+                protocol: cm::HostProtocol::parse(&self.protocol),
+                icon: self.icon.filter(|i| !i.trim().is_empty()),
             },
             self.sync_mode.map(Into::into),
         ))

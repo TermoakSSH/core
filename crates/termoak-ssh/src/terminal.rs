@@ -398,6 +398,131 @@ impl TerminalSession {
     }
 }
 
+/// A terminal from this device to a host: SSH or Telnet. Both have the same
+/// shape (scrollback and live output, input, resize, status); what only SSH
+/// has (the connection, for SFTP, tunnels and OS detection) is
+/// [`Terminal::connection`].
+#[derive(Clone)]
+pub enum Terminal {
+    Ssh(Arc<TerminalSession>),
+    Telnet(Arc<crate::telnet::TelnetSession>),
+}
+
+impl std::fmt::Debug for Terminal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Terminal::Ssh(t) => f.debug_tuple("Ssh").field(t.connection()).finish(),
+            Terminal::Telnet(t) => f.debug_tuple("Telnet").field(t).finish(),
+        }
+    }
+}
+
+impl From<Arc<TerminalSession>> for Terminal {
+    fn from(t: Arc<TerminalSession>) -> Self {
+        Terminal::Ssh(t)
+    }
+}
+
+impl From<Arc<crate::telnet::TelnetSession>> for Terminal {
+    fn from(t: Arc<crate::telnet::TelnetSession>) -> Self {
+        Terminal::Telnet(t)
+    }
+}
+
+impl Terminal {
+    pub fn is_telnet(&self) -> bool {
+        matches!(self, Terminal::Telnet(_))
+    }
+
+    /// The SSH connection (SFTP, tunnels, exec); `None` for Telnet.
+    pub fn connection(&self) -> Option<&Arc<Connection>> {
+        match self {
+            Terminal::Ssh(t) => Some(t.connection()),
+            Terminal::Telnet(_) => None,
+        }
+    }
+
+    pub fn attach(&self) -> (Bytes, broadcast::Receiver<Bytes>) {
+        self.hub().attach()
+    }
+
+    pub fn hub(&self) -> &Arc<OutputHub> {
+        match self {
+            Terminal::Ssh(t) => t.hub(),
+            Terminal::Telnet(t) => t.hub(),
+        }
+    }
+
+    pub async fn write(&self, data: impl Into<Bytes>) -> Result<()> {
+        match self {
+            Terminal::Ssh(t) => t.write(data).await,
+            Terminal::Telnet(t) => t.write(data).await,
+        }
+    }
+
+    pub async fn set_input_author(&self, author: InputAuthor) -> Result<()> {
+        match self {
+            Terminal::Ssh(t) => t.set_input_author(author).await,
+            Terminal::Telnet(t) => t.set_input_author(author).await,
+        }
+    }
+
+    pub async fn resize(&self, cols: u16, rows: u16) -> Result<()> {
+        match self {
+            Terminal::Ssh(t) => t.resize(cols, rows).await,
+            Terminal::Telnet(t) => t.resize(cols, rows).await,
+        }
+    }
+
+    pub async fn close(&self) {
+        match self {
+            Terminal::Ssh(t) => t.close().await,
+            Terminal::Telnet(t) => t.close().await,
+        }
+    }
+
+    /// Round trip to the host: an SSH keep-alive on the connection, or a
+    /// Telnet timing mark.
+    pub async fn latency(&self, timeout: std::time::Duration) -> Result<std::time::Duration> {
+        match self {
+            Terminal::Ssh(t) => t.connection().latency(timeout).await,
+            Terminal::Telnet(t) => t.latency(timeout).await,
+        }
+    }
+
+    pub fn status(&self) -> TermStatus {
+        match self {
+            Terminal::Ssh(t) => t.status(),
+            Terminal::Telnet(t) => t.status(),
+        }
+    }
+
+    pub fn watch_status(&self) -> watch::Receiver<TermStatus> {
+        match self {
+            Terminal::Ssh(t) => t.watch_status(),
+            Terminal::Telnet(t) => t.watch_status(),
+        }
+    }
+
+    pub fn size(&self) -> (u16, u16) {
+        match self {
+            Terminal::Ssh(t) => t.size(),
+            Terminal::Telnet(t) => t.size(),
+        }
+    }
+
+    pub fn recording_path(&self) -> Option<std::path::PathBuf> {
+        match self {
+            Terminal::Ssh(t) => t.recording_path(),
+            Terminal::Telnet(t) => t.recording_path(),
+        }
+    }
+
+    pub fn text_tail(&self, max_chars: usize) -> String {
+        self.hub().text_tail(max_chars)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

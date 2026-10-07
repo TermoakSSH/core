@@ -286,6 +286,14 @@ let key = try await core.generateKey(label: "iPhone", keyType: .ed25519,
 print(key.publicKey)   // for authorized_keys
 ```
 
+`SshHost.protocol` is `"ssh"` (default) or `"telnet"`: keep any other value
+as it comes (a later app's) and do not connect to such hosts. Telnet hosts
+have no keys, jump hosts, SFTP or tunnels and default to port 23; the FFI
+has no Telnet terminal yet (`connect` refuses them with `Invalid`).
+`SshHost.icon` is the chosen logo id (`ubuntu`, `debian`, `server`,
+`router`...), `nil` for automatic (the detected `os`, else the initial).
+Copy the record you got when editing, so both fields are kept.
+
 ### Local terminal
 
 `TerminalListener` receives the output; `AuthHandler` answers the

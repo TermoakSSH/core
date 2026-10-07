@@ -1,6 +1,6 @@
 [package]
 name = "termoak-ssh"
-description = "Termoak SSH engine: terminal, exec, SFTP, tunnels, jump hosts and recording"
+description = "Termoak SSH engine: terminal, exec, SFTP, tunnels, jump hosts and recording; Telnet terminal"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -24,6 +24,7 @@ serde_json.workspace = true
 chrono.workspace = true
 parking_lot.workspace = true
 rand.workspace = true
+zeroize.workspace = true
 
 [dev-dependencies]
 tempfile = "3"

@@ -249,6 +249,8 @@ impl Workspace {
                 os: None,
                 os_version: None,
                 favorite: false,
+                protocol: Default::default(),
+                icon: None,
             };
             let host = if opts.dry_run {
                 host
@@ -310,6 +312,8 @@ impl Workspace {
                         os: None,
                         os_version: None,
                         favorite: false,
+                        protocol: Default::default(),
+                        icon: None,
                     };
                     let jump = if opts.dry_run {
                         jump

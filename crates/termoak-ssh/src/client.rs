@@ -194,6 +194,20 @@ impl Connection {
     /// Connects to the resolved host, going through its jump hosts if any.
     pub async fn connect(target: &ResolvedHost, opts: &ConnectOptions) -> Result<Arc<Connection>> {
         let hops: Vec<&ResolvedHost> = target.jumps.iter().chain(std::iter::once(target)).collect();
+        // Telnet hosts (and later protocols) are not SSH servers.
+        if let Some(hop) = hops.iter().find(|h| !h.host.protocol.is_ssh()) {
+            return Err(SshError::Unsupported(if hop.host.protocol.is_telnet() {
+                format!(
+                    "{} is a Telnet host: SSH features (SFTP, tunnels, jump hosts, server sessions) are not available",
+                    hop.host.label
+                )
+            } else {
+                format!(
+                    "{} uses a protocol this version does not know ({})",
+                    hop.host.label, hop.host.protocol
+                )
+            }));
+        }
         // Proxy for the first connection: the first jump host's or, if it has
         // none, the final host's.
         let proxy = hops[0].proxy.as_ref().or(target.proxy.as_ref());
@@ -310,7 +324,7 @@ impl Connection {
     }
 }
 
-async fn tcp_connect(address: &str, port: u16, timeout: Duration) -> Result<TcpStream> {
+pub(crate) async fn tcp_connect(address: &str, port: u16, timeout: Duration) -> Result<TcpStream> {
     let target = format!("{address}:{port}");
     let stream = tokio::time::timeout(timeout, TcpStream::connect((address, port)))
         .await

@@ -91,6 +91,16 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
   (reuses connections for exec, SFTP and the AI on the server; it checks the
   user's vault access on every call and drops connections when it is
   revoked).
+- `telnet::TelnetSession` is the terminal of hosts whose `protocol` is
+  `telnet` (RFC 854): TCP or the host's proxy, option negotiation (ECHO,
+  SUPPRESS-GO-AHEAD, TERMINAL-TYPE, NAWS on every resize, BINARY if the host
+  asks; anything else is refused, RFC 1143 rules so it never loops), `IAC`
+  escaping and the NVT end of line (CR NUL / CR LF), latency with a
+  `TIMING-MARK`, and an optional automatic login that answers the first
+  `login:` / `Password:` prompts of the first 30 seconds, each once. It has
+  the same shape as `TerminalSession`, and `Terminal` holds either.
+  `Connection::connect` refuses Telnet hosts (no SFTP, tunnels, jump hosts
+  or server sessions over Telnet).
 - `StoreVerifier` keeps known hosts in the store: owner-based on clients;
   on the server it looks in the host's vault and then the user's personal
   vault, and saves a new key where the user is Editor.

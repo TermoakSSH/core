@@ -1,4 +1,4 @@
-//! Termoak SSH engine.
+//! Termoak SSH engine (and the Telnet terminal, [`telnet`]).
 //!
 //! Shared by the server (persistent sessions and the AI), the desktop app, the
 //! CLI and the mobile apps. Built on `russh`, pure-Rust SSH with no OpenSSH
@@ -17,6 +17,7 @@ mod proxy;
 pub mod recording;
 pub mod sftp;
 pub mod sshconfig;
+pub mod telnet;
 pub mod terminal;
 pub mod verify;
 
@@ -27,7 +28,8 @@ pub use forward::{ForwardHandle, ForwardSpec, ForwardStats};
 pub use pool::ConnectionPool;
 pub use prompt::{AuthPrompter, NoPrompter};
 pub use sftp::{FileEntry, FileKind, Sftp};
-pub use terminal::{PtyOptions, TermStatus, TerminalSession};
+pub use telnet::{TelnetInfo, TelnetOptions, TelnetSession};
+pub use terminal::{PtyOptions, TermStatus, Terminal, TerminalSession};
 pub use verify::{AcceptAll, HostKeyPolicy, HostKeyVerifier, KnownHostScope, StoreVerifier};
 
 /// Re-export of the public key type.

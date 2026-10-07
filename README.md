@@ -7,7 +7,7 @@ client for desktop and mobile with an optional self-hosted server, and the
 | Crate | What it is |
 |---|---|
 | `termoak-core` | Models, SQLite, encrypted vault, users, sessions and host resolution |
-| `termoak-ssh` | SSH engine: connection, terminal, exec, SFTP, forwarding, keys, recording |
+| `termoak-ssh` | SSH engine: connection, terminal, exec, SFTP, forwarding, keys, recording; Telnet terminal |
 | `termoak-ai` | AI engine: providers, agent, tools, policies, MCP |
 | `termoak-client` | API client, sync, remote sessions and relay |
 | `termoak-ffi` | UniFFI layer for the Swift and Kotlin apps |

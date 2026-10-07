@@ -300,13 +300,19 @@ impl Store {
             .username
             .clone()
             .or_else(|| identity.as_ref().map(|(i, _)| i.username.clone()))
-            .filter(|u| !u.trim().is_empty())
-            .ok_or_else(|| {
-                CoreError::Invalid(format!(
+            .filter(|u| !u.trim().is_empty());
+        // Telnet logs in at the host's own prompt: the username is optional
+        // (empty: typed by hand).
+        let username = match username {
+            Some(u) => u,
+            None if host.protocol.is_telnet() => String::new(),
+            None => {
+                return Err(CoreError::Invalid(format!(
                     "host \"{}\" has no username (not set directly, by a group or by an identity)",
                     host.label
-                ))
-            })?;
+                )));
+            }
+        };
 
         let password = host_secret
             .password
@@ -317,6 +323,8 @@ impl Store {
             .key_id
             .or_else(|| identity.as_ref().and_then(|(i, _)| i.key_id));
         let key = match key_id {
+            // Telnet has no keys.
+            Some(_) if host.protocol.is_telnet() => None,
             Some(kid) => {
                 let (meta, fb) = self
                     .scoped_get::<SshKey>(scope, kid)
@@ -352,7 +360,7 @@ impl Store {
             });
 
         Ok(ResolvedHost {
-            port: settings.port.unwrap_or(22),
+            port: settings.port.unwrap_or(host.protocol.default_port()),
             proxy,
             host,
             settings,
@@ -459,6 +467,8 @@ mod tests {
                     os: None,
                     os_version: None,
                     favorite: false,
+                    protocol: HostProtocol::Ssh,
+                    icon: None,
                 },
                 SecretUpdate::Keep,
                 None,
@@ -484,6 +494,8 @@ mod tests {
                     os: None,
                     os_version: None,
                     favorite: false,
+                    protocol: HostProtocol::Ssh,
+                    icon: None,
                 },
                 SecretUpdate::Set(HostSecret {
                     password: Some("pw".into()),
@@ -502,5 +514,34 @@ mod tests {
         assert_eq!(r.jumps.len(), 1);
         assert_eq!(r.jumps[0].port, 2222);
         assert_eq!(r.jumps[0].host.label, "bastion");
+    }
+
+    #[tokio::test]
+    async fn resolves_telnet_without_username_or_key() {
+        let store = test_store();
+        let owner = new_id();
+        let mut host: Host = serde_json::from_value(serde_json::json!({
+            "label": "switch", "address": "10.0.0.2", "protocol": "telnet",
+            "settings": {"key_id": new_id()}
+        }))
+        .unwrap();
+        host.id = Id::nil();
+        let saved = store
+            .save(
+                owner,
+                host,
+                SecretUpdate::Set(HostSecret {
+                    password: Some("pw".into()),
+                    ..Default::default()
+                }),
+                None,
+            )
+            .await
+            .unwrap();
+        let r = store.resolve_host(owner, saved.data.id).await.unwrap();
+        assert_eq!(r.port, 23);
+        assert_eq!(r.username, "");
+        assert_eq!(r.password.as_deref(), Some("pw"));
+        assert!(r.key.is_none());
     }
 }

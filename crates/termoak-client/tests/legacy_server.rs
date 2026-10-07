@@ -130,6 +130,8 @@ fn host(label: &str) -> Host {
         os: None,
         os_version: None,
         favorite: false,
+        protocol: Default::default(),
+        icon: None,
     }
 }
 

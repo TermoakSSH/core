@@ -28,7 +28,8 @@ use termoak_core::{Id, resolve::ResolvedHost};
 use termoak_ssh::prompt::AuthPrompter;
 use termoak_ssh::recording::Recorder;
 use termoak_ssh::{
-    ConnectOptions, Connection, HostKeyPolicy, PtyOptions, StoreVerifier, TerminalSession,
+    ConnectOptions, Connection, HostKeyPolicy, PtyOptions, StoreVerifier, TelnetOptions,
+    TelnetSession, TerminalSession,
 };
 use tokio::sync::broadcast;
 
@@ -814,18 +815,7 @@ impl Workspace {
         record: bool,
     ) -> Result<Arc<TerminalSession>> {
         let resolved = self.resolve_public(item).await?;
-        let recorder = if record || resolved.settings.record_sessions.unwrap_or(false) {
-            let path = self.dir.join("recordings").join(format!(
-                "{}-{}.cast",
-                resolved.host.label.replace(['/', '\\'], "_"),
-                termoak_core::time::now_ms()
-            ));
-            Recorder::create(&path, cols, rows, &resolved.host.label, false)
-                .await
-                .ok()
-        } else {
-            None
-        };
+        let recorder = self.recorder_for(&resolved, record, cols, rows).await;
         let pty = PtyOptions {
             term: resolved
                 .settings
@@ -839,6 +829,80 @@ impl Workspace {
             agent_forwarding: resolved.settings.agent_forwarding.unwrap_or(false),
         };
         Ok(TerminalSession::open(conn, pty, 4 * 1024 * 1024, recorder).await?)
+    }
+
+    /// The recording of a new terminal, if asked for or set on the host.
+    async fn recorder_for(
+        &self,
+        resolved: &ResolvedHost,
+        record: bool,
+        cols: u16,
+        rows: u16,
+    ) -> Option<Recorder> {
+        if !(record || resolved.settings.record_sessions.unwrap_or(false)) {
+            return None;
+        }
+        let path = self.dir.join("recordings").join(format!(
+            "{}-{}.cast",
+            resolved.host.label.replace(['/', '\\'], "_"),
+            termoak_core::time::now_ms()
+        ));
+        Recorder::create(&path, cols, rows, &resolved.host.label, false)
+            .await
+            .ok()
+    }
+
+    // ----- Local Telnet -----
+
+    /// Opens a Telnet terminal to a host whose protocol is Telnet (wherever
+    /// it is). See [`open_telnet_item`](Self::open_telnet_item).
+    pub async fn open_telnet(
+        &self,
+        host_id: Id,
+        cols: u16,
+        rows: u16,
+        record: bool,
+        auto_login: bool,
+    ) -> Result<Arc<TelnetSession>> {
+        let item = self.locate(host_id).await?;
+        self.open_telnet_item(item, cols, rows, record, auto_login)
+            .await
+    }
+
+    /// Opens a Telnet terminal to the host `item` (through its proxy, if
+    /// any). With `auto_login`, the host's username and password answer its
+    /// first login prompts; the credentials are wiped from memory once the
+    /// connection is up (the login watch keeps its own copy only while it
+    /// lasts). Jump hosts give an error.
+    pub async fn open_telnet_item(
+        &self,
+        item: ItemRef,
+        cols: u16,
+        rows: u16,
+        record: bool,
+        auto_login: bool,
+    ) -> Result<Arc<TelnetSession>> {
+        let mut resolved = if auto_login {
+            self.resolve_item(item).await?
+        } else {
+            self.resolve_public(item).await?
+        };
+        let recorder = self.recorder_for(&resolved, record, cols, rows).await;
+        let opts = TelnetOptions {
+            term: resolved
+                .settings
+                .term
+                .clone()
+                .filter(|t| !t.trim().is_empty())
+                .unwrap_or_else(|| "xterm-256color".into()),
+            cols,
+            rows,
+            auto_login,
+            ..Default::default()
+        };
+        let session = TelnetSession::open(&resolved, opts, 4 * 1024 * 1024, recorder).await;
+        resolved.zeroize_secrets();
+        Ok(session?)
     }
 }
 
@@ -869,6 +933,8 @@ mod tests {
                     os: None,
                     os_version: None,
                     favorite: false,
+                    protocol: Default::default(),
+                    icon: None,
                 },
                 SecretUpdate::Keep,
                 None,
@@ -880,5 +946,69 @@ mod tests {
         let ws = Workspace::open(dir.path(), key).unwrap();
         assert_eq!(ws.store.list::<Host>(LOCAL_OWNER).await.unwrap().len(), 1);
         assert_eq!(layout::version(&ws.store).unwrap().as_deref(), Some("2"));
+    }
+
+    #[tokio::test]
+    async fn telnet_terminal_logs_in_and_ssh_refuses_telnet_hosts() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let dir = tempfile::tempdir().unwrap();
+        let ws = Workspace::open(dir.path(), MasterKey::generate()).unwrap();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let host = ws
+            .store
+            .save(
+                LOCAL_OWNER,
+                Host {
+                    id: Id::nil(),
+                    label: "switch".into(),
+                    address: "127.0.0.1".into(),
+                    group_id: None,
+                    tags: vec![],
+                    settings: HostSettings {
+                        port: Some(port),
+                        username: Some("admin".into()),
+                        ..Default::default()
+                    },
+                    notes: String::new(),
+                    color: None,
+                    os: None,
+                    os_version: None,
+                    favorite: false,
+                    protocol: termoak_core::HostProtocol::Telnet,
+                    icon: Some("router".into()),
+                },
+                SecretUpdate::Set(termoak_core::HostSecret {
+                    password: Some("pw".into()),
+                    ..Default::default()
+                }),
+                None,
+            )
+            .await
+            .unwrap();
+        let id = host.data.id;
+        let (term, accepted) =
+            tokio::join!(ws.open_telnet(id, 80, 24, false, true), listener.accept());
+        let term = term.unwrap();
+        let (mut srv, _) = accepted.unwrap();
+        srv.write_all(b"login: ").await.unwrap();
+        let mut got = Vec::new();
+        let mut buf = [0u8; 256];
+        while !got.windows(7).any(|w| w == b"admin\r\n") {
+            let n = tokio::time::timeout(std::time::Duration::from_secs(5), srv.read(&mut buf))
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(n > 0);
+            got.extend_from_slice(&buf[..n]);
+        }
+        term.close().await;
+
+        // SSH to a Telnet host: a clear error, not an SSH attempt.
+        let e = ws
+            .connect(id, Arc::new(termoak_ssh::NoPrompter), false)
+            .await
+            .unwrap_err();
+        assert!(e.to_string().contains("Telnet"), "{e}");
     }
 }

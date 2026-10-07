@@ -149,6 +149,8 @@ fn resolved(sshd: &Sshd, jumps: Vec<ResolvedHost>) -> ResolvedHost {
             os: None,
             os_version: None,
             favorite: false,
+            protocol: Default::default(),
+            icon: None,
         },
         settings: HostSettings::default(),
         port: sshd.port,

@@ -29,6 +29,8 @@ fn host(label: &str, address: &str) -> SshHost {
         os: None,
         os_version: None,
         favorite: false,
+        protocol: "ssh".into(),
+        icon: None,
         sync_mode: None,
         has_password: false,
         updated_at: 0,
@@ -148,6 +150,22 @@ fn hosts_groups_and_secrets() {
 
     assert_eq!(core.list_hosts(None).unwrap().len(), 1);
     assert_eq!(core.list_groups(None).unwrap().len(), 1);
+
+    // Protocol and logo go through (SSH and automatic by default).
+    assert_eq!(cleared.protocol, "ssh");
+    assert_eq!(cleared.icon, None);
+    let mut telnet = host("switch", "10.0.0.2");
+    telnet.protocol = "Telnet".into();
+    telnet.icon = Some("router".into());
+    let telnet = core.save_host(telnet, SecretChange::Keep).unwrap();
+    assert_eq!(telnet.protocol, "telnet");
+    assert_eq!(telnet.icon.as_deref(), Some("router"));
+    let again = core.get_host(telnet.id.clone(), None).unwrap();
+    assert_eq!(
+        (again.protocol.as_str(), again.icon),
+        ("telnet", Some("router".into()))
+    );
+    core.delete_host(telnet.id, None).unwrap();
 
     // Errors with useful variants.
     assert!(matches!(

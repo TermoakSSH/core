@@ -155,7 +155,7 @@ impl From<SshError> for TermoakError {
             | SshError::HostKeyUnknown { .. }
             | SshError::HostKeyRejected { .. } => Self::HostKey(msg),
             SshError::Auth { .. } => Self::Auth(msg),
-            SshError::Key(_) => Self::Invalid(msg),
+            SshError::Key(_) | SshError::Unsupported(_) => Self::Invalid(msg),
             SshError::Sftp(_) => Self::Sftp(msg),
             SshError::Closed => Self::Closed(msg),
             SshError::Io(_) => Self::Io(msg),

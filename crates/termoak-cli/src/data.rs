@@ -279,6 +279,8 @@ pub async fn hosts(ws: &Workspace, action: HostsAction, json: bool) -> Result<()
                         os: None,
                         os_version: None,
                         favorite: false,
+                        protocol: Default::default(),
+                        icon: None,
                     },
                     secret,
                     device_only.then_some(SyncMode::DeviceOnly),

@@ -308,6 +308,106 @@ pub struct Host {
     pub os_version: Option<String>,
     #[serde(default)]
     pub favorite: bool,
+    /// Protocol of the terminal (SSH unless set). Left out of the JSON for
+    /// SSH, so SSH hosts look the same to older apps and servers.
+    #[serde(default, skip_serializing_if = "HostProtocol::is_ssh")]
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    pub protocol: HostProtocol,
+    /// Logo shown for the host (an id the apps know: `ubuntu`, `debian`,
+    /// `server`, `database`...). `None`: automatic (the detected system's,
+    /// else the initial).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub icon: Option<String>,
+}
+
+/// Protocol a host is reached with.
+///
+/// Serialized as a lowercase string (`"ssh"`, `"telnet"`). A value this
+/// version does not know (a later app's) is kept as is in
+/// [`HostProtocol::Other`], so reading and saving the host again does not
+/// lose it, and such a host is not connected to as SSH by mistake.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+pub enum HostProtocol {
+    #[default]
+    Ssh,
+    /// Telnet (RFC 854): unencrypted, no keys, jump hosts, SFTP or tunnels.
+    Telnet,
+    /// Unknown protocol (from a later version), lowercase.
+    Other(String),
+}
+
+impl HostProtocol {
+    pub fn as_str(&self) -> &str {
+        match self {
+            HostProtocol::Ssh => "ssh",
+            HostProtocol::Telnet => "telnet",
+            HostProtocol::Other(s) => s,
+        }
+    }
+
+    /// `ssh` and `telnet` (any case, spaces around); anything else is kept
+    /// as [`HostProtocol::Other`]; empty is SSH.
+    pub fn parse(s: &str) -> Self {
+        let s = s.trim().to_ascii_lowercase();
+        match s.as_str() {
+            "" | "ssh" => HostProtocol::Ssh,
+            "telnet" => HostProtocol::Telnet,
+            _ => HostProtocol::Other(s),
+        }
+    }
+
+    pub fn is_ssh(&self) -> bool {
+        *self == HostProtocol::Ssh
+    }
+
+    pub fn is_telnet(&self) -> bool {
+        *self == HostProtocol::Telnet
+    }
+
+    /// Port used when neither the host nor its groups set one: 22 for SSH,
+    /// 23 for Telnet.
+    pub fn default_port(&self) -> u16 {
+        match self {
+            HostProtocol::Telnet => 23,
+            _ => 22,
+        }
+    }
+
+    /// Port for a host whose protocol an editor changes from `from` to
+    /// `self`: no port, or the old protocol's default, becomes the new
+    /// protocol's default (written out for Telnet, so older apps that only
+    /// know SSH do not reach the SSH port of a Telnet host; left empty for
+    /// SSH); any other port stays.
+    pub fn switch_port(&self, from: &HostProtocol, port: Option<u16>) -> Option<u16> {
+        if self == from {
+            return port;
+        }
+        match port {
+            Some(p) if p != from.default_port() => Some(p),
+            _ if self.is_ssh() => None,
+            _ => Some(self.default_port()),
+        }
+    }
+}
+
+impl std::fmt::Display for HostProtocol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl Serialize for HostProtocol {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        s.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for HostProtocol {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Self, D::Error> {
+        // `null` is SSH too (an app that writes the field always).
+        let s = Option::<String>::deserialize(d)?;
+        Ok(HostProtocol::parse(s.as_deref().unwrap_or("")))
+    }
 }
 
 /// Host secret: direct password (optional).
@@ -344,6 +444,11 @@ impl Entity for Host {
             return Err(CoreError::Invalid(
                 "a host cannot jump through itself".into(),
             ));
+        }
+        if let Some(icon) = &self.icon
+            && (icon.len() > 64 || icon.chars().any(|c| c.is_whitespace() || c.is_control()))
+        {
+            return Err(CoreError::Invalid("invalid logo id".into()));
         }
         Ok(())
     }
@@ -1285,5 +1390,72 @@ mod tests {
         assert_eq!(merged.port, Some(2222));
         assert_eq!(merged.username.as_deref(), Some("deploy"));
         assert_eq!(merged.env.len(), 2);
+    }
+
+    #[test]
+    fn host_protocol_and_icon_are_compatible() {
+        // A host written by an older app: SSH, automatic logo.
+        let old = serde_json::json!({"label": "a", "address": "a.example.com"});
+        let h: Host = serde_json::from_value(old).unwrap();
+        assert_eq!(h.protocol, HostProtocol::Ssh);
+        assert_eq!(h.icon, None);
+        // SSH hosts are written as before (no new keys).
+        let v = serde_json::to_value(&h).unwrap();
+        assert!(v.get("protocol").is_none() && v.get("icon").is_none());
+
+        let telnet = serde_json::json!({
+            "label": "switch", "address": "10.0.0.2", "protocol": "telnet",
+            "icon": "router", "unknown_later_field": 1
+        });
+        let h: Host = serde_json::from_value(telnet).unwrap();
+        assert!(h.protocol.is_telnet());
+        assert_eq!(h.icon.as_deref(), Some("router"));
+        let v = serde_json::to_value(&h).unwrap();
+        assert_eq!(v["protocol"], "telnet");
+        assert_eq!(v["icon"], "router");
+
+        // A later app's protocol is kept, `null` is SSH.
+        let h: Host = serde_json::from_value(
+            serde_json::json!({"label": "a", "address": "a", "protocol": "RDP"}),
+        )
+        .unwrap();
+        assert_eq!(h.protocol, HostProtocol::Other("rdp".into()));
+        assert_eq!(serde_json::to_value(&h).unwrap()["protocol"], "rdp");
+        let h: Host = serde_json::from_value(
+            serde_json::json!({"label": "a", "address": "a", "protocol": null}),
+        )
+        .unwrap();
+        assert!(h.protocol.is_ssh());
+    }
+
+    #[test]
+    fn host_icon_is_validated() {
+        let mut h: Host =
+            serde_json::from_value(serde_json::json!({"label": "a", "address": "a"})).unwrap();
+        h.icon = Some("debian".into());
+        assert!(h.validate().is_ok());
+        h.icon = Some("two words".into());
+        assert!(h.validate().is_err());
+        h.icon = Some("x".repeat(65));
+        assert!(h.validate().is_err());
+    }
+
+    #[test]
+    fn protocol_ports() {
+        use HostProtocol::*;
+        assert_eq!(Ssh.default_port(), 22);
+        assert_eq!(Telnet.default_port(), 23);
+        // To Telnet: empty or 22 becomes 23, others stay.
+        assert_eq!(Telnet.switch_port(&Ssh, None), Some(23));
+        assert_eq!(Telnet.switch_port(&Ssh, Some(22)), Some(23));
+        assert_eq!(Telnet.switch_port(&Ssh, Some(2323)), Some(2323));
+        // Back to SSH: 23 becomes the default again, others stay.
+        assert_eq!(Ssh.switch_port(&Telnet, Some(23)), None);
+        assert_eq!(Ssh.switch_port(&Telnet, None), None);
+        assert_eq!(Ssh.switch_port(&Telnet, Some(2222)), Some(2222));
+        // Same protocol: untouched.
+        assert_eq!(Ssh.switch_port(&Ssh, Some(22)), Some(22));
+        assert_eq!(HostProtocol::parse(" Telnet "), Telnet);
+        assert_eq!(HostProtocol::parse(""), Ssh);
     }
 }

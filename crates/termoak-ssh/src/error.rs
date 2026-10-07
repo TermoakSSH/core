@@ -41,6 +41,10 @@ pub enum SshError {
     Forward(String),
     #[error("the connection is closed")]
     Closed,
+    /// Not available for this host or protocol (e.g. SFTP or jump hosts
+    /// with Telnet).
+    #[error("{0}")]
+    Unsupported(String),
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
     #[error("SSH: {0}")]

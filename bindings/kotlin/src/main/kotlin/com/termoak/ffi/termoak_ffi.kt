@@ -20706,6 +20706,19 @@ data class SshHost (
     var `favorite`: kotlin.Boolean = false 
     , 
     /**
+     * `ssh` or `telnet` (a later app's protocol comes as it is and must be
+     * kept). Telnet hosts have no keys, jump hosts, SFTP or tunnels, and
+     * their default port is 23.
+     */
+    var `protocol`: kotlin.String = "ssh" 
+    , 
+    /**
+     * Logo id (`ubuntu`, `debian`, `server`, `router`...); `nil`: automatic
+     * (the detected system's, else the initial).
+     */
+    var `icon`: kotlin.String? = null 
+    , 
+    /**
      * `nil` on save = keep the current one (or `Synced` if new).
      */
     var `syncMode`: SyncMode? = null 
@@ -20770,6 +20783,8 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeSyncMode.read(buf),
             FfiConverterBoolean.read(buf),
             FfiConverterLong.read(buf),
@@ -20792,6 +20807,8 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.allocationSize(value.`os`) +
             FfiConverterOptionalString.allocationSize(value.`osVersion`) +
             FfiConverterBoolean.allocationSize(value.`favorite`) +
+            FfiConverterString.allocationSize(value.`protocol`) +
+            FfiConverterOptionalString.allocationSize(value.`icon`) +
             FfiConverterOptionalTypeSyncMode.allocationSize(value.`syncMode`) +
             FfiConverterBoolean.allocationSize(value.`hasPassword`) +
             FfiConverterLong.allocationSize(value.`updatedAt`) +
@@ -20813,6 +20830,8 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.write(value.`os`, buf)
             FfiConverterOptionalString.write(value.`osVersion`, buf)
             FfiConverterBoolean.write(value.`favorite`, buf)
+            FfiConverterString.write(value.`protocol`, buf)
+            FfiConverterOptionalString.write(value.`icon`, buf)
             FfiConverterOptionalTypeSyncMode.write(value.`syncMode`, buf)
             FfiConverterBoolean.write(value.`hasPassword`, buf)
             FfiConverterLong.write(value.`updatedAt`, buf)

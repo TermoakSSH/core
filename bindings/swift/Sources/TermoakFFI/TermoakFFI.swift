@@ -15129,6 +15129,17 @@ public struct SshHost: Equatable, Hashable {
     public var osVersion: String?
     public var favorite: Bool
     /**
+     * `ssh` or `telnet` (a later app's protocol comes as it is and must be
+     * kept). Telnet hosts have no keys, jump hosts, SFTP or tunnels, and
+     * their default port is 23.
+     */
+    public var `protocol`: String
+    /**
+     * Logo id (`ubuntu`, `debian`, `server`, `router`...); `nil`: automatic
+     * (the detected system's, else the initial).
+     */
+    public var icon: String?
+    /**
      * `nil` on save = keep the current one (or `Synced` if new).
      */
     public var syncMode: SyncMode?
@@ -15177,6 +15188,15 @@ public struct SshHost: Equatable, Hashable {
          * Full name of the detected system (`Ubuntu 24.04.1 LTS`).
          */osVersion: String? = nil, favorite: Bool = false, 
         /**
+         * `ssh` or `telnet` (a later app's protocol comes as it is and must be
+         * kept). Telnet hosts have no keys, jump hosts, SFTP or tunnels, and
+         * their default port is 23.
+         */`protocol`: String = "ssh", 
+        /**
+         * Logo id (`ubuntu`, `debian`, `server`, `router`...); `nil`: automatic
+         * (the detected system's, else the initial).
+         */icon: String? = nil, 
+        /**
          * `nil` on save = keep the current one (or `Synced` if new).
          */syncMode: SyncMode? = nil, 
         /**
@@ -15212,6 +15232,8 @@ public struct SshHost: Equatable, Hashable {
         self.os = os
         self.osVersion = osVersion
         self.favorite = favorite
+        self.`protocol` = `protocol`
+        self.icon = icon
         self.syncMode = syncMode
         self.hasPassword = hasPassword
         self.updatedAt = updatedAt
@@ -15248,6 +15270,8 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
                 os: FfiConverterOptionString.read(from: &buf), 
                 osVersion: FfiConverterOptionString.read(from: &buf), 
                 favorite: FfiConverterBool.read(from: &buf), 
+                protocol: FfiConverterString.read(from: &buf), 
+                icon: FfiConverterOptionString.read(from: &buf), 
                 syncMode: FfiConverterOptionTypeSyncMode.read(from: &buf), 
                 hasPassword: FfiConverterBool.read(from: &buf), 
                 updatedAt: FfiConverterInt64.read(from: &buf), 
@@ -15270,6 +15294,8 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.os, into: &buf)
         FfiConverterOptionString.write(value.osVersion, into: &buf)
         FfiConverterBool.write(value.favorite, into: &buf)
+        FfiConverterString.write(value.`protocol`, into: &buf)
+        FfiConverterOptionString.write(value.icon, into: &buf)
         FfiConverterOptionTypeSyncMode.write(value.syncMode, into: &buf)
         FfiConverterBool.write(value.hasPassword, into: &buf)
         FfiConverterInt64.write(value.updatedAt, into: &buf)
