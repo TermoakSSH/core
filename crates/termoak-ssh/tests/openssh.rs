@@ -243,6 +243,12 @@ async fn full_session_against_openssh() {
         .unwrap();
     assert_eq!(known.len(), 1);
 
+    // Latency: a global request on the same connection, answered at once.
+    let rtt = conn.latency(Duration::from_secs(5)).await.unwrap();
+    assert!(rtt < Duration::from_secs(5), "{rtt:?}");
+    let rtt = conn.latency(Duration::from_secs(5)).await.unwrap();
+    assert!(rtt < Duration::from_secs(5), "{rtt:?}");
+
     // exec with stdout, stderr and exit code.
     let out = conn
         .exec(
@@ -413,6 +419,8 @@ async fn full_session_against_openssh() {
         .await
         .unwrap();
     assert_eq!(out.stdout_text(), "jumped\n");
+    // Through the jump host too.
+    jumped.latency(Duration::from_secs(5)).await.unwrap();
 
     // Authentication with a key that is not authorized.
     let mut bad = resolved(&sshd, vec![]);
@@ -423,6 +431,16 @@ async fn full_session_against_openssh() {
     assert!(matches!(err, termoak_ssh::SshError::Auth { .. }), "{err}");
 
     conn.disconnect().await;
+    // Once closed there is no latency to measure.
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while !conn.is_closed() {
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .unwrap();
+    let err = conn.latency(Duration::from_secs(5)).await.unwrap_err();
+    assert!(matches!(err, termoak_ssh::SshError::Closed), "{err}");
 }
 
 /// Minimal HTTP `CONNECT` proxy that counts the connections it serves.

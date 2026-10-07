@@ -13,9 +13,14 @@
 //! [`RemoteTerminal::request_control`]. [`RemoteTerminal::can_write`] says
 //! whether input and resizes reach the terminal now; while it is `false`
 //! this side does not send them.
+//!
+//! [`RemoteTerminal::latency`] measures the round trip to the server with
+//! the protocol's `ping` / `pong` (the server does not report the latency
+//! from it to the host).
 
+use std::collections::VecDeque;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};
@@ -23,7 +28,7 @@ use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use termoak_core::Id;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode;
 
@@ -156,8 +161,13 @@ pub enum RemoteEvent {
 enum Outgoing {
     Binary(Bytes),
     Json(Value),
+    /// A `ping`: the answer gets the round trip.
+    Ping(oneshot::Sender<Duration>),
     Close,
 }
+
+/// Pings without a `pong` yet kept at most (servers that never answer).
+const MAX_PENDING_PINGS: usize = 16;
 
 /// What this side knows about its place in the session.
 #[derive(Debug, Default)]
@@ -290,6 +300,22 @@ impl RemoteTerminal {
 
     async fn send(&self, v: Value) {
         let _ = self.tx.send(Outgoing::Json(v)).await;
+    }
+
+    /// Round trip to the server (`ping` / `pong` on this WebSocket, behind
+    /// whatever is already being sent). `None` if there is no answer within
+    /// `timeout`: reconnecting, closed, or a server that does not answer.
+    /// This is the latency to the Termoak server only: the server does not
+    /// report the one from it to the host.
+    pub async fn latency(&self, timeout: Duration) -> Option<Duration> {
+        let (reply, answer) = oneshot::channel();
+        tokio::time::timeout(timeout, async {
+            self.tx.send(Outgoing::Ping(reply)).await.ok()?;
+            answer.await.ok()
+        })
+        .await
+        .ok()
+        .flatten()
     }
 
     /// Answers an authentication prompt.
@@ -526,6 +552,8 @@ async fn connection(
     // An error without a code (older servers) right before the close is
     // final too (access revoked).
     let mut error_then_close = false;
+    // Pings sent, oldest first (the server answers them in order).
+    let mut pings: VecDeque<(Instant, oneshot::Sender<Duration>)> = VecDeque::new();
     loop {
         tokio::select! {
             out = rx.recv() => {
@@ -547,6 +575,13 @@ async fn connection(
                         }
                     }
                     Some(Outgoing::Json(v)) => sink.send(Message::Text(v.to_string().into())).await,
+                    Some(Outgoing::Ping(reply)) => {
+                        if pings.len() >= MAX_PENDING_PINGS {
+                            pings.pop_front();
+                        }
+                        pings.push_back((Instant::now(), reply));
+                        sink.send(Message::Text(json!({"type": "ping"}).to_string().into())).await
+                    }
                 };
                 if res.is_err() {
                     return End::Lost;
@@ -558,6 +593,14 @@ async fn connection(
                     Some(Ok(Message::Binary(b))) => RemoteEvent::Output(b),
                     Some(Ok(Message::Text(t))) => {
                         let v: Value = serde_json::from_str(&t).unwrap_or(Value::Null);
+                        if v["type"] == "pong" {
+                            // The answer to the oldest ping (whoever asked may
+                            // have stopped waiting).
+                            if let Some((sent, reply)) = pings.pop_front() {
+                                let _ = reply.send(sent.elapsed());
+                            }
+                            continue;
+                        }
                         bare_error = v["type"] == "error" && v["code"].is_null();
                         parse_event(v)
                     }

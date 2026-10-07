@@ -74,7 +74,9 @@ The shared crates and the CLI live in [TermoakSSH/core](https://github.com/Termo
 - `Connection::connect` opens the ProxyJump chain (each hop is a
   `direct-tcpip` channel of the previous one) and authenticates in this
   order: key or certificate, agent, password, keyboard-interactive and,
-  finally, asking for the password.
+  finally, asking for the password. `Connection::latency` times a
+  `keepalive@openssh.com` global request on the open connection (no new
+  channel; a failure reply counts as an answer).
 - `TerminalSession` splits reading from writing. All output goes through an
   `OutputHub`, which keeps a bounded scrollback and broadcasts it. When a
   viewer attaches, it gets a snapshot and the stream from that point, with
@@ -156,6 +158,8 @@ See [AI.md](AI.md).
   `RemoteEvent::Ended` carries the code when the server sends you away (no
   reconnection then). `RelayShare::subscribe` reports participants, requests
   and the driver's size to the host, which acts as the owner.
+  `RemoteTerminal::latency` times the protocol's `ping` / `pong` (the
+  round trip to the Termoak server, not to the host behind it).
 - `Workspace` puts together the vault key, the stores, the servers and the
   known hosts verifier. The CLI, the desktop app and the FFI use it.
 - **Several accounts** (one per server and user): the device store

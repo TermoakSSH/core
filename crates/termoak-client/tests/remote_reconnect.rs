@@ -1,4 +1,5 @@
-//! Server terminals: if the connection drops, they reconnect by themselves.
+//! Server terminals: if the connection drops, they reconnect by themselves;
+//! their latency is measured with `ping` / `pong`.
 
 use std::time::Duration;
 
@@ -139,4 +140,66 @@ async fn gives_up_when_the_session_is_gone() {
     let api = ApiClient::new(&format!("http://{addr}")).unwrap();
     let (_remote, events) = RemoteTerminal::attach_path(&api, "/ws").await.unwrap();
     assert_eq!(collect(events).await, ["hello", "reconnecting", "closed"]);
+}
+
+#[tokio::test]
+async fn latency_with_ping_and_pong() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (s, _) = listener.accept().await.unwrap();
+        let mut ws = accept_async(s).await.unwrap();
+        ws.send(hello()).await.unwrap();
+        let mut pings = 0;
+        while let Some(Ok(msg)) = ws.next().await {
+            let Message::Text(t) = msg else { continue };
+            let v: serde_json::Value = serde_json::from_str(&t).unwrap();
+            if v["type"] != "ping" {
+                continue;
+            }
+            pings += 1;
+            match pings {
+                // The first one is answered late.
+                1 => tokio::time::sleep(Duration::from_millis(80)).await,
+                // The second is never answered.
+                2 => continue,
+                _ => {}
+            }
+            ws.send(text(json!({"type": "pong", "ts": 1})))
+                .await
+                .unwrap();
+            if pings == 3 {
+                ws.send(Message::Binary("after".into())).await.unwrap();
+                ws.send(text(
+                    json!({"type": "status", "status": {"state": "closed"}}),
+                ))
+                .await
+                .unwrap();
+                ws.close(None).await.unwrap();
+                break;
+            }
+        }
+        pings
+    });
+
+    let api = ApiClient::new(&format!("http://{addr}")).unwrap();
+    let (remote, events) = RemoteTerminal::attach_path(&api, "/ws").await.unwrap();
+    let rtt = remote.latency(Duration::from_secs(5)).await.unwrap();
+    assert!(
+        rtt >= Duration::from_millis(80) && rtt < Duration::from_secs(5),
+        "{rtt:?}"
+    );
+    // No answer: gives up after the timeout.
+    assert_eq!(remote.latency(Duration::from_millis(200)).await, None);
+    // The next pong answers the oldest ping (the one nobody waits for any
+    // more), so this one gets no answer either and the session ends.
+    assert_eq!(remote.latency(Duration::from_secs(5)).await, None);
+    // Pongs are not events.
+    assert_eq!(
+        collect(events).await,
+        ["hello", "output:after", "status:closed", "closed"]
+    );
+    assert_eq!(server.await.unwrap(), 3);
+    // Closed: nothing answers.
+    assert_eq!(remote.latency(Duration::from_secs(1)).await, None);
 }

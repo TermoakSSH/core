@@ -272,6 +272,28 @@ impl Connection {
         Ok(self.handle.send_keepalive(true).await?)
     }
 
+    /// Round trip to the server (through the jump hosts, if any): the time it
+    /// takes to answer a `keepalive@openssh.com` global request on this same
+    /// connection. No channel is opened and the terminals are not disturbed.
+    /// Most servers answer it with a failure, which counts as an answer too.
+    /// The request waits behind whatever this connection is already sending,
+    /// as typing does.
+    pub async fn latency(&self, timeout: Duration) -> Result<Duration> {
+        if self.is_closed() {
+            return Err(SshError::Closed);
+        }
+        let started = std::time::Instant::now();
+        tokio::time::timeout(timeout, self.handle.send_ping())
+            .await
+            .map_err(|_| SshError::Timeout(format!("waiting for {}", self.info.label)))??;
+        let elapsed = started.elapsed();
+        // The wait also ends when the connection drops (no answer is coming).
+        if self.is_closed() {
+            return Err(SshError::Closed);
+        }
+        Ok(elapsed)
+    }
+
     pub async fn disconnect(&self) {
         let _ = self
             .handle
