@@ -680,6 +680,477 @@ pub fn is_read_only_command(command: &str) -> bool {
     })
 }
 
+/// How risky an action looks (shown on its approval).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RiskLevel {
+    /// Only reads.
+    Low,
+    /// Changes something.
+    #[default]
+    Medium,
+    /// Destructive or hard to undo (deleting data, disks, reboots, firewall
+    /// flushes, piping a download into a shell...).
+    High,
+}
+
+/// Why an action is risky: a stable `code` (for translations) and an
+/// English `text`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RiskReason {
+    /// `pipe`, `chain`, `redirect`, `substitution`, `sudo`, `rm_rf`,
+    /// `delete`, `disk`, `reboot`, `service`, `packages`, `firewall`,
+    /// `permissions`, `kill`, `users`, `remote_script`, `containers`,
+    /// `cron`, `git_history`, `system_path`, `redacted`, `changes`.
+    pub code: String,
+    pub text: String,
+}
+
+impl RiskReason {
+    pub fn new(code: &str, text: impl Into<String>) -> Self {
+        Self {
+            code: code.into(),
+            text: text.into(),
+        }
+    }
+}
+
+/// Risk of a command: its level and the reasons.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommandRisk {
+    pub level: RiskLevel,
+    pub reasons: Vec<RiskReason>,
+}
+
+impl CommandRisk {
+    fn add(&mut self, level: RiskLevel, code: &str, text: impl Into<String>) {
+        if self.reasons.iter().any(|r| r.code == code) {
+            return;
+        }
+        self.level = self.level.max(level);
+        self.reasons.push(RiskReason::new(code, text));
+    }
+}
+
+/// System paths whose changes deserve a warning (`writes to /etc`).
+const SYSTEM_PATHS: &[&str] = &[
+    "/etc", "/boot", "/usr", "/bin", "/sbin", "/lib", "/lib64", "/var/lib", "/root", "/dev",
+    "/proc", "/sys",
+];
+
+/// Files whose change can lock you out or break the boot.
+const CRITICAL_FILES: &[&str] = &[
+    "/etc/ssh/sshd_config",
+    "/etc/sudoers",
+    "/etc/passwd",
+    "/etc/shadow",
+    "/etc/group",
+    "/etc/fstab",
+    "/etc/pam.d",
+    "/etc/network/interfaces",
+    "/etc/netplan",
+    "/etc/hosts.allow",
+    "/etc/hosts.deny",
+    "/boot",
+    "/.ssh/authorized_keys",
+];
+
+/// The system directory a path is in (`/etc`), if any.
+pub fn system_path(path: &str) -> Option<&'static str> {
+    SYSTEM_PATHS
+        .iter()
+        .find(|p| path == **p || path.starts_with(&format!("{p}/")))
+        .copied()
+}
+
+/// Risk of writing the file at `path`.
+pub fn classify_write(path: &str) -> CommandRisk {
+    let mut risk = CommandRisk::default();
+    if CRITICAL_FILES
+        .iter()
+        .any(|c| path.starts_with(c) || path.contains(c))
+    {
+        risk.add(
+            RiskLevel::High,
+            "critical_file",
+            format!("{path} can lock you out or break the system if it is wrong"),
+        );
+    }
+    if let Some(dir) = system_path(path) {
+        risk.add(RiskLevel::Medium, "system_path", format!("writes to {dir}"));
+    }
+    risk
+}
+
+/// Risk of a shell command, with the reasons (for its approval). Read-only
+/// commands (see [`is_read_only_command`]) are `low`; everything else is at
+/// least `medium`.
+pub fn classify_command(command: &str) -> CommandRisk {
+    let mut risk = CommandRisk {
+        level: RiskLevel::Low,
+        reasons: Vec::new(),
+    };
+    let cmd = command.trim();
+    if cmd.contains(crate::redact::REDACTED) {
+        risk.add(
+            RiskLevel::Medium,
+            "redacted",
+            "contains [redacted] (a secret hidden from the AI): it will not work as written",
+        );
+    }
+    if is_read_only_command(cmd) {
+        return risk;
+    }
+    // Shell constructs.
+    let unquoted = strip_quoted(cmd);
+    if unquoted.contains('|') && !unquoted.contains("||") || unquoted.matches('|').count() > 2 {
+        risk.add(
+            RiskLevel::Medium,
+            "pipe",
+            "pipes the output into another command",
+        );
+    }
+    if unquoted.contains(';')
+        || unquoted.contains("&&")
+        || unquoted.contains("||")
+        || unquoted.contains('\n')
+    {
+        risk.add(RiskLevel::Medium, "chain", "runs several commands");
+    }
+    if unquoted.contains('>') {
+        risk.add(RiskLevel::Medium, "redirect", "writes the output to a file");
+    }
+    if unquoted.contains("$(") || unquoted.contains('`') {
+        risk.add(
+            RiskLevel::Medium,
+            "substitution",
+            "runs a command substitution",
+        );
+    }
+    let lower = cmd.to_ascii_lowercase();
+    // A download piped into a shell.
+    if (lower.contains("curl ") || lower.contains("wget "))
+        && [
+            "| sh", "|sh", "| bash", "|bash", "| sudo", "|sudo", "| zsh", "| python",
+        ]
+        .iter()
+        .any(|p| lower.contains(p))
+    {
+        risk.add(
+            RiskLevel::High,
+            "remote_script",
+            "runs a script downloaded from the internet",
+        );
+    }
+    for segment in unquoted
+        .split(['|', ';', '\n'])
+        .flat_map(|s| s.split("&&"))
+        .flat_map(|s| s.split("||"))
+    {
+        let words: Vec<&str> = segment.split_whitespace().collect();
+        let mut words = words.as_slice();
+        // Prefixes: sudo, env, nohup, timeout N...
+        loop {
+            match words.first().map(|w| w.rsplit('/').next().unwrap_or(w)) {
+                Some("sudo" | "doas" | "su") => {
+                    risk.add(RiskLevel::Medium, "sudo", "runs as root");
+                    words = &words[1..];
+                    while words.first().is_some_and(|w| w.starts_with('-')) {
+                        words = &words[1..];
+                    }
+                }
+                Some("nohup" | "nice" | "exec" | "command" | "time") => words = &words[1..],
+                Some("timeout") => words = words.get(2..).unwrap_or(&[]),
+                Some(w) if w.contains('=') => words = &words[1..],
+                _ => break,
+            }
+        }
+        let Some((&head, args)) = words.split_first() else {
+            continue;
+        };
+        let name = head.rsplit('/').next().unwrap_or(head);
+        classify_words(&mut risk, name, args);
+        // Paths it touches in system directories.
+        if let Some(dir) = args
+            .iter()
+            .map(|a| a.trim_matches(|c| c == '"' || c == '\''))
+            .find_map(|a| system_path(a).filter(|_| !READ_ONLY.contains(&name)))
+        {
+            risk.add(RiskLevel::Medium, "system_path", format!("writes to {dir}"));
+        }
+    }
+    // Redirections into system paths.
+    for part in unquoted.split('>').skip(1) {
+        let target = part
+            .trim_start_matches('>')
+            .split_whitespace()
+            .next()
+            .unwrap_or("");
+        if let Some(dir) = system_path(target) {
+            risk.add(RiskLevel::Medium, "system_path", format!("writes to {dir}"));
+        }
+        if CRITICAL_FILES.iter().any(|c| target.starts_with(c)) {
+            risk.add(
+                RiskLevel::High,
+                "critical_file",
+                format!("overwrites {target}"),
+            );
+        }
+    }
+    if risk.reasons.iter().all(|r| r.code == "redacted") {
+        risk.add(RiskLevel::Medium, "changes", "may change the system");
+    }
+    risk.level = risk.level.max(RiskLevel::Medium);
+    risk
+}
+
+fn classify_words(risk: &mut CommandRisk, name: &str, args: &[&str]) {
+    let has = |f: &str| args.contains(&f);
+    let first = args
+        .iter()
+        .copied()
+        .find(|a| !a.starts_with('-'))
+        .unwrap_or("");
+    let short_flags = |c: char| {
+        args.iter()
+            .any(|a| a.starts_with('-') && !a.starts_with("--") && a.contains(c))
+    };
+    match name {
+        "rm" | "rmdir" | "unlink" | "shred" | "srm" => {
+            let recursive = short_flags('r') || short_flags('R') || has("--recursive");
+            let force = short_flags('f') || has("--force");
+            let root = args.iter().any(|a| {
+                matches!(
+                    *a,
+                    "/" | "/*" | "~" | "~/" | "." | "*" | "/home" | "/var" | "/etc"
+                )
+            });
+            if recursive && (force || root) || name == "shred" {
+                risk.add(
+                    RiskLevel::High,
+                    "rm_rf",
+                    "deletes files recursively (rm -rf)",
+                );
+            } else {
+                risk.add(RiskLevel::Medium, "delete", "deletes files");
+            }
+        }
+        "mkfs" | "wipefs" | "dd" | "fdisk" | "sfdisk" | "parted" | "gdisk" | "sgdisk"
+        | "pvremove" | "vgremove" | "lvremove" | "blkdiscard" | "zpool" | "mdadm"
+            if !(name == "fdisk" && has("-l")) && !(name == "parted" && has("-l")) =>
+        {
+            risk.add(RiskLevel::High, "disk", "changes disks or partitions");
+        }
+        n if n.starts_with("mkfs.") => {
+            risk.add(RiskLevel::High, "disk", "formats a disk");
+        }
+        "reboot" | "shutdown" | "poweroff" | "halt" => {
+            risk.add(
+                RiskLevel::High,
+                "reboot",
+                "reboots or shuts down the server",
+            );
+        }
+        "init" | "telinit" if matches!(first, "0" | "6") => {
+            risk.add(
+                RiskLevel::High,
+                "reboot",
+                "reboots or shuts down the server",
+            );
+        }
+        "systemctl" => match first {
+            "reboot" | "poweroff" | "halt" | "kexec" | "rescue" | "emergency" | "isolate" => {
+                risk.add(
+                    RiskLevel::High,
+                    "reboot",
+                    "reboots or shuts down the server",
+                );
+            }
+            "restart" | "stop" | "start" | "reload" | "disable" | "enable" | "mask" | "kill"
+            | "try-restart" | "reload-or-restart" | "daemon-reload" => {
+                risk.add(RiskLevel::Medium, "service", format!("{first}s a service"));
+            }
+            _ => {}
+        },
+        "service" if args.len() >= 2 && args[1] != "status" => {
+            risk.add(
+                RiskLevel::Medium,
+                "service",
+                format!("{}s a service", args[1]),
+            );
+        }
+        "apt" | "apt-get" | "aptitude" | "yum" | "dnf" | "zypper" | "apk" | "pacman" | "snap"
+        | "brew" | "pip" | "pip3" | "npm" | "dpkg" | "rpm" => {
+            if matches!(
+                first,
+                "install"
+                    | "remove"
+                    | "purge"
+                    | "upgrade"
+                    | "dist-upgrade"
+                    | "full-upgrade"
+                    | "autoremove"
+                    | "add"
+                    | "del"
+                    | "erase"
+                    | "update"
+                    | "reinstall"
+                    | "uninstall"
+            ) || has("-i")
+                || has("-r")
+                || has("-P")
+                || args
+                    .iter()
+                    .any(|a| a.starts_with("-S") || a.starts_with("-R"))
+            {
+                risk.add(
+                    RiskLevel::Medium,
+                    "packages",
+                    "installs, removes or upgrades packages",
+                );
+            }
+        }
+        "iptables" | "ip6tables" | "nft" | "ufw" | "firewall-cmd" => {
+            let flush = has("-F")
+                || has("--flush")
+                || has("-X")
+                || first == "flush"
+                || (name == "ufw" && matches!(first, "disable" | "reset"));
+            let read =
+                has("-L") || has("-S") || has("--list") || first == "status" || first == "list";
+            if flush {
+                risk.add(
+                    RiskLevel::High,
+                    "firewall",
+                    "flushes or disables the firewall",
+                );
+            } else if !read {
+                risk.add(RiskLevel::Medium, "firewall", "changes the firewall");
+            }
+        }
+        "chmod" | "chown" | "chgrp" | "setfacl" | "chattr" => {
+            let recursive = short_flags('R') || has("--recursive");
+            let wide = args
+                .iter()
+                .any(|a| a.contains("777") || *a == "o+w" || *a == "a+w");
+            let level = if recursive
+                && args
+                    .iter()
+                    .any(|a| matches!(*a, "/" | "/etc" | "/usr" | "/var"))
+            {
+                RiskLevel::High
+            } else {
+                RiskLevel::Medium
+            };
+            risk.add(
+                level,
+                "permissions",
+                if wide {
+                    "makes files writable by everyone"
+                } else if recursive {
+                    "changes permissions or owners recursively"
+                } else {
+                    "changes permissions or owners"
+                },
+            );
+        }
+        "kill" | "pkill" | "killall" | "skill" => {
+            risk.add(RiskLevel::Medium, "kill", "stops processes");
+        }
+        "useradd" | "userdel" | "usermod" | "adduser" | "deluser" | "passwd" | "chpasswd"
+        | "groupadd" | "groupdel" | "visudo" | "gpasswd" => {
+            risk.add(
+                RiskLevel::Medium,
+                "users",
+                "changes users, groups or passwords",
+            );
+        }
+        "crontab" if has("-r") => {
+            risk.add(RiskLevel::High, "cron", "deletes the crontab");
+        }
+        "crontab" if !has("-l") => {
+            risk.add(RiskLevel::Medium, "cron", "changes scheduled jobs");
+        }
+        "docker" | "podman" | "kubectl" | "helm" => {
+            let destructive = matches!(first, "rm" | "rmi" | "delete" | "uninstall" | "kill")
+                || (matches!(
+                    first,
+                    "system" | "volume" | "image" | "container" | "network"
+                ) && args.iter().any(|a| matches!(*a, "prune" | "rm")));
+            let high = destructive
+                && (name == "kubectl"
+                    || name == "helm"
+                    || has("-a")
+                    || has("--all")
+                    || has("--volumes")
+                    || first == "volume");
+            if high {
+                risk.add(
+                    RiskLevel::High,
+                    "containers",
+                    "deletes containers, volumes or cluster resources",
+                );
+            } else if destructive {
+                risk.add(
+                    RiskLevel::Medium,
+                    "containers",
+                    "deletes containers or images",
+                );
+            }
+        }
+        "git" => {
+            let force = has("--force")
+                || has("-f")
+                || has("--hard")
+                || (first == "clean" && short_flags('f'));
+            if force && matches!(first, "push" | "reset" | "clean" | "checkout") {
+                risk.add(
+                    RiskLevel::High,
+                    "git_history",
+                    "discards changes or rewrites history",
+                );
+            }
+        }
+        "mv" | "cp" | "tee" | "truncate" | "install" | "ln" | "sed" | "rsync" => {
+            if name == "truncate" {
+                risk.add(RiskLevel::Medium, "delete", "empties files");
+            }
+            if name == "rsync" && has("--delete") {
+                risk.add(
+                    RiskLevel::High,
+                    "rm_rf",
+                    "deletes files missing from the source (rsync --delete)",
+                );
+            }
+            if let Some(target) = args.iter().rev().find(|a| !a.starts_with('-'))
+                && CRITICAL_FILES.iter().any(|c| target.starts_with(c))
+            {
+                risk.add(
+                    RiskLevel::High,
+                    "critical_file",
+                    format!("overwrites {target}"),
+                );
+            }
+        }
+        _ => {}
+    }
+}
+
+/// The command without the quoted parts (so `grep 'a|b'` is not a pipe).
+fn strip_quoted(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut quote: Option<char> = None;
+    for c in s.chars() {
+        match quote {
+            Some(q) if c == q => quote = None,
+            Some(_) => {}
+            None if c == '\'' || c == '"' => quote = Some(c),
+            None => out.push(c),
+        }
+    }
+    out
+}
+
 /// Splits into words, honouring single and double quotes. `None` if they are unbalanced.
 fn split_words(s: &str) -> Option<Vec<&str>> {
     let mut out = Vec::new();
@@ -779,6 +1250,56 @@ mod tests {
         ] {
             assert!(!is_read_only_command(c), "should not be read-only: {c}");
         }
+    }
+
+    #[test]
+    fn risk_of_commands() {
+        let codes = |c: &str| {
+            classify_command(c)
+                .reasons
+                .into_iter()
+                .map(|r| r.code)
+                .collect::<Vec<_>>()
+        };
+        let level = |c: &str| classify_command(c).level;
+        assert_eq!(level("df -h"), RiskLevel::Low);
+        assert!(codes("df -h").is_empty());
+        assert_eq!(level("rm -rf /var/www/old"), RiskLevel::High);
+        assert!(codes("rm -rf /var/www/old").contains(&"rm_rf".to_string()));
+        assert_eq!(level("rm /tmp/x"), RiskLevel::Medium);
+        assert_eq!(codes("rm /tmp/x"), ["delete"]);
+        assert_eq!(level("sudo reboot"), RiskLevel::High);
+        assert_eq!(codes("sudo reboot"), ["sudo", "reboot"]);
+        assert_eq!(codes("systemctl restart nginx"), ["service"]);
+        assert_eq!(
+            classify_command("systemctl restart nginx").reasons[0].text,
+            "restarts a service"
+        );
+        assert!(codes("echo 1 > /etc/sysctl.d/99-x.conf").contains(&"system_path".to_string()));
+        assert!(codes("echo 1 > /etc/sysctl.d/99-x.conf").contains(&"redirect".to_string()));
+        assert_eq!(level("curl -fsSL https://x.sh | sh"), RiskLevel::High);
+        assert!(codes("curl -fsSL https://x.sh | sh").contains(&"pipe".to_string()));
+        assert_eq!(level("iptables -F"), RiskLevel::High);
+        assert_eq!(codes("apt-get install -y nginx"), ["packages"]);
+        assert!(codes("cd /srv && git pull").contains(&"chain".to_string()));
+        assert_eq!(level("mkfs.ext4 /dev/sdb1"), RiskLevel::High);
+        assert_eq!(codes("touch /tmp/x"), ["changes"]);
+        assert!(!codes("grep 'a|b' f > /tmp/out").contains(&"pipe".to_string()));
+        assert!(codes("cat [redacted] | x").contains(&"redacted".to_string()));
+        assert_eq!(level("docker system prune -a"), RiskLevel::High);
+        assert_eq!(level("cp new.conf /etc/ssh/sshd_config"), RiskLevel::High);
+    }
+
+    #[test]
+    fn risk_of_writes() {
+        let r = classify_write("/etc/nginx/sites-enabled/app");
+        assert_eq!(r.level, RiskLevel::Medium);
+        assert_eq!(r.reasons[0].text, "writes to /etc");
+        assert_eq!(
+            classify_write("/etc/ssh/sshd_config").level,
+            RiskLevel::High
+        );
+        assert!(classify_write("/home/app/x").reasons.is_empty());
     }
 
     #[test]

@@ -16,7 +16,7 @@ members = [
 # `vX.Y.Z` git tag of this repository, and the mobile apps include it as a
 # submodule. The CLI has its own version (crates/termoak-cli/Cargo.toml)
 # and is released as cli-vX.Y.Z: scripts/release-local.sh.
-version = "0.5.0-next.2"
+version = "0.5.0-next.3"
 edition = "2024"
 rust-version = "1.89"
 authors = ["Oihalitz <oihalitz@ohz.es>"]

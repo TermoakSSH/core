@@ -188,6 +188,141 @@ is repeated with the next one in the chain.
 - **Expiry.** An unanswered approval expires after 30 minutes
   (`approval_timeout_secs`) and counts as denied.
 
+### Approvals: what you see and how you answer
+
+Every approval (the `approval_requested` event and the task's
+`pending_approvals`) carries a `preview` (`termoak_ai::ApprovalPreview`;
+absent on approvals made before 0.5):
+
+| `kind` | Shows |
+|---|---|
+| `command` (`run_command`) | the exact `command`, the `host`, the model's `explanation`, the `risk` (`low`, `medium`, `high`) and the classifier's `reasons` |
+| `terminal` (`send_to_terminal`) | the text typed (`command`), the terminal's title (`host`), risk and reasons |
+| `file` (`write_file`) | `host`, `path` and a unified `diff` of the current file against the new content (`added`, `removed`, `new_file`; at most 64 KiB, `diff_truncated`; files over 512 KiB or binary give a `diff_error` instead), with the risk of the path |
+| `plan` | the numbered `plan` of a "plan before acting" task |
+
+The reasons have a stable `code` and an English `text`: `pipe`, `chain`,
+`redirect`, `substitution`, `sudo`, `rm_rf` ("deletes files recursively (rm
+-rf)"), `delete`, `disk`, `reboot`, `service`, `packages`, `firewall`,
+`permissions`, `kill`, `users`, `remote_script` (a download piped into a
+shell), `containers`, `cron`, `git_history`, `system_path` ("writes to
+/etc"), `critical_file` (`sshd_config`, `sudoers`, `fstab`...), `redacted`
+(the command contains a hidden secret) and `changes`. Read-only commands are
+`low`; destructive ones (`rm -rf`, disks, reboots, firewall flushes, `curl
+| sh`, critical files) are `high`.
+
+The answer (`POST /api/v1/ai/tasks/{id}/approvals/{approval_id}`,
+`AiEngine::decide_with`, `termoak_ai::ApprovalDecision`) is additive over
+the old `{approve, always}`:
+
+- `edited`: for `run_command` and `send_to_terminal`, the command the user
+  approved instead of the model's. It is what runs (and what the audit log
+  and the runbook record), and the model's result starts with "The user
+  edited the command before approving it; this is what ran instead of
+  yours". For a plan, the edited plan the model must follow.
+- `reason`: why it was denied, sent to the model with the denial ("Their
+  reason: …"); with an approval, a note for the model.
+- `always: true`: approve this one and the rest of the task (`auto`).
+
+The `approval_decided` event carries `edited` and `reason`.
+
+## Plan before acting
+
+With `plan_first: true` in `POST /api/v1/ai/tasks`, the model first writes a
+short numbered plan with no tools offered (`PLAN_PROMPT` is added to the
+system prompt). The plan is an approval with `tool: "plan"` (and
+`preview.kind: "plan"`, editable), so apps that do not know it still show it
+and can approve it. Approved (possibly `edited`), the model is told to carry
+out that plan and gets its tools; denied with a `reason`, it proposes a new
+plan (up to 3); denied without one (or expired), the task ends `cancelled`
+with the error "the plan was not approved". The task view has `plan_first`
+and `plan` (`text`, `approved`, `edited`). A follow-up message to a task whose
+plan was not approved plans again.
+
+## Multi-host tasks
+
+`POST /api/v1/ai/tasks` accepts, besides `host_ids`, a `group_id` (the
+group and its subgroups) and a `tag`; the hosts they name become the task's
+scope. With `fan_out: true` and more than one host, the same request runs as
+**one conversation per host** (each limited to its host, with its own
+approvals, transcript, usage and cost) under a multi-host task, at most
+`[ai] fan_out_concurrency` (4) at a time and `max_fan_out_hosts` (50) hosts.
+Without `fan_out`, a single conversation goes through the hosts (as before).
+
+- The multi-host task runs no model: it waits for its hosts and then sums
+  them up. Its `result` has one line per host (`- **web1**: completed —
+  …`), its cost and usage are the hosts' total, and it is `failed` if a host
+  failed, `cancelled` if it was cancelled.
+- `GET /api/v1/ai/tasks/{id}` of a multi-host task has `fan_out: true` and
+  `hosts`: per host `host_id`, `label`, `task_id` (its conversation, to drill
+  down: `GET /api/v1/ai/tasks/{task_id}`), `status`, `summary`, `error`,
+  `duration_ms`, `cost_micros` and `pending_approvals`. A host's
+  conversation has `parent_id`.
+- The list shows only the multi-host task, not its hosts. Events of each
+  host come with the host's `task_id`; the multi-host task gets a `notice`
+  ("web1: completed") as each host ends.
+- Cancelling it cancels its hosts; a follow-up message goes to every host;
+  changing its mode changes theirs; deleting it deletes theirs. A host's
+  conversation can also be continued on its own (the summary is updated
+  when it ends).
+- The hosts of a multi-host task count as one task for
+  `max_concurrent_tasks`.
+
+## Stop and continue
+
+`POST /api/v1/ai/tasks/{id}/cancel` stops a running task right away: a
+command or file transfer in progress is abandoned ("Stopped by the user
+before it finished"), a pending approval counts as denied, and the task ends
+`cancelled` keeping its conversation. A new message
+(`POST /api/v1/ai/tasks/{id}/messages`) continues it with all its context.
+Tool calls left without a result (for example when the app or the server
+stopped in the middle) get one saying they did not run, so every provider
+accepts the conversation.
+
+## Runbooks
+
+A task records the commands and file writes it ran, in order
+(`steps` in the task view with its messages: tool, host, command or path,
+`ok`, `edited`, the model's `explanation`). `AiEngine::runbook` turns them
+into a snippet (`termoak_ai::runbook::build`): the successful commands, each
+with a comment from the model's explanation (its `reason`, or the line it
+wrote before the call), files as `cat > path <<'TERMOAK_EOF'` blocks, and
+the host's label and address replaced with `{{host}}` when the task ran on
+one host. `AiEngine::save_runbook` saves it in the user's personal vault
+(tags `ai`, `runbook`). For a multi-host task, the first host that ran
+commands is used. Tasks without recorded steps (older ones) are rebuilt
+from the transcript. Clients can build it themselves from a task view with
+`termoak_ai::runbook::build`.
+
+## Secret redaction
+
+Before anything goes to a provider, tool results (command output, files
+read over SFTP, terminal screens) and the terminal context (`<context>`
+blocks of a request, the screen and text of the terminal assistant) go
+through `termoak_ai::redact()`, which replaces secrets with `[redacted]`:
+
+- private key blocks (`-----BEGIN … PRIVATE KEY-----`, also inside JSON with
+  escaped newlines);
+- `Authorization`, `Proxy-Authorization`, `X-Api-Key`, `X-Auth-Token`,
+  `Cookie` and `Set-Cookie` values;
+- the password in `scheme://user:password@host`;
+- values of secret-looking keys in `.env`, YAML, JSON, INI and command
+  lines: `password=`, `DB_PASSWORD=`, `"api_key": "…"`, `client_secret:`,
+  `export GITHUB_TOKEN=`, `--password …` (settings such as
+  `PasswordAuthentication` or `password_file`, empty values, `${VAR}`
+  references and placeholders are kept);
+- known token formats: AWS access key ids, Google API keys and OAuth tokens,
+  GitHub, GitLab, Slack, Stripe, OpenAI/Anthropic, npm and Hugging Face
+  tokens, JWTs.
+
+It is on by default (`[ai] redact_secrets = true`; also in the desktop
+app). Since the model only sees files with their secrets hidden,
+`write_file` refuses content that contains `[redacted]` (writing it back
+would replace the secrets) and tells the model to change only the lines it
+needs; a command containing `[redacted]` is flagged in its approval. The
+redaction is a heuristic: it hides more rather than less, but it cannot
+recognise every secret, so keep the permission modes and the approvals.
+
 ## Tools
 
 | Tool | Effect |
@@ -203,8 +338,9 @@ is repeated with the next one in the chain.
 | `read_terminal` | Read. The latest content of a terminal (for "what does this error mean?") |
 | `send_to_terminal` | Change. Types into an open terminal |
 
-A task can be limited to specific hosts with `host_ids`. Then the tools
-cannot leave them.
+A task can be limited to specific hosts with `host_ids` (or a `group_id` or
+`tag`, see [Multi-host tasks](#multi-host-tasks)). Then the tools cannot
+leave them.
 
 ## Terminal assistant
 

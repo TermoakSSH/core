@@ -37,6 +37,10 @@ How to work:
 - Save useful, durable facts with `remember` (never secrets).
 - Finish with a concise summary: what you found, what you changed, and anything the user still has to do. Use light Markdown (short lists, `code`)."#;
 
+/// Added to the system prompt for the planning turn of a "plan before
+/// acting" task (no tools are offered then).
+pub const PLAN_PROMPT: &str = r#"PLANNING STEP: before doing anything, the user wants to approve your plan. Do not call any tools now and do not claim to have checked anything. Reply ONLY with a short numbered plan (at most 8 steps, one line each, in the user's language): what you will check, what you will change and on which hosts, marking with "(approval)" the steps that change something. The user may edit the plan before approving it; then you will carry it out."#;
+
 /// Context block that precedes the first request of a conversation: the
 /// date, the permission mode, the hosts it is limited to, the terminal it
 /// comes from (with how to use it) and what is remembered (newest last,

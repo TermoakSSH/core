@@ -16,9 +16,11 @@ use termoak_core::{Id, Store};
 use termoak_ssh::exec::ExecOptions;
 use termoak_ssh::{ConnectionPool, FileKind};
 
-use crate::policy::{Effect, is_read_only_command};
+use crate::approval::{ApprovalPreview, MAX_DIFF_BYTES, MAX_DIFF_SOURCE_BYTES};
+use crate::policy::{Effect, classify_command, classify_write, is_read_only_command};
 use crate::provider::ToolSpec;
 use crate::provider::anthropic::INVALID_JSON_KEY;
+use crate::redact::{REDACTED, redact};
 
 /// Summary of an open terminal session.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,6 +109,8 @@ pub struct ToolRuntime {
     pool: Arc<ConnectionPool>,
     sessions: Option<Arc<dyn SessionAccess>>,
     limits: ToolLimits,
+    /// Hide secrets in what the tools return (on by default; see [`redact`]).
+    redact: bool,
 }
 
 // Inputs of each tool (deserialization validates the model's input).
@@ -230,7 +234,18 @@ impl ToolRuntime {
             pool,
             sessions,
             limits,
+            redact: true,
         }
+    }
+
+    /// Turns the secret redaction of tool results on or off (on by default).
+    pub fn set_redact(&mut self, on: bool) {
+        self.redact = on;
+    }
+
+    /// Does it hide secrets in tool results?
+    pub fn redacts(&self) -> bool {
+        self.redact
     }
 
     /// Definitions offered to the model.
@@ -446,9 +461,11 @@ impl ToolRuntime {
             "send_to_terminal" => self.send_to_terminal(ctx, input).await,
             other => Err(format!("unknown tool: {other}")),
         };
+        // Secrets never reach the model (command output, files, screens).
+        let clean = |s: String| if self.redact { redact(&s) } else { s };
         let outcome = match result {
-            Ok(s) => ToolOutcome::ok(truncate_middle(&s, self.limits.max_output_chars)),
-            Err(e) => ToolOutcome::err(truncate_middle(&e, self.limits.max_output_chars)),
+            Ok(s) => ToolOutcome::ok(truncate_middle(&clean(s), self.limits.max_output_chars)),
+            Err(e) => ToolOutcome::err(truncate_middle(&clean(e), self.limits.max_output_chars)),
         };
         tracing::debug!(
             tool = name,
@@ -457,6 +474,127 @@ impl ToolRuntime {
             "tool executed"
         );
         outcome
+    }
+
+    /// What the approval of a call shows: the exact command, the host, the
+    /// classifier's reasons and the risk; for `write_file`, the diff of the
+    /// current file against the new content (read over SFTP, size-capped).
+    pub async fn preview(&self, ctx: &ToolContext, name: &str, input: &Value) -> ApprovalPreview {
+        let text = |k: &str| input[k].as_str().map(str::to_string);
+        let explanation = text("reason").filter(|r| !r.trim().is_empty());
+        match name {
+            "run_command" => {
+                let command = text("command").unwrap_or_default();
+                let risk = classify_command(&command);
+                ApprovalPreview {
+                    kind: "command".into(),
+                    host: text("host"),
+                    command: Some(command),
+                    risk: risk.level,
+                    reasons: risk.reasons,
+                    explanation,
+                    editable: true,
+                    ..Default::default()
+                }
+            }
+            "send_to_terminal" => {
+                let command = text("input").unwrap_or_default();
+                let risk = classify_command(&command);
+                let session = text("session_id").unwrap_or_default();
+                let title = match &self.sessions {
+                    Some(s) => s
+                        .list(ctx.owner)
+                        .await
+                        .into_iter()
+                        .find(|x| x.id.to_string() == session)
+                        .map(|x| x.title),
+                    None => None,
+                };
+                ApprovalPreview {
+                    kind: "terminal".into(),
+                    host: title.or(Some(session)),
+                    command: Some(command),
+                    risk: risk.level,
+                    reasons: risk.reasons,
+                    editable: true,
+                    ..Default::default()
+                }
+            }
+            "write_file" => {
+                let path = text("path").unwrap_or_default();
+                let content = text("content").unwrap_or_default();
+                let risk = classify_write(&path);
+                let mut p = ApprovalPreview {
+                    kind: "file".into(),
+                    host: text("host"),
+                    path: Some(path.clone()),
+                    risk: risk.level,
+                    reasons: risk.reasons,
+                    ..Default::default()
+                };
+                match self.current_file(ctx, input).await {
+                    Ok(old) => {
+                        p.new_file = old.is_none();
+                        let old = old.unwrap_or_default();
+                        let d = crate::diff::unified_diff(&old, &content, &path, MAX_DIFF_BYTES);
+                        p.added = Some(d.added);
+                        p.removed = Some(d.removed);
+                        p.diff_truncated = d.truncated;
+                        p.diff = Some(d.text);
+                    }
+                    Err(e) => p.diff_error = Some(e),
+                }
+                p
+            }
+            other => ApprovalPreview {
+                kind: "other".into(),
+                host: text("host"),
+                command: Some(Self::summarize(other, input)),
+                explanation,
+                ..Default::default()
+            },
+        }
+    }
+
+    /// Current content of the file a `write_file` replaces (`None`: it does
+    /// not exist yet).
+    async fn current_file(
+        &self,
+        ctx: &ToolContext,
+        input: &Value,
+    ) -> Result<Option<String>, String> {
+        let args: WriteFileIn = parse(input)?;
+        let host = self.resolve_host(ctx, &args.host).await?;
+        let conn = self
+            .pool
+            .get(ctx.owner, host.id)
+            .await
+            .map_err(|e| format!("could not connect to {}: {e}", host.label))?;
+        let sftp = conn.sftp().await.map_err(|e| e.to_string())?;
+        let result = async {
+            if !sftp.exists(&args.path).await.map_err(|e| e.to_string())? {
+                return Ok(None);
+            }
+            if let Ok(st) = sftp.stat(&args.path).await
+                && st.size > MAX_DIFF_SOURCE_BYTES
+            {
+                return Err(format!(
+                    "the current file is too large to compare ({} bytes)",
+                    st.size
+                ));
+            }
+            let data = sftp
+                .read(&args.path, MAX_DIFF_SOURCE_BYTES)
+                .await
+                .map_err(|e| e.to_string())?;
+            if data.contains(&0) {
+                return Err("the current file is binary".to_string());
+            }
+            Ok(Some(String::from_utf8_lossy(&data).into_owned()))
+        }
+        .await;
+        sftp.close().await;
+        result
     }
 
     async fn list_hosts(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
@@ -610,6 +748,15 @@ impl ToolRuntime {
 
     async fn write_file(&self, ctx: &ToolContext, input: &Value) -> Result<String, String> {
         let args: WriteFileIn = parse(input)?;
+        // The model only saw the file with its secrets hidden: writing it
+        // back whole would replace them with the placeholder.
+        if self.redact && args.content.contains(REDACTED) {
+            return Err(format!(
+                "not written: the content contains \"{REDACTED}\" (secrets hidden from you when you read the file). \
+                 Change only the lines you need with a targeted command (for example sed) instead of rewriting the whole file, \
+                 or ask the user to do it."
+            ));
+        }
         let mode = match &args.mode {
             Some(m) => Some(
                 u32::from_str_radix(m.trim_start_matches("0o"), 8)

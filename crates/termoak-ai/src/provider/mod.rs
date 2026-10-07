@@ -184,6 +184,9 @@ pub struct Registry {
     providers: BTreeMap<String, ProviderConfig>,
     http: reqwest::Client,
     model_cache: Mutex<BTreeMap<String, (Instant, Vec<String>)>>,
+    /// Fake providers of the tests, by key.
+    #[cfg(test)]
+    pub(crate) test_backends: Mutex<BTreeMap<String, Backend>>,
 }
 
 impl Registry {
@@ -200,6 +203,8 @@ impl Registry {
             providers,
             http,
             model_cache: Mutex::new(BTreeMap::new()),
+            #[cfg(test)]
+            test_backends: Mutex::new(BTreeMap::new()),
         }
     }
 
@@ -315,6 +320,10 @@ impl Registry {
     /// Builds the backend for `provider[::model]` with the server's credentials.
     pub fn resolve(&self, spec: &str) -> Result<Backend, AiError> {
         let (key, model) = split_spec(spec);
+        #[cfg(test)]
+        if let Some(b) = self.test_backends.lock().get(&key).cloned() {
+            return Ok(b);
+        }
         let cfg = self
             .providers
             .get(&key)

@@ -609,6 +609,11 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE devices ADD COLUMN last_ip TEXT;
     ALTER TABLE devices ADD COLUMN user_agent TEXT;
     "#,
+    // v11: AI approvals keep what they show (the command with its risk and
+    // reasons, the diff of a file, a plan) as JSON. NULL for older ones.
+    r#"
+    ALTER TABLE ai_approvals ADD COLUMN preview TEXT;
+    "#,
 ];
 
 /// Schema version of the latest migration.

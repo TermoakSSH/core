@@ -20,11 +20,12 @@ use termoak_core::store::{AiApprovalRow, AiEventRow, AiTaskRow, AiUsageRow};
 use termoak_core::time::now_ms;
 use termoak_core::{Id, Store, new_id};
 use termoak_ssh::ConnectionPool;
-use tokio::sync::{broadcast, oneshot};
+use tokio::sync::{Semaphore, broadcast, oneshot};
 use tokio_util::sync::CancellationToken;
 
 use crate::access::{AccessPolicy, ChainEntry, OwnKey, ServerAccess, build_chain, usd_to_micros};
-use crate::agent::{AgentHooks, AgentRun, SYSTEM_PROMPT, run_agent};
+use crate::agent::{AgentHooks, AgentOutcome, AgentRun, PLAN_PROMPT, SYSTEM_PROMPT, run_agent};
+use crate::approval::{ApprovalDecision, ApprovalPreview};
 use crate::config::{AiConfig, Driver, split_spec};
 use crate::error::AiError;
 use crate::message::{Message, Part, Usage};
@@ -33,6 +34,8 @@ use crate::pricing::{
     CODEX_CREDIT_PRICE, DEFAULT_CREDIT_PRICE, UsageCost, builtin_price, cost_micros, credit_micros,
 };
 use crate::provider::{ProviderInfo, REASON_OWN_KEY_REQUIRED, REASON_PLAN, Registry};
+use crate::redact::redact_context_blocks;
+use crate::runbook::{ExecutedStep, HostNames, MAX_STEP_CONTENT, Runbook};
 use crate::tools::{
     SessionAccess, ToolContext, ToolLimits, ToolOutcome, ToolRuntime, truncate_middle,
 };
@@ -117,14 +120,25 @@ pub enum TaskEvent {
     ApprovalRequested {
         approval_id: Id,
         call_id: String,
+        /// The tool, or `plan` for the plan of a "plan before acting" task.
         tool: String,
         summary: String,
         input: Value,
+        /// What to show: the command with its risk and reasons, the diff of
+        /// a file, the plan... (see [`ApprovalPreview`]).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        preview: Option<ApprovalPreview>,
     },
     ApprovalDecided {
         approval_id: Id,
         approved: bool,
         by: String,
+        /// The command or plan the user approved instead of the model's.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        edited: Option<String>,
+        /// Why it was denied (sent to the model).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        reason: Option<String>,
     },
     /// Complete message (at the end of each turn).
     Message {
@@ -207,6 +221,56 @@ pub struct CreateTask {
     pub session_id: Option<Id>,
     #[serde(default)]
     pub effort: Option<String>,
+    /// Run it on the hosts of this group (and its subgroups).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group_id: Option<Id>,
+    /// Run it on the hosts with this tag.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tag: Option<String>,
+    /// With several hosts: one conversation per host (the same request,
+    /// [`AiConfig::fan_out_concurrency`] at a time) instead of one
+    /// conversation that goes through them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fan_out: Option<bool>,
+    /// The model first writes a short numbered plan (without tools) that the
+    /// user approves or edits (an approval with `tool: "plan"`) before it
+    /// starts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plan_first: Option<bool>,
+}
+
+fn is_false(b: &bool) -> bool {
+    !*b
+}
+
+/// One host of a multi-host task (its row in the per-host table).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HostRun {
+    pub host_id: Id,
+    pub label: String,
+    /// The host's own task (its conversation).
+    pub task_id: Id,
+    pub status: TaskStatus,
+    /// Its result, shortened.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<i64>,
+    pub cost_micros: i64,
+    #[serde(default)]
+    pub pending_approvals: usize,
+}
+
+/// The plan of a "plan before acting" task.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct TaskPlan {
+    pub text: String,
+    pub approved: bool,
+    /// The user edited it before approving it.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub edited: bool,
 }
 
 /// Public view of a task.
@@ -230,6 +294,35 @@ pub struct TaskView {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub messages: Option<Vec<Message>>,
     pub pending_approvals: Vec<AiApprovalRow>,
+    /// The multi-host task this host's conversation belongs to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_id: Option<Id>,
+    /// A multi-host task: one conversation per host (see `hosts`).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub fan_out: bool,
+    /// Per-host table of a multi-host task (with `GET` of one task).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hosts: Vec<HostRun>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group_id: Option<Id>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tag: Option<String>,
+    /// "Plan before acting".
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub plan_first: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plan: Option<TaskPlan>,
+    /// Commands and file writes it ran, in order (with the messages).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub steps: Vec<ExecutedStep>,
+}
+
+/// A host's conversation in a multi-host task.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+struct ChildRef {
+    task_id: Id,
+    host_id: Id,
+    label: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -240,15 +333,43 @@ struct TaskContext {
     session_id: Option<Id>,
     #[serde(default)]
     effort: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    group_id: Option<Id>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tag: Option<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    plan_first: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    plan: Option<TaskPlan>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    fan_out: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    children: Vec<ChildRef>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    parent_id: Option<Id>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    steps: Vec<ExecutedStep>,
+    /// When the last run started (for the duration in the per-host table).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    started_at: Option<i64>,
 }
+
+/// Most steps kept per task.
+const MAX_STEPS_KEPT: usize = 500;
+/// Plans the model may propose again after a rejection with a reason.
+const MAX_PLAN_ROUNDS: usize = 3;
 
 struct LiveTask {
     id: Id,
     owner: Id,
+    /// The multi-host task it belongs to.
+    parent: Option<Id>,
     cancel: CancellationToken,
     mode: Mutex<PermissionMode>,
-    approvals: Mutex<HashMap<Id, oneshot::Sender<(bool, bool)>>>,
+    approvals: Mutex<HashMap<Id, oneshot::Sender<ApprovalDecision>>>,
     ctx: ToolContext,
+    /// The task's context (plan, executed steps...), saved with each checkpoint.
+    task_ctx: Mutex<TaskContext>,
 }
 
 struct McpGrant {
@@ -309,8 +430,10 @@ impl AiEngine {
             max_output_chars: config.max_tool_output_chars,
         };
         let (bus, _) = broadcast::channel(4096);
+        let mut tools = ToolRuntime::new(store.clone(), pool, sessions, limits);
+        tools.set_redact(config.redact_secrets);
         Ok(Arc::new(Self {
-            tools: ToolRuntime::new(store.clone(), pool, sessions, limits),
+            tools,
             registry: Registry::new(config),
             store,
             live: Mutex::new(HashMap::new()),
@@ -543,7 +666,7 @@ impl AiEngine {
     }
 
     /// Publishes an event (and persists it if applicable).
-    fn publish(self: &Arc<Self>, owner: Id, task_id: Id, event: TaskEvent) {
+    fn publish(&self, owner: Id, task_id: Id, event: TaskEvent) {
         let seq = if event.persisted() {
             let counter = self.seq_counter(task_id, 0);
             let seq = counter.fetch_add(1, Ordering::SeqCst) + 1;
@@ -604,18 +727,23 @@ impl AiEngine {
         }
     }
 
-    /// Creates a task and launches it in the background.
+    /// Creates a task and launches it in the background. With a group, a tag
+    /// or several hosts and `fan_out`, it creates one conversation per host
+    /// under a multi-host task (see [`CreateTask::fan_out`]).
     pub async fn create_task(
         self: &Arc<Self>,
         owner: Id,
         req: CreateTask,
     ) -> Result<TaskView, AiError> {
-        let prompt = req.prompt.trim().to_string();
+        let mut prompt = req.prompt.trim().to_string();
         if prompt.is_empty() {
             return Err(AiError::Invalid("the request is empty".into()));
         }
         if prompt.chars().count() > 100_000 {
             return Err(AiError::Invalid("the request is too long".into()));
+        }
+        if self.config().redact_secrets {
+            prompt = redact_context_blocks(&prompt);
         }
         self.check_limits(owner).await?;
         // Fails early if the user can use no provider (or has no credit left).
@@ -626,33 +754,37 @@ impl AiEngine {
             .clone()
             .filter(|t| !t.trim().is_empty())
             .unwrap_or_else(|| title_from(&prompt));
-        let id = new_id();
-        let now = now_ms();
-        let ctx = TaskContext {
+        let targets = self.target_hosts(owner, &req).await?;
+        let mut ctx = TaskContext {
             host_ids: req.host_ids.clone(),
             session_id: req.session_id,
             effort: req.effort.clone(),
+            group_id: req.group_id,
+            tag: req.tag.clone().filter(|t| !t.trim().is_empty()),
+            plan_first: req.plan_first.unwrap_or(false),
+            ..Default::default()
         };
+        if let Some(targets) = &targets {
+            ctx.host_ids = Some(targets.iter().map(|(id, _)| *id).collect());
+        }
+        let fan_out = req.fan_out.unwrap_or(false) && targets.as_ref().is_some_and(|t| t.len() > 1);
+        if fan_out {
+            let targets = targets.unwrap_or_default();
+            if targets.len() > self.config().max_fan_out_hosts {
+                return Err(AiError::Invalid(format!(
+                    "too many hosts for one task ({}; maximum {})",
+                    targets.len(),
+                    self.config().max_fan_out_hosts
+                )));
+            }
+            return self
+                .create_fan_out(owner, &req, prompt, title, mode, ctx, targets)
+                .await;
+        }
+        let id = new_id();
+        let now = now_ms();
         let first = Message::user_text(self.context_block(owner, &ctx, mode).await + &prompt);
-        let row = AiTaskRow {
-            id,
-            owner_id: owner,
-            title,
-            prompt: prompt.clone(),
-            status: TaskStatus::Queued.as_str().into(),
-            mode: mode.as_str().into(),
-            provider: req.provider.clone().unwrap_or_default(),
-            used_provider: None,
-            context: serde_json::to_value(&ctx).unwrap_or_default(),
-            messages: serde_json::to_value(vec![first]).unwrap_or_default(),
-            usage: json!({}),
-            cost_micros: 0,
-            result: None,
-            error: None,
-            created_at: now,
-            updated_at: now,
-            finished_at: None,
-        };
+        let row = new_row(id, owner, title, prompt, mode, &req, &ctx, vec![first], now);
         self.store.ai_insert_task(row.clone()).await?;
         self.store
             .audit(
@@ -660,14 +792,157 @@ impl AiEngine {
                 &format!("user:{owner}"),
                 "ai.task.create",
                 Some(id.to_string()),
-                json!({"mode": mode.as_str(), "provider": req.provider}),
+                json!({"mode": mode.as_str(), "provider": req.provider, "plan_first": ctx.plan_first}),
             )
             .await?;
         self.spawn(row);
         self.get(owner, id, false).await
     }
 
-    /// Continues a finished conversation with a new message.
+    /// The hosts a request names (its `host_ids`, the hosts of its group and
+    /// subgroups, the hosts with its tag), with their labels. `None`: no
+    /// limit. Only the plain `host_ids` of a single conversation are kept as
+    /// they are (as before).
+    async fn target_hosts(
+        &self,
+        owner: Id,
+        req: &CreateTask,
+    ) -> Result<Option<Vec<(Id, String)>>, AiError> {
+        let tag = req.tag.as_deref().map(str::trim).filter(|t| !t.is_empty());
+        if req.group_id.is_none() && tag.is_none() && !req.fan_out.unwrap_or(false) {
+            return Ok(None);
+        }
+        if req.group_id.is_none() && tag.is_none() && req.host_ids.is_none() {
+            return Ok(None);
+        }
+        let access = self.store.vault_access(owner).await?;
+        let hosts = self
+            .store
+            .list_in::<termoak_core::model::Host>(&access, None)
+            .await?;
+        let groups = self
+            .store
+            .list_in::<termoak_core::model::Group>(&access, None)
+            .await?;
+        // The group and its subgroups.
+        let mut group_ids: Vec<Id> = req.group_id.into_iter().collect();
+        let mut i = 0;
+        while i < group_ids.len() {
+            let parent = group_ids[i];
+            for g in &groups {
+                if g.data.parent_id == Some(parent) && !group_ids.contains(&g.data.id) {
+                    group_ids.push(g.data.id);
+                }
+            }
+            i += 1;
+        }
+        let mut out: Vec<(Id, String)> = Vec::new();
+        for id in req.host_ids.iter().flatten() {
+            if let Some(h) = hosts.iter().find(|h| h.data.id == *id)
+                && !out.iter().any(|(x, _)| x == id)
+            {
+                out.push((*id, h.data.label.clone()));
+            }
+        }
+        let mut by_label: Vec<&termoak_core::model::Record<termoak_core::model::Host>> = hosts
+            .iter()
+            .filter(|h| {
+                h.data.group_id.is_some_and(|g| group_ids.contains(&g))
+                    || tag.is_some_and(|t| h.data.tags.iter().any(|x| x.eq_ignore_ascii_case(t)))
+            })
+            .collect();
+        by_label.sort_by_key(|h| h.data.label.to_lowercase());
+        for h in by_label {
+            if !out.iter().any(|(x, _)| *x == h.data.id) {
+                out.push((h.data.id, h.data.label.clone()));
+            }
+        }
+        if out.is_empty() {
+            return Err(AiError::Invalid(if req.group_id.is_some() {
+                "there are no hosts in that group".into()
+            } else if tag.is_some() {
+                "there are no hosts with that tag".into()
+            } else {
+                "none of those hosts exist".into()
+            }));
+        }
+        Ok(Some(out))
+    }
+
+    /// A multi-host task: the parent (it runs no model) and one conversation
+    /// per host with the same request.
+    #[allow(clippy::too_many_arguments)]
+    async fn create_fan_out(
+        self: &Arc<Self>,
+        owner: Id,
+        req: &CreateTask,
+        prompt: String,
+        title: String,
+        mode: PermissionMode,
+        mut ctx: TaskContext,
+        targets: Vec<(Id, String)>,
+    ) -> Result<TaskView, AiError> {
+        let parent_id = new_id();
+        let now = now_ms();
+        ctx.fan_out = true;
+        ctx.session_id = None;
+        for (host_id, label) in &targets {
+            ctx.children.push(ChildRef {
+                task_id: new_id(),
+                host_id: *host_id,
+                label: label.clone(),
+            });
+        }
+        let parent = new_row(
+            parent_id,
+            owner,
+            title.clone(),
+            prompt.clone(),
+            mode,
+            req,
+            &ctx,
+            vec![Message::user_text(prompt.clone())],
+            now,
+        );
+        self.store.ai_insert_task(parent.clone()).await?;
+        for child in &ctx.children {
+            let cctx = TaskContext {
+                host_ids: Some(vec![child.host_id]),
+                effort: ctx.effort.clone(),
+                plan_first: ctx.plan_first,
+                parent_id: Some(parent_id),
+                ..Default::default()
+            };
+            let first = Message::user_text(self.context_block(owner, &cctx, mode).await + &prompt);
+            let row = new_row(
+                child.task_id,
+                owner,
+                format!("{} · {title}", child.label),
+                prompt.clone(),
+                mode,
+                req,
+                &cctx,
+                vec![first],
+                now,
+            );
+            self.store.ai_insert_task(row).await?;
+        }
+        self.store
+            .audit(
+                owner,
+                &format!("user:{owner}"),
+                "ai.task.create",
+                Some(parent_id.to_string()),
+                json!({"mode": mode.as_str(), "provider": req.provider, "fan_out": targets.len(), "plan_first": ctx.plan_first}),
+            )
+            .await?;
+        self.spawn(parent);
+        self.get(owner, parent_id, false).await
+    }
+
+    /// Continues a finished conversation with a new message (also a stopped
+    /// one: it keeps its context). On a multi-host task the message goes to
+    /// every host's conversation.
     pub async fn send_message(
         self: &Arc<Self>,
         owner: Id,
@@ -678,6 +953,11 @@ impl AiEngine {
         if text.is_empty() {
             return Err(AiError::Invalid("the message is empty".into()));
         }
+        let text = if self.config().redact_secrets {
+            redact_context_blocks(text)
+        } else {
+            text.to_string()
+        };
         if self.live.lock().contains_key(&task_id) {
             return Err(AiError::Invalid(
                 "the task is still running; wait for it to finish or cancel it".into(),
@@ -687,33 +967,66 @@ impl AiEngine {
         let mut row = self.store.ai_task(owner, task_id).await?;
         self.plan_chain(owner, Some(row.provider.as_str()).filter(|p| !p.is_empty()))
             .await?;
+        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+        if ctx.fan_out {
+            if ctx
+                .children
+                .iter()
+                .any(|c| self.live.lock().contains_key(&c.task_id))
+            {
+                return Err(AiError::Invalid(
+                    "a host of this task is still running; wait for it to finish or cancel it"
+                        .into(),
+                ));
+            }
+            for child in &ctx.children {
+                let Ok(mut crow) = self.store.ai_task(owner, child.task_id).await else {
+                    continue;
+                };
+                self.queue_message(&mut crow, &text).await?;
+            }
+        }
+        self.queue_message(&mut row, &text).await?;
+        self.spawn(row);
+        self.get(owner, task_id, false).await
+    }
+
+    /// Adds the user's message to a task and marks it queued.
+    async fn queue_message(&self, row: &mut AiTaskRow, text: &str) -> Result<(), AiError> {
         let mut messages: Vec<Message> =
             serde_json::from_value(row.messages.clone()).unwrap_or_default();
-        messages.push(Message::user_text(text));
+        push_user_text(&mut messages, text);
         row.messages = serde_json::to_value(&messages).unwrap_or_default();
         row.status = TaskStatus::Queued.as_str().into();
         row.error = None;
         row.finished_at = None;
         self.store.ai_update_task(row.clone()).await?;
         self.publish(
-            owner,
-            task_id,
+            row.owner_id,
+            row.id,
+            TaskEvent::Status {
+                status: TaskStatus::Queued,
+            },
+        );
+        self.publish(
+            row.owner_id,
+            row.id,
             TaskEvent::Message {
                 role: "user".into(),
                 text: text.to_string(),
                 provider: None,
             },
         );
-        self.spawn(row);
-        self.get(owner, task_id, false).await
+        Ok(())
     }
 
     async fn check_limits(&self, owner: Id) -> Result<(), AiError> {
+        // The hosts of a multi-host task count as one task.
         let running = self
             .live
             .lock()
             .values()
-            .filter(|t| t.owner == owner)
+            .filter(|t| t.owner == owner && t.parent.is_none())
             .count();
         if running >= self.config().max_concurrent_tasks {
             return Err(AiError::Invalid(format!(
@@ -765,13 +1078,19 @@ impl AiEngine {
         )
     }
 
-    fn spawn(self: &Arc<Self>, row: AiTaskRow) {
-        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+    /// Registers a task as running (it can be cancelled and answer approvals).
+    fn make_live(
+        &self,
+        row: &AiTaskRow,
+        ctx: &TaskContext,
+        cancel: CancellationToken,
+    ) -> Arc<LiveTask> {
         let mode = PermissionMode::parse(&row.mode).unwrap_or_default();
         let live = Arc::new(LiveTask {
             id: row.id,
             owner: row.owner_id,
-            cancel: CancellationToken::new(),
+            parent: ctx.parent_id,
+            cancel,
             mode: Mutex::new(mode),
             approvals: Mutex::new(HashMap::new()),
             ctx: ToolContext {
@@ -779,28 +1098,242 @@ impl AiEngine {
                 task_id: Some(row.id),
                 host_scope: ctx.host_ids.clone(),
             },
+            task_ctx: Mutex::new(ctx.clone()),
         });
         self.live.lock().insert(row.id, live.clone());
+        live
+    }
+
+    /// Initializes the event sequence of a task from what is already saved.
+    async fn init_seq(&self, task: Id) {
+        let last = self
+            .store
+            .ai_events_since(task, 0)
+            .await
+            .ok()
+            .and_then(|v| v.last().map(|e| e.seq))
+            .unwrap_or(0);
+        self.seqs
+            .lock()
+            .insert(task, Arc::new(AtomicI64::new(last)));
+    }
+
+    fn spawn(self: &Arc<Self>, row: AiTaskRow) {
+        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+        let live = self.make_live(&row, &ctx, CancellationToken::new());
         let engine = self.clone();
         tokio::spawn(async move {
-            // Initialize the event sequence from what is already saved.
-            let last = engine
-                .store
-                .ai_events_since(row.id, 0)
-                .await
-                .ok()
-                .and_then(|v| v.last().map(|e| e.seq))
-                .unwrap_or(0);
-            engine
-                .seqs
-                .lock()
-                .insert(row.id, Arc::new(AtomicI64::new(last)));
-            engine.run(live, row, ctx).await;
+            engine.init_seq(row.id).await;
+            if ctx.fan_out {
+                engine.run_fan_out(live, row, ctx).await;
+            } else {
+                engine.run(live, row, ctx).await;
+            }
         });
+    }
+
+    /// Runs the queued conversations of a multi-host task, a few at a time,
+    /// and then sums them up.
+    async fn run_fan_out(
+        self: Arc<Self>,
+        live: Arc<LiveTask>,
+        mut row: AiTaskRow,
+        ctx: TaskContext,
+    ) {
+        let owner = row.owner_id;
+        row.status = TaskStatus::Running.as_str().into();
+        row.finished_at = None;
+        let _ = self.store.ai_update_task(row.clone()).await;
+        self.publish(
+            owner,
+            row.id,
+            TaskEvent::Status {
+                status: TaskStatus::Running,
+            },
+        );
+        let slots = Arc::new(Semaphore::new(self.config().fan_out_concurrency.max(1)));
+        let mut runs = Vec::new();
+        for child in &ctx.children {
+            let Ok(crow) = self.store.ai_task(owner, child.task_id).await else {
+                continue;
+            };
+            if TaskStatus::parse(&crow.status) != TaskStatus::Queued
+                || self.live.lock().contains_key(&crow.id)
+            {
+                continue;
+            }
+            let cctx: TaskContext =
+                serde_json::from_value(crow.context.clone()).unwrap_or_default();
+            let clive = self.make_live(&crow, &cctx, live.cancel.child_token());
+            let engine = self.clone();
+            let slots = slots.clone();
+            let label = child.label.clone();
+            let parent_id = row.id;
+            runs.push(tokio::spawn(async move {
+                let slot = tokio::select! {
+                    s = slots.acquire_owned() => s.ok(),
+                    _ = clive.cancel.cancelled() => None,
+                };
+                engine.init_seq(crow.id).await;
+                let id = crow.id;
+                match slot {
+                    Some(_slot) => engine.clone().run(clive, crow, cctx).await,
+                    None => engine.finish_unstarted(clive, crow).await,
+                }
+                let status = engine
+                    .store
+                    .ai_task(owner, id)
+                    .await
+                    .map(|r| TaskStatus::parse(&r.status))
+                    .unwrap_or(TaskStatus::Failed);
+                engine.publish(
+                    owner,
+                    parent_id,
+                    TaskEvent::Notice {
+                        message: format!("{label}: {}", status.as_str()),
+                    },
+                );
+            }));
+        }
+        for r in runs {
+            let _ = r.await;
+        }
+        self.finish_fan_out(owner, row.id, live.cancel.is_cancelled(), true)
+            .await;
+    }
+
+    /// A host's conversation cancelled before it started.
+    async fn finish_unstarted(&self, live: Arc<LiveTask>, mut row: AiTaskRow) {
+        row.status = TaskStatus::Cancelled.as_str().into();
+        row.error = Some("cancelled by the user".into());
+        row.finished_at = Some(now_ms());
+        let _ = self.store.ai_update_task(row.clone()).await;
+        self.live.lock().remove(&live.id);
+        self.publish(
+            row.owner_id,
+            row.id,
+            TaskEvent::Finished {
+                status: TaskStatus::Cancelled,
+                result: None,
+                error: row.error.clone(),
+            },
+        );
+    }
+
+    /// The per-host table of a multi-host task.
+    async fn host_runs(&self, owner: Id, ctx: &TaskContext) -> Vec<HostRun> {
+        let mut out = Vec::new();
+        for child in &ctx.children {
+            let Ok(row) = self.store.ai_task(owner, child.task_id).await else {
+                continue;
+            };
+            let cctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+            let pending = self
+                .store
+                .ai_approvals(row.id)
+                .await
+                .map(|a| a.iter().filter(|a| a.status == "pending").count())
+                .unwrap_or(0);
+            let status = TaskStatus::parse(&row.status);
+            out.push(HostRun {
+                host_id: child.host_id,
+                label: child.label.clone(),
+                task_id: row.id,
+                status,
+                summary: row.result.as_deref().map(|r| summary_of(r, 300)),
+                error: row.error.clone(),
+                duration_ms: cctx
+                    .started_at
+                    .map(|s| row.finished_at.unwrap_or_else(now_ms) - s)
+                    .filter(|d| *d >= 0),
+                cost_micros: row.cost_micros,
+                pending_approvals: pending,
+            });
+        }
+        out
+    }
+
+    /// Sums up a multi-host task from its hosts: status, result (one line
+    /// per host), cost and usage. `finish`: it was running (it publishes
+    /// `finished` and stops being live).
+    async fn finish_fan_out(&self, owner: Id, parent_id: Id, cancelled: bool, finish: bool) {
+        let Ok(mut row) = self.store.ai_task(owner, parent_id).await else {
+            self.live.lock().remove(&parent_id);
+            return;
+        };
+        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+        let runs = self.host_runs(owner, &ctx).await;
+        let mut usage = Usage::default();
+        for child in &ctx.children {
+            if let Ok(c) = self.store.ai_task(owner, child.task_id).await {
+                usage.add(&serde_json::from_value::<Usage>(c.usage).unwrap_or_default());
+            }
+        }
+        let count = |s: TaskStatus| runs.iter().filter(|r| r.status == s).count();
+        let status = if runs.iter().any(|r| r.status.is_active()) && !finish {
+            TaskStatus::parse(&row.status)
+        } else if cancelled || (count(TaskStatus::Cancelled) > 0 && count(TaskStatus::Failed) == 0)
+        {
+            TaskStatus::Cancelled
+        } else if count(TaskStatus::Failed) > 0 {
+            TaskStatus::Failed
+        } else {
+            TaskStatus::Completed
+        };
+        let result: String = runs
+            .iter()
+            .map(|r| {
+                let detail = r
+                    .summary
+                    .clone()
+                    .or_else(|| r.error.clone())
+                    .map(|d| format!(" — {}", summary_of(&d, 200)))
+                    .unwrap_or_default();
+                format!("- **{}**: {}{detail}\n", r.label, r.status.as_str())
+            })
+            .collect();
+        let failed: Vec<&str> = runs
+            .iter()
+            .filter(|r| r.status == TaskStatus::Failed)
+            .map(|r| r.label.as_str())
+            .collect();
+        row.status = status.as_str().into();
+        row.result = Some(result.trim_end().to_string());
+        row.error = match status {
+            TaskStatus::Failed => Some(format!("failed on {}", failed.join(", "))),
+            TaskStatus::Cancelled => Some("cancelled by the user".into()),
+            _ => None,
+        };
+        row.cost_micros = runs.iter().map(|r| r.cost_micros).sum();
+        row.usage = serde_json::to_value(&usage).unwrap_or_default();
+        if !status.is_active() {
+            row.finished_at = Some(now_ms());
+        }
+        if let Err(e) = self.store.ai_update_task(row.clone()).await {
+            tracing::error!(error = %e, "could not save the AI task");
+        }
+        if finish {
+            let _ = self
+                .store
+                .audit(owner, &format!("ai:{parent_id}"), "ai.task.finish", Some(parent_id.to_string()), json!({"status": status.as_str(), "hosts": runs.len(), "cost_micros": row.cost_micros}))
+                .await;
+            self.live.lock().remove(&parent_id);
+            self.publish(
+                owner,
+                parent_id,
+                TaskEvent::Finished {
+                    status,
+                    result: row.result.clone(),
+                    error: row.error.clone(),
+                },
+            );
+        }
     }
 
     async fn run(self: Arc<Self>, live: Arc<LiveTask>, mut row: AiTaskRow, ctx: TaskContext) {
         let owner = row.owner_id;
+        live.task_ctx.lock().started_at = Some(now_ms());
+        row.context = serde_json::to_value(&*live.task_ctx.lock()).unwrap_or_default();
         row.status = TaskStatus::Running.as_str().into();
         let _ = self.store.ai_update_task(row.clone()).await;
         self.publish(
@@ -840,18 +1373,15 @@ impl AiEngine {
         };
         let result = match chain {
             Ok(chain) => {
-                let run = AgentRun {
-                    registry: &self.registry,
+                self.run_phases(
+                    &hooks,
                     chain,
-                    tools: self.tools.specs(),
-                    system: SYSTEM_PROMPT.to_string(),
-                    session_id: format!("ses_{}", row.id.simple()),
-                    max_steps: self.config().max_steps,
-                    effort: ctx.effort.clone(),
-                    mcp: mcp_url.zip(mcp_token.clone()),
-                    cancel: live.cancel.clone(),
-                };
-                run_agent(run, &mut messages, &hooks).await
+                    &mut messages,
+                    &row,
+                    &ctx,
+                    mcp_url.zip(mcp_token.clone()),
+                )
+                .await
             }
             Err(e) => Err(e),
         };
@@ -864,16 +1394,27 @@ impl AiEngine {
 
         let mut row = hooks.row.lock().clone();
         row.messages = serde_json::to_value(&messages).unwrap_or_default();
+        row.context = serde_json::to_value(&*live.task_ctx.lock()).unwrap_or_default();
         row.finished_at = Some(now_ms());
+        let add_usage = |row: &mut AiTaskRow, outcome: &AgentOutcome| {
+            row.used_provider = outcome.used_provider.clone().or(row.used_provider.clone());
+            let mut usage: Usage = serde_json::from_value(row.usage.clone()).unwrap_or_default();
+            usage.add(&outcome.usage);
+            row.usage = serde_json::to_value(&usage).unwrap_or_default();
+            row.cost_micros += outcome.cost_micros;
+        };
         let (status, result_text, error) = match result {
-            Ok(outcome) => {
-                row.used_provider = outcome.used_provider.clone();
-                let mut usage: Usage =
-                    serde_json::from_value(row.usage.clone()).unwrap_or_default();
-                usage.add(&outcome.usage);
-                row.usage = serde_json::to_value(&usage).unwrap_or_default();
-                row.cost_micros += outcome.cost_micros;
+            Ok(RunEnd::Done(outcome)) => {
+                add_usage(&mut row, &outcome);
                 (TaskStatus::Completed, Some(outcome.final_text), None)
+            }
+            Ok(RunEnd::PlanRejected(outcome)) => {
+                add_usage(&mut row, &outcome);
+                (
+                    TaskStatus::Cancelled,
+                    None,
+                    Some("the plan was not approved".to_string()),
+                )
             }
             Err(AiError::Cancelled) => (
                 TaskStatus::Cancelled,
@@ -905,6 +1446,154 @@ impl AiEngine {
                 error,
             },
         );
+        // A host's conversation continued on its own: update its multi-host task.
+        if let Some(parent) = live.parent
+            && !self.live.lock().contains_key(&parent)
+        {
+            self.finish_fan_out(owner, parent, false, false).await;
+        }
+    }
+
+    /// The plan (if the task asks for one and it is not approved yet), then
+    /// the work.
+    async fn run_phases(
+        &self,
+        hooks: &EngineHooks,
+        chain: Vec<ChainEntry>,
+        messages: &mut Vec<Message>,
+        row: &AiTaskRow,
+        ctx: &TaskContext,
+        mcp: Option<(String, String)>,
+    ) -> Result<RunEnd, AiError> {
+        let mut planned = AgentOutcome::default();
+        let needs_plan = {
+            let c = hooks.live.task_ctx.lock();
+            c.plan_first && !c.plan.as_ref().is_some_and(|p| p.approved)
+        };
+        if needs_plan {
+            let (approved, outcome) = self.plan_phase(hooks, &chain, messages, row, ctx).await?;
+            planned = outcome;
+            if !approved {
+                return Ok(RunEnd::PlanRejected(planned));
+            }
+        }
+        let run = AgentRun {
+            registry: &self.registry,
+            chain,
+            tools: self.tools.specs(),
+            system: SYSTEM_PROMPT.to_string(),
+            session_id: format!("ses_{}", row.id.simple()),
+            max_steps: self.config().max_steps,
+            effort: ctx.effort.clone(),
+            mcp,
+            cancel: hooks.live.cancel.clone(),
+        };
+        let mut outcome = run_agent(run, messages, hooks).await?;
+        outcome.usage.add(&planned.usage);
+        outcome.cost_micros += planned.cost_micros;
+        if outcome.used_provider.is_none() {
+            outcome.used_provider = planned.used_provider;
+        }
+        Ok(outcome).map(RunEnd::Done)
+    }
+
+    /// "Plan before acting": the model writes a numbered plan without tools
+    /// and the user approves it (maybe edited) or rejects it (with a reason,
+    /// the model proposes another one). Returns whether it was approved.
+    async fn plan_phase(
+        &self,
+        hooks: &EngineHooks,
+        chain: &[ChainEntry],
+        messages: &mut Vec<Message>,
+        row: &AiTaskRow,
+        ctx: &TaskContext,
+    ) -> Result<(bool, AgentOutcome), AiError> {
+        let mut total = AgentOutcome::default();
+        let no_tools = NoTools(hooks);
+        for round in 0..MAX_PLAN_ROUNDS {
+            let run = AgentRun {
+                registry: &self.registry,
+                chain: chain.to_vec(),
+                tools: Vec::new(),
+                system: format!("{SYSTEM_PROMPT}\n\n{PLAN_PROMPT}"),
+                session_id: format!("ses_{}", row.id.simple()),
+                max_steps: 1,
+                effort: ctx.effort.clone(),
+                mcp: None,
+                cancel: hooks.live.cancel.clone(),
+            };
+            let out = run_agent(run, messages, &no_tools).await?;
+            total.usage.add(&out.usage);
+            total.cost_micros += out.cost_micros;
+            total.used_provider = out.used_provider.clone();
+            let plan = out.final_text.trim().to_string();
+            if plan.is_empty() {
+                // Nothing to approve: go ahead as a normal task.
+                return Ok((true, total));
+            }
+            let preview = ApprovalPreview {
+                kind: "plan".into(),
+                plan: Some(plan.clone()),
+                editable: true,
+                risk: crate::policy::RiskLevel::Low,
+                ..Default::default()
+            };
+            let summary = format!("Plan: {}", summary_of(&plan, 200));
+            let call_id = format!("plan_{}", round + 1);
+            let decision = hooks
+                .request_approval(&call_id, "plan", &json!({"plan": plan}), &summary, preview)
+                .await;
+            if hooks.live.cancel.is_cancelled() {
+                return Err(AiError::Cancelled);
+            }
+            if decision.approve {
+                let edited = decision.edited_text().filter(|e| e.trim() != plan);
+                let text = edited.unwrap_or(&plan).to_string();
+                hooks.live.task_ctx.lock().plan = Some(TaskPlan {
+                    text: text.clone(),
+                    approved: true,
+                    edited: edited.is_some(),
+                });
+                let mut note = match edited {
+                    Some(e) => format!(
+                        "The user edited and approved the plan. Follow this plan instead of yours:\n\n{e}\n\nCarry it out now."
+                    ),
+                    None => "The user approved the plan. Carry it out now.".to_string(),
+                };
+                if let Some(r) = decision.reason_text() {
+                    note.push_str(&format!("\nTheir note: {r}"));
+                }
+                push_user_text(messages, &note);
+                hooks.checkpoint(messages).await;
+                return Ok((true, total));
+            }
+            hooks.live.task_ctx.lock().plan = Some(TaskPlan {
+                text: plan,
+                approved: false,
+                edited: false,
+            });
+            match decision.reason_text() {
+                Some(r) if round + 1 < MAX_PLAN_ROUNDS => {
+                    push_user_text(
+                        messages,
+                        &format!(
+                            "The user did not approve the plan. Their reason: {r}\nPropose a new plan."
+                        ),
+                    );
+                    hooks.checkpoint(messages).await;
+                }
+                reason => {
+                    let mut note = "The user did not approve the plan; do not act.".to_string();
+                    if let Some(r) = reason {
+                        note.push_str(&format!(" Their reason: {r}"));
+                    }
+                    push_user_text(messages, &note);
+                    hooks.checkpoint(messages).await;
+                    return Ok((false, total));
+                }
+            }
+        }
+        Ok((false, total))
     }
 
     /// Decides a pending approval. `always` switches the task to autonomous mode.
@@ -917,6 +1606,35 @@ impl AiEngine {
         always: bool,
         by: &str,
     ) -> Result<(), AiError> {
+        self.decide_with(
+            owner,
+            task_id,
+            approval_id,
+            ApprovalDecision {
+                approve,
+                always,
+                edited: None,
+                reason: None,
+            },
+            by,
+        )
+        .await
+    }
+
+    /// Decides a pending approval with the full answer: the edited command
+    /// or plan (what runs, and what the model is told ran) and the reason
+    /// of a denial (sent to the model).
+    pub async fn decide_with(
+        &self,
+        owner: Id,
+        task_id: Id,
+        approval_id: Id,
+        decision: ApprovalDecision,
+        by: &str,
+    ) -> Result<(), AiError> {
+        if decision.edited.as_ref().is_some_and(|e| e.len() > 100_000) {
+            return Err(AiError::Invalid("the edited text is too long".into()));
+        }
         let live = self
             .live
             .lock()
@@ -929,13 +1647,16 @@ impl AiEngine {
             .lock()
             .remove(&approval_id)
             .ok_or_else(|| AiError::NotFound(format!("pending approval {approval_id}")))?;
-        let _ = tx.send((approve, always));
+        let approve = decision.approve;
+        let _ = tx.send(decision);
         self.store
             .ai_decide_approval(approval_id, if approve { "approved" } else { "denied" }, by)
             .await?;
         Ok(())
     }
 
+    /// Stops a running task (also a multi-host one, with all its hosts). It
+    /// keeps its conversation and can be continued with a message.
     pub async fn cancel(&self, owner: Id, task_id: Id) -> Result<(), AiError> {
         let live = self
             .live
@@ -949,28 +1670,31 @@ impl AiEngine {
     }
 
     /// Changes the permission mode of a task (running or not: it also applies
-    /// to the following messages).
+    /// to the following messages). On a multi-host task, also its hosts.
     pub async fn set_mode(
         &self,
         owner: Id,
         task_id: Id,
         mode: PermissionMode,
     ) -> Result<(), AiError> {
-        let live = self
-            .live
-            .lock()
-            .get(&task_id)
-            .cloned()
-            .filter(|l| l.owner == owner);
-        if let Some(live) = live {
-            *live.mode.lock() = mode;
+        let mut ids = vec![task_id];
+        if let Ok(row) = self.store.ai_task(owner, task_id).await {
+            let ctx: TaskContext = serde_json::from_value(row.context).unwrap_or_default();
+            ids.extend(ctx.children.iter().map(|c| c.task_id));
         }
-        if !self
-            .store
-            .ai_set_mode(owner, task_id, mode.as_str())
-            .await?
-        {
-            return Err(AiError::NotFound(format!("task {task_id}")));
+        for id in ids {
+            let live = self
+                .live
+                .lock()
+                .get(&id)
+                .cloned()
+                .filter(|l| l.owner == owner);
+            if let Some(live) = live {
+                *live.mode.lock() = mode;
+            }
+            if !self.store.ai_set_mode(owner, id, mode.as_str()).await? && id == task_id {
+                return Err(AiError::NotFound(format!("task {task_id}")));
+            }
         }
         Ok(())
     }
@@ -999,11 +1723,20 @@ impl AiEngine {
             usage: serde_json::from_value(row.usage).unwrap_or_default(),
             messages,
             pending_approvals: pending,
+            parent_id: ctx.parent_id,
+            fan_out: ctx.fan_out,
+            hosts: Vec::new(),
+            group_id: ctx.group_id,
+            tag: ctx.tag,
+            plan_first: ctx.plan_first,
+            plan: ctx.plan,
+            steps: if with_messages { ctx.steps } else { Vec::new() },
         }
     }
 
     pub async fn get(&self, owner: Id, id: Id, with_messages: bool) -> Result<TaskView, AiError> {
         let row = self.store.ai_task(owner, id).await?;
+        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
         let pending = self
             .store
             .ai_approvals(id)
@@ -1011,14 +1744,23 @@ impl AiEngine {
             .into_iter()
             .filter(|a| a.status == "pending")
             .collect();
-        Ok(self.view(row, with_messages, pending))
+        let mut view = self.view(row, with_messages, pending);
+        if ctx.fan_out {
+            view.hosts = self.host_runs(owner, &ctx).await;
+        }
+        Ok(view)
     }
 
+    /// The latest tasks (the hosts of a multi-host task are inside it, not
+    /// in the list).
     pub async fn list(&self, owner: Id, limit: i64) -> Result<Vec<TaskView>, AiError> {
-        let rows = self.store.ai_list_tasks(owner, limit.clamp(1, 500)).await?;
+        let limit = limit.clamp(1, 500);
+        let rows = self.store.ai_list_tasks(owner, limit * 4).await?;
         let pending = self.store.ai_pending_approvals(owner).await?;
         Ok(rows
             .into_iter()
+            .filter(|r| r.context.get("parent_id").is_none_or(Value::is_null))
+            .take(limit as usize)
             .map(|r| {
                 let p = pending
                     .iter()
@@ -1035,11 +1777,21 @@ impl AiEngine {
         Ok(self.store.ai_events_since(id, after).await?)
     }
 
+    /// Deletes a task (a multi-host one with its hosts' conversations).
     pub async fn delete(&self, owner: Id, id: Id) -> Result<(), AiError> {
-        if self.live.lock().contains_key(&id) {
+        let row = self.store.ai_task(owner, id).await?;
+        let ctx: TaskContext = serde_json::from_value(row.context).unwrap_or_default();
+        let ids: Vec<Id> = std::iter::once(id)
+            .chain(ctx.children.iter().map(|c| c.task_id))
+            .collect();
+        if ids.iter().any(|i| self.live.lock().contains_key(i)) {
             return Err(AiError::Invalid(
                 "cancel the task before deleting it".into(),
             ));
+        }
+        for child in ctx.children.iter().map(|c| c.task_id) {
+            let _ = self.store.ai_delete_task(owner, child).await;
+            self.seqs.lock().remove(&child);
         }
         self.store.ai_delete_task(owner, id).await?;
         self.seqs.lock().remove(&id);
@@ -1048,6 +1800,143 @@ impl AiEngine {
 
     pub async fn pending_approvals(&self, owner: Id) -> Result<Vec<AiApprovalRow>, AiError> {
         Ok(self.store.ai_pending_approvals(owner).await?)
+    }
+
+    /// The runbook of a finished task: its executed commands as a snippet
+    /// (see [`crate::runbook`]). For a multi-host task, those of the first
+    /// host that ran any.
+    pub async fn runbook(&self, owner: Id, id: Id) -> Result<Runbook, AiError> {
+        let row = self.store.ai_task(owner, id).await?;
+        let ctx: TaskContext = serde_json::from_value(row.context.clone()).unwrap_or_default();
+        let title = row.title.clone();
+        let mut source = (row, ctx);
+        if source.1.fan_out {
+            let children = source.1.children.clone();
+            let mut found = None;
+            for child in &children {
+                let Ok(c) = self.store.ai_task(owner, child.task_id).await else {
+                    continue;
+                };
+                let cctx: TaskContext =
+                    serde_json::from_value(c.context.clone()).unwrap_or_default();
+                let messages: Vec<Message> =
+                    serde_json::from_value(c.messages.clone()).unwrap_or_default();
+                let has_steps = cctx.steps.iter().any(|s| s.ok)
+                    || crate::runbook::steps_from_messages(&messages)
+                        .iter()
+                        .any(|s| s.ok);
+                if has_steps {
+                    found = Some((c, cctx));
+                    break;
+                }
+            }
+            match found {
+                Some(f) => source = f,
+                None => return Err(AiError::Invalid("the task ran no commands".into())),
+            }
+        }
+        let (row, ctx) = source;
+        let messages: Vec<Message> = serde_json::from_value(row.messages).unwrap_or_default();
+        let steps = if ctx.steps.is_empty() {
+            crate::runbook::steps_from_messages(&messages)
+        } else {
+            ctx.steps.clone()
+        };
+        let hosts = self.runbook_host(owner, &ctx, &steps).await;
+        Ok(crate::runbook::build(&title, &messages, &steps, &hosts))
+    }
+
+    /// The one host a task ran its commands on (its label and address
+    /// become `{{host}}`); none when it used several.
+    async fn runbook_host(
+        &self,
+        owner: Id,
+        ctx: &TaskContext,
+        steps: &[ExecutedStep],
+    ) -> Vec<HostNames> {
+        let Ok(access) = self.store.vault_access(owner).await else {
+            return Vec::new();
+        };
+        let hosts = self
+            .store
+            .list_in::<termoak_core::model::Host>(&access, None)
+            .await
+            .unwrap_or_default();
+        let known: Vec<(Id, HostNames)> = hosts
+            .iter()
+            .map(|h| {
+                (
+                    h.data.id,
+                    HostNames {
+                        label: h.data.label.clone(),
+                        address: h.data.address.clone(),
+                    },
+                )
+            })
+            .collect();
+        crate::runbook::single_host(steps, ctx.host_ids.as_deref(), &known)
+            .into_iter()
+            .collect()
+    }
+
+    /// Saves the runbook of a task as a snippet in the user's personal
+    /// vault (`name`: the task's title otherwise).
+    pub async fn save_runbook(
+        &self,
+        owner: Id,
+        id: Id,
+        name: Option<String>,
+    ) -> Result<termoak_core::model::Snippet, AiError> {
+        let rb = self.runbook(owner, id).await?;
+        if rb.steps == 0 {
+            return Err(AiError::Invalid("the task ran no commands".into()));
+        }
+        let snippet = termoak_core::model::Snippet {
+            id: Id::nil(),
+            name: name
+                .map(|n| n.trim().to_string())
+                .filter(|n| !n.is_empty())
+                .unwrap_or(rb.name),
+            script: rb.script,
+            description: rb.description,
+            tags: vec!["ai".into(), "runbook".into()],
+        };
+        let access = self.store.vault_access(owner).await?;
+        let saved = match self
+            .store
+            .save_in(
+                &access,
+                access.personal(),
+                snippet.clone(),
+                termoak_core::model::SecretUpdate::Keep,
+                None,
+            )
+            .await
+        {
+            Ok(r) => r,
+            // A client's local store (no vaults yet).
+            Err(_) => {
+                self.store
+                    .save(
+                        owner,
+                        snippet,
+                        termoak_core::model::SecretUpdate::Keep,
+                        None,
+                    )
+                    .await?
+            }
+        };
+        let _ = self
+            .store
+            .audit(
+                owner,
+                &format!("user:{owner}"),
+                "ai.task.runbook",
+                Some(id.to_string()),
+                json!({"snippet": saved.data.id}),
+            )
+            .await;
+        Ok(saved.data)
     }
 
     /// Resolves a task MCP token.
@@ -1076,6 +1965,89 @@ impl AiEngine {
         };
         Some(hooks.call_tool(call_id, name, input).await)
     }
+}
+
+/// How a run ended without an error.
+enum RunEnd {
+    Done(AgentOutcome),
+    /// "Plan before acting" and the user did not approve the plan.
+    PlanRejected(AgentOutcome),
+}
+
+/// A new `ai_tasks` row.
+#[allow(clippy::too_many_arguments)]
+fn new_row(
+    id: Id,
+    owner: Id,
+    title: String,
+    prompt: String,
+    mode: PermissionMode,
+    req: &CreateTask,
+    ctx: &TaskContext,
+    messages: Vec<Message>,
+    now: i64,
+) -> AiTaskRow {
+    AiTaskRow {
+        id,
+        owner_id: owner,
+        title,
+        prompt,
+        status: TaskStatus::Queued.as_str().into(),
+        mode: mode.as_str().into(),
+        provider: req.provider.clone().unwrap_or_default(),
+        used_provider: None,
+        context: serde_json::to_value(ctx).unwrap_or_default(),
+        messages: serde_json::to_value(messages).unwrap_or_default(),
+        usage: json!({}),
+        cost_micros: 0,
+        result: None,
+        error: None,
+        created_at: now,
+        updated_at: now,
+        finished_at: None,
+    }
+}
+
+/// First line of a text, at most `max` characters.
+fn summary_of(text: &str, max: usize) -> String {
+    let line = text
+        .lines()
+        .map(str::trim)
+        .find(|l| !l.is_empty())
+        .unwrap_or("");
+    let mut out: String = line.chars().take(max).collect();
+    if line.chars().count() > max || text.trim().lines().count() > 1 {
+        out.push('…');
+    }
+    out
+}
+
+/// Adds the user's next message. Tool calls left without a result (the task
+/// was stopped, or the app closed, while they ran) get one saying they did
+/// not run, in the same message: providers reject a call without its result.
+pub(crate) fn push_user_text(messages: &mut Vec<Message>, text: &str) {
+    let dangling: Vec<String> = match messages.last() {
+        Some(m @ Message::Assistant { .. }) => {
+            m.tool_calls().into_iter().map(|(id, _, _)| id).collect()
+        }
+        _ => Vec::new(),
+    };
+    if dangling.is_empty() {
+        messages.push(Message::user_text(text));
+        return;
+    }
+    let mut content: Vec<Part> = dangling
+        .into_iter()
+        .map(|id| Part::ToolResult {
+            id,
+            content: "Not run: the task was stopped before this call ran.".into(),
+            is_error: true,
+        })
+        .collect();
+    content.push(Part::Text {
+        text: text.to_string(),
+    });
+    messages.push(Message::User { content });
 }
 
 struct EngineHooks {
@@ -1111,16 +2083,24 @@ impl AgentHooks for EngineHooks {
                 content: format!("Denied: {reason}."),
             },
             Verdict::NeedsApproval => {
-                if self.request_approval(call_id, name, input, &summary).await {
-                    self.execute(name, input, &summary).await
+                let preview = self.engine.tools.preview(&self.live.ctx, name, input).await;
+                let decision = self
+                    .request_approval(call_id, name, input, &summary, preview)
+                    .await;
+                if decision.approve {
+                    self.run_approved(call_id, name, input, &summary, &decision)
+                        .await
                 } else {
-                    ToolOutcome {
-                        ok: false,
-                        content: "The user did NOT approve this action. Do not retry it in another form; explain alternatives or ask.".into(),
-                    }
+                    let content = match decision.reason_text() {
+                        Some(r) => format!(
+                            "The user did NOT approve this action. Their reason: {r}\nDo not retry it in another form; take their reason into account, explain alternatives or ask."
+                        ),
+                        None => "The user did NOT approve this action. Do not retry it in another form; explain alternatives or ask.".into(),
+                    };
+                    ToolOutcome { ok: false, content }
                 }
             }
-            Verdict::Allow => self.execute(name, input, &summary).await,
+            Verdict::Allow => self.execute(call_id, name, input, &summary, false).await,
         };
         self.emit(TaskEvent::ToolResult {
             call_id: call_id.to_string(),
@@ -1135,6 +2115,7 @@ impl AgentHooks for EngineHooks {
         let mut row = self.row.lock().clone();
         row.messages = serde_json::to_value(messages).unwrap_or_default();
         row.mode = self.live.mode.lock().as_str().into();
+        row.context = serde_json::to_value(&*self.live.task_ctx.lock()).unwrap_or_default();
         *self.row.lock() = row.clone();
         if let Err(e) = self.engine.store.ai_update_task(row).await {
             tracing::warn!(error = %e, "could not save the task progress");
@@ -1165,9 +2146,105 @@ impl AgentHooks for EngineHooks {
     }
 }
 
+/// The hooks of the planning turn: no tool runs.
+struct NoTools<'a>(&'a EngineHooks);
+
+#[async_trait]
+impl AgentHooks for NoTools<'_> {
+    fn emit(&self, ev: TaskEvent) {
+        self.0.emit(ev);
+    }
+
+    async fn call_tool(&self, _call_id: &str, _name: &str, _input: &Value) -> ToolOutcome {
+        ToolOutcome {
+            ok: false,
+            content: "Not run: this is the planning step; write the plan without using tools."
+                .into(),
+        }
+    }
+
+    async fn checkpoint(&self, messages: &[Message]) {
+        self.0.checkpoint(messages).await;
+    }
+
+    fn cost(&self, spec: &str, own_key: bool, usage: &Usage) -> UsageCost {
+        self.0.cost(spec, own_key, usage)
+    }
+
+    async fn record_usage(&self, spec: &str, own_key: bool, usage: &Usage, cost: UsageCost) {
+        self.0.record_usage(spec, own_key, usage, cost).await;
+    }
+
+    async fn server_credit_left(&self) -> bool {
+        self.0.server_credit_left().await
+    }
+}
+
 impl EngineHooks {
-    async fn execute(&self, name: &str, input: &Value, summary: &str) -> ToolOutcome {
-        let outcome = self.engine.tools.execute(&self.live.ctx, name, input).await;
+    /// Runs an approved call: with the user's edit of the command, if any
+    /// (what runs, and the model is told), or as the model asked.
+    async fn run_approved(
+        &self,
+        call_id: &str,
+        name: &str,
+        input: &Value,
+        summary: &str,
+        decision: &ApprovalDecision,
+    ) -> ToolOutcome {
+        let field = match name {
+            "run_command" => Some("command"),
+            "send_to_terminal" => Some("input"),
+            _ => None,
+        };
+        let edit = field.and_then(|f| {
+            decision
+                .edited_text()
+                .filter(|e| Some(*e) != input[f].as_str().map(str::trim))
+                .map(|e| (f, e.to_string()))
+        });
+        let mut outcome = match &edit {
+            Some((f, cmd)) => {
+                let mut edited = input.clone();
+                edited[*f] = Value::String(cmd.clone());
+                let summary = ToolRuntime::summarize(name, &edited);
+                let mut o = self.execute(call_id, name, &edited, &summary, true).await;
+                o.content = format!(
+                    "The user edited the command before approving it; this is what ran instead of yours:\n{cmd}\n\n{}",
+                    o.content
+                );
+                o
+            }
+            None => self.execute(call_id, name, input, summary, false).await,
+        };
+        if let Some(r) = decision.reason_text() {
+            outcome.content = format!(
+                "The user approved it with this note: {r}\n\n{}",
+                outcome.content
+            );
+        }
+        outcome
+    }
+
+    /// Runs a tool (stopping it if the task is cancelled), audits changes
+    /// and records the commands and writes for the runbook.
+    async fn execute(
+        &self,
+        call_id: &str,
+        name: &str,
+        input: &Value,
+        summary: &str,
+        edited: bool,
+    ) -> ToolOutcome {
+        let outcome = tokio::select! {
+            biased;
+            _ = self.live.cancel.cancelled() => {
+                return ToolOutcome {
+                    ok: false,
+                    content: "Stopped by the user before it finished.".into(),
+                };
+            }
+            o = self.engine.tools.execute(&self.live.ctx, name, input) => o,
+        };
         if ToolRuntime::effect(name, input) == crate::policy::Effect::Write || name == "run_command"
         {
             let _ = self
@@ -1178,20 +2255,45 @@ impl EngineHooks {
                     &format!("ai:{}", self.live.id),
                     &format!("ai.tool.{name}"),
                     input["host"].as_str().map(str::to_string),
-                    json!({"summary": summary, "ok": outcome.ok}),
+                    json!({"summary": summary, "ok": outcome.ok, "edited": edited}),
                 )
                 .await;
+        }
+        if matches!(name, "run_command" | "send_to_terminal" | "write_file") {
+            let text = |k: &str| input[k].as_str().map(str::to_string);
+            let step = ExecutedStep {
+                call_id: call_id.to_string(),
+                tool: name.to_string(),
+                host: text("host").or_else(|| text("session_id")),
+                command: text("command").or_else(|| text("input")),
+                path: text("path"),
+                content: input["content"]
+                    .as_str()
+                    .filter(|c| c.len() <= MAX_STEP_CONTENT)
+                    .map(str::to_string),
+                ok: outcome.ok,
+                edited,
+                explanation: text("reason").filter(|r| !r.trim().is_empty()),
+                at: now_ms(),
+            };
+            let mut ctx = self.live.task_ctx.lock();
+            if ctx.steps.len() < MAX_STEPS_KEPT {
+                ctx.steps.push(step);
+            }
         }
         outcome
     }
 
+    /// Asks the user and waits for the answer (denied when it times out or
+    /// the task is cancelled).
     async fn request_approval(
         &self,
         call_id: &str,
         name: &str,
         input: &Value,
         summary: &str,
-    ) -> bool {
+        preview: ApprovalPreview,
+    ) -> ApprovalDecision {
         let approval_id = new_id();
         let (tx, rx) = oneshot::channel();
         self.live.approvals.lock().insert(approval_id, tx);
@@ -1208,6 +2310,7 @@ impl EngineHooks {
                 decided_by: None,
                 created_at: now_ms(),
                 decided_at: None,
+                preview: serde_json::to_value(&preview).ok(),
             })
             .await;
         self.emit(TaskEvent::ApprovalRequested {
@@ -1216,6 +2319,7 @@ impl EngineHooks {
             tool: name.to_string(),
             summary: summary.to_string(),
             input: input.clone(),
+            preview: Some(preview),
         });
         self.row.lock().status = TaskStatus::WaitingApproval.as_str().into();
         let _ = self
@@ -1231,12 +2335,12 @@ impl EngineHooks {
             _ = self.live.cancel.cancelled() => None,
             r = tokio::time::timeout(timeout, rx) => r.ok().and_then(|r| r.ok()),
         };
-        let (approved, by) = match decision {
-            Some((approved, always)) => {
-                if approved && always {
+        let (decision, by) = match decision {
+            Some(d) => {
+                if d.approve && d.always {
                     *self.live.mode.lock() = PermissionMode::Auto;
                 }
-                (approved, "user".to_string())
+                (d, "user".to_string())
             }
             None => {
                 self.live.approvals.lock().remove(&approval_id);
@@ -1245,13 +2349,18 @@ impl EngineHooks {
                     .store
                     .ai_decide_approval(approval_id, "expired", "timeout")
                     .await;
-                (false, "timeout".to_string())
+                (ApprovalDecision::deny(None), "timeout".to_string())
             }
         };
         self.emit(TaskEvent::ApprovalDecided {
             approval_id,
-            approved,
+            approved: decision.approve,
             by,
+            edited: decision
+                .edited_text()
+                .filter(|_| decision.approve)
+                .map(str::to_string),
+            reason: decision.reason_text(),
         });
         if !self.live.cancel.is_cancelled() {
             self.row.lock().status = TaskStatus::Running.as_str().into();
@@ -1264,7 +2373,7 @@ impl EngineHooks {
                 status: TaskStatus::Running,
             });
         }
-        approved
+        decision
     }
 }
 
@@ -1303,6 +2412,9 @@ pub fn user_text(parts: &[Part]) -> String {
         .collect::<Vec<_>>()
         .join("")
 }
+
+#[cfg(test)]
+mod tests;
 
 #[cfg(test)]
 mod title_tests {

@@ -8,7 +8,7 @@ client for desktop and mobile with an optional self-hosted server, and the
 |---|---|
 | `termoak-core` | Models, SQLite, encrypted vault, users, sessions and host resolution |
 | `termoak-ssh` | SSH engine: connection, terminal, exec, SFTP, forwarding, keys, recording; Telnet terminal |
-| `termoak-ai` | AI engine: providers, agent, tools, policies, MCP |
+| `termoak-ai` | AI engine: providers, agent, tools, policies, approvals with previews, multi-host tasks, runbooks, secret redaction, MCP |
 | `termoak-client` | API client, sync, remote sessions and relay |
 | `termoak-ffi` | UniFFI layer for the Swift and Kotlin apps |
 | `termoak-update` | Signed self-update and the `termoak-release` tool |

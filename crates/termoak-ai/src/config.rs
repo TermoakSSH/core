@@ -173,6 +173,14 @@ pub struct AiConfig {
     pub max_concurrent_tasks: usize,
     /// Tool mode for external agents using MCP with a user token.
     pub mcp_user_mode: PermissionMode,
+    /// Hosts of a multi-host task (one conversation per host) that run at
+    /// the same time.
+    pub fan_out_concurrency: usize,
+    /// Most hosts in a multi-host task.
+    pub max_fan_out_hosts: usize,
+    /// Hide secrets (passwords, tokens, keys...) in tool results and
+    /// terminal context before they go to the AI provider.
+    pub redact_secrets: bool,
 }
 
 impl Default for AiConfig {
@@ -194,6 +202,9 @@ impl Default for AiConfig {
             monthly_budget_usd: None,
             max_concurrent_tasks: 4,
             mcp_user_mode: PermissionMode::ReadOnly,
+            fan_out_concurrency: 4,
+            max_fan_out_hosts: 50,
+            redact_secrets: true,
         }
     }
 }

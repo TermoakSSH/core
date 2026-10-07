@@ -54,6 +54,11 @@ pub struct AiApprovalRow {
     pub decided_by: Option<String>,
     pub created_at: i64,
     pub decided_at: Option<i64>,
+    /// What the approval shows (`termoak_ai::approval::ApprovalPreview`:
+    /// the command with its risk, the diff of a file...). `None` for
+    /// approvals saved before schema v11.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preview: Option<serde_json::Value>,
 }
 
 /// `ai_usage` row: one AI call (a turn of a task or a quick-assistant call).
@@ -107,7 +112,7 @@ fn map_task(r: &rusqlite::Row<'_>) -> rusqlite::Result<AiTaskRow> {
 }
 
 const APPROVAL_COLUMNS: &str =
-    "id, task_id, tool, input, summary, status, decided_by, created_at, decided_at";
+    "id, task_id, tool, input, summary, status, decided_by, created_at, decided_at, preview";
 
 fn map_approval(r: &rusqlite::Row<'_>) -> rusqlite::Result<AiApprovalRow> {
     let input: String = r.get(3)?;
@@ -121,6 +126,9 @@ fn map_approval(r: &rusqlite::Row<'_>) -> rusqlite::Result<AiApprovalRow> {
         decided_by: r.get(6)?,
         created_at: r.get(7)?,
         decided_at: r.get(8)?,
+        preview: r
+            .get::<_, Option<String>>(9)?
+            .and_then(|p| serde_json::from_str(&p).ok()),
     })
 }
 
@@ -321,7 +329,7 @@ impl Store {
     pub async fn ai_insert_approval(&self, row: AiApprovalRow) -> Result<()> {
         self.call(move |c, _| {
             c.execute(
-                &format!("INSERT INTO ai_approvals ({APPROVAL_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)"),
+                &format!("INSERT INTO ai_approvals ({APPROVAL_COLUMNS}) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)"),
                 params![
                     row.id.to_string(),
                     row.task_id.to_string(),
@@ -331,7 +339,8 @@ impl Store {
                     row.status,
                     row.decided_by,
                     row.created_at,
-                    row.decided_at
+                    row.decided_at,
+                    row.preview.as_ref().map(|p| p.to_string())
                 ],
             )?;
             Ok(())
@@ -368,7 +377,7 @@ impl Store {
     pub async fn ai_pending_approvals(&self, owner: Id) -> Result<Vec<AiApprovalRow>> {
         self.call(move |c, _| {
             let mut stmt = c.prepare(
-                "SELECT a.id, a.task_id, a.tool, a.input, a.summary, a.status, a.decided_by, a.created_at, a.decided_at
+                "SELECT a.id, a.task_id, a.tool, a.input, a.summary, a.status, a.decided_by, a.created_at, a.decided_at, a.preview
                  FROM ai_approvals a JOIN ai_tasks t ON t.id = a.task_id
                  WHERE t.owner_id = ?1 AND a.status = 'pending' ORDER BY a.created_at",
             )?;
@@ -492,9 +501,17 @@ mod tests {
                 decided_by: None,
                 created_at: 1,
                 decided_at: None,
+                preview: Some(json!({"kind": "command", "risk": "high"})),
             })
             .await
             .unwrap();
+        // The preview is kept (schema v11).
+        let pending = store.ai_pending_approvals(owner).await.unwrap();
+        assert_eq!(pending[0].preview.as_ref().unwrap()["risk"], "high");
+        assert_eq!(
+            store.ai_approvals(running.id).await.unwrap()[0].preview,
+            pending[0].preview
+        );
         let n = store
             .ai_fail_orphan_tasks_with("the app was closed")
             .await

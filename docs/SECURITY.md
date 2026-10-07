@@ -152,8 +152,23 @@ Digital SL through https://termoak.com.
 - **Permissions.** See [AI.md](AI.md). By default the AI only reads; changes
   wait for your approval.
 - **Codex.** Runs sandboxed and cannot touch the server machine.
+- **Approvals show what will run.** The exact command with a risk level and
+  the classifier's reasons, or the diff of a file against its current
+  content. A command the user edits before approving is what runs and what
+  the audit log records (`edited: true`).
 - **Audit.** Every tool call, approval and denial is kept in the task
   history and in the audit log.
+- **Secret redaction.** Tool results (command output, files, terminal
+  screens) and terminal context pass through `termoak_ai::redact()` before
+  they reach an AI provider: private key blocks, `Authorization`/cookie
+  headers, URL passwords, values of keys such as `password`, `*_TOKEN`,
+  `api_key`, `client_secret` (`.env`, YAML, JSON, command lines) and known
+  token formats (AWS, Google, GitHub, GitLab, Slack, Stripe, OpenAI, JWT...)
+  become `[redacted]`. `write_file` refuses content with `[redacted]` so a
+  file is never written back without its secrets. It is a heuristic
+  (`[ai] redact_secrets`, on by default): it reduces what reaches the
+  provider, it does not replace the permission modes. See
+  [AI.md](AI.md#secret-redaction).
 - **MCP with a user token.** Read-only by default.
 
 ## Desktop updates
