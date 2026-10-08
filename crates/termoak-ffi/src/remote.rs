@@ -6,9 +6,10 @@ use std::sync::Arc;
 use futures::StreamExt;
 use serde_json::{Value, json};
 use termoak_client::ApiClient;
-use termoak_client::relay::{RelayEvent, RelayShare};
+use termoak_client::relay::{LocalTerm, RelayEvent, RelayShare};
 use termoak_client::remote::{RemoteEvent, RemoteTerminal, owner_msg};
 use termoak_core::Id;
+use termoak_ssh::Terminal;
 use tokio::sync::{Notify, mpsc};
 use tokio_tungstenite::tungstenite::Message;
 
@@ -995,16 +996,43 @@ impl SharedTerminal {
 #[uniffi::export]
 impl TermoakCore {
     /// Shares a local terminal through the server with the given title. Then
-    /// invite with `invite_user` or `invite_link`.
+    /// invite with `invite_user` or `invite_link`. SSH and Telnet terminals.
     pub async fn share_terminal(
         &self,
         terminal: Arc<TerminalHandle>,
         title: String,
     ) -> Result<Arc<SharedTerminal>> {
         let api = self.api().await?;
-        let term = terminal.session_arc();
+        let term = terminal.terminal();
         run(async move {
-            let share = RelayShare::start(&api, term, &title).await?;
+            let share = match term {
+                Terminal::Ssh(t) => RelayShare::start(&api, t, &title).await?,
+                // Telnet: its output hub, with the input and the end forwarded.
+                Terminal::Telnet(t) => {
+                    let (input, mut input_rx) = mpsc::unbounded_channel::<bytes::Bytes>();
+                    let writer = t.clone();
+                    tokio::spawn(async move {
+                        while let Some(data) = input_rx.recv().await {
+                            if writer.write(data).await.is_err() {
+                                break;
+                            }
+                        }
+                    });
+                    let (closed_tx, closed) = tokio::sync::watch::channel(false);
+                    let mut status = t.watch_status();
+                    tokio::spawn(async move {
+                        let _ = status.wait_for(|s| s.is_closed()).await;
+                        let _ = closed_tx.send(true);
+                    });
+                    let local = LocalTerm {
+                        hub: t.hub().clone(),
+                        input,
+                        size: t.size(),
+                        closed,
+                    };
+                    RelayShare::start_local(&api, local, &title).await?
+                }
+            };
             Ok(Arc::new(SharedTerminal {
                 session_id: share.session_id,
                 api,

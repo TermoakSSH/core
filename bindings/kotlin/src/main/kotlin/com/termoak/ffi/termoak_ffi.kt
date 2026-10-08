@@ -1128,7 +1128,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sshsession_is_closed(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sshsession_is_telnet(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_sshsession_open_terminal(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_sshsession_protocol(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_sshsession_sftp_chmod(
     ): Int
@@ -1159,6 +1163,12 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_sshsession_start_forward_spec(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalhandle_close_terminal(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalhandle_is_telnet(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalhandle_latency_ms(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalhandle_protocol(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalhandle_recording_path(
     ): Int
@@ -1805,8 +1815,12 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_sshsession_is_closed(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_method_sshsession_is_telnet(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_method_sshsession_open_terminal(`ptr`: Long,`cols`: Int,`rows`: Int,`listener`: Long,`record`: Byte,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_sshsession_protocol(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_chmod(`ptr`: Long,`path`: RustBuffer.ByValue,`mode`: Int,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_download(`ptr`: Long,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,
@@ -1841,6 +1855,12 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_terminalhandle_close_terminal(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_terminalhandle_is_telnet(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_terminalhandle_latency_ms(`ptr`: Long,`timeoutMs`: Int,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_terminalhandle_protocol(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalhandle_recording_path(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalhandle_resize(`ptr`: Long,`cols`: Int,`rows`: Int,uniffi_out_err: UniffiRustCallStatus, 
@@ -2087,7 +2107,7 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_connect(`ptr`: Long,`hostId`: RustBuffer.ByValue,`auth`: Long,`accountId`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,`telnetAutoLogin`: Byte,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_data_dir(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2703,7 +2723,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_account_id() and 0xFFFF) != 9295) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_details() and 0xFFFF) != 20213) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_details() and 0xFFFF) != 43701) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_detect_os() and 0xFFFF) != 32163) {
@@ -2712,7 +2732,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_detect_os_info() and 0xFFFF) != 52466) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_disconnect() and 0xFFFF) != 13735) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_disconnect() and 0xFFFF) != 29129) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_exec() and 0xFFFF) != 49554) {
@@ -2724,7 +2744,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_is_closed() and 0xFFFF) != 14205) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_open_terminal() and 0xFFFF) != 42306) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_is_telnet() and 0xFFFF) != 55522) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_open_terminal() and 0xFFFF) != 61887) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_protocol() and 0xFFFF) != 20482) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_chmod() and 0xFFFF) != 31592) {
@@ -2760,7 +2786,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_write() and 0xFFFF) != 12024) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_start_auto_forwards() and 0xFFFF) != 35721) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_start_auto_forwards() and 0xFFFF) != 31826) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_start_forward() and 0xFFFF) != 22441) {
@@ -2772,13 +2798,22 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_close_terminal() and 0xFFFF) != 33997) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_is_telnet() and 0xFFFF) != 8248) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_latency_ms() and 0xFFFF) != 10588) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_protocol() and 0xFFFF) != 11568) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_recording_path() and 0xFFFF) != 3307) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_resize() and 0xFFFF) != 2910) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_session() and 0xFFFF) != 57776) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_session() and 0xFFFF) != 26226) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalhandle_snapshot() and 0xFFFF) != 22927) {
@@ -2994,7 +3029,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_join_link() and 0xFFFF) != 12633) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() and 0xFFFF) != 33023) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() and 0xFFFF) != 8801) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events() and 0xFFFF) != 13941) {
@@ -3114,7 +3149,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect() and 0xFFFF) != 23384) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() and 0xFFFF) != 62785) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() and 0xFFFF) != 47903) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() and 0xFFFF) != 56000) {
@@ -9371,6 +9406,11 @@ public object FfiConverterTypeSharedTerminalListener: FfiConverter<SharedTermina
  * Local SSH connection to a host. Terminals, SFTP, tunnels and commands are
  * opened over it. It is closed with [`SshSession::disconnect`] or when all
  * its references are dropped (including terminals and tunnels).
+ *
+ * A Telnet terminal's [`TerminalHandle::session`] is one too, so the apps
+ * keep a single type: `is_telnet()` tells it apart, `details`, `is_closed`
+ * and `disconnect` work, and the SSH-only calls (SFTP, tunnels, `exec`,
+ * OS detection, another terminal) answer `NotSupportedForTelnet`.
  */
 public interface SshSessionInterface {
     
@@ -9380,6 +9420,10 @@ public interface SshSessionInterface {
      */
     fun `accountId`(): kotlin.String?
     
+    /**
+     * For Telnet: label, address and port (no username, key, banner or
+     * jumps; `via` has the proxy, if any).
+     */
     fun `details`(): ConnectionDetails
     
     /**
@@ -9399,6 +9443,7 @@ public interface SshSessionInterface {
     
     /**
      * Closes the connection (and with it its terminals, SFTP and tunnels).
+     * Telnet: closes the terminal.
      */
     suspend fun `disconnect`()
     
@@ -9412,11 +9457,25 @@ public interface SshSessionInterface {
     fun `isClosed`(): kotlin.Boolean
     
     /**
+     * A Telnet terminal's session: the SSH-only calls answer
+     * `NotSupportedForTelnet`.
+     */
+    fun `isTelnet`(): kotlin.Boolean
+    
+    /**
      * Opens a terminal (PTY with a shell) with the host's effective settings
      * (TERM, variables, startup snippet...). `record` forces recording
      * (asciicast in `<data_dir>/recordings`).
+     *
+     * Telnet: `NotSupportedForTelnet` (each Telnet terminal is its own
+     * connection: open another one with `TermoakCore::connect_terminal`).
      */
     suspend fun `openTerminal`(`cols`: kotlin.UInt, `rows`: kotlin.UInt, `listener`: TerminalListener, `record`: kotlin.Boolean = false): TerminalHandle
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+    fun `protocol`(): kotlin.String
     
     /**
      * Changes the permissions (e.g. `0o644`).
@@ -9474,7 +9533,7 @@ public interface SshSessionInterface {
     
     /**
      * Starts the host's tunnels marked `auto_start`. Those that fail are
-     * skipped (and the error is logged).
+     * skipped (and the error is logged). Telnet: `NotSupportedForTelnet`.
      */
     suspend fun `startAutoForwards`(): List<ActiveForward>
     
@@ -9495,6 +9554,11 @@ public interface SshSessionInterface {
  * Local SSH connection to a host. Terminals, SFTP, tunnels and commands are
  * opened over it. It is closed with [`SshSession::disconnect`] or when all
  * its references are dropped (including terminals and tunnels).
+ *
+ * A Telnet terminal's [`TerminalHandle::session`] is one too, so the apps
+ * keep a single type: `is_telnet()` tells it apart, `details`, `is_closed`
+ * and `disconnect` work, and the SSH-only calls (SFTP, tunnels, `exec`,
+ * OS detection, another terminal) answer `NotSupportedForTelnet`.
  */
 open class SshSession: Disposable, AutoCloseable, SshSessionInterface
 {
@@ -9614,7 +9678,11 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
     }
     
 
-    override fun `details`(): ConnectionDetails {
+    
+    /**
+     * For Telnet: label, address and port (no username, key, banner or
+     * jumps; `via` has the proxy, if any).
+     */override fun `details`(): ConnectionDetails {
             return FfiConverterTypeConnectionDetails.lift(
     callWithHandle {
     uniffiRustCall() { _status ->
@@ -9683,6 +9751,7 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
     
     /**
      * Closes the connection (and with it its terminals, SFTP and tunnels).
+     * Telnet: closes the terminal.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -9759,9 +9828,29 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
 
     
     /**
+     * A Telnet terminal's session: the SSH-only calls answer
+     * `NotSupportedForTelnet`.
+     */override fun `isTelnet`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_sshsession_is_telnet(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Opens a terminal (PTY with a shell) with the host's effective settings
      * (TERM, variables, startup snippet...). `record` forces recording
      * (asciicast in `<data_dir>/recordings`).
+     *
+     * Telnet: `NotSupportedForTelnet` (each Telnet terminal is its own
+     * connection: open another one with `TermoakCore::connect_terminal`).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -9786,6 +9875,22 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
         TermoakException.ErrorHandler,
     )
     }
+
+    
+    /**
+     * `ssh` or `telnet`.
+     */override fun `protocol`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_sshsession_protocol(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
 
     
     /**
@@ -10078,7 +10183,7 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
     
     /**
      * Starts the host's tunnels marked `auto_start`. Those that fail are
-     * skipped (and the error is logged).
+     * skipped (and the error is logged). Telnet: `NotSupportedForTelnet`.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -10289,8 +10394,9 @@ public object FfiConverterTypeSshSession: FfiConverter<SshSession, Long> {
 
 
 /**
- * Open local terminal. It is closed with [`TerminalHandle::close_terminal`]
- * or when dropped. The `TerminalListener` is retained until the terminal closes.
+ * Open local terminal, over SSH or Telnet. It is closed with
+ * [`TerminalHandle::close_terminal`] or when dropped. The
+ * `TerminalListener` is retained until the terminal closes.
  */
 public interface TerminalHandleInterface {
     
@@ -10300,6 +10406,25 @@ public interface TerminalHandleInterface {
      * `close()` (releasing them, which also closes the terminal).
      */
     fun `closeTerminal`()
+    
+    /**
+     * Telnet terminal (unencrypted; no SFTP, tunnels or commands).
+     */
+    fun `isTelnet`(): kotlin.Boolean
+    
+    /**
+     * Round trip to the host in milliseconds: an SSH keep-alive on the
+     * connection, or a Telnet `TIMING-MARK` sent behind what is typed.
+     * Measured apart: the output keeps flowing meanwhile. Errors: `Closed`,
+     * `Connection` (timed out) or, on a Telnet host that does not answer
+     * timing marks (a raw TCP service), `Invalid`.
+     */
+    suspend fun `latencyMs`(`timeoutMs`: kotlin.UInt = 5000u): kotlin.Double
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+    fun `protocol`(): kotlin.String
     
     /**
      * Path of the recording, if recording.
@@ -10312,7 +10437,8 @@ public interface TerminalHandleInterface {
     fun `resize`(`cols`: kotlin.UInt, `rows`: kotlin.UInt)
     
     /**
-     * The terminal's connection (to open SFTP or tunnels over it).
+     * The terminal's connection (to open SFTP or tunnels over it). For a
+     * Telnet terminal its SSH-only calls answer `NotSupportedForTelnet`.
      */
     fun `session`(): SshSession
     
@@ -10343,8 +10469,9 @@ public interface TerminalHandleInterface {
 }
 
 /**
- * Open local terminal. It is closed with [`TerminalHandle::close_terminal`]
- * or when dropped. The `TerminalListener` is retained until the terminal closes.
+ * Open local terminal, over SSH or Telnet. It is closed with
+ * [`TerminalHandle::close_terminal`] or when dropped. The
+ * `TerminalListener` is retained until the terminal closes.
  */
 open class TerminalHandle: Disposable, AutoCloseable, TerminalHandleInterface
 {
@@ -10466,6 +10593,67 @@ open class TerminalHandle: Disposable, AutoCloseable, TerminalHandleInterface
 
     
     /**
+     * Telnet terminal (unencrypted; no SFTP, tunnels or commands).
+     */override fun `isTelnet`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalhandle_is_telnet(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Round trip to the host in milliseconds: an SSH keep-alive on the
+     * connection, or a Telnet `TIMING-MARK` sent behind what is typed.
+     * Measured apart: the output keeps flowing meanwhile. Errors: `Closed`,
+     * `Connection` (timed out) or, on a Telnet host that does not answer
+     * timing marks (a raw TCP service), `Invalid`.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `latencyMs`(`timeoutMs`: kotlin.UInt) : kotlin.Double {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_terminalhandle_latency_ms(
+                uniffiHandle,
+                
+        FfiConverterUInt.lower(`timeoutMs`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_f64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_f64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_f64(future) },
+        // lift function
+        { FfiConverterDouble.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * `ssh` or `telnet`.
+     */override fun `protocol`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalhandle_protocol(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Path of the recording, if recording.
      */override fun `recordingPath`(): kotlin.String? {
             return FfiConverterOptionalString.lift(
@@ -10500,7 +10688,8 @@ open class TerminalHandle: Disposable, AutoCloseable, TerminalHandleInterface
 
     
     /**
-     * The terminal's connection (to open SFTP or tunnels over it).
+     * The terminal's connection (to open SFTP or tunnels over it). For a
+     * Telnet terminal its SSH-only calls answer `NotSupportedForTelnet`.
      */override fun `session`(): SshSession {
             return FfiConverterTypeSshSession.lift(
     callWithHandle {
@@ -12042,7 +12231,7 @@ public interface TermoakCoreInterface {
     
     /**
      * Shares a local terminal through the server with the given title. Then
-     * invite with `invite_user` or `invite_link`.
+     * invite with `invite_user` or `invite_link`. SSH and Telnet terminals.
      */
     suspend fun `shareTerminal`(`terminal`: TerminalHandle, `title`: kotlin.String): SharedTerminal
     
@@ -12291,8 +12480,15 @@ public interface TermoakCoreInterface {
      * Shortcut: connects and opens a terminal. The connection remains
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
+     *
+     * Telnet hosts (protocol `telnet`) open a Telnet terminal instead: same
+     * handle, listener and calls (`auth` is not used: Telnet has no keys or
+     * login protocol). With `telnet_auto_login` (the desktop's "Log in to
+     * Telnet hosts automatically"), the host's username and password answer
+     * its first `login:` and `Password:` prompts, each once, during the
+     * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
      */
-    suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String? = null): TerminalHandle
+    suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String? = null, `telnetAutoLogin`: kotlin.Boolean = true): TerminalHandle
     
     /**
      * The vault's data directory.
@@ -14169,7 +14365,7 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     
     /**
      * Shares a local terminal through the server with the given title. Then
-     * invite with `invite_user` or `invite_link`.
+     * invite with `invite_user` or `invite_link`. SSH and Telnet terminals.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -15233,10 +15429,17 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * Shortcut: connects and opens a terminal. The connection remains
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
+     *
+     * Telnet hosts (protocol `telnet`) open a Telnet terminal instead: same
+     * handle, listener and calls (`auth` is not used: Telnet has no keys or
+     * login protocol). With `telnet_auto_login` (the desktop's "Log in to
+     * Telnet hosts automatically"), the host's username and password answer
+     * its first `login:` and `Password:` prompts, each once, during the
+     * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String?) : TerminalHandle {
+    override suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String?, `telnetAutoLogin`: kotlin.Boolean) : TerminalHandle {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(
@@ -15248,6 +15451,7 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterTypeAuthHandler.lower(`auth`),
         FfiConverterTypeTerminalListener.lower(`listener`),
         FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterBoolean.lower(`telnetAutoLogin`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -24729,6 +24933,14 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class UseOnlyNeedsServer(message: String) : TermoakException(message)
         
+    /**
+     * The host is a Telnet host and this needs SSH (SFTP, tunnels,
+     * commands, OS detection, an SSH connection with `connect`): hide or
+     * disable it for Telnet hosts (`SshHost.protocol`,
+     * `TerminalHandle::is_telnet`).
+     */
+        class NotSupportedForTelnet(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -24767,6 +24979,7 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             23 -> TermoakException.SecretHidden(FfiConverterString.read(buf))
             24 -> TermoakException.UseOnlyStrict(FfiConverterString.read(buf))
             25 -> TermoakException.UseOnlyNeedsServer(FfiConverterString.read(buf))
+            26 -> TermoakException.NotSupportedForTelnet(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -24876,6 +25089,10 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.UseOnlyNeedsServer -> {
                 buf.putInt(25)
+                Unit
+            }
+            is TermoakException.NotSupportedForTelnet -> {
+                buf.putInt(26)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

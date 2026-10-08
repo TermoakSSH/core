@@ -720,8 +720,11 @@ fn ssh_end_to_end() {
         auth.clone(),
         listener.clone(),
         None,
+        true,
     ))
     .unwrap();
+    assert!(!term.is_telnet());
+    assert_eq!(term.session().protocol(), "ssh");
     assert_eq!(auth.host_keys.lock().len(), 1);
     assert_eq!(core.list_known_hosts(None).unwrap().len(), 1);
     assert_eq!(term.status(), TerminalStatus::Running);
@@ -901,6 +904,222 @@ fn ssh_end_to_end() {
         .unwrap();
     assert!(matches!(err, TermoakError::HostKey(_)), "{err:?}");
     assert_eq!(auth.host_keys.lock().len(), 1);
+}
+
+// ----- Telnet -----
+
+mod telnet_codes {
+    pub const IAC: u8 = 255;
+    pub const DO: u8 = 253;
+    pub const WILL: u8 = 251;
+    pub const SB: u8 = 250;
+    pub const SE: u8 = 240;
+    pub const NAWS: u8 = 31;
+    pub const TIMING_MARK: u8 = 6;
+}
+
+/// Reads from the fake Telnet server's socket until `want` has arrived.
+fn telnet_read_until(s: &mut std::net::TcpStream, got: &mut Vec<u8>, want: &[u8]) {
+    use std::io::Read;
+    s.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
+    let mut buf = [0u8; 1024];
+    while !got.windows(want.len()).any(|w| w == want) {
+        let n = s
+            .read(&mut buf)
+            .unwrap_or_else(|e| panic!("waiting for {want:?} ({e}); got {got:?}"));
+        assert!(n > 0, "closed while waiting for {want:?}; got {got:?}");
+        got.extend_from_slice(&buf[..n]);
+    }
+}
+
+/// A Telnet host on a fake server of this test (with `admin` / `pw`).
+fn telnet_host(core: &TermoakCore, port: u16) -> SshHost {
+    let mut h = host("switch", "127.0.0.1");
+    h.protocol = "telnet".into();
+    h.icon = Some("router".into());
+    h.settings.port = Some(port.into());
+    h.settings.username = Some("admin".into());
+    core.save_host(h, set("pw")).unwrap()
+}
+
+#[test]
+fn telnet_terminal_through_the_ffi() {
+    use std::io::Write;
+    use telnet_codes::*;
+
+    let dir = tempfile::tempdir().unwrap();
+    let core = new_core(dir.path(), &generate_vault_key());
+    let server = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = server.local_addr().unwrap().port();
+    let h = telnet_host(&core, port);
+    assert_eq!(h.protocol, "telnet");
+
+    // The same entry point as SSH; the AuthHandler is not used.
+    let auth = Arc::new(AcceptingAuth::default());
+    let listener = Arc::new(Collector::default());
+    let term = block_on(core.connect_terminal(
+        h.id.clone(),
+        100,
+        30,
+        auth.clone(),
+        listener.clone(),
+        None,
+        true,
+    ))
+    .unwrap();
+    let (mut srv, _) = server.accept().unwrap();
+    assert!(term.is_telnet());
+    assert_eq!(term.protocol(), "telnet");
+    assert_eq!(term.status(), TerminalStatus::Running);
+    assert!(auth.host_keys.lock().is_empty());
+
+    // Automatic login: each prompt answered once.
+    srv.write_all(b"\r\nUser Access Verification\r\n\r\nUsername: ")
+        .unwrap();
+    let mut got = Vec::new();
+    telnet_read_until(&mut srv, &mut got, b"admin\r\n");
+    srv.write_all(b"Password: ").unwrap();
+    telnet_read_until(&mut srv, &mut got, b"pw\r\n");
+
+    // The host accepts NAWS: the size arrives, and again after a resize.
+    srv.write_all(&[IAC, DO, NAWS]).unwrap();
+    let mut got = Vec::new();
+    telnet_read_until(&mut srv, &mut got, &[IAC, SB, NAWS, 0, 100, 0, 30, IAC, SE]);
+    srv.write_all(b"\r\nswitch# ").unwrap();
+    listener.wait_output("switch# ");
+    assert!(term.text_tail(1000).contains("switch#"));
+    term.resize(132, 43).unwrap();
+    telnet_read_until(&mut srv, &mut got, &[IAC, SB, NAWS, 0, 132, 0, 43, IAC, SE]);
+
+    // Input: Enter goes as CR LF.
+    term.write_text("show version\r".into()).unwrap();
+    telnet_read_until(&mut srv, &mut got, b"show version\r\n");
+
+    // Latency: a TIMING-MARK, answered.
+    let pinger = {
+        let term = term.clone();
+        std::thread::spawn(move || block_on(term.latency_ms(5000)))
+    };
+    telnet_read_until(&mut srv, &mut got, &[IAC, DO, TIMING_MARK]);
+    srv.write_all(&[IAC, WILL, TIMING_MARK]).unwrap();
+    let ms = pinger.join().unwrap().unwrap();
+    assert!((0.0..5000.0).contains(&ms), "{ms}");
+
+    // The session: details work, SSH-only calls are refused clearly.
+    let session = term.session();
+    assert!(session.is_telnet());
+    assert_eq!(session.host_id(), h.id);
+    let details = session.details();
+    assert_eq!(details.port, u32::from(port));
+    assert_eq!(details.address, "127.0.0.1");
+    assert!(details.server_fingerprint.is_none());
+    let refused = |r: std::result::Result<(), TermoakError>| {
+        let e = r.unwrap_err();
+        assert!(matches!(e, TermoakError::NotSupportedForTelnet(_)), "{e:?}");
+        assert!(e.to_string().contains("Telnet"), "{e}");
+    };
+    refused(block_on(session.clone().sftp_home()).map(drop));
+    refused(block_on(session.clone().sftp_list("/".into())).map(drop));
+    refused(block_on(session.exec("uname".into(), 5)).map(drop));
+    refused(block_on(session.detect_os()).map(drop));
+    refused(
+        block_on(session.start_forward_spec(
+            ForwardKind::Local,
+            "127.0.0.1".into(),
+            0,
+            Some("127.0.0.1".into()),
+            Some(80),
+        ))
+        .map(drop),
+    );
+    refused(block_on(session.start_auto_forwards()).map(drop));
+    refused(
+        block_on(
+            session
+                .clone()
+                .open_terminal(80, 24, Arc::new(Collector::default()), false),
+        )
+        .map(drop),
+    );
+    // An SSH connection to a Telnet host (for files or tunnels).
+    refused(block_on(core.connect(h.id.clone(), auth.clone(), None)).map(drop));
+    assert!(!session.is_closed());
+
+    // Closing: the host sees the end, the app gets Closed.
+    term.close_terminal();
+    let mut rest = Vec::new();
+    {
+        use std::io::Read;
+        srv.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
+        let mut buf = [0u8; 256];
+        loop {
+            match srv.read(&mut buf) {
+                Ok(0) => break,
+                Ok(n) => rest.extend_from_slice(&buf[..n]),
+                Err(e) => panic!("the client did not hang up: {e}"),
+            }
+        }
+    }
+    listener.wait_closed();
+    assert!(session.is_closed());
+    assert!(matches!(term.status(), TerminalStatus::Closed { .. }));
+}
+
+#[test]
+fn telnet_without_auto_login_and_host_hanging_up() {
+    use std::io::Write;
+
+    let dir = tempfile::tempdir().unwrap();
+    let core = new_core(dir.path(), &generate_vault_key());
+    let server = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = server.local_addr().unwrap().port();
+    let h = telnet_host(&core, port);
+    let listener = Arc::new(Collector::default());
+    let term = block_on(core.connect_terminal(
+        h.id.clone(),
+        80,
+        24,
+        Arc::new(AcceptingAuth::default()),
+        listener.clone(),
+        None,
+        false,
+    ))
+    .unwrap();
+    let (mut srv, _) = server.accept().unwrap();
+    srv.write_all(b"login: ").unwrap();
+    listener.wait_output("login: ");
+    // Nothing typed for the user: what arrives is what they type.
+    term.write_text("guest\r".into()).unwrap();
+    let mut got = Vec::new();
+    telnet_read_until(&mut srv, &mut got, b"guest\r\n");
+    assert!(!got.windows(5).any(|w| w == b"admin"), "{got:?}");
+    // A raw TCP service never spoke Telnet: no timing marks.
+    let fresh = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let raw = telnet_host(&core, fresh.local_addr().unwrap().port());
+    let raw_term = block_on(core.connect_terminal(
+        raw.id,
+        80,
+        24,
+        Arc::new(AcceptingAuth::default()),
+        Arc::new(Collector::default()),
+        None,
+        false,
+    ))
+    .unwrap();
+    let _raw_srv = fresh.accept().unwrap();
+    assert!(block_on(raw_term.latency_ms(2000)).is_err());
+
+    // The host hangs up.
+    drop(srv);
+    listener.wait_closed();
+    let statuses = listener.statuses.lock().clone();
+    assert!(
+        statuses.iter().any(|s| matches!(
+            s,
+            TerminalStatus::Closed { reason: Some(r), .. } if r.contains("closed by the host")
+        )),
+        "{statuses:?}"
+    );
 }
 
 #[test]

@@ -7,7 +7,8 @@
 //!   snippets, tunnels, known hosts), server account (login, sync, generic
 //!   API, persistent sessions, AI) and local SSH connections.
 //! - [`SshSession`]: local SSH connection with terminals, SFTP, tunnels and
-//!   commands.
+//!   commands. Telnet hosts open through the same `connect_terminal` and
+//!   [`TerminalHandle`]; SSH-only calls answer `NotSupportedForTelnet`.
 //! - [`ServerTerminalHandle`]: terminal that lives on the server (it stays
 //!   alive even if the phone disconnects).
 //! - [`TerminalScreen`]: terminal emulator (the desktop one) that turns the

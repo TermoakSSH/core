@@ -4340,6 +4340,11 @@ public func FfiConverterTypeSharedTerminalListener_lower(_ value: SharedTerminal
  * Local SSH connection to a host. Terminals, SFTP, tunnels and commands are
  * opened over it. It is closed with [`SshSession::disconnect`] or when all
  * its references are dropped (including terminals and tunnels).
+ *
+ * A Telnet terminal's [`TerminalHandle::session`] is one too, so the apps
+ * keep a single type: `is_telnet()` tells it apart, `details`, `is_closed`
+ * and `disconnect` work, and the SSH-only calls (SFTP, tunnels, `exec`,
+ * OS detection, another terminal) answer `NotSupportedForTelnet`.
  */
 public protocol SshSessionProtocol: AnyObject, Sendable {
     
@@ -4349,6 +4354,10 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
      */
     func accountId()  -> String?
     
+    /**
+     * For Telnet: label, address and port (no username, key, banner or
+     * jumps; `via` has the proxy, if any).
+     */
     func details()  -> ConnectionDetails
     
     /**
@@ -4368,6 +4377,7 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
     
     /**
      * Closes the connection (and with it its terminals, SFTP and tunnels).
+     * Telnet: closes the terminal.
      */
     func disconnect() async throws 
     
@@ -4381,11 +4391,25 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
     func isClosed()  -> Bool
     
     /**
+     * A Telnet terminal's session: the SSH-only calls answer
+     * `NotSupportedForTelnet`.
+     */
+    func isTelnet()  -> Bool
+    
+    /**
      * Opens a terminal (PTY with a shell) with the host's effective settings
      * (TERM, variables, startup snippet...). `record` forces recording
      * (asciicast in `<data_dir>/recordings`).
+     *
+     * Telnet: `NotSupportedForTelnet` (each Telnet terminal is its own
+     * connection: open another one with `TermoakCore::connect_terminal`).
      */
     func openTerminal(cols: UInt32, rows: UInt32, listener: TerminalListener, record: Bool) async throws  -> TerminalHandle
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+    func `protocol`()  -> String
     
     /**
      * Changes the permissions (e.g. `0o644`).
@@ -4443,7 +4467,7 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
     
     /**
      * Starts the host's tunnels marked `auto_start`. Those that fail are
-     * skipped (and the error is logged).
+     * skipped (and the error is logged). Telnet: `NotSupportedForTelnet`.
      */
     func startAutoForwards() async throws  -> [ActiveForward]
     
@@ -4462,6 +4486,11 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
  * Local SSH connection to a host. Terminals, SFTP, tunnels and commands are
  * opened over it. It is closed with [`SshSession::disconnect`] or when all
  * its references are dropped (including terminals and tunnels).
+ *
+ * A Telnet terminal's [`TerminalHandle::session`] is one too, so the apps
+ * keep a single type: `is_telnet()` tells it apart, `details`, `is_closed`
+ * and `disconnect` work, and the SSH-only calls (SFTP, tunnels, `exec`,
+ * OS detection, another terminal) answer `NotSupportedForTelnet`.
  */
 open class SshSession: SshSessionProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -4529,6 +4558,10 @@ open func accountId() -> String?  {
 })
 }
     
+    /**
+     * For Telnet: label, address and port (no username, key, banner or
+     * jumps; `via` has the proxy, if any).
+     */
 open func details() -> ConnectionDetails  {
     return try!  FfiConverterTypeConnectionDetails_lift(try! rustCall() {
         uniffiCallStatus in
@@ -4583,6 +4616,7 @@ open func detectOsInfo()async throws  -> RemoteOs?  {
     
     /**
      * Closes the connection (and with it its terminals, SFTP and tunnels).
+     * Telnet: closes the terminal.
      */
 open func disconnect()async throws   {
     return
@@ -4638,9 +4672,25 @@ open func isClosed() -> Bool  {
 }
     
     /**
+     * A Telnet terminal's session: the SSH-only calls answer
+     * `NotSupportedForTelnet`.
+     */
+open func isTelnet() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_sshsession_is_telnet(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Opens a terminal (PTY with a shell) with the host's effective settings
      * (TERM, variables, startup snippet...). `record` forces recording
      * (asciicast in `<data_dir>/recordings`).
+     *
+     * Telnet: `NotSupportedForTelnet` (each Telnet terminal is its own
+     * connection: open another one with `TermoakCore::connect_terminal`).
      */
 open func openTerminal(cols: UInt32, rows: UInt32, listener: TerminalListener, record: Bool = false)async throws  -> TerminalHandle  {
     return
@@ -4656,6 +4706,18 @@ open func openTerminal(cols: UInt32, rows: UInt32, listener: TerminalListener, r
             liftFunc: FfiConverterTypeTerminalHandle_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+open func `protocol`() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_sshsession_protocol(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
 }
     
     /**
@@ -4868,7 +4930,7 @@ open func sftpWrite(path: String, data: Data)async throws   {
     
     /**
      * Starts the host's tunnels marked `auto_start`. Those that fail are
-     * skipped (and the error is logged).
+     * skipped (and the error is logged). Telnet: `NotSupportedForTelnet`.
      */
 open func startAutoForwards()async throws  -> [ActiveForward]  {
     return
@@ -4975,8 +5037,9 @@ public func FfiConverterTypeSshSession_lower(_ value: SshSession) -> UInt64 {
 
 
 /**
- * Open local terminal. It is closed with [`TerminalHandle::close_terminal`]
- * or when dropped. The `TerminalListener` is retained until the terminal closes.
+ * Open local terminal, over SSH or Telnet. It is closed with
+ * [`TerminalHandle::close_terminal`] or when dropped. The
+ * `TerminalListener` is retained until the terminal closes.
  */
 public protocol TerminalHandleProtocol: AnyObject, Sendable {
     
@@ -4986,6 +5049,25 @@ public protocol TerminalHandleProtocol: AnyObject, Sendable {
      * `close()` (releasing them, which also closes the terminal).
      */
     func closeTerminal() 
+    
+    /**
+     * Telnet terminal (unencrypted; no SFTP, tunnels or commands).
+     */
+    func isTelnet()  -> Bool
+    
+    /**
+     * Round trip to the host in milliseconds: an SSH keep-alive on the
+     * connection, or a Telnet `TIMING-MARK` sent behind what is typed.
+     * Measured apart: the output keeps flowing meanwhile. Errors: `Closed`,
+     * `Connection` (timed out) or, on a Telnet host that does not answer
+     * timing marks (a raw TCP service), `Invalid`.
+     */
+    func latencyMs(timeoutMs: UInt32) async throws  -> Double
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+    func `protocol`()  -> String
     
     /**
      * Path of the recording, if recording.
@@ -4998,7 +5080,8 @@ public protocol TerminalHandleProtocol: AnyObject, Sendable {
     func resize(cols: UInt32, rows: UInt32) throws 
     
     /**
-     * The terminal's connection (to open SFTP or tunnels over it).
+     * The terminal's connection (to open SFTP or tunnels over it). For a
+     * Telnet terminal its SSH-only calls answer `NotSupportedForTelnet`.
      */
     func session()  -> SshSession
     
@@ -5027,8 +5110,9 @@ public protocol TerminalHandleProtocol: AnyObject, Sendable {
     
 }
 /**
- * Open local terminal. It is closed with [`TerminalHandle::close_terminal`]
- * or when dropped. The `TerminalListener` is retained until the terminal closes.
+ * Open local terminal, over SSH or Telnet. It is closed with
+ * [`TerminalHandle::close_terminal`] or when dropped. The
+ * `TerminalListener` is retained until the terminal closes.
  */
 open class TerminalHandle: TerminalHandleProtocol, @unchecked Sendable {
     fileprivate let handle: UInt64
@@ -5097,6 +5181,53 @@ open func closeTerminal()  {try! rustCall() {
 }
     
     /**
+     * Telnet terminal (unencrypted; no SFTP, tunnels or commands).
+     */
+open func isTelnet() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalhandle_is_telnet(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Round trip to the host in milliseconds: an SSH keep-alive on the
+     * connection, or a Telnet `TIMING-MARK` sent behind what is typed.
+     * Measured apart: the output keeps flowing meanwhile. Errors: `Closed`,
+     * `Connection` (timed out) or, on a Telnet host that does not answer
+     * timing marks (a raw TCP service), `Invalid`.
+     */
+open func latencyMs(timeoutMs: UInt32 = UInt32(5000))async throws  -> Double  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_terminalhandle_latency_ms(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(timeoutMs)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_f64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_f64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_f64,
+            liftFunc: FfiConverterDouble.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * `ssh` or `telnet`.
+     */
+open func `protocol`() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalhandle_protocol(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Path of the recording, if recording.
      */
 open func recordingPath() -> String?  {
@@ -5122,7 +5253,8 @@ open func resize(cols: UInt32, rows: UInt32)throws   {try rustCallWithError(FfiC
 }
     
     /**
-     * The terminal's connection (to open SFTP or tunnels over it).
+     * The terminal's connection (to open SFTP or tunnels over it). For a
+     * Telnet terminal its SSH-only calls answer `NotSupportedForTelnet`.
      */
 open func session() -> SshSession  {
     return try!  FfiConverterTypeSshSession_lift(try! rustCall() {
@@ -6259,7 +6391,7 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     
     /**
      * Shares a local terminal through the server with the given title. Then
-     * invite with `invite_user` or `invite_link`.
+     * invite with `invite_user` or `invite_link`. SSH and Telnet terminals.
      */
     func shareTerminal(terminal: TerminalHandle, title: String) async throws  -> SharedTerminal
     
@@ -6508,8 +6640,15 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Shortcut: connects and opens a terminal. The connection remains
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
+     *
+     * Telnet hosts (protocol `telnet`) open a Telnet terminal instead: same
+     * handle, listener and calls (`auth` is not used: Telnet has no keys or
+     * login protocol). With `telnet_auto_login` (the desktop's "Log in to
+     * Telnet hosts automatically"), the host's username and password answer
+     * its first `login:` and `Password:` prompts, each once, during the
+     * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
      */
-    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String?) async throws  -> TerminalHandle
+    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String?, telnetAutoLogin: Bool) async throws  -> TerminalHandle
     
     /**
      * The vault's data directory.
@@ -7901,7 +8040,7 @@ open func joinLink(token: String, listener: ServerTerminalListener)async throws 
     
     /**
      * Shares a local terminal through the server with the given title. Then
-     * invite with `invite_user` or `invite_link`.
+     * invite with `invite_user` or `invite_link`. SSH and Telnet terminals.
      */
 open func shareTerminal(terminal: TerminalHandle, title: String)async throws  -> SharedTerminal  {
     return
@@ -8696,13 +8835,20 @@ open func connect(hostId: String, auth: AuthHandler, accountId: String? = nil)as
      * Shortcut: connects and opens a terminal. The connection remains
      * reachable with `TerminalHandle::session()` (e.g. to open SFTP without
      * reconnecting).
+     *
+     * Telnet hosts (protocol `telnet`) open a Telnet terminal instead: same
+     * handle, listener and calls (`auth` is not used: Telnet has no keys or
+     * login protocol). With `telnet_auto_login` (the desktop's "Log in to
+     * Telnet hosts automatically"), the host's username and password answer
+     * its first `login:` and `Password:` prompts, each once, during the
+     * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
      */
-open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String? = nil)async throws  -> TerminalHandle  {
+open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String? = nil, telnetAutoLogin: Bool = true)async throws  -> TerminalHandle  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener),FfiConverterOptionString.lower(accountId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener),FfiConverterOptionString.lower(accountId),FfiConverterBool.lower(telnetAutoLogin)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -19722,6 +19868,14 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case UseOnlyNeedsServer(message: String)
     
+    /**
+     * The host is a Telnet host and this needs SSH (SFTP, tunnels,
+     * commands, OS detection, an SSH connection with `connect`): hide or
+     * disable it for Telnet hosts (`SshHost.protocol`,
+     * `TerminalHandle::is_telnet`).
+     */
+    case NotSupportedForTelnet(message: String)
+    
 
     
 
@@ -19851,6 +20005,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 26: return .NotSupportedForTelnet(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -19912,6 +20070,8 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(24))
         case .UseOnlyNeedsServer(_ /* message is ignored*/):
             writeInt(&buf, Int32(25))
+        case .NotSupportedForTelnet(_ /* message is ignored*/):
+            writeInt(&buf, Int32(26))
 
         
         }
@@ -22683,7 +22843,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_account_id() != 9295) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_details() != 20213) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_details() != 43701) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_detect_os() != 32163) {
@@ -22692,7 +22852,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_detect_os_info() != 52466) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_disconnect() != 13735) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_disconnect() != 29129) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_exec() != 49554) {
@@ -22704,7 +22864,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_is_closed() != 14205) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_open_terminal() != 42306) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_is_telnet() != 55522) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sshsession_open_terminal() != 61887) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_sshsession_protocol() != 20482) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_chmod() != 31592) {
@@ -22740,7 +22906,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_write() != 12024) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_start_auto_forwards() != 35721) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_start_auto_forwards() != 31826) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_start_forward() != 22441) {
@@ -22752,13 +22918,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_terminalhandle_close_terminal() != 33997) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_terminalhandle_is_telnet() != 8248) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalhandle_latency_ms() != 10588) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalhandle_protocol() != 11568) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_terminalhandle_recording_path() != 3307) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalhandle_resize() != 2910) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_terminalhandle_session() != 57776) {
+    if (uniffi_termoak_ffi_checksum_method_terminalhandle_session() != 26226) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalhandle_snapshot() != 22927) {
@@ -22974,7 +23149,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_join_link() != 12633) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() != 33023) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_share_terminal() != 8801) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events() != 13941) {
@@ -23094,7 +23269,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 23384) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 62785) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 47903) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() != 56000) {

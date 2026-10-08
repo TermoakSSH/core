@@ -98,6 +98,12 @@ pub enum TermoakError {
     /// when online, or through a server session.
     #[error("{0}")]
     UseOnlyNeedsServer(String),
+    /// The host is a Telnet host and this needs SSH (SFTP, tunnels,
+    /// commands, OS detection, an SSH connection with `connect`): hide or
+    /// disable it for Telnet hosts (`SshHost.protocol`,
+    /// `TerminalHandle::is_telnet`).
+    #[error("{0}")]
+    NotSupportedForTelnet(String),
 }
 
 /// Variant of a vault rule's stable code (core or server).

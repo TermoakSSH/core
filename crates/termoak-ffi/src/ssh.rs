@@ -1,5 +1,10 @@
 //! Local SSH engine: connections from the phone itself with terminals, SFTP,
 //! tunnels and commands. No server needed.
+//!
+//! Telnet hosts (protocol `telnet`) open through the same entry point
+//! ([`TermoakCore::connect_terminal`]) and give the same [`TerminalHandle`];
+//! what only SSH has (SFTP, tunnels, commands, OS detection) answers
+//! [`TermoakError::NotSupportedForTelnet`].
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -11,7 +16,7 @@ use termoak_core::Id;
 use termoak_core::model::{self as cm, SecretUpdate};
 use termoak_ssh::forward::{ForwardHandle, ForwardSpec};
 use termoak_ssh::{
-    Connection, ExecOptions, FileEntry, FileKind, Sftp, TermStatus, TerminalSession,
+    Connection, ExecOptions, FileEntry, FileKind, Sftp, TelnetSession, TermStatus, Terminal,
 };
 use tokio::sync::broadcast::error::{RecvError, TryRecvError};
 
@@ -168,14 +173,33 @@ pub struct ForwardStats {
 /// Local SSH connection to a host. Terminals, SFTP, tunnels and commands are
 /// opened over it. It is closed with [`SshSession::disconnect`] or when all
 /// its references are dropped (including terminals and tunnels).
+///
+/// A Telnet terminal's [`TerminalHandle::session`] is one too, so the apps
+/// keep a single type: `is_telnet()` tells it apart, `details`, `is_closed`
+/// and `disconnect` work, and the SSH-only calls (SFTP, tunnels, `exec`,
+/// OS detection, another terminal) answer `NotSupportedForTelnet`.
 #[derive(uniffi::Object)]
 pub struct SshSession {
     host_id: Id,
     /// Where the host lives (This device or an account).
     scope: Scope,
     ws: Workspace,
-    conn: InRuntime<Arc<Connection>>,
+    link: Link,
     sftp: tokio::sync::Mutex<Option<Arc<Sftp>>>,
+}
+
+/// What an [`SshSession`] is over.
+enum Link {
+    Ssh(InRuntime<Arc<Connection>>),
+    /// The Telnet terminal itself (Telnet has no connection apart from it).
+    Telnet(InRuntime<Arc<TelnetSession>>),
+}
+
+/// The error of an SSH-only call on a Telnet host.
+pub(crate) fn telnet_refused(what: &str) -> TermoakError {
+    TermoakError::NotSupportedForTelnet(format!(
+        "{what} is not available on Telnet hosts (only SSH has it)"
+    ))
 }
 
 impl Drop for SshSession {
@@ -188,8 +212,12 @@ impl Drop for SshSession {
 }
 
 impl SshSession {
-    fn conn(&self) -> Arc<Connection> {
-        Arc::clone(&self.conn)
+    /// The SSH connection; `NotSupportedForTelnet` (naming `what`) on Telnet.
+    fn ssh(&self, what: &str) -> Result<Arc<Connection>> {
+        match &self.link {
+            Link::Ssh(c) => Ok(Arc::clone(c)),
+            Link::Telnet(_) => Err(telnet_refused(what)),
+        }
     }
 
     fn item(&self) -> ItemRef {
@@ -204,7 +232,7 @@ impl SshSession {
         if let Some(s) = guard.as_ref() {
             return Ok(s.clone());
         }
-        let s = Arc::new(self.conn.sftp().await?);
+        let s = Arc::new(self.ssh("SFTP")?.sftp().await?);
         *guard = Some(s.clone());
         Ok(s)
     }
@@ -237,27 +265,66 @@ impl SshSession {
         self.host_id.to_string()
     }
 
+    /// For Telnet: label, address and port (no username, key, banner or
+    /// jumps; `via` has the proxy, if any).
     pub fn details(&self) -> ConnectionDetails {
-        let i = self.conn.info();
-        ConnectionDetails {
-            label: i.label.clone(),
-            address: i.address.clone(),
-            port: i.port.into(),
-            username: i.username.clone(),
-            server_key_type: i.server_key_type.clone(),
-            server_fingerprint: i.server_fingerprint.clone(),
-            banner: i.banner.clone(),
-            via: i.via.clone(),
+        match &self.link {
+            Link::Ssh(conn) => {
+                let i = conn.info();
+                ConnectionDetails {
+                    label: i.label.clone(),
+                    address: i.address.clone(),
+                    port: i.port.into(),
+                    username: i.username.clone(),
+                    server_key_type: i.server_key_type.clone(),
+                    server_fingerprint: i.server_fingerprint.clone(),
+                    banner: i.banner.clone(),
+                    via: i.via.clone(),
+                }
+            }
+            Link::Telnet(t) => {
+                let i = t.info();
+                ConnectionDetails {
+                    label: i.label.clone(),
+                    address: i.address.clone(),
+                    port: i.port.into(),
+                    username: String::new(),
+                    server_key_type: None,
+                    server_fingerprint: None,
+                    banner: None,
+                    via: i.proxy.iter().cloned().collect(),
+                }
+            }
         }
     }
 
+    /// `ssh` or `telnet`.
+    pub fn protocol(&self) -> String {
+        match &self.link {
+            Link::Ssh(_) => "ssh".into(),
+            Link::Telnet(_) => "telnet".into(),
+        }
+    }
+
+    /// A Telnet terminal's session: the SSH-only calls answer
+    /// `NotSupportedForTelnet`.
+    pub fn is_telnet(&self) -> bool {
+        matches!(self.link, Link::Telnet(_))
+    }
+
     pub fn is_closed(&self) -> bool {
-        self.conn.is_closed()
+        match &self.link {
+            Link::Ssh(c) => c.is_closed(),
+            Link::Telnet(t) => t.is_closed(),
+        }
     }
 
     /// Opens a terminal (PTY with a shell) with the host's effective settings
     /// (TERM, variables, startup snippet...). `record` forces recording
     /// (asciicast in `<data_dir>/recordings`).
+    ///
+    /// Telnet: `NotSupportedForTelnet` (each Telnet terminal is its own
+    /// connection: open another one with `TermoakCore::connect_terminal`).
     #[uniffi::method(default(record = false))]
     pub async fn open_terminal(
         self: Arc<Self>,
@@ -266,19 +333,20 @@ impl SshSession {
         listener: Arc<dyn TerminalListener>,
         record: bool,
     ) -> Result<Arc<TerminalHandle>> {
+        let conn = self.ssh("Another terminal on the same connection")?;
         run(async move {
             let term = self
                 .ws
-                .open_terminal_item(self.item(), self.conn(), dim(cols), dim(rows), record)
+                .open_terminal_item(self.item(), conn, dim(cols), dim(rows), record)
                 .await?;
-            Ok(TerminalHandle::start(term, self, listener))
+            Ok(TerminalHandle::start(Terminal::Ssh(term), self, listener))
         })
         .await
     }
 
     /// Runs a non-interactive command and waits for it to finish.
     pub async fn exec(&self, command: String, timeout_secs: u32) -> Result<ExecResult> {
-        let conn = self.conn();
+        let conn = self.ssh("Running commands")?;
         run(async move {
             let opts = ExecOptions {
                 timeout: Duration::from_secs(u64::from(timeout_secs.max(1))),
@@ -310,7 +378,7 @@ impl SshSession {
     /// (`Ubuntu 24.04.1 LTS`), like Termius does, and stores it in the host
     /// (`os` and `os_version`).
     pub async fn detect_os_info(&self) -> Result<Option<crate::assist::RemoteOs>> {
-        let conn = self.conn();
+        let conn = self.ssh("Detecting the operating system")?;
         let ws = self.ws.clone();
         let item = self.item();
         run(async move {
@@ -465,9 +533,9 @@ impl SshSession {
     /// Starts a tunnel saved in the vault.
     pub async fn start_forward(&self, forward_id: String) -> Result<Arc<ActiveForward>> {
         let id = parse_id(&forward_id)?;
+        let conn = self.ssh("Port forwarding")?;
         let store = self.ws.store_of(self.scope)?;
         let device = self.ws.store.clone();
-        let conn = self.conn();
         run(async move {
             let fwd = match store.get::<cm::PortForward>(LOCAL_OWNER, id).await {
                 Ok(r) => r.data,
@@ -490,7 +558,7 @@ impl SshSession {
         dest_host: Option<String>,
         dest_port: Option<u32>,
     ) -> Result<Arc<ActiveForward>> {
-        let conn = self.conn();
+        let conn = self.ssh("Port forwarding")?;
         let bind_port = u16::try_from(bind_port)
             .map_err(|_| TermoakError::Invalid("invalid bind port".into()))?;
         let dest_port = dest_port
@@ -515,10 +583,10 @@ impl SshSession {
     }
 
     /// Starts the host's tunnels marked `auto_start`. Those that fail are
-    /// skipped (and the error is logged).
+    /// skipped (and the error is logged). Telnet: `NotSupportedForTelnet`.
     pub async fn start_auto_forwards(&self) -> Result<Vec<Arc<ActiveForward>>> {
+        let conn = self.ssh("Port forwarding")?;
         let store = self.ws.store_of(self.scope)?;
-        let conn = self.conn();
         let host_id = self.host_id;
         run(async move {
             let mut out = Vec::new();
@@ -540,13 +608,26 @@ impl SshSession {
     }
 
     /// Closes the connection (and with it its terminals, SFTP and tunnels).
+    /// Telnet: closes the terminal.
     pub async fn disconnect(&self) -> Result<()> {
-        let conn = self.conn();
-        run(async move {
-            conn.disconnect().await;
-            Ok(())
-        })
-        .await
+        match &self.link {
+            Link::Ssh(c) => {
+                let conn = Arc::clone(c);
+                run(async move {
+                    conn.disconnect().await;
+                    Ok(())
+                })
+                .await
+            }
+            Link::Telnet(t) => {
+                let term = Arc::clone(t);
+                run(async move {
+                    term.close().await;
+                    Ok(())
+                })
+                .await
+            }
+        }
     }
 }
 
@@ -573,24 +654,25 @@ async fn start(
 // Terminal
 // ---------------------------------------------------------------------------
 
-/// Open local terminal. It is closed with [`TerminalHandle::close_terminal`]
-/// or when dropped. The `TerminalListener` is retained until the terminal closes.
+/// Open local terminal, over SSH or Telnet. It is closed with
+/// [`TerminalHandle::close_terminal`] or when dropped. The
+/// `TerminalListener` is retained until the terminal closes.
 #[derive(uniffi::Object)]
 pub struct TerminalHandle {
-    term: InRuntime<Arc<TerminalSession>>,
+    term: InRuntime<Terminal>,
     session: Arc<SshSession>,
 }
 
 impl Drop for TerminalHandle {
     fn drop(&mut self) {
-        let term = Arc::clone(&self.term);
+        let term = Terminal::clone(&self.term);
         runtime().spawn(async move { term.close().await });
     }
 }
 
 impl TerminalHandle {
     fn start(
-        term: Arc<TerminalSession>,
+        term: Terminal,
         session: Arc<SshSession>,
         listener: Arc<dyn TerminalListener>,
     ) -> Arc<Self> {
@@ -604,17 +686,13 @@ impl TerminalHandle {
         })
     }
 
-    pub(crate) fn session_arc(&self) -> Arc<TerminalSession> {
-        Arc::clone(&self.term)
+    pub(crate) fn terminal(&self) -> Terminal {
+        Terminal::clone(&self.term)
     }
 }
 
 /// Delivers a terminal's output and state changes to the app.
-fn pump_output(
-    rt: &tokio::runtime::Handle,
-    term: Arc<TerminalSession>,
-    listener: Arc<dyn TerminalListener>,
-) {
+fn pump_output(rt: &tokio::runtime::Handle, term: Terminal, listener: Arc<dyn TerminalListener>) {
     enum Ev {
         Out(std::result::Result<Bytes, RecvError>),
         Status,
@@ -733,9 +811,37 @@ impl TerminalHandle {
             .map(|p| p.to_string_lossy().into_owned())
     }
 
-    /// The terminal's connection (to open SFTP or tunnels over it).
+    /// The terminal's connection (to open SFTP or tunnels over it). For a
+    /// Telnet terminal its SSH-only calls answer `NotSupportedForTelnet`.
     pub fn session(&self) -> Arc<SshSession> {
         self.session.clone()
+    }
+
+    /// `ssh` or `telnet`.
+    pub fn protocol(&self) -> String {
+        self.session.protocol()
+    }
+
+    /// Telnet terminal (unencrypted; no SFTP, tunnels or commands).
+    pub fn is_telnet(&self) -> bool {
+        self.term.is_telnet()
+    }
+
+    /// Round trip to the host in milliseconds: an SSH keep-alive on the
+    /// connection, or a Telnet `TIMING-MARK` sent behind what is typed.
+    /// Measured apart: the output keeps flowing meanwhile. Errors: `Closed`,
+    /// `Connection` (timed out) or, on a Telnet host that does not answer
+    /// timing marks (a raw TCP service), `Invalid`.
+    #[uniffi::method(default(timeout_ms = 5000))]
+    pub async fn latency_ms(&self, timeout_ms: u32) -> Result<f64> {
+        let term = self.terminal();
+        run(async move {
+            let d = term
+                .latency(Duration::from_millis(u64::from(timeout_ms.max(1))))
+                .await?;
+            Ok(d.as_secs_f64() * 1000.0)
+        })
+        .await
     }
 }
 
@@ -834,7 +940,14 @@ impl TermoakCore {
     /// Shortcut: connects and opens a terminal. The connection remains
     /// reachable with `TerminalHandle::session()` (e.g. to open SFTP without
     /// reconnecting).
-    #[uniffi::method(default(account_id))]
+    ///
+    /// Telnet hosts (protocol `telnet`) open a Telnet terminal instead: same
+    /// handle, listener and calls (`auth` is not used: Telnet has no keys or
+    /// login protocol). With `telnet_auto_login` (the desktop's "Log in to
+    /// Telnet hosts automatically"), the host's username and password answer
+    /// its first `login:` and `Password:` prompts, each once, during the
+    /// first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
+    #[uniffi::method(default(account_id = None, telnet_auto_login = true))]
     pub async fn connect_terminal(
         &self,
         host_id: String,
@@ -843,19 +956,53 @@ impl TermoakCore {
         auth: Arc<dyn AuthHandler>,
         listener: Arc<dyn TerminalListener>,
         account_id: Option<String>,
+        telnet_auto_login: bool,
     ) -> Result<Arc<TerminalHandle>> {
         let item = self.item_of(parse_id(&host_id)?, &account_id)?;
         let ws = self.ws.clone();
         run(async move {
+            if is_telnet(&ws, item).await? {
+                let term = ws
+                    .open_telnet_item(item, dim(cols), dim(rows), false, telnet_auto_login)
+                    .await?;
+                let session = Arc::new(SshSession {
+                    host_id: item.id,
+                    scope: item.scope,
+                    ws,
+                    link: Link::Telnet(InRuntime::new(term.clone())),
+                    sftp: tokio::sync::Mutex::new(None),
+                });
+                return Ok(TerminalHandle::start(
+                    Terminal::Telnet(term),
+                    session,
+                    listener,
+                ));
+            }
             let session = connect(ws, item, auth).await?;
+            let conn = session.ssh("SSH")?;
             let term = session
                 .ws
-                .open_terminal_item(session.item(), session.conn(), dim(cols), dim(rows), false)
+                .open_terminal_item(session.item(), conn, dim(cols), dim(rows), false)
                 .await?;
-            Ok(TerminalHandle::start(term, session, listener))
+            Ok(TerminalHandle::start(
+                Terminal::Ssh(term),
+                session,
+                listener,
+            ))
         })
         .await
     }
+}
+
+/// Whether the host `item` is a Telnet host.
+async fn is_telnet(ws: &Workspace, item: ItemRef) -> Result<bool> {
+    Ok(ws
+        .get_item::<cm::Host>(item)
+        .await?
+        .record
+        .data
+        .protocol
+        .is_telnet())
 }
 
 async fn connect(
@@ -863,13 +1010,19 @@ async fn connect(
     item: ItemRef,
     auth: Arc<dyn AuthHandler>,
 ) -> Result<Arc<SshSession>> {
+    if is_telnet(&ws, item).await? {
+        return Err(TermoakError::NotSupportedForTelnet(
+            "This is a Telnet host: open a terminal (connect_terminal); SFTP, tunnels and commands need SSH"
+                .into(),
+        ));
+    }
     let prompter = Arc::new(FfiPrompter { handler: auth });
     let conn = ws.connect_item(item, prompter, false).await?;
     Ok(Arc::new(SshSession {
         host_id: item.id,
         scope: item.scope,
         ws,
-        conn: InRuntime::new(conn),
+        link: Link::Ssh(InRuntime::new(conn)),
         sftp: tokio::sync::Mutex::new(None),
     }))
 }

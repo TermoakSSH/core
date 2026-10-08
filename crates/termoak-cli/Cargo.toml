@@ -2,7 +2,7 @@
 name = "termoak-cli"
 description = "Termoak CLI: local SSH engine, host management, SFTP, tunnels, server sessions and AI"
 # Released separately (tag cli-vX.Y.Z): it has its own version.
-version = "0.4.0"
+version = "0.6.0-next.1"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true

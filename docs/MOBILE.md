@@ -167,7 +167,8 @@ not matter: the bindings are the same.
 | `listHosts/getHost/saveHost/deleteHost`, and the same for groups, identities, keys, snippets, tunnels, known hosts and memories | Vault CRUD (synchronous, fast) |
 | `generateKey`, `importKey`, `inspectPrivateKey`, `exportPrivateKey` | SSH keychain |
 | `connect(hostId, auth)` → `SshSession` | Local SSH connection |
-| `connectTerminal(hostId, cols, rows, auth, listener)` → `TerminalHandle` | Shortcut: connect and open a terminal |
+| `connectTerminal(hostId, cols, rows, auth, listener, accountId, telnetAutoLogin)` → `TerminalHandle` | Shortcut: connect and open a terminal. Telnet hosts open a Telnet terminal (same handle) |
+| `TerminalHandle`: `write`, `writeText`, `resize`, `closeTerminal`, `status`, `snapshot`, `textTail`, `recordingPath`, `latencyMs(timeoutMs)`, `isTelnet`, `protocol`, `session` | A local terminal (SSH or Telnet) |
 | `TerminalScreen(cols, rows, scrollback)`: `feed`, `snapshot`, `key`, `character`, `paste`, `resize`, `scroll` | Terminal emulator (the desktop one): turns output into a screen ready to draw, and keystrokes into bytes |
 | `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection |
 | `login/register/logout/isLoggedIn/syncNow` | Server account and sync of the **current account** (with optional 2FA code and invitation) |
@@ -223,7 +224,8 @@ Conventions:
 - Errors: a single error type, `TermoakError` in Swift and
   `TermoakException` in Kotlin, with variants to decide what to do
   (`NotLoggedIn`, `SessionExpired`, `TotpRequired`, `TotpInvalid`,
-  `EmailNotVerified`, `HostKey`, `Auth`, `Network`, `Vault`…) and a message ready to show. In
+  `EmailNotVerified`, `HostKey`, `Auth`, `Network`, `Vault`,
+  `NotSupportedForTelnet`…) and a message ready to show. In
   Swift, `TermoakKit` adds a helper that returns the message of any error;
   in Kotlin, use `e.message`.
 
@@ -288,8 +290,8 @@ print(key.publicKey)   // for authorized_keys
 
 `SshHost.protocol` is `"ssh"` (default) or `"telnet"`: keep any other value
 as it comes (a later app's) and do not connect to such hosts. Telnet hosts
-have no keys, jump hosts, SFTP or tunnels and default to port 23; the FFI
-has no Telnet terminal yet (`connect` refuses them with `Invalid`).
+have no keys, jump hosts, SFTP or tunnels and default to port 23; they open
+with `connectTerminal` like SSH hosts (see [Telnet hosts](#telnet-hosts)).
 `SshHost.icon` is the chosen logo id (`ubuntu`, `debian`, `server`,
 `router`...), `nil` for automatic (the detected `os`, else the initial).
 Copy the record you got when editing, so both fields are kept.
@@ -368,6 +370,44 @@ let destination = FileManager.default.temporaryDirectory.appendingPathComponent(
 _ = try await session.sftpDownload(remotePath: "/var/log/app.log",
                                    localPath: destination.path, listener: nil)
 ```
+
+### Telnet hosts
+
+A host whose `protocol` is `"telnet"` opens through the same call,
+`connectTerminal`, and gives the same `TerminalHandle`: the listener, `write`,
+`resize` (sent to the host with `NAWS` when it accepts it), `closeTerminal`,
+`status`, `snapshot`, `textTail`, recordings and `shareTerminal` work alike.
+The `AuthHandler` is not called (Telnet has no host keys or login protocol).
+
+```swift
+let term = try await core.connectTerminal(hostId: host.id, cols: 80, rows: 24,
+                                          auth: self, listener: self,
+                                          accountId: host.accountId,
+                                          telnetAutoLogin: settings.telnetAutoLogin)
+if term.isTelnet() { showBadge("Telnet · unencrypted") }
+let ms = try await term.latencyMs(timeoutMs: 5000)   // SSH keep-alive or Telnet TIMING-MARK
+```
+
+- `telnetAutoLogin` (default `true`, the desktop's "Log in to Telnet hosts
+  automatically"): the host's username and password answer its first
+  `login:`/`Username:` and `Password:` prompts, each once, during the first
+  30 seconds; a second prompt (wrong password) is left to the user. Pass
+  `false` to always let the user type them.
+- `latencyMs` is a Telnet `TIMING-MARK` sent behind what is typed; a host
+  that never spoke Telnet (a raw TCP service) gives `Invalid`, no answer in
+  time gives `Connection`.
+- `TerminalHandle.session()` is still an `SshSession` (`isTelnet()` is
+  `true`): `details()` gives label, address, port and the proxy in `via`;
+  `isClosed()` and `disconnect()` (closes the terminal) work. The SSH-only
+  calls throw `NotSupportedForTelnet`: `sftp*`, `exec`, `detectOs*`,
+  `startForward*`, `startAutoForwards`, `openTerminal` (open another
+  terminal with `connectTerminal`). `core.connect(hostId:)` (an SSH
+  connection for files or tunnels) on a Telnet host throws it too. Hide
+  those actions for Telnet hosts (`SshHost.protocol`, `isTelnet()`) and
+  translate the error if one slips through.
+- Jump hosts on a Telnet host (or a Telnet host used as a jump) give
+  `Invalid`; the host's proxy (SOCKS, HTTP `CONNECT`) is used.
+- Telnet is unencrypted: passwords travel in clear text. Say so in the UI.
 
 ### Server: login, sync and a persistent session
 
@@ -669,7 +709,9 @@ class TerminalViewModel(private val core: TermoakCore) : ViewModel(), TerminalLi
 
     fun connect(hostId: String) = viewModelScope.launch {
         try {
-            terminal = core.connectTerminal(hostId, 80u, 24u, this@TerminalViewModel, this@TerminalViewModel)
+            // Telnet hosts open here too (same handle); telnetAutoLogin = the app setting.
+            terminal = core.connectTerminal(hostId, 80u, 24u, this@TerminalViewModel, this@TerminalViewModel,
+                                            accountId = null, telnetAutoLogin = settings.telnetAutoLogin)
         } catch (e: TermoakException.HostKey) {
             showError(e.message)   // the server key changed or was rejected
         } catch (e: TermoakException) {
@@ -684,6 +726,18 @@ class TerminalViewModel(private val core: TermoakCore) : ViewModel(), TerminalLi
         terminal?.closeTerminal()   // closes the terminal and releases this listener
         terminal?.close()           // frees the native object (AutoCloseable)
     }
+}
+```
+
+Files and tunnels on a Telnet host's terminal:
+
+```kotlin
+val session = terminal.session()
+if (session.isTelnet()) hideFilesAndTunnels()
+try {
+    session.sftpHome()
+} catch (e: TermoakException.NotSupportedForTelnet) {
+    toast(R.string.error_not_supported_for_telnet)
 }
 ```
 

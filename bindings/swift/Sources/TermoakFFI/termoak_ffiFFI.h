@@ -1145,9 +1145,19 @@ RustBuffer uniffi_termoak_ffi_fn_method_sshsession_host_id(uint64_t ptr, RustCal
 int8_t uniffi_termoak_ffi_fn_method_sshsession_is_closed(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_IS_TELNET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_IS_TELNET
+int8_t uniffi_termoak_ffi_fn_method_sshsession_is_telnet(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_OPEN_TERMINAL
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_OPEN_TERMINAL
 uint64_t uniffi_termoak_ffi_fn_method_sshsession_open_terminal(uint64_t ptr, uint32_t cols, uint32_t rows, uint64_t listener, int8_t record
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_PROTOCOL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_PROTOCOL
+RustBuffer uniffi_termoak_ffi_fn_method_sshsession_protocol(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SSHSESSION_SFTP_CHMOD
@@ -1233,6 +1243,21 @@ void uniffi_termoak_ffi_fn_free_terminalhandle(uint64_t handle, RustCallStatus *
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_CLOSE_TERMINAL
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_CLOSE_TERMINAL
 void uniffi_termoak_ffi_fn_method_terminalhandle_close_terminal(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_IS_TELNET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_IS_TELNET
+int8_t uniffi_termoak_ffi_fn_method_terminalhandle_is_telnet(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_LATENCY_MS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_LATENCY_MS
+uint64_t uniffi_termoak_ffi_fn_method_terminalhandle_latency_ms(uint64_t ptr, uint32_t timeout_ms
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_PROTOCOL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_PROTOCOL
+RustBuffer uniffi_termoak_ffi_fn_method_terminalhandle_protocol(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALHANDLE_RECORDING_PATH
@@ -1852,7 +1877,7 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_connect(uint64_t ptr, RustBuff
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CONNECT_TERMINAL
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CONNECT_TERMINAL
-uint64_t uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(uint64_t ptr, RustBuffer host_id, uint32_t cols, uint32_t rows, uint64_t auth, uint64_t listener, RustBuffer account_id
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(uint64_t ptr, RustBuffer host_id, uint32_t cols, uint32_t rows, uint64_t auth, uint64_t listener, RustBuffer account_id, int8_t telnet_auto_login
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_DATA_DIR
@@ -3204,9 +3229,21 @@ uint16_t uniffi_termoak_ffi_checksum_method_sshsession_is_closed(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_IS_TELNET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_IS_TELNET
+uint16_t uniffi_termoak_ffi_checksum_method_sshsession_is_telnet(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_OPEN_TERMINAL
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_OPEN_TERMINAL
 uint16_t uniffi_termoak_ffi_checksum_method_sshsession_open_terminal(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_PROTOCOL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SSHSESSION_PROTOCOL
+uint16_t uniffi_termoak_ffi_checksum_method_sshsession_protocol(void
     
 );
 #endif
@@ -3297,6 +3334,24 @@ uint16_t uniffi_termoak_ffi_checksum_method_sshsession_start_forward_spec(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_CLOSE_TERMINAL
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_CLOSE_TERMINAL
 uint16_t uniffi_termoak_ffi_checksum_method_terminalhandle_close_terminal(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_IS_TELNET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_IS_TELNET
+uint16_t uniffi_termoak_ffi_checksum_method_terminalhandle_is_telnet(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_LATENCY_MS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_LATENCY_MS
+uint16_t uniffi_termoak_ffi_checksum_method_terminalhandle_latency_ms(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_PROTOCOL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALHANDLE_PROTOCOL
+uint16_t uniffi_termoak_ffi_checksum_method_terminalhandle_protocol(void
     
 );
 #endif
