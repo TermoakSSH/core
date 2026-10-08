@@ -24,6 +24,7 @@ use crate::auth::{AuthHandler, FfiPrompter};
 use crate::error::{Result, TermoakError};
 use crate::models::{ForwardKind, parse_id};
 use crate::runtime::{InRuntime, block_on, run, runtime, spawn_callback_thread};
+use crate::transfer::{TransferHandle, cancellable};
 use crate::vault::TermoakCore;
 
 /// Maximum size of an output chunk delivered to `on_output`.
@@ -445,50 +446,73 @@ impl SshSession {
     }
 
     /// Downloads `remote_path` to `local_path` (a file on the device).
-    /// Returns the bytes copied.
+    /// Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+    /// partial file is removed).
+    #[uniffi::method(default(cancel))]
     pub async fn sftp_download(
         self: Arc<Self>,
         remote_path: String,
         local_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
     ) -> Result<u64> {
         self.with_sftp(move |s| async move {
-            let total = s.stat(&remote_path).await.ok().map(|e| e.size);
-            let file = tokio::fs::File::create(&local_path).await?;
-            let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
-            let res = s
-                .download(
-                    &remote_path,
-                    file,
-                    progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
-                )
-                .await;
-            if res.is_err() {
-                let _ = tokio::fs::remove_file(&local_path).await;
-            }
-            Ok(res?)
+            let cleanup = local_path.clone();
+            cancellable(
+                cancel,
+                async {
+                    let total = s.stat(&remote_path).await.ok().map(|e| e.size);
+                    let file = tokio::fs::File::create(&local_path).await?;
+                    let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
+                    let res = s
+                        .download(
+                            &remote_path,
+                            file,
+                            progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+                        )
+                        .await;
+                    if res.is_err() {
+                        let _ = tokio::fs::remove_file(&local_path).await;
+                    }
+                    Ok(res?)
+                },
+                || async move {
+                    let _ = tokio::fs::remove_file(cleanup).await;
+                },
+            )
+            .await
         })
         .await
     }
 
     /// Uploads `local_path` (a file on the device) to `remote_path`.
-    /// Returns the bytes copied.
+    /// Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+    /// remote file keeps what was written).
+    #[uniffi::method(default(cancel))]
     pub async fn sftp_upload(
         self: Arc<Self>,
         local_path: String,
         remote_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
     ) -> Result<u64> {
         self.with_sftp(move |s| async move {
-            let file = tokio::fs::File::open(&local_path).await?;
-            let total = file.metadata().await.ok().map(|m| m.len());
-            let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
-            Ok(s.upload(
-                file,
-                &remote_path,
-                progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+            cancellable(
+                cancel,
+                async {
+                    let file = tokio::fs::File::open(&local_path).await?;
+                    let total = file.metadata().await.ok().map(|m| m.len());
+                    let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
+                    Ok(s.upload(
+                        file,
+                        &remote_path,
+                        progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+                    )
+                    .await?)
+                },
+                || async {},
             )
-            .await?)
+            .await
         })
         .await
     }

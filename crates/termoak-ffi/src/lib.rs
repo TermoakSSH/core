@@ -44,6 +44,7 @@ mod runtime;
 mod screen;
 mod server;
 mod ssh;
+mod transfer;
 mod vault;
 
 pub use account::*;
@@ -70,6 +71,7 @@ pub use ssh::{
     ActiveForward, ConnectionDetails, ExecResult, ForwardStats, RemoteFile, RemoteFileKind,
     SshSession, TerminalHandle, TerminalListener, TerminalStatus, TransferListener,
 };
+pub use transfer::TransferHandle;
 pub use vault::{
     TermoakCore, generate_vault_key, inspect_private_key, library_version, render_snippet,
     snippet_variables,
@@ -77,3 +79,5 @@ pub use vault::{
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_api;

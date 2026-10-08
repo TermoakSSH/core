@@ -777,6 +777,7 @@ fn ssh_end_to_end() {
         format!("{remote}/a/hello.txt"),
         local_file.to_string_lossy().into_owned(),
         Some(progress.clone()),
+        None,
     ))
     .unwrap();
     assert_eq!(n, 11);
@@ -786,6 +787,7 @@ fn ssh_end_to_end() {
     let n = block_on(session.clone().sftp_upload(
         local_file.to_string_lossy().into_owned(),
         format!("{remote}/uploaded.txt"),
+        None,
         None,
     ))
     .unwrap();
