@@ -300,6 +300,28 @@ impl ServerTerminalHandle {
         block_on(self.remote.close_session());
     }
 
+    /// Round trip to the Termoak server in milliseconds (a `ping` on the
+    /// session's WebSocket, behind what is being typed), for a latency
+    /// badge. Only to the server: it does not report the one from the
+    /// server to the host. No answer within `timeout_ms` (reconnecting,
+    /// closed, or a server that does not answer pings) gives `Connection`.
+    #[uniffi::method(default(timeout_ms = 5000))]
+    pub async fn latency_ms(&self, timeout_ms: u32) -> Result<f64> {
+        let remote = self.remote.clone();
+        run(async move {
+            remote
+                .latency(std::time::Duration::from_millis(u64::from(
+                    timeout_ms.max(1),
+                )))
+                .await
+                .map(|d| d.as_secs_f64() * 1000.0)
+                .ok_or_else(|| {
+                    TermoakError::Connection("the server did not answer the ping in time".into())
+                })
+        })
+        .await
+    }
+
     /// Your input and resizes reach the terminal now (you are the owner or
     /// have the keyboard). `false` until `Hello`.
     pub fn can_write(&self) -> bool {
@@ -1153,5 +1175,66 @@ mod share_tests {
             SessionShareInfo::from_json(&json!({"id": "c", "team_id": "t", "permission": "view"}));
         assert_eq!(t.kind, ShareKind::Team);
         assert!(!t.control);
+    }
+}
+
+#[cfg(test)]
+mod latency_tests {
+    use super::*;
+    use futures::SinkExt;
+    use tokio::net::TcpListener;
+
+    struct Ignore;
+    impl ServerTerminalListener for Ignore {
+        fn on_event(&self, _event: ServerTerminalEvent) {}
+    }
+
+    #[test]
+    fn server_terminal_latency() {
+        let (handle, server) = block_on(async {
+            let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let addr = listener.local_addr().unwrap();
+            let server = tokio::spawn(async move {
+                let (s, _) = listener.accept().await.unwrap();
+                let mut ws = tokio_tungstenite::accept_async(s).await.unwrap();
+                ws.send(Message::Text(
+                    json!({"type": "hello", "session": {"state": {"state": "running"}},
+                           "you": {"access": "owner"}})
+                    .to_string()
+                    .into(),
+                ))
+                .await
+                .unwrap();
+                let mut pings = 0;
+                while let Some(Ok(msg)) = ws.next().await {
+                    let Message::Text(t) = msg else { continue };
+                    let v: Value = serde_json::from_str(&t).unwrap();
+                    if v["type"] != "ping" {
+                        continue;
+                    }
+                    pings += 1;
+                    if pings == 1 {
+                        // Answered after 50 ms.
+                        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+                        ws.send(Message::Text(json!({"type": "pong"}).to_string().into()))
+                            .await
+                            .unwrap();
+                    }
+                    // The second is never answered.
+                }
+            });
+            let api = ApiClient::new(&format!("http://{addr}")).unwrap();
+            let (remote, events) = RemoteTerminal::attach_path(&api, "/ws").await.unwrap();
+            let handle = start_remote("s".into(), remote, events, Arc::new(Ignore));
+            (handle, server)
+        });
+        let ms = block_on(handle.latency_ms(5000)).unwrap();
+        assert!((50.0..5000.0).contains(&ms), "{ms}");
+        assert!(matches!(
+            block_on(handle.latency_ms(100)),
+            Err(TermoakError::Connection(_))
+        ));
+        handle.detach();
+        server.abort();
     }
 }
