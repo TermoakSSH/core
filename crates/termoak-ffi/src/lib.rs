@@ -15,6 +15,8 @@
 //!   output into a screen ready to draw, with colour themes
 //!   ([`terminal_themes`]), find in the scrollback, text of any range and
 //!   the program's modes.
+//! - AI in the terminal ([`CommandWatcher`], [`nl_request`],
+//!   [`typeable_command`], context chips): the desktop's rules, shared.
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Several accounts (servers) on one device ([`AccountHandle`],
@@ -43,6 +45,7 @@ mod runtime;
 mod screen;
 mod server;
 mod ssh;
+mod term_ai;
 mod vault;
 
 pub use account::*;
@@ -68,6 +71,7 @@ pub use ssh::{
     ActiveForward, ConnectionDetails, ExecResult, ForwardStats, RemoteFile, RemoteFileKind,
     SshSession, TerminalHandle, TerminalListener, TerminalStatus, TransferListener,
 };
+pub use term_ai::*;
 pub use vault::{
     TermoakCore, generate_vault_key, inspect_private_key, library_version, render_snippet,
     snippet_variables,
