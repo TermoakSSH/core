@@ -12,7 +12,16 @@
 //! - [`ServerTerminalHandle`]: terminal that lives on the server (it stays
 //!   alive even if the phone disconnects).
 //! - [`TerminalScreen`]: terminal emulator (the desktop one) that turns the
-//!   output into a screen ready to draw.
+//!   output into a screen ready to draw, with colour themes
+//!   ([`terminal_themes`]), find in the scrollback, text of any range and
+//!   the program's modes.
+//! - AI in the terminal ([`CommandWatcher`], [`nl_request`],
+//!   [`typeable_command`], context chips), account aliases and hidden
+//!   emails ([`account_display_name`], [`mask_email`]) and command palette
+//!   ranking ([`palette_rank`]): the desktop's rules, shared. Host
+//!   reachability for status dots (`TermoakCore::probe_hosts`). Import of
+//!   hosts from other apps' files and the export ([`ImportPreview`],
+//!   `TermoakCore::preview_import`, `apply_import`, `export_hosts`).
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Typed background AI (approval previews, edits and reasons, plans,
@@ -40,15 +49,20 @@ mod auth;
 mod error;
 mod files;
 mod hostkey;
+mod import_export;
 mod links;
 mod logging;
 mod models;
+mod names;
+mod palette;
+mod probe;
 mod redact;
 mod remote;
 mod runtime;
 mod screen;
 mod server;
 mod ssh;
+mod term_ai;
 mod transfer;
 mod vault;
 
@@ -59,9 +73,13 @@ pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};
 pub use hostkey::{HostKeyChange, HostKeyChangeHandler};
+pub use import_export::*;
 pub use links::{LinkTarget, join_app_link, parse_link, parse_quick_connect};
 pub use logging::{LogLevel, LogListener, init_logging};
 pub use models::*;
+pub use names::*;
+pub use palette::*;
+pub use probe::{HostProbe, HostReach, ProbeSkip};
 pub use redact::{contains_secrets, redact_secrets};
 pub use remote::{
     EventSubscription, LinkInvite, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,
@@ -69,14 +87,17 @@ pub use remote::{
     SharedTerminalListener, join_shared_session, join_shared_session_as, link_invite_info,
 };
 pub use screen::{
-    KeyModifiers, ScreenCursor, ScreenCursorShape, ScreenEvent, ScreenLine, ScreenRun,
-    ScreenSnapshot, TerminalKey, TerminalScreen,
+    FindStatus, KeyModifiers, MouseEncoding, MouseMode, ScreenCursor, ScreenCursorShape,
+    ScreenEvent, ScreenHighlight, ScreenLine, ScreenPoint, ScreenRange, ScreenRun, ScreenSnapshot,
+    TerminalColors, TerminalKey, TerminalModes, TerminalScreen, TerminalThemeInfo,
+    terminal_theme_for_host, terminal_themes,
 };
 pub use server::*;
 pub use ssh::{
     ActiveForward, ConnectionDetails, ExecResult, ForwardStats, RemoteFile, RemoteFileKind,
     SshSession, TerminalHandle, TerminalListener, TerminalStatus, TransferListener,
 };
+pub use term_ai::*;
 pub use transfer::TransferHandle;
 pub use vault::{
     TermoakCore, generate_vault_key, inspect_private_key, library_version, render_snippet,

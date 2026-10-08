@@ -890,6 +890,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_qr_code(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_detect_import_format(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_join_app_link(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_parse_link(
@@ -897,6 +899,22 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_func_parse_quick_connect(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_init_logging(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_account_display_email(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_account_display_label(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_account_display_name(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_account_initial(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_clean_account_alias(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_mask_email(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_palette_rank(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_palette_remember(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_contains_secrets(
     ): Int
@@ -908,7 +926,33 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_link_invite_info(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_terminal_theme_for_host(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_terminal_themes(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_server_info(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_clean_terminal_output(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_command_failure(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_context_chip_directory(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_context_chip_host(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_context_chip_last_command(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_context_chip_selection(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_copilot_context_block(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_nl_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_shorten_text(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_text_tail(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_typeable_command(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_generate_vault_key(
     ): Int
@@ -1098,6 +1142,34 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_csv_columns(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_csv_mapping(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_csv_sample(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_format(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_group_count(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_hosts(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_identity_count(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_key_count(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_needs_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_origin(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_snippet_count(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_unlock(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_warnings(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_importpreview_with_mapping(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_loglistener_log(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_eventsubscription_unsubscribe(
@@ -1198,15 +1270,33 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_character(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_clear_find(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_colors(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_cols(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_feed(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_find(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_find_status(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_find_step(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_history_size(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_line_at(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_link_at(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_modes(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_paste(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_point_at(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_reset(
     ): Int
@@ -1220,7 +1310,17 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_bottom(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_line(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_set_colors(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_set_theme(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_snapshot(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_text_range(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_terminalscreen_word_at(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_activeforward_bound_port(
     ): Int
@@ -1313,6 +1413,20 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_terminallistener_on_status(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_transferlistener_on_progress(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_enter(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_idle(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_integrated(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_last_command(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_output(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_reset(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_commandwatcher_waiting_for_prompt(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_transferhandle_cancel(
     ): Int
@@ -1469,6 +1583,16 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_write(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_replace_known_host(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_apply_import(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_export_hosts(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_preview_import(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_preview_import_file(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_probe_hosts(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session(
     ): Int
@@ -1635,6 +1759,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_constructor_linetracker_new(
     ): Int
     external fun uniffi_termoak_ffi_checksum_constructor_terminalscreen_new(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_constructor_commandwatcher_new(
     ): Int
     external fun uniffi_termoak_ffi_checksum_constructor_transferhandle_new(
     ): Int
@@ -1868,6 +1994,38 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_hostkeychangehandler_on_host_key_changed(`ptr`: Long,`change`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_clone_importpreview(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_importpreview(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_importpreview_csv_columns(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_csv_mapping(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_csv_sample(`ptr`: Long,`max`: Int,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_format(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_group_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Int
+    external fun uniffi_termoak_ffi_fn_method_importpreview_hosts(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_identity_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Int
+    external fun uniffi_termoak_ffi_fn_method_importpreview_key_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Int
+    external fun uniffi_termoak_ffi_fn_method_importpreview_needs_passphrase(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_importpreview_origin(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_snippet_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Int
+    external fun uniffi_termoak_ffi_fn_method_importpreview_unlock(`ptr`: Long,`passphrase`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_warnings(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_importpreview_with_mapping(`ptr`: Long,`mapping`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
     external fun uniffi_termoak_ffi_fn_clone_loglistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_loglistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -2010,15 +2168,33 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_character(`ptr`: Long,`ch`: RustBuffer.ByValue,`modifiers`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_clear_find(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_colors(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_cols(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Int
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_feed(`ptr`: Long,`data`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_find(`ptr`: Long,`query`: RustBuffer.ByValue,`caseSensitive`: Byte,`regex`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_find_status(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_find_step(`ptr`: Long,`older`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_history_size(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Int
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_key(`ptr`: Long,`key`: RustBuffer.ByValue,`modifiers`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_line_at(`ptr`: Long,`point`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_link_at(`ptr`: Long,`row`: Int,`col`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_modes(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_paste(`ptr`: Long,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_point_at(`ptr`: Long,`row`: Int,`col`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_reset(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
@@ -2032,7 +2208,17 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_bottom(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_line(`ptr`: Long,`line`: Int,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_set_colors(`ptr`: Long,`colors`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_set_theme(`ptr`: Long,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_snapshot(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_text_range(`ptr`: Long,`start`: RustBuffer.ByValue,`end`: RustBuffer.ByValue,`block`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_terminalscreen_word_at(`ptr`: Long,`point`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_clone_activeforward(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
@@ -2150,6 +2336,26 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_transferlistener_on_progress(`ptr`: Long,`transferred`: Long,`total`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_clone_commandwatcher(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_commandwatcher(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_constructor_commandwatcher_new(`screen`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_enter(`ptr`: Long,`command`: RustBuffer.ByValue,`prompt`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_idle(`ptr`: Long,`alternateScreen`: Byte,`beforeCursor`: RustBuffer.ByValue,`afterBlank`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_integrated(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_last_command(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_output(`ptr`: Long,`data`: RustBuffer.ByValue,`alternateScreen`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_reset(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_commandwatcher_waiting_for_prompt(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_clone_transferhandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_transferhandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -2318,6 +2524,16 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_replace_known_host(`ptr`: Long,`host`: RustBuffer.ByValue,`port`: Int,`publicKey`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_apply_import(`ptr`: Long,`preview`: Long,`options`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_export_hosts(`ptr`: Long,`format`: RustBuffer.ByValue,`scope`: RustBuffer.ByValue,`includeSecrets`: Byte,`passphrase`: RustBuffer.ByValue,`app`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_preview_import(`ptr`: Long,`data`: RustBuffer.ByValue,`fileName`: RustBuffer.ByValue,`format`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`deviceOnly`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_preview_import_file(`ptr`: Long,`path`: RustBuffer.ByValue,`format`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`deviceOnly`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_probe_hosts(`ptr`: Long,`hosts`: RustBuffer.ByValue,`off`: RustBuffer.ByValue,`concurrency`: Int,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_attach_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`listener`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_join_link(`ptr`: Long,`token`: RustBuffer.ByValue,`listener`: Long,
@@ -2492,6 +2708,8 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_qr_code(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_detect_import_format(`data`: RustBuffer.ByValue,`fileName`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_join_app_link(`server`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_parse_link(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -2500,6 +2718,22 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_init_logging(`level`: RustBuffer.ByValue,`listener`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_func_account_display_email(`names`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_account_display_label(`names`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`server`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_account_display_name(`names`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_account_initial(`names`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_clean_account_alias(`alias`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_mask_email(`email`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_palette_rank(`query`: RustBuffer.ByValue,`entries`: RustBuffer.ByValue,`recent`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_palette_remember(`recent`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_contains_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_redact_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -2510,8 +2744,34 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_func_link_invite_info(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_func_terminal_theme_for_host(`value`: RustBuffer.ByValue,`appTheme`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_terminal_themes(uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_server_info(`url`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_func_clean_terminal_output(`data`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_command_failure(`command`: RustBuffer.ByValue,`output`: RustBuffer.ByValue,`exitCode`: RustBuffer.ByValue,`interactive`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_context_chip_directory(`cwd`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_context_chip_host(`name`: RustBuffer.ByValue,`os`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_context_chip_last_command(`last`: RustBuffer.ByValue,`label`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_context_chip_selection(`text`: RustBuffer.ByValue,`label`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_copilot_context_block(`label`: RustBuffer.ByValue,`chips`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_nl_request(`line`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_shorten_text(`text`: RustBuffer.ByValue,`max`: Int,`fromEnd`: Byte,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_text_tail(`text`: RustBuffer.ByValue,`maxLines`: Int,`maxChars`: Int,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_typeable_command(`command`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_generate_vault_key(uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_inspect_private_key(`privateKey`: RustBuffer.ByValue,`passphrase`: RustBuffer.ByValue,
@@ -2659,6 +2919,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_qr_code() and 0xFFFF) != 59982) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_func_detect_import_format() and 0xFFFF) != 49613) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_func_join_app_link() and 0xFFFF) != 48870) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2669,6 +2932,30 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_init_logging() and 0xFFFF) != 8284) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_account_display_email() and 0xFFFF) != 25844) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_account_display_label() and 0xFFFF) != 56242) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_account_display_name() and 0xFFFF) != 46395) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_account_initial() and 0xFFFF) != 24735) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_clean_account_alias() and 0xFFFF) != 12026) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_mask_email() and 0xFFFF) != 47508) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_palette_rank() and 0xFFFF) != 52488) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_palette_remember() and 0xFFFF) != 11346) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_contains_secrets() and 0xFFFF) != 47455) {
@@ -2686,7 +2973,46 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_link_invite_info() and 0xFFFF) != 34812) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_func_terminal_theme_for_host() and 0xFFFF) != 7359) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_terminal_themes() and 0xFFFF) != 64850) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_func_server_info() and 0xFFFF) != 52695) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_clean_terminal_output() and 0xFFFF) != 54293) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_command_failure() and 0xFFFF) != 51252) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_context_chip_directory() and 0xFFFF) != 33795) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_context_chip_host() and 0xFFFF) != 24938) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_context_chip_last_command() and 0xFFFF) != 22036) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_context_chip_selection() and 0xFFFF) != 54306) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_copilot_context_block() and 0xFFFF) != 15137) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_nl_request() and 0xFFFF) != 58158) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_shorten_text() and 0xFFFF) != 44765) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_text_tail() and 0xFFFF) != 12836) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_typeable_command() and 0xFFFF) != 2754) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_generate_vault_key() and 0xFFFF) != 53872) {
@@ -2971,6 +3297,48 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed() and 0xFFFF) != 35638) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_csv_columns() and 0xFFFF) != 23564) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_csv_mapping() and 0xFFFF) != 56350) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_csv_sample() and 0xFFFF) != 41755) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_format() and 0xFFFF) != 39083) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_group_count() and 0xFFFF) != 28272) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_hosts() and 0xFFFF) != 29788) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_identity_count() and 0xFFFF) != 25115) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_key_count() and 0xFFFF) != 48038) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_needs_passphrase() and 0xFFFF) != 24335) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_origin() and 0xFFFF) != 27369) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_snippet_count() and 0xFFFF) != 57080) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_unlock() and 0xFFFF) != 30099) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_warnings() and 0xFFFF) != 3705) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_importpreview_with_mapping() and 0xFFFF) != 8325) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_loglistener_log() and 0xFFFF) != 13401) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -3121,19 +3489,46 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_character() and 0xFFFF) != 2130) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_clear_find() and 0xFFFF) != 16164) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_colors() and 0xFFFF) != 56810) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_cols() and 0xFFFF) != 18291) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_feed() and 0xFFFF) != 60656) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_find() and 0xFFFF) != 47758) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_find_status() and 0xFFFF) != 28842) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_find_step() and 0xFFFF) != 14618) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_history_size() and 0xFFFF) != 16404) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_key() and 0xFFFF) != 63380) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_line_at() and 0xFFFF) != 54981) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_link_at() and 0xFFFF) != 40070) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_modes() and 0xFFFF) != 37183) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_paste() and 0xFFFF) != 3239) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_point_at() and 0xFFFF) != 53784) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_reset() and 0xFFFF) != 42809) {
@@ -3154,7 +3549,22 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_bottom() and 0xFFFF) != 64946) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_line() and 0xFFFF) != 6208) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_set_colors() and 0xFFFF) != 15545) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_set_theme() and 0xFFFF) != 24994) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_snapshot() and 0xFFFF) != 60373) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_text_range() and 0xFFFF) != 52713) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_word_at() and 0xFFFF) != 18500) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_activeforward_bound_port() and 0xFFFF) != 14052) {
@@ -3293,6 +3703,27 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_transferlistener_on_progress() and 0xFFFF) != 29617) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_enter() and 0xFFFF) != 47461) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_idle() and 0xFFFF) != 40541) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_integrated() and 0xFFFF) != 46400) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_last_command() and 0xFFFF) != 16816) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_output() and 0xFFFF) != 53972) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_reset() and 0xFFFF) != 20374) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_commandwatcher_waiting_for_prompt() and 0xFFFF) != 32712) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_transferhandle_cancel() and 0xFFFF) != 22930) {
@@ -3527,6 +3958,21 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_replace_known_host() and 0xFFFF) != 21905) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_apply_import() and 0xFFFF) != 16483) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_export_hosts() and 0xFFFF) != 27760) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_preview_import() and 0xFFFF) != 34914) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_preview_import_file() and 0xFFFF) != 767) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_probe_hosts() and 0xFFFF) != 2857) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() and 0xFFFF) != 65058) {
@@ -3776,6 +4222,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_constructor_terminalscreen_new() and 0xFFFF) != 21624) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_constructor_commandwatcher_new() and 0xFFFF) != 42454) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_constructor_transferhandle_new() and 0xFFFF) != 27037) {
@@ -7493,6 +7942,452 @@ public object FfiConverterTypeAuthHandler: FfiConverter<AuthHandler, Long> {
 
 
 /**
+ * Follows the commands of one terminal, like [`crate::LineTracker`]
+ * follows its line. Feed it every piece of output with
+ * [`Self::output`] (after the emulator, to know whether the alternate
+ * screen is on), call [`Self::enter`] when the user presses Enter at a
+ * shell line (not in a full-screen program, not a bracketed paste) and,
+ * while [`Self::waiting_for_prompt`], [`Self::idle`] every half second.
+ *
+ * With shell integration (OSC 133 from the shell's scripts, or OSC 633
+ * from VS Code's) start, end and exit status are exact; without it a
+ * command ends when the output goes quiet for a second with a prompt at
+ * the cursor.
+ */
+public interface CommandWatcherInterface {
+    
+    /**
+     * Enter was pressed at a shell line: `command` is the line typed (the
+     * `LineTracker`'s, if it is trusted) and `prompt` what is in front of
+     * it on screen. Whether a command started (without shell
+     * integration; then start calling [`Self::idle`]).
+     */
+    fun `enter`(`command`: kotlin.String? = null, `prompt`: kotlin.String? = null): kotlin.Boolean
+    
+    /**
+     * The periodic check without shell integration: `before_cursor` is the
+     * text in front of the cursor on its line and `after_blank` whether the
+     * rest of the line is empty.
+     */
+    fun `idle`(`alternateScreen`: kotlin.Boolean, `beforeCursor`: kotlin.String, `afterBlank`: kotlin.Boolean): CommandEnded?
+    
+    /**
+     * The shell marks its prompts and commands (OSC 133/633).
+     */
+    fun `integrated`(): kotlin.Boolean
+    
+    /**
+     * The last command that ended (for the copilot's context chip).
+     */
+    fun `lastCommand`(): LastCommandInfo?
+    
+    /**
+     * A piece of terminal output; `alternate_screen`: the screen in use
+     * after it.
+     */
+    fun `output`(`data`: kotlin.ByteArray, `alternateScreen`: kotlin.Boolean): CommandOutputEvent
+    
+    /**
+     * Forgets everything (a new connection).
+     */
+    fun `reset`()
+    
+    /**
+     * Without shell integration, a command is waiting for its prompt:
+     * call [`Self::idle`] every half second meanwhile.
+     */
+    fun `waitingForPrompt`(): kotlin.Boolean
+    
+    companion object
+}
+
+/**
+ * Follows the commands of one terminal, like [`crate::LineTracker`]
+ * follows its line. Feed it every piece of output with
+ * [`Self::output`] (after the emulator, to know whether the alternate
+ * screen is on), call [`Self::enter`] when the user presses Enter at a
+ * shell line (not in a full-screen program, not a bracketed paste) and,
+ * while [`Self::waiting_for_prompt`], [`Self::idle`] every half second.
+ *
+ * With shell integration (OSC 133 from the shell's scripts, or OSC 633
+ * from VS Code's) start, end and exit status are exact; without it a
+ * command ends when the output goes quiet for a second with a prompt at
+ * the cursor.
+ */
+open class CommandWatcher: Disposable, AutoCloseable, CommandWatcherInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+    /**
+     * `screen`: the terminal's [`TerminalScreen`] (Android); without it
+     * (iOS) a command whose start was not seen ends with no output.
+     */
+    constructor(`screen`: TerminalScreen? = null) :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_constructor_commandwatcher_new(
+    
+        
+        FfiConverterOptionalTypeTerminalScreen.lower(`screen`),_status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_commandwatcher(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_commandwatcher(handle, status)
+        }
+    }
+
+    
+    /**
+     * Enter was pressed at a shell line: `command` is the line typed (the
+     * `LineTracker`'s, if it is trusted) and `prompt` what is in front of
+     * it on screen. Whether a command started (without shell
+     * integration; then start calling [`Self::idle`]).
+     */override fun `enter`(`command`: kotlin.String?, `prompt`: kotlin.String?): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_enter(
+        it,
+        
+        FfiConverterOptionalString.lower(`command`),
+        FfiConverterOptionalString.lower(`prompt`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The periodic check without shell integration: `before_cursor` is the
+     * text in front of the cursor on its line and `after_blank` whether the
+     * rest of the line is empty.
+     */override fun `idle`(`alternateScreen`: kotlin.Boolean, `beforeCursor`: kotlin.String, `afterBlank`: kotlin.Boolean): CommandEnded? {
+            return FfiConverterOptionalTypeCommandEnded.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_idle(
+        it,
+        
+        FfiConverterBoolean.lower(`alternateScreen`),
+        FfiConverterString.lower(`beforeCursor`),
+        FfiConverterBoolean.lower(`afterBlank`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The shell marks its prompts and commands (OSC 133/633).
+     */override fun `integrated`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_integrated(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The last command that ended (for the copilot's context chip).
+     */override fun `lastCommand`(): LastCommandInfo? {
+            return FfiConverterOptionalTypeLastCommandInfo.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_last_command(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * A piece of terminal output; `alternate_screen`: the screen in use
+     * after it.
+     */override fun `output`(`data`: kotlin.ByteArray, `alternateScreen`: kotlin.Boolean): CommandOutputEvent {
+            return FfiConverterTypeCommandOutputEvent.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_output(
+        it,
+        
+        FfiConverterByteArray.lower(`data`),
+        FfiConverterBoolean.lower(`alternateScreen`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Forgets everything (a new connection).
+     */override fun `reset`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_reset(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Without shell integration, a command is waiting for its prompt:
+     * call [`Self::idle`] every half second meanwhile.
+     */override fun `waitingForPrompt`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_commandwatcher_waiting_for_prompt(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCommandWatcher: FfiConverter<CommandWatcher, Long> {
+    override fun lower(value: CommandWatcher): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): CommandWatcher {
+        return CommandWatcher(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): CommandWatcher {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: CommandWatcher) = 8UL
+
+    override fun write(value: CommandWatcher, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
  * Subscription to the user's events. Closed with `unsubscribe` or when
  * dropped.
  */
@@ -8000,6 +8895,536 @@ public object FfiConverterTypeHostKeyChangeHandler: FfiConverter<HostKeyChangeHa
     override fun allocationSize(value: HostKeyChangeHandler) = 8UL
 
     override fun write(value: HostKeyChangeHandler, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
+ * A file read for the import, before anything is saved. Immutable:
+ * [`Self::with_mapping`] and [`Self::unlock`] return a new preview.
+ */
+public interface ImportPreviewInterface {
+    
+    /**
+     * Names of the CSV columns (the headers, or `Column 3`).
+     */
+    fun `csvColumns`(): List<kotlin.String>
+    
+    /**
+     * The column mapping of a CSV (`None` for other formats). Without an
+     * address column nothing is imported: let the user map it.
+     */
+    fun `csvMapping`(): CsvMapping?
+    
+    /**
+     * The first rows of a CSV (at most `max`), to show next to the
+     * mapping.
+     */
+    fun `csvSample`(`max`: kotlin.UInt = 5u): List<List<kotlin.String>>
+    
+    /**
+     * The format read.
+     */
+    fun `format`(): ImportFormat
+    
+    /**
+     * Groups (folders) the file brings.
+     */
+    fun `groupCount`(): kotlin.UInt
+    
+    fun `hosts`(): List<ImportHostPreview>
+    
+    fun `identityCount`(): kotlin.UInt
+    
+    /**
+     * Keys, identities and snippets (Termoak JSON).
+     */
+    fun `keyCount`(): kotlin.UInt
+    
+    /**
+     * A Termoak export with sealed passwords and keys that are not open
+     * yet: ask for the passphrase ([`Self::unlock`]), or import the rest
+     * without them.
+     */
+    fun `needsPassphrase`(): kotlin.Boolean
+    
+    /**
+     * The file's name.
+     */
+    fun `origin`(): kotlin.String
+    
+    fun `snippetCount`(): kotlin.UInt
+    
+    /**
+     * Opens the sealed secrets (takes a moment). `None`: wrong passphrase.
+     */
+    fun `unlock`(`passphrase`: kotlin.String): ImportPreview?
+    
+    fun `warnings`(): List<ImportWarningInfo>
+    
+    /**
+     * The same file with another CSV column mapping.
+     */
+    fun `withMapping`(`mapping`: CsvMapping): ImportPreview
+    
+    companion object
+}
+
+/**
+ * A file read for the import, before anything is saved. Immutable:
+ * [`Self::with_mapping`] and [`Self::unlock`] return a new preview.
+ */
+open class ImportPreview: Disposable, AutoCloseable, ImportPreviewInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_importpreview(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_importpreview(handle, status)
+        }
+    }
+
+    
+    /**
+     * Names of the CSV columns (the headers, or `Column 3`).
+     */override fun `csvColumns`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_csv_columns(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The column mapping of a CSV (`None` for other formats). Without an
+     * address column nothing is imported: let the user map it.
+     */override fun `csvMapping`(): CsvMapping? {
+            return FfiConverterOptionalTypeCsvMapping.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_csv_mapping(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The first rows of a CSV (at most `max`), to show next to the
+     * mapping.
+     */override fun `csvSample`(`max`: kotlin.UInt): List<List<kotlin.String>> {
+            return FfiConverterSequenceSequenceString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_csv_sample(
+        it,
+        
+        FfiConverterUInt.lower(`max`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The format read.
+     */override fun `format`(): ImportFormat {
+            return FfiConverterTypeImportFormat.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_format(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Groups (folders) the file brings.
+     */override fun `groupCount`(): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_group_count(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    override fun `hosts`(): List<ImportHostPreview> {
+            return FfiConverterSequenceTypeImportHostPreview.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_hosts(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    override fun `identityCount`(): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_identity_count(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Keys, identities and snippets (Termoak JSON).
+     */override fun `keyCount`(): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_key_count(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * A Termoak export with sealed passwords and keys that are not open
+     * yet: ask for the passphrase ([`Self::unlock`]), or import the rest
+     * without them.
+     */override fun `needsPassphrase`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_needs_passphrase(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The file's name.
+     */override fun `origin`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_origin(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    override fun `snippetCount`(): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_snippet_count(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Opens the sealed secrets (takes a moment). `None`: wrong passphrase.
+     */
+    @Throws(TermoakException::class)override fun `unlock`(`passphrase`: kotlin.String): ImportPreview? {
+            return FfiConverterOptionalTypeImportPreview.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_unlock(
+        it,
+        
+        FfiConverterString.lower(`passphrase`),_status)
+}
+    }
+    )
+    }
+    
+
+    override fun `warnings`(): List<ImportWarningInfo> {
+            return FfiConverterSequenceTypeImportWarningInfo.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_warnings(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The same file with another CSV column mapping.
+     */override fun `withMapping`(`mapping`: CsvMapping): ImportPreview {
+            return FfiConverterTypeImportPreview.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_importpreview_with_mapping(
+        it,
+        
+        FfiConverterTypeCsvMapping.lower(`mapping`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportPreview: FfiConverter<ImportPreview, Long> {
+    override fun lower(value: ImportPreview): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): ImportPreview {
+        return ImportPreview(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): ImportPreview {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: ImportPreview) = 8UL
+
+    override fun write(value: ImportPreview, buf: ByteBuffer) {
         buf.putLong(lower(value))
     }
 }
@@ -13331,6 +14756,16 @@ public interface TerminalScreenInterface {
      */
     fun `character`(`ch`: kotlin.String, `modifiers`: KeyModifiers): kotlin.ByteArray
     
+    /**
+     * Ends the search (no more highlights).
+     */
+    fun `clearFind`()
+    
+    /**
+     * The colours in use.
+     */
+    fun `colors`(): TerminalColors
+    
     fun `cols`(): kotlin.UInt
     
     /**
@@ -13340,9 +14775,42 @@ public interface TerminalScreenInterface {
     fun `feed`(`data`: kotlin.ByteArray): List<ScreenEvent>
     
     /**
+     * Searches the screen and the scrollback for `query` (literal text, or
+     * a regular expression with `regex`; `case_sensitive` or not) and goes
+     * to the newest match at or above the bottom of the view (scrolling to
+     * it). The snapshot then highlights the matches on screen. An empty
+     * query clears the search.
+     */
+    fun `find`(`query`: kotlin.String, `caseSensitive`: kotlin.Boolean = false, `regex`: kotlin.Boolean = false): FindStatus
+    
+    /**
+     * The search as it is now (counted again: call it after new output to
+     * refresh "3 of 12", at most a few times a second).
+     */
+    fun `findStatus`(): FindStatus
+    
+    /**
+     * Goes to the next match: `older` upwards (Enter), otherwise downwards
+     * (Shift+Enter); both wrap around. Lists the matches again first (new
+     * output may have added some).
+     */
+    fun `findStep`(`older`: kotlin.Boolean): FindStatus
+    
+    /**
+     * Lines of scrollback above the screen (`ScreenPoint::line` goes down
+     * to minus this).
+     */
+    fun `historySize`(): kotlin.UInt
+    
+    /**
      * Bytes of a special key, according to the remote program's mode.
      */
     fun `key`(`key`: TerminalKey, `modifiers`: KeyModifiers): kotlin.ByteArray
+    
+    /**
+     * The whole line at a point (triple tap), across wrapped lines.
+     */
+    fun `lineAt`(`point`: ScreenPoint): ScreenRange
     
     /**
      * Link at the visible cell `row`, `col`: the one the program marks
@@ -13351,10 +14819,21 @@ public interface TerminalScreenInterface {
     fun `linkAt`(`row`: kotlin.UInt, `col`: kotlin.UInt): kotlin.String?
     
     /**
+     * What the remote program has turned on: mouse reporting and its
+     * encoding, bracketed paste, application cursor and keypad...
+     */
+    fun `modes`(): TerminalModes
+    
+    /**
      * Pasted text: bracketed if the program asked for it, with line breaks
      * sent as Enter.
      */
     fun `paste`(`text`: kotlin.String): kotlin.ByteArray
+    
+    /**
+     * The grid point under viewport `row`, `col` (with the current scroll).
+     */
+    fun `pointAt`(`row`: kotlin.UInt, `col`: kotlin.UInt): ScreenPoint
     
     /**
      * Clears screen and scrollback (e.g. on `ServerTerminalEvent::Resync`).
@@ -13381,9 +14860,43 @@ public interface TerminalScreenInterface {
     fun `scrollToBottom`()
     
     /**
+     * Scrolls the view so `line` is on screen (e.g. a selection handle
+     * dragged past the top).
+     */
+    fun `scrollToLine`(`line`: kotlin.Int)
+    
+    /**
+     * Uses these colours (ARGB). Missing ANSI colours keep the current
+     * ones; `selection` is only kept to be read back.
+     */
+    fun `setColors`(`colors`: TerminalColors)
+    
+    /**
+     * Uses a theme of [`terminal_themes`] (by id). `false` (and nothing
+     * changes) for an unknown id. Colours the program set (OSC 4/10/11)
+     * still win until it resets them.
+     */
+    fun `setTheme`(`id`: kotlin.String): kotlin.Boolean
+    
+    /**
      * The visible screen, ready to paint.
      */
     fun `snapshot`(): ScreenSnapshot
+    
+    /**
+     * Text from `start` to `end` (inclusive, in either order), anywhere in
+     * the screen or the scrollback: wrapped lines are joined, trailing
+     * blanks dropped. `block`: the same columns of every line (a
+     * rectangle).
+     */
+    fun `textRange`(`start`: ScreenPoint, `end`: ScreenPoint, `block`: kotlin.Boolean = false): kotlin.String
+    
+    /**
+     * The word at a point (double tap): letters, digits and the
+     * characters around them that are not separators (spaces, quotes,
+     * brackets, `|`, `:`...); across wrapped lines. `None` on a blank.
+     */
+    fun `wordAt`(`point`: ScreenPoint): ScreenRange?
     
     companion object
 }
@@ -13543,6 +15056,37 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
     }
     
 
+    
+    /**
+     * Ends the search (no more highlights).
+     */override fun `clearFind`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_clear_find(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    
+    /**
+     * The colours in use.
+     */override fun `colors`(): TerminalColors {
+            return FfiConverterTypeTerminalColors.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_colors(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
     override fun `cols`(): kotlin.UInt {
             return FfiConverterUInt.lift(
     callWithHandle {
@@ -13576,6 +15120,82 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
 
     
     /**
+     * Searches the screen and the scrollback for `query` (literal text, or
+     * a regular expression with `regex`; `case_sensitive` or not) and goes
+     * to the newest match at or above the bottom of the view (scrolling to
+     * it). The snapshot then highlights the matches on screen. An empty
+     * query clears the search.
+     */override fun `find`(`query`: kotlin.String, `caseSensitive`: kotlin.Boolean, `regex`: kotlin.Boolean): FindStatus {
+            return FfiConverterTypeFindStatus.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_find(
+        it,
+        
+        FfiConverterString.lower(`query`),
+        FfiConverterBoolean.lower(`caseSensitive`),
+        FfiConverterBoolean.lower(`regex`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The search as it is now (counted again: call it after new output to
+     * refresh "3 of 12", at most a few times a second).
+     */override fun `findStatus`(): FindStatus {
+            return FfiConverterTypeFindStatus.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_find_status(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Goes to the next match: `older` upwards (Enter), otherwise downwards
+     * (Shift+Enter); both wrap around. Lists the matches again first (new
+     * output may have added some).
+     */override fun `findStep`(`older`: kotlin.Boolean): FindStatus {
+            return FfiConverterTypeFindStatus.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_find_step(
+        it,
+        
+        FfiConverterBoolean.lower(`older`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Lines of scrollback above the screen (`ScreenPoint::line` goes down
+     * to minus this).
+     */override fun `historySize`(): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_history_size(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Bytes of a special key, according to the remote program's mode.
      */override fun `key`(`key`: TerminalKey, `modifiers`: KeyModifiers): kotlin.ByteArray {
             return FfiConverterByteArray.lift(
@@ -13586,6 +15206,23 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
         
         FfiConverterTypeTerminalKey.lower(`key`),
         FfiConverterTypeKeyModifiers.lower(`modifiers`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The whole line at a point (triple tap), across wrapped lines.
+     */override fun `lineAt`(`point`: ScreenPoint): ScreenRange {
+            return FfiConverterTypeScreenRange.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_line_at(
+        it,
+        
+        FfiConverterTypeScreenPoint.lower(`point`),_status)
 }
     }
     )
@@ -13613,6 +15250,23 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
 
     
     /**
+     * What the remote program has turned on: mouse reporting and its
+     * encoding, bracketed paste, application cursor and keypad...
+     */override fun `modes`(): TerminalModes {
+            return FfiConverterTypeTerminalModes.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_modes(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * Pasted text: bracketed if the program asked for it, with line breaks
      * sent as Enter.
      */override fun `paste`(`text`: kotlin.String): kotlin.ByteArray {
@@ -13623,6 +15277,24 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
         it,
         
         FfiConverterString.lower(`text`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The grid point under viewport `row`, `col` (with the current scroll).
+     */override fun `pointAt`(`row`: kotlin.UInt, `col`: kotlin.UInt): ScreenPoint {
+            return FfiConverterTypeScreenPoint.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_point_at(
+        it,
+        
+        FfiConverterUInt.lower(`row`),
+        FfiConverterUInt.lower(`col`),_status)
 }
     }
     )
@@ -13720,6 +15392,59 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
 
     
     /**
+     * Scrolls the view so `line` is on screen (e.g. a selection handle
+     * dragged past the top).
+     */override fun `scrollToLine`(`line`: kotlin.Int)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_line(
+        it,
+        
+        FfiConverterInt.lower(`line`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Uses these colours (ARGB). Missing ANSI colours keep the current
+     * ones; `selection` is only kept to be read back.
+     */override fun `setColors`(`colors`: TerminalColors)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_set_colors(
+        it,
+        
+        FfiConverterTypeTerminalColors.lower(`colors`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Uses a theme of [`terminal_themes`] (by id). `false` (and nothing
+     * changes) for an unknown id. Colours the program set (OSC 4/10/11)
+     * still win until it resets them.
+     */override fun `setTheme`(`id`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_set_theme(
+        it,
+        
+        FfiConverterString.lower(`id`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
      * The visible screen, ready to paint.
      */override fun `snapshot`(): ScreenSnapshot {
             return FfiConverterTypeScreenSnapshot.lift(
@@ -13728,6 +15453,47 @@ open class TerminalScreen: Disposable, AutoCloseable, TerminalScreenInterface
     UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_snapshot(
         it,
         _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Text from `start` to `end` (inclusive, in either order), anywhere in
+     * the screen or the scrollback: wrapped lines are joined, trailing
+     * blanks dropped. `block`: the same columns of every line (a
+     * rectangle).
+     */override fun `textRange`(`start`: ScreenPoint, `end`: ScreenPoint, `block`: kotlin.Boolean): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_text_range(
+        it,
+        
+        FfiConverterTypeScreenPoint.lower(`start`),
+        FfiConverterTypeScreenPoint.lower(`end`),
+        FfiConverterBoolean.lower(`block`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The word at a point (double tap): letters, digits and the
+     * characters around them that are not separators (spaces, quotes,
+     * brackets, `|`, `:`...); across wrapped lines. `None` on a blank.
+     */override fun `wordAt`(`point`: ScreenPoint): ScreenRange? {
+            return FfiConverterOptionalTypeScreenRange.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_terminalscreen_word_at(
+        it,
+        
+        FfiConverterTypeScreenPoint.lower(`point`),_status)
 }
     }
     )
@@ -14334,6 +16100,44 @@ public interface TermoakCoreInterface {
      * `None` for This device. Returns the saved entry.
      */
     fun `replaceKnownHost`(`host`: kotlin.String, `port`: kotlin.UInt, `publicKey`: kotlin.String, `accountId`: kotlin.String? = null): KnownHost
+    
+    /**
+     * Saves a previewed import. The target may differ from the preview's:
+     * duplicates are found again against it.
+     */
+    suspend fun `applyImport`(`preview`: ImportPreview, `options`: ImportOptions): ImportSummary
+    
+    /**
+     * Writes an export of a vault (or This device, or one group). Secrets
+     * only go into a Termoak JSON, with `include_secrets` and a passphrase
+     * of at least 8 characters (sealing takes a moment). `app` names the
+     * app in the file ("Termoak for iOS 0.6.1").
+     */
+    suspend fun `exportHosts`(`format`: ExportFormat, `scope`: ExportScope, `includeSecrets`: kotlin.Boolean = false, `passphrase`: kotlin.String? = null, `app`: kotlin.String? = null): ExportResult
+    
+    /**
+     * Reads a file for the import preview, against the vault it would go
+     * to (`account_id` / `vault_id`, default the current account's
+     * personal vault; `device_only`: This device) to find duplicates.
+     * `file_name` helps guess the format. Fails with `Invalid` when the
+     * file cannot be read as that format (an `ssh_config` too: use
+     * `import_ssh_config`).
+     */
+    suspend fun `previewImport`(`data`: kotlin.ByteArray, `fileName`: kotlin.String, `format`: ImportFormat? = null, `accountId`: kotlin.String? = null, `vaultId`: kotlin.String? = null, `deviceOnly`: kotlin.Boolean = false): ImportPreview
+    
+    /**
+     * [`Self::preview_import`] of a file on the device.
+     */
+    suspend fun `previewImportFile`(`path`: kotlin.String, `format`: ImportFormat? = null, `accountId`: kotlin.String? = null, `vaultId`: kotlin.String? = null, `deviceOnly`: kotlin.Boolean = false): ImportPreview
+    
+    /**
+     * Checks whether hosts answer, at most `concurrency` at a time (0: 8),
+     * each within 5 seconds, and answers in the order given. Hosts behind
+     * jump hosts, of Strict vaults or with a proxy whose password cannot be
+     * read are skipped; `off` are ids of hosts the user turned the check
+     * off for.
+     */
+    suspend fun `probeHosts`(`hosts`: List<ItemRef>, `off`: List<kotlin.String> = listOf(), `concurrency`: kotlin.UInt = 0u): List<HostProbe>
     
     /**
      * Attaches to a server session (yours or shared with you). `Hello`
@@ -16854,6 +18658,160 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     )
     }
     
+
+    
+    /**
+     * Saves a previewed import. The target may differ from the preview's:
+     * duplicates are found again against it.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `applyImport`(`preview`: ImportPreview, `options`: ImportOptions) : ImportSummary {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_apply_import(
+                uniffiHandle,
+                
+        FfiConverterTypeImportPreview.lower(`preview`),
+        FfiConverterTypeImportOptions.lower(`options`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeImportSummary.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Writes an export of a vault (or This device, or one group). Secrets
+     * only go into a Termoak JSON, with `include_secrets` and a passphrase
+     * of at least 8 characters (sealing takes a moment). `app` names the
+     * app in the file ("Termoak for iOS 0.6.1").
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `exportHosts`(`format`: ExportFormat, `scope`: ExportScope, `includeSecrets`: kotlin.Boolean, `passphrase`: kotlin.String?, `app`: kotlin.String?) : ExportResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_export_hosts(
+                uniffiHandle,
+                
+        FfiConverterTypeExportFormat.lower(`format`),
+        FfiConverterTypeExportScope.lower(`scope`),
+        FfiConverterBoolean.lower(`includeSecrets`),
+        FfiConverterOptionalString.lower(`passphrase`),
+        FfiConverterOptionalString.lower(`app`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeExportResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Reads a file for the import preview, against the vault it would go
+     * to (`account_id` / `vault_id`, default the current account's
+     * personal vault; `device_only`: This device) to find duplicates.
+     * `file_name` helps guess the format. Fails with `Invalid` when the
+     * file cannot be read as that format (an `ssh_config` too: use
+     * `import_ssh_config`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `previewImport`(`data`: kotlin.ByteArray, `fileName`: kotlin.String, `format`: ImportFormat?, `accountId`: kotlin.String?, `vaultId`: kotlin.String?, `deviceOnly`: kotlin.Boolean) : ImportPreview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_preview_import(
+                uniffiHandle,
+                
+        FfiConverterByteArray.lower(`data`),
+        FfiConverterString.lower(`fileName`),
+        FfiConverterOptionalTypeImportFormat.lower(`format`),
+        FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterBoolean.lower(`deviceOnly`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterTypeImportPreview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * [`Self::preview_import`] of a file on the device.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `previewImportFile`(`path`: kotlin.String, `format`: ImportFormat?, `accountId`: kotlin.String?, `vaultId`: kotlin.String?, `deviceOnly`: kotlin.Boolean) : ImportPreview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_preview_import_file(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`path`),
+        FfiConverterOptionalTypeImportFormat.lower(`format`),
+        FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterBoolean.lower(`deviceOnly`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterTypeImportPreview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Checks whether hosts answer, at most `concurrency` at a time (0: 8),
+     * each within 5 seconds, and answers in the order given. Hosts behind
+     * jump hosts, of Strict vaults or with a proxy whose password cannot be
+     * read are skipped; `off` are ids of hosts the user turned the check
+     * off for.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `probeHosts`(`hosts`: List<ItemRef>, `off`: List<kotlin.String>, `concurrency`: kotlin.UInt) : List<HostProbe> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_probe_hosts(
+                uniffiHandle,
+                
+        FfiConverterSequenceTypeItemRef.lower(`hosts`),
+        FfiConverterSequenceString.lower(`off`),
+        FfiConverterUInt.lower(`concurrency`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeHostProbe.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
 
     
     /**
@@ -19568,6 +21526,53 @@ public object FfiConverterTypeAccountInvite: FfiConverterRustBuffer<AccountInvit
 
 
 /**
+ * The names of your accounts on this device.
+ */
+data class AccountNames (
+    /**
+     * Alias by account id (`AccountInfo.id`).
+     */
+    var `aliases`: Map<kotlin.String, kotlin.String> = mapOf() 
+    , 
+    /**
+     * "Hide email addresses": emails of your accounts are masked.
+     */
+    var `hideEmails`: kotlin.Boolean = false 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccountNames: FfiConverterRustBuffer<AccountNames> {
+    override fun read(buf: ByteBuffer): AccountNames {
+        return AccountNames(
+            FfiConverterMapStringString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AccountNames) = (
+            FfiConverterMapStringString.allocationSize(value.`aliases`) +
+            FfiConverterBoolean.allocationSize(value.`hideEmails`)
+    )
+
+    override fun write(value: AccountNames, buf: ByteBuffer) {
+            FfiConverterMapStringString.write(value.`aliases`, buf)
+            FfiConverterBoolean.write(value.`hideEmails`, buf)
+    }
+}
+
+
+
+/**
  * Your AI situation, to explain it in the AI settings.
  */
 data class AiAccessInfo (
@@ -21418,6 +23423,74 @@ public object FfiConverterTypeAuthorPeriod: FfiConverterRustBuffer<AuthorPeriod>
 
 
 /**
+ * A command that ended.
+ */
+data class CommandEnded (
+    var `command`: kotlin.String?
+    , 
+    /**
+     * From its start to its end (to the prompt, without shell
+     * integration). Notify when it is long and the terminal is not in
+     * view.
+     */
+    var `durationMs`: kotlin.ULong
+    , 
+    var `exitCode`: kotlin.Int?
+    , 
+    /**
+     * It used the alternate screen (vim, less, top...): not notified,
+     * no chip.
+     */
+    var `interactive`: kotlin.Boolean
+    , 
+    /**
+     * `None` for interactive programs.
+     */
+    var `last`: LastCommandInfo?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCommandEnded: FfiConverterRustBuffer<CommandEnded> {
+    override fun read(buf: ByteBuffer): CommandEnded {
+        return CommandEnded(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeLastCommandInfo.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CommandEnded) = (
+            FfiConverterOptionalString.allocationSize(value.`command`) +
+            FfiConverterULong.allocationSize(value.`durationMs`) +
+            FfiConverterOptionalInt.allocationSize(value.`exitCode`) +
+            FfiConverterBoolean.allocationSize(value.`interactive`) +
+            FfiConverterOptionalTypeLastCommandInfo.allocationSize(value.`last`)
+    )
+
+    override fun write(value: CommandEnded, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`command`, buf)
+            FfiConverterULong.write(value.`durationMs`, buf)
+            FfiConverterOptionalInt.write(value.`exitCode`, buf)
+            FfiConverterBoolean.write(value.`interactive`, buf)
+            FfiConverterOptionalTypeLastCommandInfo.write(value.`last`, buf)
+    }
+}
+
+
+
+/**
  * A command from the history.
  */
 data class CommandHistoryItem (
@@ -21464,6 +23537,51 @@ public object FfiConverterTypeCommandHistoryItem: FfiConverterRustBuffer<Command
             FfiConverterString.write(value.`command`, buf)
             FfiConverterUInt.write(value.`uses`, buf)
             FfiConverterLong.write(value.`lastUsed`, buf)
+    }
+}
+
+
+
+/**
+ * What a piece of output did.
+ */
+data class CommandOutputEvent (
+    /**
+     * A command started (shell integration): hide the chip of the previous
+     * one.
+     */
+    var `started`: kotlin.Boolean
+    , 
+    var `ended`: CommandEnded?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCommandOutputEvent: FfiConverterRustBuffer<CommandOutputEvent> {
+    override fun read(buf: ByteBuffer): CommandOutputEvent {
+        return CommandOutputEvent(
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeCommandEnded.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CommandOutputEvent) = (
+            FfiConverterBoolean.allocationSize(value.`started`) +
+            FfiConverterOptionalTypeCommandEnded.allocationSize(value.`ended`)
+    )
+
+    override fun write(value: CommandOutputEvent, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`started`, buf)
+            FfiConverterOptionalTypeCommandEnded.write(value.`ended`, buf)
     }
 }
 
@@ -21607,6 +23725,59 @@ public object FfiConverterTypeConnectionDetails: FfiConverterRustBuffer<Connecti
 
 
 /**
+ * A piece of terminal context the copilot sends with the next message,
+ * shown as a chip the user can remove before sending.
+ */
+data class ContextChip (
+    var `kind`: ContextChipKind
+    , 
+    /**
+     * Short text of the chip.
+     */
+    var `label`: kotlin.String
+    , 
+    /**
+     * What the AI gets.
+     */
+    var `text`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeContextChip: FfiConverterRustBuffer<ContextChip> {
+    override fun read(buf: ByteBuffer): ContextChip {
+        return ContextChip(
+            FfiConverterTypeContextChipKind.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ContextChip) = (
+            FfiConverterTypeContextChipKind.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`label`) +
+            FfiConverterString.allocationSize(value.`text`)
+    )
+
+    override fun write(value: ContextChip, buf: ByteBuffer) {
+            FfiConverterTypeContextChipKind.write(value.`kind`, buf)
+            FfiConverterString.write(value.`label`, buf)
+            FfiConverterString.write(value.`text`, buf)
+    }
+}
+
+
+
+/**
  * An item copied (or reused) with a new id.
  */
 data class CopiedItem (
@@ -21707,6 +23878,94 @@ public object FfiConverterTypeCreatedAccountInvite: FfiConverterRustBuffer<Creat
             FfiConverterString.write(value.`token`, buf)
             FfiConverterString.write(value.`server`, buf)
             FfiConverterString.write(value.`appLink`, buf)
+    }
+}
+
+
+
+/**
+ * A column mapped to a field.
+ */
+data class CsvColumn (
+    var `field`: CsvField
+    , 
+    /**
+     * Column index (from 0).
+     */
+    var `column`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCsvColumn: FfiConverterRustBuffer<CsvColumn> {
+    override fun read(buf: ByteBuffer): CsvColumn {
+        return CsvColumn(
+            FfiConverterTypeCsvField.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CsvColumn) = (
+            FfiConverterTypeCsvField.allocationSize(value.`field`) +
+            FfiConverterUInt.allocationSize(value.`column`)
+    )
+
+    override fun write(value: CsvColumn, buf: ByteBuffer) {
+            FfiConverterTypeCsvField.write(value.`field`, buf)
+            FfiConverterUInt.write(value.`column`, buf)
+    }
+}
+
+
+
+/**
+ * Which column feeds each field of a CSV.
+ */
+data class CsvMapping (
+    /**
+     * The first row has the column names.
+     */
+    var `hasHeader`: kotlin.Boolean
+    , 
+    var `columns`: List<CsvColumn>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCsvMapping: FfiConverterRustBuffer<CsvMapping> {
+    override fun read(buf: ByteBuffer): CsvMapping {
+        return CsvMapping(
+            FfiConverterBoolean.read(buf),
+            FfiConverterSequenceTypeCsvColumn.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CsvMapping) = (
+            FfiConverterBoolean.allocationSize(value.`hasHeader`) +
+            FfiConverterSequenceTypeCsvColumn.allocationSize(value.`columns`)
+    )
+
+    override fun write(value: CsvMapping, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`hasHeader`, buf)
+            FfiConverterSequenceTypeCsvColumn.write(value.`columns`, buf)
     }
 }
 
@@ -21869,6 +24128,220 @@ public object FfiConverterTypeExecResult: FfiConverterRustBuffer<ExecResult> {
             FfiConverterBoolean.write(value.`truncated`, buf)
             FfiConverterBoolean.write(value.`timedOut`, buf)
             FfiConverterULong.write(value.`durationMs`, buf)
+    }
+}
+
+
+
+/**
+ * An export file, ready to save (with the share sheet or the file
+ * picker).
+ */
+data class ExportResult (
+    var `data`: kotlin.ByteArray
+    , 
+    /**
+     * Suggested name (`termoak-hosts-2026-10-08.json`).
+     */
+    var `fileName`: kotlin.String
+    , 
+    var `mimeType`: kotlin.String
+    , 
+    var `hosts`: kotlin.UInt
+    , 
+    /**
+     * Secrets that could not be read (Use-only vaults) and are not in it.
+     */
+    var `hiddenSecrets`: kotlin.UInt
+    , 
+    /**
+     * It has passwords or keys (sealed): store it carefully.
+     */
+    var `hasSecrets`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeExportResult: FfiConverterRustBuffer<ExportResult> {
+    override fun read(buf: ByteBuffer): ExportResult {
+        return ExportResult(
+            FfiConverterByteArray.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ExportResult) = (
+            FfiConverterByteArray.allocationSize(value.`data`) +
+            FfiConverterString.allocationSize(value.`fileName`) +
+            FfiConverterString.allocationSize(value.`mimeType`) +
+            FfiConverterUInt.allocationSize(value.`hosts`) +
+            FfiConverterUInt.allocationSize(value.`hiddenSecrets`) +
+            FfiConverterBoolean.allocationSize(value.`hasSecrets`)
+    )
+
+    override fun write(value: ExportResult, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`data`, buf)
+            FfiConverterString.write(value.`fileName`, buf)
+            FfiConverterString.write(value.`mimeType`, buf)
+            FfiConverterUInt.write(value.`hosts`, buf)
+            FfiConverterUInt.write(value.`hiddenSecrets`, buf)
+            FfiConverterBoolean.write(value.`hasSecrets`, buf)
+    }
+}
+
+
+
+/**
+ * Which items an export takes.
+ */
+data class ExportScope (
+    /**
+     * Account (default: the current one; This device without one).
+     */
+    var `accountId`: kotlin.String? = null 
+    , 
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    var `vaultId`: kotlin.String? = null 
+    , 
+    /**
+     * This device.
+     */
+    var `deviceOnly`: kotlin.Boolean = false 
+    , 
+    /**
+     * Only this group and its subgroups (with what their hosts use).
+     */
+    var `groupId`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeExportScope: FfiConverterRustBuffer<ExportScope> {
+    override fun read(buf: ByteBuffer): ExportScope {
+        return ExportScope(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ExportScope) = (
+            FfiConverterOptionalString.allocationSize(value.`accountId`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterBoolean.allocationSize(value.`deviceOnly`) +
+            FfiConverterOptionalString.allocationSize(value.`groupId`)
+    )
+
+    override fun write(value: ExportScope, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`accountId`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterBoolean.write(value.`deviceOnly`, buf)
+            FfiConverterOptionalString.write(value.`groupId`, buf)
+    }
+}
+
+
+
+/**
+ * How a search went.
+ */
+data class FindStatus (
+    /**
+     * Matches in the screen and the scrollback (at most 5,000).
+     */
+    var `count`: kotlin.UInt
+    , 
+    /**
+     * There were more than 5,000 ("5000+").
+     */
+    var `capped`: kotlin.Boolean
+    , 
+    /**
+     * Index of the current match, counted from the top of the scrollback.
+     */
+    var `current`: kotlin.UInt?
+    , 
+    /**
+     * Number to show for the current one: "1 of 12" is the newest (at the
+     * bottom), since a terminal is searched upwards.
+     */
+    var `ordinal`: kotlin.UInt?
+    , 
+    /**
+     * The current match (the view scrolls to show it).
+     */
+    var `currentMatch`: ScreenRange?
+    , 
+    /**
+     * The regular expression is not valid (nothing is found).
+     */
+    var `invalid`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFindStatus: FfiConverterRustBuffer<FindStatus> {
+    override fun read(buf: ByteBuffer): FindStatus {
+        return FindStatus(
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalTypeScreenRange.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FindStatus) = (
+            FfiConverterUInt.allocationSize(value.`count`) +
+            FfiConverterBoolean.allocationSize(value.`capped`) +
+            FfiConverterOptionalUInt.allocationSize(value.`current`) +
+            FfiConverterOptionalUInt.allocationSize(value.`ordinal`) +
+            FfiConverterOptionalTypeScreenRange.allocationSize(value.`currentMatch`) +
+            FfiConverterBoolean.allocationSize(value.`invalid`)
+    )
+
+    override fun write(value: FindStatus, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`count`, buf)
+            FfiConverterBoolean.write(value.`capped`, buf)
+            FfiConverterOptionalUInt.write(value.`current`, buf)
+            FfiConverterOptionalUInt.write(value.`ordinal`, buf)
+            FfiConverterOptionalTypeScreenRange.write(value.`currentMatch`, buf)
+            FfiConverterBoolean.write(value.`invalid`, buf)
     }
 }
 
@@ -22107,6 +24580,90 @@ public object FfiConverterTypeHostKeyChange: FfiConverterRustBuffer<HostKeyChang
 
 
 
+/**
+ * The check of one host.
+ */
+data class HostProbe (
+    var `hostId`: kotlin.String
+    , 
+    /**
+     * `None`: This device.
+     */
+    var `accountId`: kotlin.String?
+    , 
+    var `status`: HostReach
+    , 
+    /**
+     * Time the connection took (only `Up`).
+     */
+    var `ms`: kotlin.UInt?
+    , 
+    /**
+     * When it was checked (ms since the epoch; 0 if it was not).
+     */
+    var `checkedAt`: kotlin.Long
+    , 
+    var `skipped`: ProbeSkip?
+    , 
+    /**
+     * Address and port checked (a host whose target changed, edited
+     * address, port or proxy, should be checked again).
+     */
+    var `address`: kotlin.String?
+    , 
+    var `port`: kotlin.UShort?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHostProbe: FfiConverterRustBuffer<HostProbe> {
+    override fun read(buf: ByteBuffer): HostProbe {
+        return HostProbe(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterTypeHostReach.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalTypeProbeSkip.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalUShort.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: HostProbe) = (
+            FfiConverterString.allocationSize(value.`hostId`) +
+            FfiConverterOptionalString.allocationSize(value.`accountId`) +
+            FfiConverterTypeHostReach.allocationSize(value.`status`) +
+            FfiConverterOptionalUInt.allocationSize(value.`ms`) +
+            FfiConverterLong.allocationSize(value.`checkedAt`) +
+            FfiConverterOptionalTypeProbeSkip.allocationSize(value.`skipped`) +
+            FfiConverterOptionalString.allocationSize(value.`address`) +
+            FfiConverterOptionalUShort.allocationSize(value.`port`)
+    )
+
+    override fun write(value: HostProbe, buf: ByteBuffer) {
+            FfiConverterString.write(value.`hostId`, buf)
+            FfiConverterOptionalString.write(value.`accountId`, buf)
+            FfiConverterTypeHostReach.write(value.`status`, buf)
+            FfiConverterOptionalUInt.write(value.`ms`, buf)
+            FfiConverterLong.write(value.`checkedAt`, buf)
+            FfiConverterOptionalTypeProbeSkip.write(value.`skipped`, buf)
+            FfiConverterOptionalString.write(value.`address`, buf)
+            FfiConverterOptionalUShort.write(value.`port`, buf)
+    }
+}
+
+
+
 data class HostProxy (
     var `kind`: ProxyKind
     , 
@@ -22278,6 +24835,338 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalString.write(value.`theme`, buf)
             FfiConverterOptionalBoolean.write(value.`recordSessions`, buf)
             FfiConverterOptionalTypeHostProxy.write(value.`proxy`, buf)
+    }
+}
+
+
+
+/**
+ * A host of the file, as the preview shows it.
+ */
+data class ImportHostPreview (
+    /**
+     * Index in the file (for `ImportOptions.excluded`).
+     */
+    var `index`: kotlin.UInt
+    , 
+    var `label`: kotlin.String
+    , 
+    var `address`: kotlin.String
+    , 
+    var `port`: kotlin.UShort?
+    , 
+    var `username`: kotlin.String?
+    , 
+    /**
+     * `ssh` or `telnet`.
+     */
+    var `protocol`: kotlin.String
+    , 
+    /**
+     * `user@host:port` (`telnet://` in front for Telnet).
+     */
+    var `target`: kotlin.String
+    , 
+    /**
+     * Folder path (`Prod / Web`).
+     */
+    var `group`: kotlin.String?
+    , 
+    var `tags`: List<kotlin.String>
+    , 
+    var `notes`: kotlin.String
+    , 
+    var `hasPassword`: kotlin.Boolean
+    , 
+    /**
+     * Private key file the source points to.
+     */
+    var `keyFile`: kotlin.String?
+    , 
+    var `duplicate`: ImportDuplicate?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportHostPreview: FfiConverterRustBuffer<ImportHostPreview> {
+    override fun read(buf: ByteBuffer): ImportHostPreview {
+        return ImportHostPreview(
+            FfiConverterUInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalUShort.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalTypeImportDuplicate.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImportHostPreview) = (
+            FfiConverterUInt.allocationSize(value.`index`) +
+            FfiConverterString.allocationSize(value.`label`) +
+            FfiConverterString.allocationSize(value.`address`) +
+            FfiConverterOptionalUShort.allocationSize(value.`port`) +
+            FfiConverterOptionalString.allocationSize(value.`username`) +
+            FfiConverterString.allocationSize(value.`protocol`) +
+            FfiConverterString.allocationSize(value.`target`) +
+            FfiConverterOptionalString.allocationSize(value.`group`) +
+            FfiConverterSequenceString.allocationSize(value.`tags`) +
+            FfiConverterString.allocationSize(value.`notes`) +
+            FfiConverterBoolean.allocationSize(value.`hasPassword`) +
+            FfiConverterOptionalString.allocationSize(value.`keyFile`) +
+            FfiConverterOptionalTypeImportDuplicate.allocationSize(value.`duplicate`)
+    )
+
+    override fun write(value: ImportHostPreview, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`index`, buf)
+            FfiConverterString.write(value.`label`, buf)
+            FfiConverterString.write(value.`address`, buf)
+            FfiConverterOptionalUShort.write(value.`port`, buf)
+            FfiConverterOptionalString.write(value.`username`, buf)
+            FfiConverterString.write(value.`protocol`, buf)
+            FfiConverterString.write(value.`target`, buf)
+            FfiConverterOptionalString.write(value.`group`, buf)
+            FfiConverterSequenceString.write(value.`tags`, buf)
+            FfiConverterString.write(value.`notes`, buf)
+            FfiConverterBoolean.write(value.`hasPassword`, buf)
+            FfiConverterOptionalString.write(value.`keyFile`, buf)
+            FfiConverterOptionalTypeImportDuplicate.write(value.`duplicate`, buf)
+    }
+}
+
+
+
+/**
+ * Where and how an import is saved.
+ */
+data class ImportOptions (
+    /**
+     * Account (default: the current one; This device without one).
+     */
+    var `accountId`: kotlin.String? = null 
+    , 
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    var `vaultId`: kotlin.String? = null 
+    , 
+    /**
+     * This device, whatever the account.
+     */
+    var `deviceOnly`: kotlin.Boolean = false 
+    , 
+    /**
+     * An existing group of the target to put everything under.
+     */
+    var `groupId`: kotlin.String? = null 
+    , 
+    /**
+     * Or a top-level group by name (found or created), e.g. "PuTTY".
+     */
+    var `groupName`: kotlin.String? = null 
+    , 
+    var `duplicatePolicy`: DuplicatePolicy
+    , 
+    /**
+     * Hosts the user unchecked (`ImportHostPreview.index`).
+     */
+    var `excluded`: List<kotlin.UInt> = listOf() 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportOptions: FfiConverterRustBuffer<ImportOptions> {
+    override fun read(buf: ByteBuffer): ImportOptions {
+        return ImportOptions(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterTypeDuplicatePolicy.read(buf),
+            FfiConverterSequenceUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImportOptions) = (
+            FfiConverterOptionalString.allocationSize(value.`accountId`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterBoolean.allocationSize(value.`deviceOnly`) +
+            FfiConverterOptionalString.allocationSize(value.`groupId`) +
+            FfiConverterOptionalString.allocationSize(value.`groupName`) +
+            FfiConverterTypeDuplicatePolicy.allocationSize(value.`duplicatePolicy`) +
+            FfiConverterSequenceUInt.allocationSize(value.`excluded`)
+    )
+
+    override fun write(value: ImportOptions, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`accountId`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterBoolean.write(value.`deviceOnly`, buf)
+            FfiConverterOptionalString.write(value.`groupId`, buf)
+            FfiConverterOptionalString.write(value.`groupName`, buf)
+            FfiConverterTypeDuplicatePolicy.write(value.`duplicatePolicy`, buf)
+            FfiConverterSequenceUInt.write(value.`excluded`, buf)
+    }
+}
+
+
+
+/**
+ * What an import did.
+ */
+data class ImportSummary (
+    var `created`: kotlin.UInt
+    , 
+    var `updated`: kotlin.UInt
+    , 
+    var `skipped`: kotlin.UInt
+    , 
+    var `groups`: kotlin.UInt
+    , 
+    var `keys`: kotlin.UInt
+    , 
+    /**
+     * Keys that were already there (same fingerprint).
+     */
+    var `keysReused`: kotlin.UInt
+    , 
+    var `identities`: kotlin.UInt
+    , 
+    var `snippets`: kotlin.UInt
+    , 
+    var `warnings`: List<ImportWarningInfo>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportSummary: FfiConverterRustBuffer<ImportSummary> {
+    override fun read(buf: ByteBuffer): ImportSummary {
+        return ImportSummary(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterSequenceTypeImportWarningInfo.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImportSummary) = (
+            FfiConverterUInt.allocationSize(value.`created`) +
+            FfiConverterUInt.allocationSize(value.`updated`) +
+            FfiConverterUInt.allocationSize(value.`skipped`) +
+            FfiConverterUInt.allocationSize(value.`groups`) +
+            FfiConverterUInt.allocationSize(value.`keys`) +
+            FfiConverterUInt.allocationSize(value.`keysReused`) +
+            FfiConverterUInt.allocationSize(value.`identities`) +
+            FfiConverterUInt.allocationSize(value.`snippets`) +
+            FfiConverterSequenceTypeImportWarningInfo.allocationSize(value.`warnings`)
+    )
+
+    override fun write(value: ImportSummary, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`created`, buf)
+            FfiConverterUInt.write(value.`updated`, buf)
+            FfiConverterUInt.write(value.`skipped`, buf)
+            FfiConverterUInt.write(value.`groups`, buf)
+            FfiConverterUInt.write(value.`keys`, buf)
+            FfiConverterUInt.write(value.`keysReused`, buf)
+            FfiConverterUInt.write(value.`identities`, buf)
+            FfiConverterUInt.write(value.`snippets`, buf)
+            FfiConverterSequenceTypeImportWarningInfo.write(value.`warnings`, buf)
+    }
+}
+
+
+
+/**
+ * A warning of the import (a host left out or changed).
+ */
+data class ImportWarningInfo (
+    /**
+     * Stable code to translate by: `not_ssh`, `no_address`,
+     * `no_address_line`, `bad_port`, `proxy_unsupported`, `key_file`,
+     * `key_without_private`.
+     */
+    var `code`: kotlin.String
+    , 
+    /**
+     * The English text.
+     */
+    var `message`: kotlin.String
+    , 
+    /**
+     * Values for a translated text (`name`, `protocol`, `line`, `port`,
+     * `path`, `error`).
+     */
+    var `params`: Map<kotlin.String, kotlin.String>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportWarningInfo: FfiConverterRustBuffer<ImportWarningInfo> {
+    override fun read(buf: ByteBuffer): ImportWarningInfo {
+        return ImportWarningInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterMapStringString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ImportWarningInfo) = (
+            FfiConverterString.allocationSize(value.`code`) +
+            FfiConverterString.allocationSize(value.`message`) +
+            FfiConverterMapStringString.allocationSize(value.`params`)
+    )
+
+    override fun write(value: ImportWarningInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`code`, buf)
+            FfiConverterString.write(value.`message`, buf)
+            FfiConverterMapStringString.write(value.`params`, buf)
     }
 }
 
@@ -22651,6 +25540,72 @@ public object FfiConverterTypeKnownHost: FfiConverterRustBuffer<KnownHost> {
 
 
 /**
+ * The last command that ended in a terminal (not a full-screen program).
+ */
+data class LastCommandInfo (
+    /**
+     * The command line, when known (typed and seen on screen, or sent by
+     * the shell).
+     */
+    var `command`: kotlin.String?
+    , 
+    /**
+     * Exit status (only with shell integration).
+     */
+    var `exitCode`: kotlin.Int?
+    , 
+    /**
+     * The end of what it printed, cleaned (at most 60 lines and 4,000
+     * characters; not redacted).
+     */
+    var `output`: kotlin.String
+    , 
+    /**
+     * Whether it failed, by the chip's rules. The app also checks its own
+     * setting and that an AI can be asked.
+     */
+    var `failure`: CommandFailure?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLastCommandInfo: FfiConverterRustBuffer<LastCommandInfo> {
+    override fun read(buf: ByteBuffer): LastCommandInfo {
+        return LastCommandInfo(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalTypeCommandFailure.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LastCommandInfo) = (
+            FfiConverterOptionalString.allocationSize(value.`command`) +
+            FfiConverterOptionalInt.allocationSize(value.`exitCode`) +
+            FfiConverterString.allocationSize(value.`output`) +
+            FfiConverterOptionalTypeCommandFailure.allocationSize(value.`failure`)
+    )
+
+    override fun write(value: LastCommandInfo, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`command`, buf)
+            FfiConverterOptionalInt.write(value.`exitCode`, buf)
+            FfiConverterString.write(value.`output`, buf)
+            FfiConverterOptionalTypeCommandFailure.write(value.`failure`, buf)
+    }
+}
+
+
+
+/**
  * Details of a link invitation (no account needed), to show before joining.
  */
 data class LinkInvite (
@@ -22798,6 +25753,125 @@ public object FfiConverterTypeNewVault: FfiConverterRustBuffer<NewVault> {
             FfiConverterOptionalString.write(value.`teamId`, buf)
             FfiConverterOptionalTypeVaultRole.write(value.`teamMemberRole`, buf)
             FfiConverterBoolean.write(value.`strict`, buf)
+    }
+}
+
+
+
+/**
+ * An entry of the palette.
+ */
+data class PaletteEntry (
+    /**
+     * Stable identity, to remember it among the recent ones (`host:<id>`,
+     * `cmd:<name>`...).
+     */
+    var `key`: kotlin.String
+    , 
+    var `kind`: PaletteKind
+    , 
+    var `title`: kotlin.String
+    , 
+    /**
+     * Second line (address, command, menu...).
+     */
+    var `detail`: kotlin.String = "" 
+    , 
+    /**
+     * More words it is found by (tags, names in English...).
+     */
+    var `keywords`: List<kotlin.String> = listOf() 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePaletteEntry: FfiConverterRustBuffer<PaletteEntry> {
+    override fun read(buf: ByteBuffer): PaletteEntry {
+        return PaletteEntry(
+            FfiConverterString.read(buf),
+            FfiConverterTypePaletteKind.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PaletteEntry) = (
+            FfiConverterString.allocationSize(value.`key`) +
+            FfiConverterTypePaletteKind.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`detail`) +
+            FfiConverterSequenceString.allocationSize(value.`keywords`)
+    )
+
+    override fun write(value: PaletteEntry, buf: ByteBuffer) {
+            FfiConverterString.write(value.`key`, buf)
+            FfiConverterTypePaletteKind.write(value.`kind`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`detail`, buf)
+            FfiConverterSequenceString.write(value.`keywords`, buf)
+    }
+}
+
+
+
+/**
+ * An entry to show.
+ */
+data class PaletteMatch (
+    /**
+     * Index in the entries given.
+     */
+    var `index`: kotlin.UInt
+    , 
+    var `score`: kotlin.Double
+    , 
+    /**
+     * Characters of the title that matched (positions in characters, not
+     * bytes), to highlight them.
+     */
+    var `hits`: List<kotlin.UInt>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePaletteMatch: FfiConverterRustBuffer<PaletteMatch> {
+    override fun read(buf: ByteBuffer): PaletteMatch {
+        return PaletteMatch(
+            FfiConverterUInt.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterSequenceUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PaletteMatch) = (
+            FfiConverterUInt.allocationSize(value.`index`) +
+            FfiConverterDouble.allocationSize(value.`score`) +
+            FfiConverterSequenceUInt.allocationSize(value.`hits`)
+    )
+
+    override fun write(value: PaletteMatch, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`index`, buf)
+            FfiConverterDouble.write(value.`score`, buf)
+            FfiConverterSequenceUInt.write(value.`hits`, buf)
     }
 }
 
@@ -23191,6 +26265,11 @@ data class ScreenCursor (
     var `col`: kotlin.UInt
     , 
     var `shape`: ScreenCursorShape
+    , 
+    /**
+     * The program asked for a blinking cursor (DECSCUSR 1/3/5, `CSI ?12h`).
+     */
+    var `blinking`: kotlin.Boolean = false 
     
 ){
     
@@ -23210,19 +26289,76 @@ public object FfiConverterTypeScreenCursor: FfiConverterRustBuffer<ScreenCursor>
             FfiConverterUInt.read(buf),
             FfiConverterUInt.read(buf),
             FfiConverterTypeScreenCursorShape.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
     override fun allocationSize(value: ScreenCursor) = (
             FfiConverterUInt.allocationSize(value.`row`) +
             FfiConverterUInt.allocationSize(value.`col`) +
-            FfiConverterTypeScreenCursorShape.allocationSize(value.`shape`)
+            FfiConverterTypeScreenCursorShape.allocationSize(value.`shape`) +
+            FfiConverterBoolean.allocationSize(value.`blinking`)
     )
 
     override fun write(value: ScreenCursor, buf: ByteBuffer) {
             FfiConverterUInt.write(value.`row`, buf)
             FfiConverterUInt.write(value.`col`, buf)
             FfiConverterTypeScreenCursorShape.write(value.`shape`, buf)
+            FfiConverterBoolean.write(value.`blinking`, buf)
+    }
+}
+
+
+
+/**
+ * Cells to paint over a find match on screen (one per row it covers).
+ */
+data class ScreenHighlight (
+    var `row`: kotlin.UInt
+    , 
+    var `col`: kotlin.UInt
+    , 
+    var `cells`: kotlin.UInt
+    , 
+    /**
+     * The current match (paint it differently).
+     */
+    var `current`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeScreenHighlight: FfiConverterRustBuffer<ScreenHighlight> {
+    override fun read(buf: ByteBuffer): ScreenHighlight {
+        return ScreenHighlight(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ScreenHighlight) = (
+            FfiConverterUInt.allocationSize(value.`row`) +
+            FfiConverterUInt.allocationSize(value.`col`) +
+            FfiConverterUInt.allocationSize(value.`cells`) +
+            FfiConverterBoolean.allocationSize(value.`current`)
+    )
+
+    override fun write(value: ScreenHighlight, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`row`, buf)
+            FfiConverterUInt.write(value.`col`, buf)
+            FfiConverterUInt.write(value.`cells`, buf)
+            FfiConverterBoolean.write(value.`current`, buf)
     }
 }
 
@@ -23256,6 +26392,97 @@ public object FfiConverterTypeScreenLine: FfiConverterRustBuffer<ScreenLine> {
 
     override fun write(value: ScreenLine, buf: ByteBuffer) {
             FfiConverterSequenceTypeScreenRun.write(value.`runs`, buf)
+    }
+}
+
+
+
+/**
+ * A cell of the grid (screen and scrollback): see the module docs.
+ */
+data class ScreenPoint (
+    /**
+     * 0: the top of the screen at the bottom of the scrollback; negative:
+     * the scrollback.
+     */
+    var `line`: kotlin.Int
+    , 
+    var `col`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeScreenPoint: FfiConverterRustBuffer<ScreenPoint> {
+    override fun read(buf: ByteBuffer): ScreenPoint {
+        return ScreenPoint(
+            FfiConverterInt.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ScreenPoint) = (
+            FfiConverterInt.allocationSize(value.`line`) +
+            FfiConverterUInt.allocationSize(value.`col`)
+    )
+
+    override fun write(value: ScreenPoint, buf: ByteBuffer) {
+            FfiConverterInt.write(value.`line`, buf)
+            FfiConverterUInt.write(value.`col`, buf)
+    }
+}
+
+
+
+/**
+ * A range of cells (inclusive) and its text.
+ */
+data class ScreenRange (
+    var `start`: ScreenPoint
+    , 
+    var `end`: ScreenPoint
+    , 
+    var `text`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeScreenRange: FfiConverterRustBuffer<ScreenRange> {
+    override fun read(buf: ByteBuffer): ScreenRange {
+        return ScreenRange(
+            FfiConverterTypeScreenPoint.read(buf),
+            FfiConverterTypeScreenPoint.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ScreenRange) = (
+            FfiConverterTypeScreenPoint.allocationSize(value.`start`) +
+            FfiConverterTypeScreenPoint.allocationSize(value.`end`) +
+            FfiConverterString.allocationSize(value.`text`)
+    )
+
+    override fun write(value: ScreenRange, buf: ByteBuffer) {
+            FfiConverterTypeScreenPoint.write(value.`start`, buf)
+            FfiConverterTypeScreenPoint.write(value.`end`, buf)
+            FfiConverterString.write(value.`text`, buf)
     }
 }
 
@@ -23382,6 +26609,12 @@ data class ScreenSnapshot (
     var `foreground`: kotlin.UInt
     , 
     var `cursorColor`: kotlin.UInt
+    , 
+    /**
+     * Find matches on screen (empty without a search: see
+     * [`TerminalScreen::find`]).
+     */
+    var `highlights`: List<ScreenHighlight> = listOf() 
     
 ){
     
@@ -23406,6 +26639,7 @@ public object FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer<ScreenSnaps
             FfiConverterUInt.read(buf),
             FfiConverterUInt.read(buf),
             FfiConverterUInt.read(buf),
+            FfiConverterSequenceTypeScreenHighlight.read(buf),
         )
     }
 
@@ -23417,7 +26651,8 @@ public object FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer<ScreenSnaps
             FfiConverterUInt.allocationSize(value.`displayOffset`) +
             FfiConverterUInt.allocationSize(value.`background`) +
             FfiConverterUInt.allocationSize(value.`foreground`) +
-            FfiConverterUInt.allocationSize(value.`cursorColor`)
+            FfiConverterUInt.allocationSize(value.`cursorColor`) +
+            FfiConverterSequenceTypeScreenHighlight.allocationSize(value.`highlights`)
     )
 
     override fun write(value: ScreenSnapshot, buf: ByteBuffer) {
@@ -23429,6 +26664,7 @@ public object FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer<ScreenSnaps
             FfiConverterUInt.write(value.`background`, buf)
             FfiConverterUInt.write(value.`foreground`, buf)
             FfiConverterUInt.write(value.`cursorColor`, buf)
+            FfiConverterSequenceTypeScreenHighlight.write(value.`highlights`, buf)
     }
 }
 
@@ -24695,6 +27931,17 @@ data class SshConfigImportOptions (
      * Save hosts and keys as "this device only".
      */
     var `deviceOnly`: kotlin.Boolean = false 
+    , 
+    /**
+     * Account to import into (default: the current account; This device
+     * without one). Ignored with `device_only`.
+     */
+    var `accountId`: kotlin.String? = null 
+    , 
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    var `vaultId`: kotlin.String? = null 
     
 ){
     
@@ -24714,19 +27961,25 @@ public object FfiConverterTypeSshConfigImportOptions: FfiConverterRustBuffer<Ssh
             FfiConverterBoolean.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
     override fun allocationSize(value: SshConfigImportOptions) = (
             FfiConverterBoolean.allocationSize(value.`dryRun`) +
             FfiConverterOptionalString.allocationSize(value.`group`) +
-            FfiConverterBoolean.allocationSize(value.`deviceOnly`)
+            FfiConverterBoolean.allocationSize(value.`deviceOnly`) +
+            FfiConverterOptionalString.allocationSize(value.`accountId`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`)
     )
 
     override fun write(value: SshConfigImportOptions, buf: ByteBuffer) {
             FfiConverterBoolean.write(value.`dryRun`, buf)
             FfiConverterOptionalString.write(value.`group`, buf)
             FfiConverterBoolean.write(value.`deviceOnly`, buf)
+            FfiConverterOptionalString.write(value.`accountId`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
     }
 }
 
@@ -25506,6 +28759,222 @@ public object FfiConverterTypeTeamMember: FfiConverterRustBuffer<TeamMember> {
             FfiConverterString.write(value.`name`, buf)
             FfiConverterTypeTeamRole.write(value.`role`, buf)
             FfiConverterLong.write(value.`addedAt`, buf)
+    }
+}
+
+
+
+/**
+ * Colours of a terminal, in ARGB (`0xAARRGGBB`).
+ */
+data class TerminalColors (
+    var `background`: kotlin.UInt
+    , 
+    var `foreground`: kotlin.UInt
+    , 
+    var `cursor`: kotlin.UInt
+    , 
+    /**
+     * Selection (and find matches) over the background; the apps may use
+     * it with some transparency.
+     */
+    var `selection`: kotlin.UInt
+    , 
+    /**
+     * The 16 ANSI colours: normal (0–7) and bright (8–15). Missing ones
+     * keep the current palette's.
+     */
+    var `ansi`: List<kotlin.UInt>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTerminalColors: FfiConverterRustBuffer<TerminalColors> {
+    override fun read(buf: ByteBuffer): TerminalColors {
+        return TerminalColors(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterSequenceUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TerminalColors) = (
+            FfiConverterUInt.allocationSize(value.`background`) +
+            FfiConverterUInt.allocationSize(value.`foreground`) +
+            FfiConverterUInt.allocationSize(value.`cursor`) +
+            FfiConverterUInt.allocationSize(value.`selection`) +
+            FfiConverterSequenceUInt.allocationSize(value.`ansi`)
+    )
+
+    override fun write(value: TerminalColors, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`background`, buf)
+            FfiConverterUInt.write(value.`foreground`, buf)
+            FfiConverterUInt.write(value.`cursor`, buf)
+            FfiConverterUInt.write(value.`selection`, buf)
+            FfiConverterSequenceUInt.write(value.`ansi`, buf)
+    }
+}
+
+
+
+/**
+ * What the remote program has turned on.
+ */
+data class TerminalModes (
+    var `mouseMode`: MouseMode
+    , 
+    var `mouseEncoding`: MouseEncoding
+    , 
+    /**
+     * Pasted text goes between `ESC [200~` and `ESC [201~` (see
+     * [`TerminalScreen::paste`]).
+     */
+    var `bracketedPaste`: kotlin.Boolean
+    , 
+    /**
+     * Arrow keys send `ESC O A` (see [`TerminalScreen::key`]).
+     */
+    var `appCursor`: kotlin.Boolean
+    , 
+    /**
+     * The keypad sends application sequences (DECKPAM).
+     */
+    var `appKeypad`: kotlin.Boolean
+    , 
+    /**
+     * Alternate screen (vim, less, htop...).
+     */
+    var `alternateScreen`: kotlin.Boolean
+    , 
+    /**
+     * In the alternate screen, the wheel (and swipes) should send arrows.
+     */
+    var `alternateScroll`: kotlin.Boolean
+    , 
+    /**
+     * The program wants focus in/out reports (`ESC [I`, `ESC [O`).
+     */
+    var `focusReporting`: kotlin.Boolean
+    , 
+    var `cursorVisible`: kotlin.Boolean
+    , 
+    var `cursorBlinking`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTerminalModes: FfiConverterRustBuffer<TerminalModes> {
+    override fun read(buf: ByteBuffer): TerminalModes {
+        return TerminalModes(
+            FfiConverterTypeMouseMode.read(buf),
+            FfiConverterTypeMouseEncoding.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TerminalModes) = (
+            FfiConverterTypeMouseMode.allocationSize(value.`mouseMode`) +
+            FfiConverterTypeMouseEncoding.allocationSize(value.`mouseEncoding`) +
+            FfiConverterBoolean.allocationSize(value.`bracketedPaste`) +
+            FfiConverterBoolean.allocationSize(value.`appCursor`) +
+            FfiConverterBoolean.allocationSize(value.`appKeypad`) +
+            FfiConverterBoolean.allocationSize(value.`alternateScreen`) +
+            FfiConverterBoolean.allocationSize(value.`alternateScroll`) +
+            FfiConverterBoolean.allocationSize(value.`focusReporting`) +
+            FfiConverterBoolean.allocationSize(value.`cursorVisible`) +
+            FfiConverterBoolean.allocationSize(value.`cursorBlinking`)
+    )
+
+    override fun write(value: TerminalModes, buf: ByteBuffer) {
+            FfiConverterTypeMouseMode.write(value.`mouseMode`, buf)
+            FfiConverterTypeMouseEncoding.write(value.`mouseEncoding`, buf)
+            FfiConverterBoolean.write(value.`bracketedPaste`, buf)
+            FfiConverterBoolean.write(value.`appCursor`, buf)
+            FfiConverterBoolean.write(value.`appKeypad`, buf)
+            FfiConverterBoolean.write(value.`alternateScreen`, buf)
+            FfiConverterBoolean.write(value.`alternateScroll`, buf)
+            FfiConverterBoolean.write(value.`focusReporting`, buf)
+            FfiConverterBoolean.write(value.`cursorVisible`, buf)
+            FfiConverterBoolean.write(value.`cursorBlinking`, buf)
+    }
+}
+
+
+
+/**
+ * A colour theme of the shared list (the same ids on desktop, iOS and
+ * Android: stored in settings and in `HostSettings::theme`).
+ */
+data class TerminalThemeInfo (
+    var `id`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    var `isLight`: kotlin.Boolean
+    , 
+    var `colors`: TerminalColors
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTerminalThemeInfo: FfiConverterRustBuffer<TerminalThemeInfo> {
+    override fun read(buf: ByteBuffer): TerminalThemeInfo {
+        return TerminalThemeInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterTypeTerminalColors.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TerminalThemeInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterBoolean.allocationSize(value.`isLight`) +
+            FfiConverterTypeTerminalColors.allocationSize(value.`colors`)
+    )
+
+    override fun write(value: TerminalThemeInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterBoolean.write(value.`isLight`, buf)
+            FfiConverterTypeTerminalColors.write(value.`colors`, buf)
     }
 }
 
@@ -26377,6 +29846,272 @@ public object FfiConverterTypeAuthPromptKind: FfiConverterRustBuffer<AuthPromptK
 
 
 /**
+ * How a command failed, for the chip.
+ */
+sealed class CommandFailure {
+    
+    /**
+     * The shell gave this exit status (shell integration).
+     */
+    data class Exit(
+        val `code`: kotlin.Int) : CommandFailure()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * No exit status, but its output ends like an error.
+     */
+    object Likely : CommandFailure()
+    
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCommandFailure : FfiConverterRustBuffer<CommandFailure>{
+    override fun read(buf: ByteBuffer): CommandFailure {
+        return when(buf.getInt()) {
+            1 -> CommandFailure.Exit(
+                FfiConverterInt.read(buf),
+                )
+            2 -> CommandFailure.Likely
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: CommandFailure): ULong = when(value) {
+        is CommandFailure.Exit -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterInt.allocationSize(value.`code`)
+            )
+        }
+        is CommandFailure.Likely -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+    }
+
+    override fun write(value: CommandFailure, buf: ByteBuffer) {
+        when(value) {
+            is CommandFailure.Exit -> {
+                buf.putInt(1)
+                FfiConverterInt.write(value.`code`, buf)
+                Unit
+            }
+            is CommandFailure.Likely -> {
+                buf.putInt(2)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+
+
+
+/**
+ * What a piece of copilot context is.
+ */
+
+enum class ContextChipKind {
+    
+    HOST,
+    DIRECTORY,
+    LAST_COMMAND,
+    SELECTION;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeContextChipKind: FfiConverterRustBuffer<ContextChipKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ContextChipKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ContextChipKind) = 4UL
+
+    override fun write(value: ContextChipKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * A field a CSV column can feed.
+ */
+
+enum class CsvField {
+    
+    LABEL,
+    ADDRESS,
+    PORT,
+    USER,
+    GROUP,
+    TAGS,
+    NOTES,
+    PASSWORD,
+    PROTOCOL;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCsvField: FfiConverterRustBuffer<CsvField> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        CsvField.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: CsvField) = 4UL
+
+    override fun write(value: CsvField, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What to do with hosts that are already in the vault.
+ */
+
+enum class DuplicatePolicy {
+    
+    /**
+     * Leave them out.
+     */
+    SKIP,
+    /**
+     * Update the existing host (address, port, user, proxy, tags, notes,
+     * passwords).
+     */
+    UPDATE,
+    /**
+     * Import them anyway, as `web (2)`.
+     */
+    COPY;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeDuplicatePolicy: FfiConverterRustBuffer<DuplicatePolicy> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        DuplicatePolicy.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: DuplicatePolicy) = 4UL
+
+    override fun write(value: DuplicatePolicy, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What an export writes.
+ */
+
+enum class ExportFormat {
+    
+    /**
+     * Termoak JSON: hosts, groups, identities, keys (public parts) and
+     * snippets; passwords and private keys only with `include_secrets`,
+     * sealed with a passphrase.
+     */
+    TERMOAK_JSON,
+    /**
+     * CSV of the hosts (for spreadsheets and other apps); never secrets.
+     */
+    CSV;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeExportFormat: FfiConverterRustBuffer<ExportFormat> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ExportFormat.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ExportFormat) = 4UL
+
+    override fun write(value: ExportFormat, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * Tunnel type.
  */
 
@@ -26426,6 +30161,56 @@ public object FfiConverterTypeForwardKind: FfiConverterRustBuffer<ForwardKind> {
 
 
 /**
+ * Whether a host answered.
+ */
+
+enum class HostReach {
+    
+    /**
+     * It accepted the connection (green, with `ms`).
+     */
+    UP,
+    /**
+     * Refused, timed out, the name does not resolve, or the host could not
+     * be read (red).
+     */
+    DOWN,
+    /**
+     * Not checked: see `skipped` (gray).
+     */
+    SKIPPED;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHostReach: FfiConverterRustBuffer<HostReach> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        HostReach.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: HostReach) = 4UL
+
+    override fun write(value: HostReach, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * HTTP method for [`TermoakCore::api_request`].
  */
 
@@ -26459,6 +30244,159 @@ public object FfiConverterTypeHttpMethod: FfiConverterRustBuffer<HttpMethod> {
     override fun allocationSize(value: HttpMethod) = 4UL
 
     override fun write(value: HttpMethod, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Why a host of the file is a duplicate (same address, port and user).
+ */
+sealed class ImportDuplicate {
+    
+    /**
+     * Of a host already in the target vault.
+     */
+    data class Existing(
+        val `hostId`: kotlin.String, 
+        val `label`: kotlin.String) : ImportDuplicate()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Of an earlier host of the same file.
+     */
+    data class InFile(
+        val `index`: kotlin.UInt) : ImportDuplicate()
+        
+    {
+        
+
+        companion object
+    }
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportDuplicate : FfiConverterRustBuffer<ImportDuplicate>{
+    override fun read(buf: ByteBuffer): ImportDuplicate {
+        return when(buf.getInt()) {
+            1 -> ImportDuplicate.Existing(
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                )
+            2 -> ImportDuplicate.InFile(
+                FfiConverterUInt.read(buf),
+                )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: ImportDuplicate): ULong = when(value) {
+        is ImportDuplicate.Existing -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`hostId`)
+                + FfiConverterString.allocationSize(value.`label`)
+            )
+        }
+        is ImportDuplicate.InFile -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterUInt.allocationSize(value.`index`)
+            )
+        }
+    }
+
+    override fun write(value: ImportDuplicate, buf: ByteBuffer) {
+        when(value) {
+            is ImportDuplicate.Existing -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`hostId`, buf)
+                FfiConverterString.write(value.`label`, buf)
+                Unit
+            }
+            is ImportDuplicate.InFile -> {
+                buf.putInt(2)
+                FfiConverterUInt.write(value.`index`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+
+
+
+/**
+ * What a file is.
+ */
+
+enum class ImportFormat {
+    
+    /**
+     * Guess from the name and the content.
+     */
+    AUTO,
+    TERMOAK_JSON,
+    CSV,
+    /**
+     * An `ssh_config`: use `import_ssh_config` (it keeps jumps and
+     * tunnels).
+     */
+    SSH_CONFIG,
+    TERMIUS,
+    /**
+     * A `.reg` export of PuTTY's sessions (the registry itself is only
+     * read by the Windows desktop app).
+     */
+    PUTTY,
+    MOBA_XTERM,
+    SECURE_CRT,
+    ZOC;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeImportFormat: FfiConverterRustBuffer<ImportFormat> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ImportFormat.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ImportFormat) = 4UL
+
+    override fun write(value: ImportFormat, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -26753,6 +30691,165 @@ public object FfiConverterTypeLogLevel: FfiConverterRustBuffer<LogLevel> {
 
 
 /**
+ * How mouse events are encoded.
+ */
+
+enum class MouseEncoding {
+    
+    /**
+     * `CSI M` with bytes (X10, coordinates up to 223).
+     */
+    DEFAULT,
+    /**
+     * `CSI M` with UTF-8 coordinates (1005).
+     */
+    UTF8,
+    /**
+     * `CSI < b;x;y M/m` (1006).
+     */
+    SGR;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMouseEncoding: FfiConverterRustBuffer<MouseEncoding> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        MouseEncoding.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: MouseEncoding) = 4UL
+
+    override fun write(value: MouseEncoding, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Mouse events the program asked for.
+ */
+
+enum class MouseMode {
+    
+    /**
+     * No reporting: the app scrolls and selects.
+     */
+    OFF,
+    /**
+     * Presses and releases (1000).
+     */
+    CLICK,
+    /**
+     * Also motion with a button down (1002).
+     */
+    DRAG,
+    /**
+     * Every motion (1003).
+     */
+    MOTION;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeMouseMode: FfiConverterRustBuffer<MouseMode> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        MouseMode.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: MouseMode) = 4UL
+
+    override fun write(value: MouseMode, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Kind of entry (also the order of the groups with nothing typed).
+ */
+
+enum class PaletteKind {
+    
+    /**
+     * An open tab: switch to it.
+     */
+    TAB,
+    /**
+     * A saved host: connect.
+     */
+    HOST,
+    /**
+     * A server session: attach.
+     */
+    SESSION,
+    /**
+     * A snippet: run it in the current terminal.
+     */
+    SNIPPET,
+    /**
+     * An action of the app.
+     */
+    COMMAND;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePaletteKind: FfiConverterRustBuffer<PaletteKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        PaletteKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: PaletteKind) = 4UL
+
+    override fun write(value: PaletteKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * Kind of participant in a shared session.
  */
 
@@ -26793,6 +30890,59 @@ public object FfiConverterTypeParticipantKind: FfiConverterRustBuffer<Participan
     override fun allocationSize(value: ParticipantKind) = 4UL
 
     override fun write(value: ParticipantKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Why a host is not checked.
+ */
+
+enum class ProbeSkip {
+    
+    /**
+     * The user turned the check off for this host.
+     */
+    OFF,
+    /**
+     * It is reached through jump hosts (the path is inside SSH).
+     */
+    JUMP_HOSTS,
+    /**
+     * It is in a Strict vault (only reached through the server).
+     */
+    STRICT,
+    /**
+     * Its proxy needs a password this (Use-only) user cannot read.
+     */
+    USE_ONLY;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeProbeSkip: FfiConverterRustBuffer<ProbeSkip> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        ProbeSkip.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: ProbeSkip) = 4UL
+
+    override fun write(value: ProbeSkip, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -29633,6 +33783,38 @@ public object FfiConverterOptionalUInt: FfiConverterRustBuffer<kotlin.UInt?> {
 /**
  * @suppress
  */
+public object FfiConverterOptionalInt: FfiConverterRustBuffer<kotlin.Int?> {
+    override fun read(buf: ByteBuffer): kotlin.Int? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterInt.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.Int?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterInt.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.Int?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterInt.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalULong: FfiConverterRustBuffer<kotlin.ULong?> {
     override fun read(buf: ByteBuffer): kotlin.ULong? {
         if (buf.get().toInt() == 0) {
@@ -29815,6 +33997,70 @@ public object FfiConverterOptionalTypeHostKeyChangeHandler: FfiConverterRustBuff
         } else {
             buf.put(1)
             FfiConverterTypeHostKeyChangeHandler.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeImportPreview: FfiConverterRustBuffer<ImportPreview?> {
+    override fun read(buf: ByteBuffer): ImportPreview? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeImportPreview.read(buf)
+    }
+
+    override fun allocationSize(value: ImportPreview?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeImportPreview.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ImportPreview?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeImportPreview.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTerminalScreen: FfiConverterRustBuffer<TerminalScreen?> {
+    override fun read(buf: ByteBuffer): TerminalScreen? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTerminalScreen.read(buf)
+    }
+
+    override fun allocationSize(value: TerminalScreen?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTerminalScreen.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TerminalScreen?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTerminalScreen.write(value, buf)
         }
     }
 }
@@ -30017,6 +34263,38 @@ public object FfiConverterOptionalTypeAiTaskPlan: FfiConverterRustBuffer<AiTaskP
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeCommandEnded: FfiConverterRustBuffer<CommandEnded?> {
+    override fun read(buf: ByteBuffer): CommandEnded? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCommandEnded.read(buf)
+    }
+
+    override fun allocationSize(value: CommandEnded?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCommandEnded.allocationSize(value)
+        }
+    }
+
+    override fun write(value: CommandEnded?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCommandEnded.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeCreatedAccountInvite: FfiConverterRustBuffer<CreatedAccountInvite?> {
     override fun read(buf: ByteBuffer): CreatedAccountInvite? {
         if (buf.get().toInt() == 0) {
@@ -30039,6 +34317,38 @@ public object FfiConverterOptionalTypeCreatedAccountInvite: FfiConverterRustBuff
         } else {
             buf.put(1)
             FfiConverterTypeCreatedAccountInvite.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeCsvMapping: FfiConverterRustBuffer<CsvMapping?> {
+    override fun read(buf: ByteBuffer): CsvMapping? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCsvMapping.read(buf)
+    }
+
+    override fun allocationSize(value: CsvMapping?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCsvMapping.allocationSize(value)
+        }
+    }
+
+    override fun write(value: CsvMapping?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCsvMapping.write(value, buf)
         }
     }
 }
@@ -30103,6 +34413,38 @@ public object FfiConverterOptionalTypeItemFilter: FfiConverterRustBuffer<ItemFil
         } else {
             buf.put(1)
             FfiConverterTypeItemFilter.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeLastCommandInfo: FfiConverterRustBuffer<LastCommandInfo?> {
+    override fun read(buf: ByteBuffer): LastCommandInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeLastCommandInfo.read(buf)
+    }
+
+    override fun allocationSize(value: LastCommandInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeLastCommandInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: LastCommandInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeLastCommandInfo.write(value, buf)
         }
     }
 }
@@ -30209,6 +34551,38 @@ public object FfiConverterOptionalTypeScreenCursor: FfiConverterRustBuffer<Scree
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeScreenRange: FfiConverterRustBuffer<ScreenRange?> {
+    override fun read(buf: ByteBuffer): ScreenRange? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeScreenRange.read(buf)
+    }
+
+    override fun allocationSize(value: ScreenRange?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeScreenRange.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ScreenRange?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeScreenRange.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeSessionActivity: FfiConverterRustBuffer<SessionActivity?> {
     override fun read(buf: ByteBuffer): SessionActivity? {
         if (buf.get().toInt() == 0) {
@@ -30273,6 +34647,102 @@ public object FfiConverterOptionalTypeAiPermissionMode: FfiConverterRustBuffer<A
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeCommandFailure: FfiConverterRustBuffer<CommandFailure?> {
+    override fun read(buf: ByteBuffer): CommandFailure? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCommandFailure.read(buf)
+    }
+
+    override fun allocationSize(value: CommandFailure?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCommandFailure.allocationSize(value)
+        }
+    }
+
+    override fun write(value: CommandFailure?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCommandFailure.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeImportDuplicate: FfiConverterRustBuffer<ImportDuplicate?> {
+    override fun read(buf: ByteBuffer): ImportDuplicate? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeImportDuplicate.read(buf)
+    }
+
+    override fun allocationSize(value: ImportDuplicate?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeImportDuplicate.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ImportDuplicate?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeImportDuplicate.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeImportFormat: FfiConverterRustBuffer<ImportFormat?> {
+    override fun read(buf: ByteBuffer): ImportFormat? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeImportFormat.read(buf)
+    }
+
+    override fun allocationSize(value: ImportFormat?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeImportFormat.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ImportFormat?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeImportFormat.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeItemAccess: FfiConverterRustBuffer<ItemAccess?> {
     override fun read(buf: ByteBuffer): ItemAccess? {
         if (buf.get().toInt() == 0) {
@@ -30327,6 +34797,38 @@ public object FfiConverterOptionalTypeLinkTarget: FfiConverterRustBuffer<LinkTar
         } else {
             buf.put(1)
             FfiConverterTypeLinkTarget.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeProbeSkip: FfiConverterRustBuffer<ProbeSkip?> {
+    override fun read(buf: ByteBuffer): ProbeSkip? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeProbeSkip.read(buf)
+    }
+
+    override fun allocationSize(value: ProbeSkip?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeProbeSkip.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ProbeSkip?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeProbeSkip.write(value, buf)
         }
     }
 }
@@ -30455,6 +34957,34 @@ public object FfiConverterOptionalSequenceString: FfiConverterRustBuffer<List<ko
         } else {
             buf.put(1)
             FfiConverterSequenceString.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceUInt: FfiConverterRustBuffer<List<kotlin.UInt>> {
+    override fun read(buf: ByteBuffer): List<kotlin.UInt> {
+        val len = buf.getInt()
+        return List<kotlin.UInt>(len) {
+            FfiConverterUInt.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<kotlin.UInt>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterUInt.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<kotlin.UInt>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterUInt.write(it, buf)
         }
     }
 }
@@ -30969,6 +35499,34 @@ public object FfiConverterSequenceTypeCommandSuggestion: FfiConverterRustBuffer<
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeContextChip: FfiConverterRustBuffer<List<ContextChip>> {
+    override fun read(buf: ByteBuffer): List<ContextChip> {
+        val len = buf.getInt()
+        return List<ContextChip>(len) {
+            FfiConverterTypeContextChip.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ContextChip>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeContextChip.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ContextChip>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeContextChip.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeCopiedItem: FfiConverterRustBuffer<List<CopiedItem>> {
     override fun read(buf: ByteBuffer): List<CopiedItem> {
         val len = buf.getInt()
@@ -30987,6 +35545,34 @@ public object FfiConverterSequenceTypeCopiedItem: FfiConverterRustBuffer<List<Co
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeCopiedItem.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeCsvColumn: FfiConverterRustBuffer<List<CsvColumn>> {
+    override fun read(buf: ByteBuffer): List<CsvColumn> {
+        val len = buf.getInt()
+        return List<CsvColumn>(len) {
+            FfiConverterTypeCsvColumn.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CsvColumn>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCsvColumn.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CsvColumn>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCsvColumn.write(it, buf)
         }
     }
 }
@@ -31081,6 +35667,90 @@ public object FfiConverterSequenceTypeHostGroup: FfiConverterRustBuffer<List<Hos
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeHostProbe: FfiConverterRustBuffer<List<HostProbe>> {
+    override fun read(buf: ByteBuffer): List<HostProbe> {
+        val len = buf.getInt()
+        return List<HostProbe>(len) {
+            FfiConverterTypeHostProbe.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<HostProbe>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeHostProbe.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<HostProbe>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeHostProbe.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeImportHostPreview: FfiConverterRustBuffer<List<ImportHostPreview>> {
+    override fun read(buf: ByteBuffer): List<ImportHostPreview> {
+        val len = buf.getInt()
+        return List<ImportHostPreview>(len) {
+            FfiConverterTypeImportHostPreview.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ImportHostPreview>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeImportHostPreview.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ImportHostPreview>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeImportHostPreview.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeImportWarningInfo: FfiConverterRustBuffer<List<ImportWarningInfo>> {
+    override fun read(buf: ByteBuffer): List<ImportWarningInfo> {
+        val len = buf.getInt()
+        return List<ImportWarningInfo>(len) {
+            FfiConverterTypeImportWarningInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ImportWarningInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeImportWarningInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ImportWarningInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeImportWarningInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeItemRef: FfiConverterRustBuffer<List<ItemRef>> {
     override fun read(buf: ByteBuffer): List<ItemRef> {
         val len = buf.getInt()
@@ -31127,6 +35797,62 @@ public object FfiConverterSequenceTypeKnownHost: FfiConverterRustBuffer<List<Kno
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeKnownHost.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePaletteEntry: FfiConverterRustBuffer<List<PaletteEntry>> {
+    override fun read(buf: ByteBuffer): List<PaletteEntry> {
+        val len = buf.getInt()
+        return List<PaletteEntry>(len) {
+            FfiConverterTypePaletteEntry.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PaletteEntry>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePaletteEntry.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PaletteEntry>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePaletteEntry.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypePaletteMatch: FfiConverterRustBuffer<List<PaletteMatch>> {
+    override fun read(buf: ByteBuffer): List<PaletteMatch> {
+        val len = buf.getInt()
+        return List<PaletteMatch>(len) {
+            FfiConverterTypePaletteMatch.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PaletteMatch>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePaletteMatch.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PaletteMatch>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePaletteMatch.write(it, buf)
         }
     }
 }
@@ -31211,6 +35937,34 @@ public object FfiConverterSequenceTypeRemoteFile: FfiConverterRustBuffer<List<Re
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeRemoteFile.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeScreenHighlight: FfiConverterRustBuffer<List<ScreenHighlight>> {
+    override fun read(buf: ByteBuffer): List<ScreenHighlight> {
+        val len = buf.getInt()
+        return List<ScreenHighlight>(len) {
+            FfiConverterTypeScreenHighlight.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ScreenHighlight>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeScreenHighlight.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ScreenHighlight>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeScreenHighlight.write(it, buf)
         }
     }
 }
@@ -31669,6 +36423,34 @@ public object FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer<List<Te
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeTerminalThemeInfo: FfiConverterRustBuffer<List<TerminalThemeInfo>> {
+    override fun read(buf: ByteBuffer): List<TerminalThemeInfo> {
+        val len = buf.getInt()
+        return List<TerminalThemeInfo>(len) {
+            FfiConverterTypeTerminalThemeInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TerminalThemeInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTerminalThemeInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TerminalThemeInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTerminalThemeInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeTransferWarning: FfiConverterRustBuffer<List<TransferWarning>> {
     override fun read(buf: ByteBuffer): List<TransferWarning> {
         val len = buf.getInt()
@@ -31837,6 +36619,34 @@ public object FfiConverterSequenceTypeScreenEvent: FfiConverterRustBuffer<List<S
 /**
  * @suppress
  */
+public object FfiConverterSequenceSequenceString: FfiConverterRustBuffer<List<List<kotlin.String>>> {
+    override fun read(buf: ByteBuffer): List<List<kotlin.String>> {
+        val len = buf.getInt()
+        return List<List<kotlin.String>>(len) {
+            FfiConverterSequenceString.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<List<kotlin.String>>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterSequenceString.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<List<kotlin.String>>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterSequenceString.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.String, kotlin.String>> {
     override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.String> {
         val len = buf.getInt()
@@ -31983,6 +36793,21 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
 
         /**
+         * The format a file looks like, from its name and its content.
+         */ fun `detectImportFormat`(`data`: kotlin.ByteArray, `fileName`: kotlin.String): ImportFormat {
+            return FfiConverterTypeImportFormat.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_detect_import_format(
+    
+        
+        FfiConverterByteArray.lower(`data`),
+        FfiConverterString.lower(`fileName`),_status)
+}
+    )
+    }
+    
+
+        /**
          * `termoak://join?server=…&token=…` (to share as a QR code or link).
          */ fun `joinAppLink`(`server`: kotlin.String, `token`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
@@ -32044,6 +36869,139 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         
         FfiConverterTypeLogLevel.lower(`level`),
         FfiConverterTypeLogListener.lower(`listener`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * An email of one of your accounts as shown (masked when emails are
+         * hidden), e.g. while signing in, before there is an account id.
+         */ fun `accountDisplayEmail`(`names`: AccountNames, `email`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_account_display_email(
+    
+        
+        FfiConverterTypeAccountNames.lower(`names`),
+        FfiConverterString.lower(`email`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * "Work" or "ana@example.com", followed by " · <server>" when `server` is
+         * given (accounts of a server that is not the official one).
+         */ fun `accountDisplayLabel`(`names`: AccountNames, `accountId`: kotlin.String, `email`: kotlin.String, `server`: kotlin.String? = null): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_account_display_label(
+    
+        
+        FfiConverterTypeAccountNames.lower(`names`),
+        FfiConverterString.lower(`accountId`),
+        FfiConverterString.lower(`email`),
+        FfiConverterOptionalString.lower(`server`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Name of one of your accounts: its alias, or its email (masked when
+         * emails are hidden).
+         */ fun `accountDisplayName`(`names`: AccountNames, `accountId`: kotlin.String, `email`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_account_display_name(
+    
+        
+        FfiConverterTypeAccountNames.lower(`names`),
+        FfiConverterString.lower(`accountId`),
+        FfiConverterString.lower(`email`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Letter of an account's avatar: from its alias, or from the name the
+         * server knows and the email.
+         */ fun `accountInitial`(`names`: AccountNames, `accountId`: kotlin.String, `name`: kotlin.String, `email`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_account_initial(
+    
+        
+        FfiConverterTypeAccountNames.lower(`names`),
+        FfiConverterString.lower(`accountId`),
+        FfiConverterString.lower(`name`),
+        FfiConverterString.lower(`email`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * An alias as it should be saved: trimmed and at most 40 characters.
+         * `None`: blank (remove the alias; the email is shown again).
+         */ fun `cleanAccountAlias`(`alias`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_clean_account_alias(
+    
+        
+        FfiConverterString.lower(`alias`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * An email with only its first letters: "oihalitz@termoak.com" →
+         * "o•••@t•••.com" (the top-level domain stays).
+         */ fun `maskEmail`(`email`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_mask_email(
+    
+        
+        FfiConverterString.lower(`email`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The entries to show for `query`, best first (every word must match
+         * somewhere). With nothing typed: the recent ones first, then by kind.
+         * `recent`: keys, the most recent first (see [`palette_remember`]).
+         */ fun `paletteRank`(`query`: kotlin.String, `entries`: List<PaletteEntry>, `recent`: List<kotlin.String> = listOf()): List<PaletteMatch> {
+            return FfiConverterSequenceTypePaletteMatch.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_palette_rank(
+    
+        
+        FfiConverterString.lower(`query`),
+        FfiConverterSequenceTypePaletteEntry.lower(`entries`),
+        FfiConverterSequenceString.lower(`recent`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The recent keys with `key` first (at most 20): save them and pass them
+         * to [`palette_rank`].
+         */ fun `paletteRemember`(`recent`: List<kotlin.String>, `key`: kotlin.String): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_palette_remember(
+    
+        
+        FfiConverterSequenceString.lower(`recent`),
+        FfiConverterString.lower(`key`),_status)
 }
     )
     }
@@ -32155,6 +37113,39 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     }
 
         /**
+         * Theme id for a host's terminal: `value` is its effective
+         * `HostSettings::theme` and `app_theme` the app's theme id. `dark` and
+         * `light` (what the desktop's host editor saves) keep the app's theme when
+         * it is of that kind and otherwise use Termoak's; a theme id uses it;
+         * anything else (or nothing) follows the app.
+         */ fun `terminalThemeForHost`(`value`: kotlin.String?, `appTheme`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_terminal_theme_for_host(
+    
+        
+        FfiConverterOptionalString.lower(`value`),
+        FfiConverterString.lower(`appTheme`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Every terminal colour theme, in the order the pickers show them (the
+         * first one is the default).
+         */ fun `terminalThemes`(): List<TerminalThemeInfo> {
+            return FfiConverterSequenceTypeTerminalThemeInfo.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_terminal_themes(
+    
+        _status)
+}
+    )
+    }
+    
+
+        /**
          * Public information about a server (version, whether it needs initial
          * setup...), without signing in. Useful to validate the URL.
          */
@@ -32173,6 +37164,189 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         TermoakException.ErrorHandler,
     )
     }
+
+        /**
+         * Text of raw terminal output: escape sequences removed, carriage returns
+         * and backspaces applied as on screen (a progress bar leaves its last
+         * state).
+         */ fun `cleanTerminalOutput`(`data`: kotlin.ByteArray): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_clean_terminal_output(
+    
+        
+        FfiConverterByteArray.lower(`data`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * When a command counts as failed for the "Fix with AI" chip: with an
+         * exit status, non-zero but not Ctrl+C, SIGTERM, Ctrl+Z or a closed pipe
+         * (130, 143, 148, 141); without one, when the last lines of its output
+         * look like an error. Never for full-screen programs, a command line that
+         * is a comment (`# request` run by mistake) or an unknown command.
+         * `output` is the end of what it printed, cleaned.
+         */ fun `commandFailure`(`command`: kotlin.String?, `output`: kotlin.String, `exitCode`: kotlin.Int? = null, `interactive`: kotlin.Boolean = false): CommandFailure? {
+            return FfiConverterOptionalTypeCommandFailure.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_command_failure(
+    
+        
+        FfiConverterOptionalString.lower(`command`),
+        FfiConverterString.lower(`output`),
+        FfiConverterOptionalInt.lower(`exitCode`),
+        FfiConverterBoolean.lower(`interactive`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Chip of the working directory (the label keeps its end).
+         */ fun `contextChipDirectory`(`cwd`: kotlin.String): ContextChip {
+            return FfiConverterTypeContextChip.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_context_chip_directory(
+    
+        
+        FfiConverterString.lower(`cwd`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Chip of the host ("web-1 · Ubuntu 24.04").
+         */ fun `contextChipHost`(`name`: kotlin.String, `os`: kotlin.String? = null): ContextChip {
+            return FfiConverterTypeContextChip.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_context_chip_host(
+    
+        
+        FfiConverterString.lower(`name`),
+        FfiConverterOptionalString.lower(`os`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Chip of the last command and the end of its output; `label` is how the
+         * chip reads ("make · exit 2", translated by the app).
+         */ fun `contextChipLastCommand`(`last`: LastCommandInfo, `label`: kotlin.String): ContextChip {
+            return FfiConverterTypeContextChip.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_context_chip_last_command(
+    
+        
+        FfiConverterTypeLastCommandInfo.lower(`last`),
+        FfiConverterString.lower(`label`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Chip of the selected text (its last 200 lines); `label` is how the chip
+         * reads ("Selection · 4 lines", translated by the app).
+         */ fun `contextChipSelection`(`text`: kotlin.String, `label`: kotlin.String): ContextChip {
+            return FfiConverterTypeContextChip.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_context_chip_selection(
+    
+        
+        FfiConverterString.lower(`text`),
+        FfiConverterString.lower(`label`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The `<context>` block to put in front of the user's message with the
+         * chips still there (empty without chips); `label` names the terminal
+         * (the host).
+         */ fun `copilotContextBlock`(`label`: kotlin.String, `chips`: List<ContextChip>): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_copilot_context_block(
+    
+        
+        FfiConverterString.lower(`label`),
+        FfiConverterSequenceTypeContextChip.lower(`chips`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * A `# <request>` line typed at the prompt: the request in the user's
+         * words (to turn into a command with the AI, Ctrl/⌘+Enter). `None` for a
+         * shebang (`#!`), a command with a comment after it, or a bare `#`.
+         */ fun `nlRequest`(`line`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_nl_request(
+    
+        
+        FfiConverterString.lower(`line`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * At most `max` characters: the start (`…` after) or, with `from_end`,
+         * the end (`…` before). For chip labels.
+         */ fun `shortenText`(`text`: kotlin.String, `max`: kotlin.UInt, `fromEnd`: kotlin.Boolean = false): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_shorten_text(
+    
+        
+        FfiConverterString.lower(`text`),
+        FfiConverterUInt.lower(`max`),
+        FfiConverterBoolean.lower(`fromEnd`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The end of a text: its last `max_lines` lines and at most `max_chars`
+         * characters (cut at a line start when possible).
+         */ fun `textTail`(`text`: kotlin.String, `maxLines`: kotlin.UInt, `maxChars`: kotlin.UInt): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_text_tail(
+    
+        
+        FfiConverterString.lower(`text`),
+        FfiConverterUInt.lower(`maxLines`),
+        FfiConverterUInt.lower(`maxChars`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * A command the AI proposes, safe to type without running it: one line
+         * (several become `a; b`; `\`, `&&`, `|` and `;` continuations are
+         * joined) and no control characters (a carriage return or an escape
+         * sequence would run it or do something else).
+         */ fun `typeableCommand`(`command`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_typeable_command(
+    
+        
+        FfiConverterString.lower(`command`),_status)
+}
+    )
+    }
+    
 
         /**
          * Generates a new vault key (256 bits in base64). The app stores it in the

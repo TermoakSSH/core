@@ -173,6 +173,17 @@ not matter: the bindings are the same.
 | `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection. `sftpDownload`/`sftpUpload` take an optional `cancel: TransferHandle` |
 | `TransferHandle()`: `cancel`, `isCancelled` | Cancels the transfer it is passed to (local and server SFTP, recordings): it fails with `Cancelled`. Needed on iOS (see [Cancelling](#cancelling-async-calls)) |
 | `replaceKnownHost(host, port, publicKey, accountId)` | Trusts a host key, replacing the saved one of the same type |
+| `terminalThemes()`, `terminalThemeForHost(value, appTheme)`, `TerminalScreen.setTheme(id)`, `setColors`, `colors` | Colour themes: one list (15, the same ids everywhere), the host's `theme` rule (`dark`/`light`/id) |
+| `TerminalScreen.find(query, caseSensitive, regex)`, `findStep(older)`, `findStatus`, `clearFind`; `ScreenSnapshot.highlights` | Find in the screen and the scrollback ("1 of 12" is the newest) |
+| `TerminalScreen.pointAt`, `textRange(start, end, block)`, `wordAt`, `lineAt`, `historySize`, `scrollToLine` | Text of any part of the grid (`ScreenPoint`): selection beyond the screen, double/triple tap |
+| `TerminalScreen.modes()` → `TerminalModes`; `ScreenCursor.blinking` | Mouse mode and encoding, bracketed paste, app cursor/keypad, alternate screen and scroll, focus reports, cursor visible/blinking |
+| `CommandWatcher(screen)`: `output`, `enter`, `idle`, `waitingForPrompt`, `integrated`, `lastCommand`, `reset` | Command start/end, exit status and output (OSC 133/633 or heuristic): Explain/Fix chip, long-command notifications |
+| `commandFailure`, `nlRequest`, `typeableCommand`, `contextChipHost/Directory/LastCommand/Selection`, `copilotContextBlock`, `cleanTerminalOutput`, `textTail`, `shortenText` | AI in the terminal: the desktop's rules |
+| `detectImportFormat`, `previewImport(data, fileName, format, accountId, vaultId, deviceOnly)` → `ImportPreview`, `applyImport(preview, ImportOptions)`, `exportHosts(format, ExportScope, includeSecrets, passphrase, app)` | Import from Termoak JSON, CSV, Termius, PuTTY `.reg`, MobaXterm, SecureCRT, ZOC; export Termoak JSON or CSV |
+| `probeHosts(hosts, off, concurrency)` → `[HostProbe]` | Reachability dots of the hosts lists (TCP through the proxy) |
+| `AccountNames(aliases, hideEmails)`, `accountDisplayName`, `accountDisplayEmail`, `accountDisplayLabel`, `accountInitial`, `maskEmail`, `cleanAccountAlias` | Account aliases and "Hide email addresses" (the app stores them) |
+| `paletteRank(query, entries, recent)`, `paletteRemember` | Command palette ranking (tablets with a keyboard) |
+| `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection |
 | `login/register/logout/isLoggedIn/syncNow` | Server account and sync of the **current account** (with optional 2FA code and invitation) |
 | `officialServerUrl()`, `canonicalServerUrl(url)`, `signIn(server, email, password, totpCode)`, `signUp(...)`, `verifyAccount`, `resendAccountCode`, `signOutAccount(accountId, discardUnsynced)` | Several accounts (`ServerChoice.official` / `.custom(url:)`). Signing in again to the same server and user reuses the account; signing out deletes its data on the device (`SignOutReport.signedOut == false` when there are unsynced changes) |
 | `accounts()`, `currentAccount()`, `setAccountView(accountId)` (`nil`/`null` = all), `account(accountId)` → `AccountHandle` | Account switcher. `AccountHandle` has, for that account: `syncNow`, `api*`, server sessions and their sharing, AI (also the typed calls below), `subscribeEvents`, `serverSftp*`, `downloadRecording`, `currentUser`, `setLocale`, two-step verification, push tokens, teams and team invitations, and vaults: `listVaults`, `createVault`, `updateVault`, `deleteVault`, `leaveVault`, `vaultMembers`, `addVaultMember`, `setVaultMemberRole`, `removeVaultMember`, `vaultAudit` |
@@ -185,7 +196,7 @@ not matter: the bindings are the same.
 | `shareServerSession(sessionId, target, control, expiresInMinutes)`, `shareServerSessionWith(sessionId, target, options)`, `SharedTerminal.inviteTeam/invite` | Share with a user, a team or a link (`ShareOptions`: `control`, `expiresInMinutes`, `requireApproval`, `autoGrant`, `controlMinutes` = time limit of automatic grants) |
 | `listServerSessionShares(sessionId)`, `updateServerSessionShare(sessionId, shareId, changes)`, `stopSharingServerSession(sessionId)`, `revokeServerSessionShare` | See, change live (`ShareChanges`, with `controlMinutes` / `noControlLimit`) and revoke the shares of a session |
 | `adminListUsers/adminCreateUser/adminUpdateUser/adminResetPassword/adminResetTwoFactor`, `adminCreateInvite/adminListInvites/adminRevokeInvite`, `adminAudit` | Server administration (administrators only) |
-| `importSshConfig(text, options)`, `importSshConfigFile(path, options)` | Import an `ssh_config` (with a `dryRun` preview) |
+| `importSshConfig(text, options)`, `importSshConfigFile(path, options)` | Import an `ssh_config` (with a `dryRun` preview; `accountId`/`vaultId` choose where) |
 | `completeCommand(hostId, os, line, limit)`, `recordCommand`, `clearCommandHistory` | Command autocomplete |
 | `SshSession.detectOsInfo()` → `RemoteOs` | Host OS with version and package manager |
 | `registerPushToken(platform, token, sandbox)`, `unregisterPushToken`, `sendTestPush` | Push notifications (APNs and FCM) |
@@ -918,6 +929,137 @@ when (val link = parseLink(intent.dataString ?: "")) {
     null -> Unit
 }
 ```
+
+## Shared app logic (from the desktop)
+
+These calls hold rules the desktop app had on its own, so the three apps
+behave the same. None of them touches the UI.
+
+### Terminal colours, find and selection
+
+`terminalThemes()` is the list of the iOS themes (Termoak, Termoak Light,
+Dracula, Nord, One Dark, Tokyo Night, Gruvbox, Solarized ×2, Catppuccin ×2,
+Flexoki ×2, Kanagawa ×2) with the same ids, so a theme saved in a host
+(`HostSettings.theme`, also `dark` or `light` from the desktop editor) means
+the same everywhere. A new `TerminalScreen` keeps its old default palette
+until `setTheme` or `setColors` is called. Colours are ARGB.
+
+```kotlin
+val theme = terminalThemeForHost(effective.theme, settings.terminalTheme)
+screen.setTheme(theme)
+val colors = screen.colors()          // background, foreground, cursor, selection, ansi[16]
+
+// Find (Ctrl+Shift+F / menu): the view scrolls to the current match.
+var st = screen.find(query, caseSensitive = false, regex = false)
+if (st.invalid) showRegexError()
+label = if (st.count == 0u) "0" else "${st.ordinal} of ${st.count}${if (st.capped) "+" else ""}"
+st = screen.findStep(older = true)    // Enter: older; Shift+Enter: findStep(false)
+// Paint snapshot.highlights (current = true in another colour). After new
+// output, refresh the count a few times a second at most: screen.findStatus().
+screen.clearFind()
+
+// Selection beyond the screen: points are grid lines (negative = scrollback).
+val start = screen.pointAt(row, col)              // touch → point, with the current scroll
+val word = screen.wordAt(start)                   // double tap (null on a blank)
+val line = screen.lineAt(start)                   // triple tap (wrapped lines joined)
+val text = screen.textRange(anchor, handle, block = false)
+if (handleRow < 0) screen.scrollToLine(handle.line)
+
+val m = screen.modes()   // replaces Android's ModeTracker: mouseMode/mouseEncoding, bracketedPaste, appCursor, appKeypad...
+```
+
+### AI in the terminal
+
+`CommandWatcher` follows the commands of one terminal like `LineTracker`
+follows its line. With shell integration (OSC 133 from the shells'
+scripts, or VS Code's OSC 633) start, end and exit status are exact;
+without it a command ends when the output is quiet for a second with a
+prompt at the cursor.
+
+```swift
+let watcher = CommandWatcher(screen: nil)          // Android: CommandWatcher(screen)
+// Every piece of output, after the emulator processed it:
+let ev = watcher.output(data: data, alternateScreen: terminal.isAlternateScreen)
+if ev.started { hideFixChip() }
+if let ended = ev.ended { commandEnded(ended) }
+// Enter at a shell line (not in vim, not a bracketed paste):
+if watcher.enter(command: lineTracker.current(), prompt: textBeforeLine) { startIdleTimer() }
+// Every 0.5 s while watcher.waitingForPrompt():
+if let ended = watcher.idle(alternateScreen: alt, beforeCursor: before, afterBlank: blank) { commandEnded(ended) }
+
+func commandEnded(_ e: CommandEnded) {
+    if let last = e.last, last.failure != nil, settings.aiFixChip, aiAvailable { showFixChip(last) }
+    if !e.interactive, e.durationMs >= threshold, !terminalVisible { notifyLongCommand(e) }
+}
+
+// "# list the biggest files" + Ctrl/⌘+Enter:
+if let request = nlRequest(line: currentLine) { askAiForCommand(request) }
+// The AI's proposal, typed (never run) in the terminal:
+terminal.writeText(typeableCommand(command: proposal))
+
+// Copilot context, as removable chips:
+var chips = [contextChipHost(name: host.label, os: host.os)]
+if let last = watcher.lastCommand() { chips.append(contextChipLastCommand(last: last, label: "make · exit 2")) }
+let message = copilotContextBlock(label: host.label, chips: chips) + userText
+```
+
+Redaction: the chip texts go through one place in the library that will
+hide secrets (tokens, passwords, keys) once the secret redaction is in the
+FFI (parity item C1); until then they are sent as they are, as today, and
+the server redacts what reaches its AI.
+
+### Import and export of hosts
+
+```kotlin
+when (detectImportFormat(bytes, fileName)) {
+    ImportFormat.SSH_CONFIG -> core.importSshConfig(String(bytes), SshConfigImportOptions(accountId = acc, vaultId = vault))
+    else -> {
+        var preview = core.previewImport(bytes, fileName, accountId = acc, vaultId = vault)
+        if (preview.needsPassphrase()) preview = preview.unlock(passphrase) ?: return wrongPassphrase()
+        preview.csvMapping()?.let { if (it.columns.none { c -> c.field == CsvField.ADDRESS }) askMapping(preview) }
+        show(preview.hosts(), preview.warnings())    // duplicate, target, group, hasPassword...
+        val summary = core.applyImport(preview, ImportOptions(accountId = acc, vaultId = vault,
+            deviceOnly = false, groupId = null, groupName = "PuTTY",
+            duplicatePolicy = DuplicatePolicy.SKIP, excluded = unchecked))
+    }
+}
+
+val out = core.exportHosts(ExportFormat.TERMOAK_JSON, ExportScope(accountId = acc, vaultId = vault),
+                           includeSecrets = true, passphrase = pass, app = "Termoak for Android ${BuildConfig.VERSION_NAME}")
+share(out.data, out.fileName, out.mimeType)
+```
+
+Warnings and errors carry stable codes (`ImportWarningInfo.code`:
+`not_ssh`, `no_address`, `no_address_line`, `bad_port`,
+`proxy_unsupported`, `key_file`, `key_without_private`, with `params`) and
+an English `message`. Telnet sessions of other apps become Telnet hosts;
+other protocols are left out with a warning. Key files the source points
+to are imported only when the path can be read on the device; otherwise
+their path goes to the host's notes. PuTTY sessions come from a `.reg`
+export (the registry is only read by the Windows desktop app); SecureCRT
+from its XML export or one session `.ini`.
+
+### Host status, account names and the palette
+
+```swift
+// Only while the hosts list is visible, the visible hosts, at most once a minute each.
+let probes = try await core.probeHosts(hosts: visible.map { ItemRef(accountId: $0.accountId, id: $0.id) },
+                                       off: settings.statusOffHosts, concurrency: 0)
+// HostProbe: status .up (ms) / .down / .skipped (skipped: .jumpHosts, .strict, .useOnly, .off), checkedAt
+
+// Aliases and "Hide email addresses": stored by the app with its settings
+// (device-local, not synced), the rules come from the library.
+let names = AccountNames(aliases: settings.accountAliases, hideEmails: settings.hideEmails)
+title = accountDisplayName(names: names, accountId: acc.id, email: acc.email)
+initial = accountInitial(names: names, accountId: acc.id, name: acc.name, email: acc.email)
+settings.accountAliases[acc.id] = cleanAccountAlias(alias: typed)   // nil removes it
+
+// Command palette on iPad with a keyboard:
+let ranked = paletteRank(query: query, entries: entries, recent: settings.paletteRecent)
+settings.paletteRecent = paletteRemember(recent: settings.paletteRecent, key: chosen.key)
+```
+
+Workspaces (saved tab layouts, "reopen tabs") stay in the desktop for now.
 
 ## Threads and lifecycle
 

@@ -33,6 +33,9 @@ directories.workspace = true
 tokio-tungstenite.workspace = true
 zeroize.workspace = true
 rusqlite.workspace = true
+chrono.workspace = true
+# SecureCRT and ZOC XML exports (importers).
+roxmltree = "0.21"
 keyring = { workspace = true, optional = true }
 
 [dev-dependencies]

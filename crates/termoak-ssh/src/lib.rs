@@ -12,6 +12,7 @@ pub mod exec;
 pub mod forward;
 pub mod keys;
 pub mod pool;
+pub mod probe;
 pub mod prompt;
 mod proxy;
 pub mod recording;
