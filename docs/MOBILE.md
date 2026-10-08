@@ -166,20 +166,22 @@ not matter: the bindings are the same.
 | `generateVaultKey()` | New vault key (stored in Keychain/Keystore) |
 | `listHosts/getHost/saveHost/deleteHost`, and the same for groups, identities, keys, snippets, tunnels, known hosts and memories | Vault CRUD (synchronous, fast) |
 | `generateKey`, `importKey`, `inspectPrivateKey`, `exportPrivateKey` | SSH keychain |
-| `connect(hostId, auth)` → `SshSession` | Local SSH connection |
-| `connectTerminal(hostId, cols, rows, auth, listener, accountId, telnetAutoLogin)` → `TerminalHandle` | Shortcut: connect and open a terminal. Telnet hosts open a Telnet terminal (same handle) |
+| `connect(hostId, auth, accountId, keyChanged)` → `SshSession` | Local SSH connection. `keyChanged` (`HostKeyChangeHandler`, optional): asked when a known host's key changed (see [Known hosts](#known-hosts)) |
+| `connectTerminal(hostId, cols, rows, auth, listener, accountId, telnetAutoLogin, record, keyChanged)` → `TerminalHandle` | Shortcut: connect and open a terminal. Telnet hosts open a Telnet terminal (same handle). `record` (default `false`): record it (`recordingPath()`) |
 | `TerminalHandle`: `write`, `writeText`, `resize`, `closeTerminal`, `status`, `snapshot`, `textTail`, `recordingPath`, `latencyMs(timeoutMs)`, `isTelnet`, `protocol`, `session` | A local terminal (SSH or Telnet) |
 | `TerminalScreen(cols, rows, scrollback)`: `feed`, `snapshot`, `key`, `character`, `paste`, `resize`, `scroll` | Terminal emulator (the desktop one): turns output into a screen ready to draw, and keystrokes into bytes |
-| `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection |
+| `SshSession.openTerminal`, `sftp*`, `exec`, `startForward*`, `detectOs`, `disconnect` | Terminals, SFTP, commands and tunnels over a connection. `sftpDownload`/`sftpUpload` take an optional `cancel: TransferHandle` |
+| `TransferHandle()`: `cancel`, `isCancelled` | Cancels the transfer it is passed to (local and server SFTP, recordings): it fails with `Cancelled`. Needed on iOS (see [Cancelling](#cancelling-async-calls)) |
+| `replaceKnownHost(host, port, publicKey, accountId)` | Trusts a host key, replacing the saved one of the same type |
 | `login/register/logout/isLoggedIn/syncNow` | Server account and sync of the **current account** (with optional 2FA code and invitation) |
 | `officialServerUrl()`, `canonicalServerUrl(url)`, `signIn(server, email, password, totpCode)`, `signUp(...)`, `verifyAccount`, `resendAccountCode`, `signOutAccount(accountId, discardUnsynced)` | Several accounts (`ServerChoice.official` / `.custom(url:)`). Signing in again to the same server and user reuses the account; signing out deletes its data on the device (`SignOutReport.signedOut == false` when there are unsynced changes) |
-| `accounts()`, `currentAccount()`, `setAccountView(accountId)` (`nil`/`null` = all), `account(accountId)` → `AccountHandle` | Account switcher. `AccountHandle`: `syncNow`, `api*`, server sessions, AI, `subscribeEvents`, `serverSftp*` and vaults: `listVaults`, `createVault`, `updateVault`, `deleteVault`, `leaveVault`, `vaultMembers`, `addVaultMember`, `setVaultMemberRole`, `removeVaultMember`, `vaultAudit` |
+| `accounts()`, `currentAccount()`, `setAccountView(accountId)` (`nil`/`null` = all), `account(accountId)` → `AccountHandle` | Account switcher. `AccountHandle` has, for that account: `syncNow`, `api*`, server sessions and their sharing, AI (also the typed calls below), `subscribeEvents`, `serverSftp*`, `downloadRecording`, `currentUser`, `setLocale`, two-step verification, push tokens, teams and team invitations, and vaults: `listVaults`, `createVault`, `updateVault`, `deleteVault`, `leaveVault`, `vaultMembers`, `addVaultMember`, `setVaultMemberRole`, `removeVaultMember`, `vaultAudit` |
 | `vaults(filter)`, `listHosts(filter)` (and every `list*`), `ItemFilter(accountIds, vaultIds, includeDevice)` | Vaults and items of the current view by default; records carry `accountId` (`nil`/`null` = This device), `vaultId`, `access` (`ItemAccess`) and `secretHidden` |
 | `transfer(items, targetAccount, targetVault, mode, dryRun)` | Move or copy between This device, vaults and accounts (`dryRun` = the plan to confirm) |
 | `verificationRequired`, `verifyCode(url, email, code)`, `resendCode(url, email)` | Email verification with the six-digit code from the email (signs in) |
 | `inviteInfo(url, token)` | Invitation details before signing up |
 | `twoFactorStatus/setupTwoFactor/enableTwoFactor/disableTwoFactor`, `qrCode(text)` | Two-step verification (TOTP) with its QR code |
-| `listTeams/createTeam/renameTeam/deleteTeam`, `listTeamMembers/addTeamMember/setTeamMemberRole/removeTeamMember/leaveTeam` | Teams |
+| `listTeams/createTeam/renameTeam/deleteTeam`, `listTeamMembers/addTeamMember/setTeamMemberRole/removeTeamMember/leaveTeam`, `listTeamInvites/inviteToTeam/revokeTeamInvite` | Teams (`inviteToTeam` adds someone with an account at once, otherwise creates an invitation to sign up: `TeamInviteResult`) |
 | `shareServerSession(sessionId, target, control, expiresInMinutes)`, `shareServerSessionWith(sessionId, target, options)`, `SharedTerminal.inviteTeam/invite` | Share with a user, a team or a link (`ShareOptions`: `control`, `expiresInMinutes`, `requireApproval`, `autoGrant`, `controlMinutes` = time limit of automatic grants) |
 | `listServerSessionShares(sessionId)`, `updateServerSessionShare(sessionId, shareId, changes)`, `stopSharingServerSession(sessionId)`, `revokeServerSessionShare` | See, change live (`ShareChanges`, with `controlMinutes` / `noControlLimit`) and revoke the shares of a session |
 | `adminListUsers/adminCreateUser/adminUpdateUser/adminResetPassword/adminResetTwoFactor`, `adminCreateInvite/adminListInvites/adminRevokeInvite`, `adminAudit` | Server administration (administrators only) |
@@ -187,16 +189,20 @@ not matter: the bindings are the same.
 | `completeCommand(hostId, os, line, limit)`, `recordCommand`, `clearCommandHistory` | Command autocomplete |
 | `SshSession.detectOsInfo()` → `RemoteOs` | Host OS with version and package manager |
 | `registerPushToken(platform, token, sandbox)`, `unregisterPushToken`, `sendTestPush` | Push notifications (APNs and FCM) |
-| `serverSftpHome/List/Download/Upload/Mkdir/Rename/Delete`, `downloadRecording` | Files and recordings through the server, streamed with progress |
+| `serverSftpHome/List/Stat/Download/Upload/Read/Write/Mkdir/Rename/Delete/Chmod`, `downloadRecording` | Files and recordings through the server (also Strict hosts and hosts only the server reaches), streamed with progress; `Read`/`Write` in memory for viewers and editors |
 | `listServerSessions/openServerSession/attachServerSession/closeServerSession` | Persistent sessions |
 | `ServerSession.ownerName`, `sessionActivity(sessionId)` | Who shares a session with you (in `shared`); who typed in a recorded session of yours and when (`SessionActivity.periods`, consecutive marks already merged; `nil`/`null` if it was not recorded) |
 | `linkInviteInfo(serverUrl, token)` → `LinkInvite` | What a link offers (title, owner, access, waiting room, people inside) |
 | `joinSharedSession(serverUrl, token, listener)`, `joinSharedSessionAs(serverUrl, token, name, listener)`, `core.joinLink(token, listener)` | Join with an invitation link: without an account (as "Guest N" or with a name) or with your account |
-| `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `controlUntil`, `requestControl`, `releaseControl`, `setName` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway). `controlUntil()` (and `until` in `Control`) is when a timed grant ends; `ControlExpired` arrives when it does |
+| `ServerTerminalHandle`: `canWrite`, `isDriver`, `isOwner`, `isWaiting`, `participantId`, `controlUntil`, `requestControl`, `releaseControl`, `setName`, `latencyMs(timeoutMs)` | Shared sessions: one driver at a time. Do not send input or resizes while `canWrite()` is `false` (the library drops them anyway). `controlUntil()` (and `until` in `Control`) is when a timed grant ends; `ControlExpired` arrives when it does |
 | `ServerTerminalHandle` (owner): `allowJoin`, `denyJoin`, `grantControl(participantId, minutes)`, `denyControl`, `takeControl`, `kick(participantId, revokeShare)`, `stopSharing` | Waiting room, keyboard and participants. `minutes` (1-240, or `nil`/`null`) hands the keyboard over for a while |
 | `shareTerminal(terminal, title)` → `SharedTerminal`: `setListener` (`SharedTerminalEvent`), the owner actions above, `listInvites`, `updateInvite`, `revokeAllInvites` | Share a local terminal (relay) and invite people |
-| `createAiTask/listAiTasks/getAiTask/sendAiMessage/cancelAiTask` | Background AI |
-| `listPendingApprovals/decideApproval` | Approve or deny AI actions |
+| `createAiTask/listAiTasks/getAiTask/sendAiMessage/cancelAiTask/deleteAiTask` | Background AI. `AiTaskRequest`: `planFirst`, `groupId`, `tag`, `fanOut`; `AiTask`: `plan`, `steps`, `hosts` (multi-host), `parentId` |
+| `listPendingApprovals/decideApproval/decideApprovalWith(taskId, approvalId, AiDecision)` | Approve or deny AI actions. `AiApproval.preview` (`AiApprovalPreview`): what it is about (command and risk, file diff, plan); `AiDecision`: `approve`, `always`, `edited`, `reason` |
+| `getRunbook(taskId)`, `saveRunbook(taskId, vaultId, name)` | What a task ran, as a snippet to review and save |
+| `listAiProviders()`, `aiSuggest(request, context, provider)`, `aiExplain(text, question, context, provider)` | Providers (and why one is unavailable); the quick assistant (the screen in `AiAssistContext` is redacted on the device) |
+| `redactSecrets(text)`, `containsSecrets(text)` | Hides passwords, tokens and keys in terminal text on the device (the desktop's redaction) |
+| `parseLink(text)` → `LinkTarget` (`Join`, `Invite`, `QuickConnect`), `parseQuickConnect(text)`, `joinAppLink(server, token)` | One link parser for every app (servers under a path too) |
 | `subscribeEvents(listener)` | Account events (AI, sessions) |
 | `apiGet/apiPost/apiPut/apiPatch/apiDelete/apiRequest` | Any JSON endpoint of the API ([API.md](https://github.com/TermoakSSH/server/blob/main/docs/API.md)) with JSON as text |
 | `initLogging(level, listener)` | Library logging to Logcat/`os_log` |
@@ -225,7 +231,8 @@ Conventions:
   `TermoakException` in Kotlin, with variants to decide what to do
   (`NotLoggedIn`, `SessionExpired`, `TotpRequired`, `TotpInvalid`,
   `EmailNotVerified`, `HostKey`, `Auth`, `Network`, `Vault`,
-  `NotSupportedForTelnet`…) and a message ready to show. In
+  `NotSupportedForTelnet`, `Cancelled`…) and a message ready to show.
+  `Cancelled` (a `TransferHandle` was cancelled) needs no message. In
   Swift, `TermoakKit` adds a helper that returns the message of any error;
   in Kotlin, use `e.message`.
 
@@ -457,6 +464,10 @@ final class ServerSessionModel: ServerTerminalListener, @unchecked Sendable {
 `detach()` (or dropping the object) only detaches the screen: the session
 stays alive on the server. `closeSession()` closes it.
 
+`view.latencyMs(timeoutMs: 5000)` measures the round trip to the Termoak
+server (a `ping` on the session's WebSocket) for a latency badge; it does
+not include the server-to-host hop. No answer in time gives `Connection`.
+
 ### Two-step verification, invitations and teams
 
 ```swift
@@ -551,6 +562,21 @@ On Android, create the `termoak` notification channel. Call
 `unregisterPushToken()` when signing out. `sendTestPush()` helps check the
 setup.
 
+With several accounts, register the same system token on **every**
+signed-in account (each server notifies its own events), and unregister it
+from the account being signed out:
+
+```swift
+for info in core.accounts() where info.status == .active {
+    _ = try? await core.account(accountId: info.id)
+        .registerPushToken(platform: .apns, token: hex, sandbox: sandbox)
+}
+```
+
+The other account calls of `TermoakCore` (`currentUser`, `setLocale`,
+two-step verification, teams) work on the current account; the same calls
+on `AccountHandle` work on that account.
+
 ### Files through the server
 
 For hosts the phone cannot reach (only the server has a network path to
@@ -566,6 +592,34 @@ try await core.downloadRecording(sessionId: session.id, localPath: castPath, lis
 
 While downloading, data is written to `<destination>.part`; if the transfer
 is interrupted, no half-written file is left under the final name.
+
+```swift
+let info = try await core.serverSftpStat(hostId: web.id, path: "/etc/app.conf")
+let text = try await core.serverSftpRead(hostId: web.id, path: "/etc/app.conf",
+                                         maxBytes: 1 << 20)   // 0 = 16 MiB
+_ = try await core.serverSftpWrite(hostId: web.id, path: "/etc/app.conf", data: edited)
+try await core.serverSftpChmod(hostId: web.id, path: "/opt/run.sh", mode: 0o755)
+```
+
+`serverSftpRead` fails with `Invalid` above `maxBytes`. These calls work for
+Strict-vault hosts too (the server makes the connection).
+
+#### Cancelling a transfer
+
+```swift
+let cancel = TransferHandle()
+let task = Task {
+    try await core.serverSftpDownload(hostId: web.id, remotePath: "/var/log/big.log",
+                                      localPath: destination, listener: progress,
+                                      cancel: cancel)
+}
+// "Cancel" button:
+cancel.cancel()   // the call throws TermoakError.Cancelled; no partial file is left
+```
+
+The same `cancel` parameter exists on `SshSession.sftpDownload/sftpUpload`,
+`serverSftpUpload` and `downloadRecording`. A cancelled upload leaves on the
+host what was already written.
 
 ### Importing `ssh_config` and autocomplete
 
@@ -603,6 +657,54 @@ for approval in try await core.listPendingApprovals() {
                                   approve: true, always: false)
 }
 let result = try await core.getAiTask(taskId: task.id).result
+```
+
+Servers 0.6+ describe each approval in `preview` (`nil` on older servers:
+fall back to `summary`): `kind` is `command`, `terminal`, `file`, `plan` or
+`other`; commands carry `command`, `host`, `risk` (`.low`, `.medium`,
+`.high`) and `reasons` (stable `code`s to translate); file writes carry
+`path`, a unified `diff` (`truncated` at 64 KB), `added`/`removed` and
+`newFile`; plans carry `plan`. With `editable`, the user can change the
+command or the plan before approving:
+
+```swift
+if let p = approval.preview, p.editable {
+    try await core.decideApprovalWith(taskId: approval.taskId, approvalId: approval.id,
+        decision: AiDecision(approve: true, edited: editedCommand))
+}
+// Deny with a reason the model reads (it does not retry the same thing).
+try await core.decideApprovalWith(taskId: approval.taskId, approvalId: approval.id,
+    decision: AiDecision(approve: false, reason: "not on production"))
+```
+
+Plans, several hosts and runbooks:
+
+```swift
+let task = try await core.createAiTask(request: AiTaskRequest(
+    prompt: "Update the packages", mode: .ask,
+    planFirst: true,            // first a plan to approve (an approval with kind "plan")
+    groupId: webServers.id,     // or tag: "web", or hostIds
+    fanOut: true))              // one conversation per host
+let full = try await core.getAiTask(taskId: task.id)
+for row in full.hosts { print(row.label, row.status, row.summary ?? "") }   // row.taskId: its own task
+let runbook = try await core.getRunbook(taskId: task.id)   // runbook.steps == 0: nothing to save
+if runbook.steps > 0 {
+    let snippet = try await core.saveRunbook(taskId: task.id)   // personal vault, tags ai + runbook
+}
+```
+
+`listAiProviders()` says which providers you can use (`available`) and why
+not (`reasonCode`: `not_configured`, `own_key_required` = add your own key,
+`plan`). The quick assistant: `aiSuggest(request:context:)` returns one
+command with its `risk` (`read`, `write`, `dangerous`) and
+`aiExplain(text:question:context:)` an explanation in Markdown. The screen
+in `AiAssistContext.screen` is passed through `redactSecrets` on the device
+before it is sent; pass other text you send (a selection, an error) through
+`redactSecrets(text:)` yourself:
+
+```swift
+let screen = redactSecrets(text: terminal.textTail(maxChars: 4000))
+if containsSecrets(text: selection) { showRedactionNotice() }
 ```
 
 Foreground events:
@@ -790,6 +892,33 @@ val events = core.subscribeEvents(object : ServerEventListener {
 })
 ```
 
+## Links
+
+`parseLink(text)` reads what the apps open or have pasted, the same way on
+every platform, and `nil`/`null` when it is none of them:
+
+| Text | `LinkTarget` |
+|---|---|
+| `termoak://join?server=…&token=…`, `https://<server>/join/<token>`, `https://<server>/api/v1/join/<token>` | `Join(server, token)` |
+| `termoak://invite?server=…&token=…`, `https://<server>/invite/<code>` | `Invite(server, code)` |
+| `ssh://[user@]host[:port]`, `telnet://[user@]host[:port]` | `QuickConnect(protocol, user, host, port)` |
+
+A server under a path keeps it: `https://example.com/termoak/join/abc` gives
+the server `https://example.com/termoak`. `aceitunoak://` (the old scheme)
+works too. `parseQuickConnect(text)` also reads typed addresses
+(`user@host:port`, `ssh user@host -p 2222`, `telnet host 23`) and ignores
+plain words, so it can run on a search field. `joinAppLink(server, token)`
+builds a `termoak://join` link.
+
+```kotlin
+when (val link = parseLink(intent.dataString ?: "")) {
+    is LinkTarget.Join -> joinSession(link.server, link.token)
+    is LinkTarget.Invite -> openSignUp(link.server, link.code)
+    is LinkTarget.QuickConnect -> quickConnect(link.protocol, link.user, link.host, link.port)
+    null -> Unit
+}
+```
+
 ## Threads and lifecycle
 
 - **Own runtime.** The library has its own tokio runtime (2-4 threads). The
@@ -797,8 +926,7 @@ val events = core.subscribeEvents(object : ServerEventListener {
 - **Synchronous functions** (vault CRUD, `write`, `resize`…): fast; they can
   be called from the main thread.
 - **`async` functions** (network, SSH, key generation): `async throws` in
-  Swift, `suspend` in Kotlin. Cancelling the `Task` or the coroutine aborts
-  the operation in Rust.
+  Swift, `suspend` in Kotlin. See [Cancelling](#cancelling-async-calls).
 - **Callbacks.** Always arrive on background threads, never on the main
   thread:
   - `TerminalListener` and `ServerTerminalListener`: one thread per terminal,
@@ -818,6 +946,13 @@ val events = core.subscribeEvents(object : ServerEventListener {
 - **Reference cycles.** Rust retains a terminal's listener until it closes.
   If the listener is the view model itself and it holds the
   `TerminalHandle`, call `closeTerminal()` when leaving the screen.
+- <a id="cancelling-async-calls"></a>**Cancelling.** In Kotlin, cancelling
+  the coroutine drops the Rust future and aborts the operation. In Swift it
+  does not: the Swift code UniFFI generates (0.32, the latest) waits with a
+  plain continuation and never tells Rust, so the call runs to the end even
+  if the `Task` is cancelled. For transfers pass a `TransferHandle` and call
+  `cancel()` (both platforms); for the rest, ignore the result of a call
+  that is no longer needed.
 - **Background.** iOS suspends the app shortly after you leave it and
   Android may do so: local SSH connections drop. For long jobs, use a server
   session (or, on Android, a *foreground service* that keeps the app alive).
@@ -839,10 +974,25 @@ val events = core.subscribeEvents(object : ServerEventListener {
 - **Only on this device.** With `syncMode = DeviceOnly`, a host or a key (and
   its secrets) is never sent to the server. Use it, for example, for the
   phone's own SSH key.
-- **Known hosts.** The first connection asks about the fingerprint
-  (`onHostKey`). If the key of a known host changes, the connection fails
-  with `HostKey` without asking. To accept the new one, delete the old entry
-  (`deleteKnownHost`).
+- <a id="known-hosts"></a>**Known hosts.** The first connection asks about
+  the fingerprint (`onHostKey`). If the key of a known host (or of a jump
+  host) changes, the connection fails with `HostKey` without asking, unless
+  `connect`/`connectTerminal` got a `keyChanged` handler: it receives a
+  `HostKeyChange` (`host`, `port`, `keyType`, `oldFingerprint`,
+  `newFingerprint`, `accountId`) on a background thread and may block while
+  the warning is shown. Returning `true` replaces the saved key and the
+  connection goes on (without asking `onHostKey` again); `false` keeps the
+  `HostKey` error. `replaceKnownHost(host, port, publicKey, accountId)`
+  saves a key checked another way; deleting the entry (`deleteKnownHost`)
+  makes the next connection ask as if it were new.
+
+  ```kotlin
+  val keyChanged = object : HostKeyChangeHandler {
+      override fun onHostKeyChanged(change: HostKeyChange): Boolean =
+          runBlocking { dialogs.confirmChangedKey(change) }   // "The key of ${change.host} changed"
+  }
+  core.connectTerminal(host.id, 80u, 24u, auth, listener, host.accountId, keyChanged = keyChanged)
+  ```
 - **TLS.** The connection to the server uses rustls with the Mozilla root
   certificates bundled in the library.
 - **Logging.** `initLogging` never writes secrets; even so, do not enable
