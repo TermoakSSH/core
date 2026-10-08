@@ -104,6 +104,9 @@ pub enum TermoakError {
     /// `TerminalHandle::is_telnet`).
     #[error("{0}")]
     NotSupportedForTelnet(String),
+    /// The app cancelled it (`TransferHandle::cancel`): nothing to show.
+    #[error("{0}")]
+    Cancelled(String),
 }
 
 /// Variant of a vault rule's stable code (core or server).

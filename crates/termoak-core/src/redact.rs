@@ -2,7 +2,10 @@
 //!
 //! Tool outputs (command output, file contents, terminal screens) and the
 //! terminal context of the quick assistant pass through [`redact`] before
-//! the model sees them. It replaces with `[redacted]`:
+//! the model sees them (`termoak_ai::redact` re-exports this module); the
+//! mobile apps use it through the FFI (`redact_secrets`) to hide secrets on
+//! the device, before the screen leaves the phone. Plain `std`, no
+//! dependencies. It replaces with `[redacted]`:
 //!
 //! - private key blocks (`-----BEGIN … PRIVATE KEY-----` … `-----END …-----`,
 //!   also with escaped `\n` as in JSON service-account files);
@@ -59,6 +62,51 @@ pub fn redact_context_blocks(text: &str) -> String {
 /// Did [`redact`] hide anything?
 pub fn contains_secrets(text: &str) -> bool {
     redact(text) != text
+}
+
+/// [`redact`] plus a `Bearer <token>` outside an `Authorization` header (a
+/// token a command printed): what the apps apply to terminal text (the
+/// screen, a selection, a command) before sending it to an AI. The desktop
+/// and the mobile apps (FFI `redact_secrets`) use it, so they hide the same
+/// things.
+pub fn redact_terminal(text: &str) -> String {
+    bare_bearer(&redact(text))
+}
+
+/// Did [`redact_terminal`] hide anything?
+pub fn terminal_contains_secrets(text: &str) -> bool {
+    redact_terminal(text) != text
+}
+
+/// Hides the token after a `bearer ` word (any case) of 8 or more token
+/// characters.
+fn bare_bearer(text: &str) -> String {
+    const WORD: &str = "bearer ";
+    // ASCII lowercase keeps the byte offsets.
+    let lower = text.to_ascii_lowercase();
+    let token_char = |c: u8| c.is_ascii_alphanumeric() || b"-._~+/=".contains(&c);
+    let mut out = String::with_capacity(text.len());
+    let mut last = 0;
+    let mut from = 0;
+    while let Some(pos) = lower[from..].find(WORD) {
+        let start = from + pos + WORD.len();
+        let at_word = from + pos == 0 || !lower.as_bytes()[from + pos - 1].is_ascii_alphanumeric();
+        let len = text.as_bytes()[start..]
+            .iter()
+            .take_while(|c| token_char(**c))
+            .count();
+        if at_word && len >= 8 {
+            out.push_str(&text[last..start]);
+            out.push_str(REDACTED);
+            last = start + len;
+        }
+        from = start + len;
+        if from >= text.len() {
+            break;
+        }
+    }
+    out.push_str(&text[last..]);
+    out
 }
 
 // --- Private key blocks ------------------------------------------------------
@@ -758,5 +806,40 @@ mod tests {
         ] {
             assert!(!is_secret_key(k), "{k}");
         }
+    }
+
+    #[test]
+    fn terminal_text_also_hides_bare_bearer_tokens() {
+        assert_eq!(
+            redact_terminal("got Bearer abcdefgh12345 back"),
+            "got Bearer [redacted] back"
+        );
+        assert_eq!(
+            redact_terminal("> bearer 0123456789abcdef"),
+            "> bearer [redacted]"
+        );
+        // The engine's redaction leaves it (it is not a header).
+        assert_eq!(
+            redact("got Bearer abcdefgh12345 back"),
+            "got Bearer abcdefgh12345 back"
+        );
+        // Short words after "bearer" are not tokens; a word ending in
+        // "bearer" is not the keyword.
+        assert_eq!(
+            redact_terminal("the bearer of bad news"),
+            "the bearer of bad news"
+        );
+        assert_eq!(
+            redact_terminal("flagbearer 0123456789"),
+            "flagbearer 0123456789"
+        );
+        assert!(terminal_contains_secrets("bearer 0123456789abcdef"));
+        assert!(!terminal_contains_secrets("uptime"));
+        assert_eq!(redact_terminal("password=x1"), "password=[redacted]");
+        // Multibyte text around it keeps its offsets.
+        assert_eq!(
+            redact_terminal("ñ Bearer abcdefghij ☕"),
+            "ñ Bearer [redacted] ☕"
+        );
     }
 }

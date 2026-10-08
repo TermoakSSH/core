@@ -676,6 +676,71 @@ fileprivate struct FfiConverterData: FfiConverterRustBuffer {
  */
 public protocol AccountHandleProtocol: AnyObject, Sendable {
     
+    func addTeamMember(teamId: String, email: String, role: TeamRole) async throws  -> [TeamMember]
+    
+    func createTeam(name: String) async throws  -> Team
+    
+    /**
+     * This account's user, including its language (`locale`).
+     */
+    func currentUser() async throws  -> ServerUser
+    
+    func deleteTeam(teamId: String) async throws 
+    
+    func disableTwoFactor(password: String, code: String) async throws 
+    
+    func enableTwoFactor(code: String) async throws  -> [String]
+    
+    func inviteToTeam(teamId: String, email: String, role: TeamRole) async throws  -> TeamInviteResult
+    
+    func leaveTeam(teamId: String) async throws 
+    
+    func listServerSessionShares(sessionId: String) async throws  -> [SessionShareInfo]
+    
+    func listTeamInvites(teamId: String) async throws  -> [AccountInvite]
+    
+    func listTeamMembers(teamId: String) async throws  -> [TeamMember]
+    
+    func listTeams() async throws  -> [Team]
+    
+    /**
+     * Enables notifications of this account on this device (call it for
+     * every signed-in account, with the same system token).
+     */
+    func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool) async throws  -> Bool
+    
+    func removeTeamMember(teamId: String, userId: String) async throws 
+    
+    func renameTeam(teamId: String, name: String) async throws  -> Team
+    
+    func revokeServerSessionShare(sessionId: String, shareId: String) async throws 
+    
+    func revokeTeamInvite(teamId: String, inviteId: String) async throws 
+    
+    func sendTestPush() async throws 
+    
+    /**
+     * Saves this account's preferred language (BCP 47) on its server.
+     */
+    func setLocale(locale: String) async throws  -> ServerUser
+    
+    func setTeamMemberRole(teamId: String, userId: String, role: TeamRole) async throws  -> [TeamMember]
+    
+    func setupTwoFactor() async throws  -> TwoFactorSetup
+    
+    /**
+     * Shares one of this account's server sessions with every option.
+     */
+    func shareServerSessionWith(sessionId: String, target: ShareTarget, options: ShareOptions) async throws  -> ShareInvite
+    
+    func stopSharingServerSession(sessionId: String) async throws  -> UInt32
+    
+    func twoFactorStatus() async throws  -> TwoFactorStatus
+    
+    func unregisterPushToken() async throws 
+    
+    func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges) async throws  -> SessionShareInfo
+    
     /**
      * Shares a vault with a user (by email) or a team, as `Editor` or
      * `UseOnly`.
@@ -794,6 +859,49 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
      */
     func vaultMembers(vaultId: String) async throws  -> [VaultMember]
     
+    func aiExplain(text: String, question: String?, context: AiAssistContext?, provider: String?) async throws  -> AiExplanation
+    
+    func aiSuggest(request: String, context: AiAssistContext?, provider: String?) async throws  -> AiCommandSuggestion
+    
+    /**
+     * See [`TermoakCore::decide_approval_with`].
+     */
+    func decideApprovalWith(taskId: String, approvalId: String, decision: AiDecision) async throws 
+    
+    func deleteAiTask(taskId: String) async throws 
+    
+    func getRunbook(taskId: String) async throws  -> AiRunbook
+    
+    func listAiProviders() async throws  -> AiProviders
+    
+    /**
+     * See [`TermoakCore::save_runbook`].
+     */
+    func saveRunbook(taskId: String, vaultId: String?, name: String?) async throws  -> Snippet
+    
+    /**
+     * Downloads the recording of one of this account's server sessions.
+     */
+    func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    func serverSftpChmod(hostId: String, path: String, mode: UInt32) async throws 
+    
+    func serverSftpDelete(hostId: String, path: String, recursive: Bool) async throws 
+    
+    func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    func serverSftpMkdir(hostId: String, path: String, parents: Bool) async throws 
+    
+    func serverSftpRead(hostId: String, path: String, maxBytes: UInt64) async throws  -> Data
+    
+    func serverSftpRename(hostId: String, from: String, to: String) async throws 
+    
+    func serverSftpStat(hostId: String, path: String) async throws  -> RemoteFile
+    
+    func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    func serverSftpWrite(hostId: String, path: String, data: Data) async throws  -> UInt64
+    
 }
 /**
  * One account: everything that talks to its server.
@@ -850,6 +958,435 @@ open class AccountHandle: AccountHandleProtocol, @unchecked Sendable {
 
     
 
+    
+open func addTeamMember(teamId: String, email: String, role: TeamRole)async throws  -> [TeamMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_add_team_member(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(email),FfiConverterTypeTeamRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeamMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func createTeam(name: String)async throws  -> Team  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_create_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(name)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeam_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * This account's user, including its language (`locale`).
+     */
+open func currentUser()async throws  -> ServerUser  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_current_user(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerUser_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteTeam(teamId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_delete_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func disableTwoFactor(password: String, code: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_disable_two_factor(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(password),FfiConverterString.lower(code)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func enableTwoFactor(code: String)async throws  -> [String]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_enable_two_factor(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(code)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func inviteToTeam(teamId: String, email: String, role: TeamRole)async throws  -> TeamInviteResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_invite_to_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(email),FfiConverterTypeTeamRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamInviteResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func leaveTeam(teamId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_leave_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listServerSessionShares(sessionId: String)async throws  -> [SessionShareInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_server_session_shares(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeSessionShareInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listTeamInvites(teamId: String)async throws  -> [AccountInvite]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_team_invites(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAccountInvite.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listTeamMembers(teamId: String)async throws  -> [TeamMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_team_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeamMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listTeams()async throws  -> [Team]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_teams(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeam.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Enables notifications of this account on this device (call it for
+     * every signed-in account, with the same system token).
+     */
+open func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool)async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(
+                        self.uniffiCloneHandle(),FfiConverterTypePushPlatform_lower(platform),FfiConverterString.lower(token),FfiConverterBool.lower(sandbox)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func removeTeamMember(teamId: String, userId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_remove_team_member(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(userId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func renameTeam(teamId: String, name: String)async throws  -> Team  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_rename_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(name)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeam_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func revokeServerSessionShare(sessionId: String, shareId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_revoke_server_session_share(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(shareId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func revokeTeamInvite(teamId: String, inviteId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_revoke_team_invite(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(inviteId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func sendTestPush()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_send_test_push(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Saves this account's preferred language (BCP 47) on its server.
+     */
+open func setLocale(locale: String)async throws  -> ServerUser  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_locale(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(locale)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerUser_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setTeamMemberRole(teamId: String, userId: String, role: TeamRole)async throws  -> [TeamMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_team_member_role(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(userId),FfiConverterTypeTeamRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeamMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setupTwoFactor()async throws  -> TwoFactorSetup  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_setup_two_factor(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTwoFactorSetup_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Shares one of this account's server sessions with every option.
+     */
+open func shareServerSessionWith(sessionId: String, target: ShareTarget, options: ShareOptions)async throws  -> ShareInvite  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_share_server_session_with(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterTypeShareTarget_lower(target),FfiConverterTypeShareOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeShareInvite_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func stopSharingServerSession(sessionId: String)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_stop_sharing_server_session(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func twoFactorStatus()async throws  -> TwoFactorStatus  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_two_factor_status(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTwoFactorStatus_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func unregisterPushToken()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_unregister_push_token(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func updateServerSessionShare(sessionId: String, shareId: String, changes: ShareChanges)async throws  -> SessionShareInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_update_server_session_share(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(shareId),FfiConverterTypeShareChanges_lower(changes)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSessionShareInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
     
     /**
      * Shares a vault with a user (by email) or a team, as `Editor` or
@@ -1483,6 +2020,287 @@ open func vaultMembers(vaultId: String)async throws  -> [VaultMember]  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeVaultMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func aiExplain(text: String, question: String? = nil, context: AiAssistContext? = nil, provider: String? = nil)async throws  -> AiExplanation  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_ai_explain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(text),FfiConverterOptionString.lower(question),FfiConverterOptionTypeAiAssistContext.lower(context),FfiConverterOptionString.lower(provider)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiExplanation_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func aiSuggest(request: String, context: AiAssistContext? = nil, provider: String? = nil)async throws  -> AiCommandSuggestion  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_ai_suggest(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(request),FfiConverterOptionTypeAiAssistContext.lower(context),FfiConverterOptionString.lower(provider)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiCommandSuggestion_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * See [`TermoakCore::decide_approval_with`].
+     */
+open func decideApprovalWith(taskId: String, approvalId: String, decision: AiDecision)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_decide_approval_with(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterString.lower(approvalId),FfiConverterTypeAiDecision_lower(decision)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteAiTask(taskId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_delete_ai_task(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func getRunbook(taskId: String)async throws  -> AiRunbook  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_get_runbook(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiRunbook_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func listAiProviders()async throws  -> AiProviders  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_list_ai_providers(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiProviders_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * See [`TermoakCore::save_runbook`].
+     */
+open func saveRunbook(taskId: String, vaultId: String? = nil, name: String? = nil)async throws  -> Snippet  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_save_runbook(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterOptionString.lower(vaultId),FfiConverterOptionString.lower(name)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSnippet_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Downloads the recording of one of this account's server sessions.
+     */
+open func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_download_recording(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpChmod(hostId: String, path: String, mode: UInt32)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_chmod(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterUInt32.lower(mode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpDelete(hostId: String, path: String, recursive: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_delete(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(recursive)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_download(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpMkdir(hostId: String, path: String, parents: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_mkdir(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterBool.lower(parents)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpRead(hostId: String, path: String, maxBytes: UInt64 = UInt64(0))async throws  -> Data  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_read(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterUInt64.lower(maxBytes)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterData.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpRename(hostId: String, from: String, to: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_rename(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(from),FfiConverterString.lower(to)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpStat(hostId: String, path: String)async throws  -> RemoteFile  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_stat(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeRemoteFile_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_upload(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func serverSftpWrite(hostId: String, path: String, data: Data)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_write(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterData.lower(data)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -2131,6 +2949,231 @@ public func FfiConverterTypeEventSubscription_lift(_ handle: UInt64) throws -> E
 #endif
 public func FfiConverterTypeEventSubscription_lower(_ value: EventSubscription) -> UInt64 {
     return FfiConverterTypeEventSubscription.lower(value)
+}
+
+
+
+
+
+
+/**
+ * Implemented by the app to decide about a changed host key ("The key of
+ * web-1 changed. Trust the new key?"), passed to `connect` /
+ * `connect_terminal` as `key_changed`.
+ *
+ * **Threads**: called from a background thread; it **may block** while
+ * the dialog is shown (like `AuthHandler`).
+ */
+public protocol HostKeyChangeHandler: AnyObject, Sendable {
+    
+    /**
+     * `true`: forget the old key, trust the new one and go on connecting
+     * (the new key is saved in place of the old one). `false`: the
+     * connection fails with `HostKey`, as without a handler.
+     */
+    func onHostKeyChanged(change: HostKeyChange)  -> Bool
+    
+}
+/**
+ * Implemented by the app to decide about a changed host key ("The key of
+ * web-1 changed. Trust the new key?"), passed to `connect` /
+ * `connect_terminal` as `key_changed`.
+ *
+ * **Threads**: called from a background thread; it **may block** while
+ * the dialog is shown (like `AuthHandler`).
+ */
+open class HostKeyChangeHandlerImpl: HostKeyChangeHandler, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_hostkeychangehandler(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_hostkeychangehandler(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * `true`: forget the old key, trust the new one and go on connecting
+     * (the new key is saved in place of the old one). `false`: the
+     * connection fails with `HostKey`, as without a handler.
+     */
+open func onHostKeyChanged(change: HostKeyChange) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_hostkeychangehandler_on_host_key_changed(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeHostKeyChange_lower(change),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceHostKeyChangeHandler {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceHostKeyChangeHandler = UniffiVTableCallbackInterfaceHostKeyChangeHandler(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeHostKeyChangeHandler.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface HostKeyChangeHandler: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeHostKeyChangeHandler.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface HostKeyChangeHandler: handle missing in uniffiClone")
+            }
+        },
+        onHostKeyChanged: { (
+            uniffiHandle: UInt64,
+            change: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<Int8>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> Bool in
+                guard let uniffiObj = try? FfiConverterTypeHostKeyChangeHandler.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return uniffiObj.onHostKeyChanged(
+                     change: try FfiConverterTypeHostKeyChange_lift(change)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterBool.lower($0) }
+            uniffiTraitInterfaceCall(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceHostKeyChangeHandler> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceHostKeyChangeHandler>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitHostKeyChangeHandler() {
+    uniffi_termoak_ffi_fn_init_callback_vtable_hostkeychangehandler(UniffiCallbackInterfaceHostKeyChangeHandler.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHostKeyChangeHandler: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<HostKeyChangeHandler>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = HostKeyChangeHandler
+
+    public static func lift(_ handle: UInt64) throws -> HostKeyChangeHandler {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return HostKeyChangeHandlerImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: HostKeyChangeHandler) -> UInt64 {
+         if let rustImpl = value as? HostKeyChangeHandlerImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HostKeyChangeHandler {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: HostKeyChangeHandler, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostKeyChangeHandler_lift(_ handle: UInt64) throws -> HostKeyChangeHandler {
+    return try FfiConverterTypeHostKeyChangeHandler.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostKeyChangeHandler_lower(_ value: HostKeyChangeHandler) -> UInt64 {
+    return FfiConverterTypeHostKeyChangeHandler.lower(value)
 }
 
 
@@ -2937,6 +3980,15 @@ public protocol ServerTerminalHandleProtocol: AnyObject, Sendable {
     func kick(participantId: String, revokeShare: Bool) throws 
     
     /**
+     * Round trip to the Termoak server in milliseconds (a `ping` on the
+     * session's WebSocket, behind what is being typed), for a latency
+     * badge. Only to the server: it does not report the one from the
+     * server to the host. No answer within `timeout_ms` (reconnecting,
+     * closed, or a server that does not answer pings) gives `Connection`.
+     */
+    func latencyMs(timeoutMs: UInt32) async throws  -> Double
+    
+    /**
      * Your participant id (once in).
      */
     func participantId()  -> String?
@@ -3202,6 +4254,29 @@ open func kick(participantId: String, revokeShare: Bool)throws   {try rustCallWi
         FfiConverterBool.lower(revokeShare),uniffiCallStatus
     )
 }
+}
+    
+    /**
+     * Round trip to the Termoak server in milliseconds (a `ping` on the
+     * session's WebSocket, behind what is being typed), for a latency
+     * badge. Only to the server: it does not report the one from the
+     * server to the host. No answer within `timeout_ms` (reconnecting,
+     * closed, or a server that does not answer pings) gives `Connection`.
+     */
+open func latencyMs(timeoutMs: UInt32 = UInt32(5000))async throws  -> Double  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_serverterminalhandle_latency_ms(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(timeoutMs)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_f64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_f64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_f64,
+            liftFunc: FfiConverterDouble.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
 }
     
     /**
@@ -4418,9 +5493,10 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
     
     /**
      * Downloads `remote_path` to `local_path` (a file on the device).
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * partial file is removed).
      */
-    func sftpDownload(remotePath: String, localPath: String, listener: TransferListener?) async throws  -> UInt64
+    func sftpDownload(remotePath: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
     
     /**
      * The user's home directory.
@@ -4456,9 +5532,10 @@ public protocol SshSessionProtocol: AnyObject, Sendable {
     
     /**
      * Uploads `local_path` (a file on the device) to `remote_path`.
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * remote file keeps what was written).
      */
-    func sftpUpload(localPath: String, remotePath: String, listener: TransferListener?) async throws  -> UInt64
+    func sftpUpload(localPath: String, remotePath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
     
     /**
      * Writes (creates or overwrites) a file.
@@ -4741,14 +5818,15 @@ open func sftpChmod(path: String, mode: UInt32)async throws   {
     
     /**
      * Downloads `remote_path` to `local_path` (a file on the device).
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * partial file is removed).
      */
-open func sftpDownload(remotePath: String, localPath: String, listener: TransferListener?)async throws  -> UInt64  {
+open func sftpDownload(remotePath: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_sshsession_sftp_download(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -4891,14 +5969,15 @@ open func sftpStat(path: String)async throws  -> RemoteFile  {
     
     /**
      * Uploads `local_path` (a file on the device) to `remote_path`.
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * remote file keeps what was written).
      */
-open func sftpUpload(localPath: String, remotePath: String, listener: TransferListener?)async throws  -> UInt64  {
+open func sftpUpload(localPath: String, remotePath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_sshsession_sftp_upload(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -6096,6 +7175,14 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func enableTwoFactor(code: String) async throws  -> [String]
     
     /**
+     * Invites someone to a team by email (team admins; only owners appoint
+     * owners): with an account they join at once; otherwise they get an
+     * invitation to sign up (when the server's registration is open or you
+     * are a server admin).
+     */
+    func inviteToTeam(teamId: String, email: String, role: TeamRole) async throws  -> TeamInviteResult
+    
+    /**
      * Leaves a team (the last owner cannot leave: appoint another owner or
      * delete the team first).
      */
@@ -6105,6 +7192,11 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * The invitations of one of your sessions (also revoked and expired ones).
      */
     func listServerSessionShares(sessionId: String) async throws  -> [SessionShareInfo]
+    
+    /**
+     * Pending invitations of a team (team admins).
+     */
+    func listTeamInvites(teamId: String) async throws  -> [AccountInvite]
     
     /**
      * Members of a team.
@@ -6141,6 +7233,11 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * has no other one leaves).
      */
     func revokeServerSessionShare(sessionId: String, shareId: String) async throws 
+    
+    /**
+     * Revokes a pending team invitation.
+     */
+    func revokeTeamInvite(teamId: String, inviteId: String) async throws 
     
     /**
      * Sends a test notification to this device.
@@ -6292,6 +7389,49 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func verifyAccount(accountId: String, code: String, totpCode: String?) async throws  -> AccountInfo
     
     /**
+     * Quick assistant: explains an output or an error (`question`: what
+     * to ask about it). `text` is sent as given: pass it through
+     * `redact_secrets` first if it may hold secrets.
+     */
+    func aiExplain(text: String, question: String?, context: AiAssistContext?, provider: String?) async throws  -> AiExplanation
+    
+    /**
+     * Quick assistant: one shell command for a request in natural language.
+     */
+    func aiSuggest(request: String, context: AiAssistContext?, provider: String?) async throws  -> AiCommandSuggestion
+    
+    /**
+     * Answers an approval with every option: `edited` (approve this
+     * command or plan instead of the model's) and `reason` (why it was
+     * denied, for the model). Servers before 0.6 ignore both.
+     */
+    func decideApprovalWith(taskId: String, approvalId: String, decision: AiDecision) async throws 
+    
+    /**
+     * Deletes a task (cancel it first if it is running).
+     */
+    func deleteAiTask(taskId: String) async throws 
+    
+    /**
+     * What the task ran, as a snippet to review (`steps == 0`: nothing).
+     */
+    func getRunbook(taskId: String) async throws  -> AiRunbook
+    
+    /**
+     * The server's AI providers, whether you can use each one and why not.
+     */
+    func listAiProviders() async throws  -> AiProviders
+    
+    /**
+     * Saves the task's runbook as a snippet (tags `ai` and `runbook`) in
+     * `vault_id` (default: your personal vault; you must be an Editor
+     * there), named `name` (default: the task's title), and syncs so it
+     * shows up in the snippets. `Invalid` (`runbook_empty`) if the task
+     * ran no commands.
+     */
+    func saveRunbook(taskId: String, vaultId: String?, name: String?) async throws  -> Snippet
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
     func clearCommandHistory(hostId: String?) throws 
@@ -6334,9 +7474,14 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
-     * `local_path`. Returns the number of bytes.
+     * `local_path`. Returns the number of bytes. `cancel` stops it.
      */
-    func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?) async throws  -> UInt64
+    func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    /**
+     * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
+     */
+    func serverSftpChmod(hostId: String, path: String, mode: UInt32, accountId: String?) async throws 
     
     /**
      * Deletes a remote file or directory (`recursive` for non-empty
@@ -6347,8 +7492,9 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     /**
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
+     * `cancel` stops it (`Cancelled`, the `.part` file is removed).
      */
-    func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String?) async throws  -> UInt64
+    func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String?, cancel: TransferHandle?) async throws  -> UInt64
     
     /**
      * The user's home directory on a host, over SFTP from the server.
@@ -6366,15 +7512,43 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func serverSftpMkdir(hostId: String, path: String, parents: Bool, accountId: String?) async throws 
     
     /**
+     * Reads a whole remote file into memory (viewers and editors). Fails
+     * with `Invalid` above `max_bytes` (0 = 16 MiB).
+     */
+    func serverSftpRead(hostId: String, path: String, maxBytes: UInt64, accountId: String?) async throws  -> Data
+    
+    /**
      * Renames or moves a remote file.
      */
     func serverSftpRename(hostId: String, from: String, to: String, accountId: String?) async throws 
     
     /**
-     * Uploads a local file to `remote_path` (replacing it if it exists).
-     * Returns the number of bytes.
+     * Details of a remote file or directory (size, permissions, dates),
+     * over SFTP from the server.
      */
-    func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String?) async throws  -> UInt64
+    func serverSftpStat(hostId: String, path: String, accountId: String?) async throws  -> RemoteFile
+    
+    /**
+     * Uploads a local file to `remote_path` (replacing it if it exists).
+     * Returns the number of bytes. `cancel` stops it (`Cancelled`; the
+     * server keeps whatever arrived, as with a dropped connection).
+     */
+    func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    /**
+     * Writes (creates or replaces) a remote file with `data`. Returns the
+     * number of bytes written.
+     */
+    func serverSftpWrite(hostId: String, path: String, data: Data, accountId: String?) async throws  -> UInt64
+    
+    /**
+     * Trusts `public_key` (OpenSSH format, `ssh-ed25519 AAAA…`) for
+     * `host:port`, replacing the saved keys of the same type (a "trust the
+     * new key" button, or a key checked another way). `account_id`: the
+     * account of the host being connected to (its known hosts are used),
+     * `None` for This device. Returns the saved entry.
+     */
+    func replaceKnownHost(host: String, port: UInt32, publicKey: String, accountId: String?) throws  -> KnownHost
     
     /**
      * Attaches to a server session (yours or shared with you). `Hello`
@@ -6633,8 +7807,13 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Use-only host gets its credentials from the server just for this
      * connection (`UseOnlyStrict`: open a server session instead;
      * `UseOnlyNeedsServer`: offline).
+     *
+     * `key_changed`: asked when the key of a known host (or of a jump)
+     * changed; if it trusts the new key, it replaces the old one and the
+     * connection goes on. Without it such a connection fails with
+     * `HostKey`.
      */
-    func connect(hostId: String, auth: AuthHandler, accountId: String?) async throws  -> SshSession
+    func connect(hostId: String, auth: AuthHandler, accountId: String?, keyChanged: HostKeyChangeHandler?) async throws  -> SshSession
     
     /**
      * Shortcut: connects and opens a terminal. The connection remains
@@ -6647,8 +7826,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Telnet hosts automatically"), the host's username and password answer
      * its first `login:` and `Password:` prompts, each once, during the
      * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
+     *
+     * `record`: record the terminal (asciicast, in the app's data folder;
+     * `TerminalHandle::recording_path`), also when the host does not ask
+     * for it. `key_changed`: see [`connect`](Self::connect).
      */
-    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String?, telnetAutoLogin: Bool) async throws  -> TerminalHandle
+    func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String?, telnetAutoLogin: Bool, record: Bool, keyChanged: HostKeyChangeHandler?) async throws  -> TerminalHandle
     
     /**
      * The vault's data directory.
@@ -7155,6 +8338,28 @@ open func enableTwoFactor(code: String)async throws  -> [String]  {
 }
     
     /**
+     * Invites someone to a team by email (team admins; only owners appoint
+     * owners): with an account they join at once; otherwise they get an
+     * invitation to sign up (when the server's registration is open or you
+     * are a server admin).
+     */
+open func inviteToTeam(teamId: String, email: String, role: TeamRole)async throws  -> TeamInviteResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_invite_to_team(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(email),FfiConverterTypeTeamRole_lower(role)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamInviteResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Leaves a team (the last owner cannot leave: appoint another owner or
      * delete the team first).
      */
@@ -7189,6 +8394,25 @@ open func listServerSessionShares(sessionId: String)async throws  -> [SessionSha
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeSessionShareInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Pending invitations of a team (team admins).
+     */
+open func listTeamInvites(teamId: String)async throws  -> [AccountInvite]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_list_team_invites(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAccountInvite.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -7303,6 +8527,25 @@ open func revokeServerSessionShare(sessionId: String, shareId: String)async thro
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_revoke_server_session_share(
                         self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(shareId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Revokes a pending team invitation.
+     */
+open func revokeTeamInvite(teamId: String, inviteId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_revoke_team_invite(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(inviteId)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_void,
@@ -7746,6 +8989,147 @@ open func verifyAccount(accountId: String, code: String, totpCode: String? = nil
 }
     
     /**
+     * Quick assistant: explains an output or an error (`question`: what
+     * to ask about it). `text` is sent as given: pass it through
+     * `redact_secrets` first if it may hold secrets.
+     */
+open func aiExplain(text: String, question: String? = nil, context: AiAssistContext? = nil, provider: String? = nil)async throws  -> AiExplanation  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_ai_explain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(text),FfiConverterOptionString.lower(question),FfiConverterOptionTypeAiAssistContext.lower(context),FfiConverterOptionString.lower(provider)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiExplanation_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Quick assistant: one shell command for a request in natural language.
+     */
+open func aiSuggest(request: String, context: AiAssistContext? = nil, provider: String? = nil)async throws  -> AiCommandSuggestion  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_ai_suggest(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(request),FfiConverterOptionTypeAiAssistContext.lower(context),FfiConverterOptionString.lower(provider)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiCommandSuggestion_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Answers an approval with every option: `edited` (approve this
+     * command or plan instead of the model's) and `reason` (why it was
+     * denied, for the model). Servers before 0.6 ignore both.
+     */
+open func decideApprovalWith(taskId: String, approvalId: String, decision: AiDecision)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_decide_approval_with(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterString.lower(approvalId),FfiConverterTypeAiDecision_lower(decision)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Deletes a task (cancel it first if it is running).
+     */
+open func deleteAiTask(taskId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_delete_ai_task(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * What the task ran, as a snippet to review (`steps == 0`: nothing).
+     */
+open func getRunbook(taskId: String)async throws  -> AiRunbook  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_get_runbook(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiRunbook_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * The server's AI providers, whether you can use each one and why not.
+     */
+open func listAiProviders()async throws  -> AiProviders  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_list_ai_providers(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAiProviders_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Saves the task's runbook as a snippet (tags `ai` and `runbook`) in
+     * `vault_id` (default: your personal vault; you must be an Editor
+     * there), named `name` (default: the task's title), and syncs so it
+     * shows up in the snippets. `Invalid` (`runbook_empty`) if the task
+     * ran no commands.
+     */
+open func saveRunbook(taskId: String, vaultId: String? = nil, name: String? = nil)async throws  -> Snippet  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_save_runbook(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(taskId),FfiConverterOptionString.lower(vaultId),FfiConverterOptionString.lower(name)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSnippet_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
 open func clearCommandHistory(hostId: String?)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
@@ -7843,20 +9227,39 @@ open func recordCommand(hostId: String, command: String)throws  -> Bool  {
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
-     * `local_path`. Returns the number of bytes.
+     * `local_path`. Returns the number of bytes. `cancel` stops it.
      */
-open func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?)async throws  -> UInt64  {
+open func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_download_recording(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(sessionId),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
             completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
             freeFunc: ffi_termoak_ffi_rust_future_free_u64,
             liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
+     */
+open func serverSftpChmod(hostId: String, path: String, mode: UInt32, accountId: String? = nil)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_chmod(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterUInt32.lower(mode),FfiConverterOptionString.lower(accountId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -7884,13 +9287,14 @@ open func serverSftpDelete(hostId: String, path: String, recursive: Bool, accoun
     /**
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
+     * `cancel` stops it (`Cancelled`, the `.part` file is removed).
      */
-open func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String? = nil)async throws  -> UInt64  {
+open func serverSftpDownload(hostId: String, remotePath: String, localPath: String, listener: TransferListener?, accountId: String? = nil, cancel: TransferHandle? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_download(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(remotePath),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId),FfiConverterOptionTypeTransferHandle.lower(cancel)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -7959,6 +9363,26 @@ open func serverSftpMkdir(hostId: String, path: String, parents: Bool, accountId
 }
     
     /**
+     * Reads a whole remote file into memory (viewers and editors). Fails
+     * with `Invalid` above `max_bytes` (0 = 16 MiB).
+     */
+open func serverSftpRead(hostId: String, path: String, maxBytes: UInt64 = UInt64(0), accountId: String? = nil)async throws  -> Data  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_read(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterUInt64.lower(maxBytes),FfiConverterOptionString.lower(accountId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterData.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Renames or moves a remote file.
      */
 open func serverSftpRename(hostId: String, from: String, to: String, accountId: String? = nil)async throws   {
@@ -7978,15 +9402,36 @@ open func serverSftpRename(hostId: String, from: String, to: String, accountId: 
 }
     
     /**
-     * Uploads a local file to `remote_path` (replacing it if it exists).
-     * Returns the number of bytes.
+     * Details of a remote file or directory (size, permissions, dates),
+     * over SFTP from the server.
      */
-open func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String? = nil)async throws  -> UInt64  {
+open func serverSftpStat(hostId: String, path: String, accountId: String? = nil)async throws  -> RemoteFile  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_stat(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterOptionString.lower(accountId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeRemoteFile_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Uploads a local file to `remote_path` (replacing it if it exists).
+     * Returns the number of bytes. `cancel` stops it (`Cancelled`; the
+     * server keeps whatever arrived, as with a dropped connection).
+     */
+open func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String? = nil, cancel: TransferHandle? = nil)async throws  -> UInt64  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(localPath),FfiConverterString.lower(remotePath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionString.lower(accountId),FfiConverterOptionTypeTransferHandle.lower(cancel)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -7995,6 +9440,46 @@ open func serverSftpUpload(hostId: String, localPath: String, remotePath: String
             liftFunc: FfiConverterUInt64.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+    
+    /**
+     * Writes (creates or replaces) a remote file with `data`. Returns the
+     * number of bytes written.
+     */
+open func serverSftpWrite(hostId: String, path: String, data: Data, accountId: String? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_write(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterString.lower(path),FfiConverterData.lower(data),FfiConverterOptionString.lower(accountId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Trusts `public_key` (OpenSSH format, `ssh-ed25519 AAAA…`) for
+     * `host:port`, replacing the saved keys of the same type (a "trust the
+     * new key" button, or a key checked another way). `account_id`: the
+     * account of the host being connected to (its known hosts are used),
+     * `None` for This device. Returns the saved entry.
+     */
+open func replaceKnownHost(host: String, port: UInt32, publicKey: String, accountId: String? = nil)throws  -> KnownHost  {
+    return try  FfiConverterTypeKnownHost_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_replace_known_host(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(host),
+        FfiConverterUInt32.lower(port),
+        FfiConverterString.lower(publicKey),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
+    )
+})
 }
     
     /**
@@ -8814,13 +10299,18 @@ open func verifyCode(url: String, email: String, code: String, totpCode: String?
      * Use-only host gets its credentials from the server just for this
      * connection (`UseOnlyStrict`: open a server session instead;
      * `UseOnlyNeedsServer`: offline).
+     *
+     * `key_changed`: asked when the key of a known host (or of a jump)
+     * changed; if it trusts the new key, it replaces the old one and the
+     * connection goes on. Without it such a connection fails with
+     * `HostKey`.
      */
-open func connect(hostId: String, auth: AuthHandler, accountId: String? = nil)async throws  -> SshSession  {
+open func connect(hostId: String, auth: AuthHandler, accountId: String? = nil, keyChanged: HostKeyChangeHandler? = nil)async throws  -> SshSession  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_connect(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterTypeAuthHandler_lower(auth),FfiConverterOptionString.lower(accountId)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterTypeAuthHandler_lower(auth),FfiConverterOptionString.lower(accountId),FfiConverterOptionTypeHostKeyChangeHandler.lower(keyChanged)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -8842,13 +10332,17 @@ open func connect(hostId: String, auth: AuthHandler, accountId: String? = nil)as
      * Telnet hosts automatically"), the host's username and password answer
      * its first `login:` and `Password:` prompts, each once, during the
      * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
+     *
+     * `record`: record the terminal (asciicast, in the app's data folder;
+     * `TerminalHandle::recording_path`), also when the host does not ask
+     * for it. `key_changed`: see [`connect`](Self::connect).
      */
-open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String? = nil, telnetAutoLogin: Bool = true)async throws  -> TerminalHandle  {
+open func connectTerminal(hostId: String, cols: UInt32, rows: UInt32, auth: AuthHandler, listener: TerminalListener, accountId: String? = nil, telnetAutoLogin: Bool = true, record: Bool = false, keyChanged: HostKeyChangeHandler? = nil)async throws  -> TerminalHandle  {
     return
         try  await uniffiRustCallAsync(
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(
-                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener),FfiConverterOptionString.lower(accountId),FfiConverterBool.lower(telnetAutoLogin)
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterTypeAuthHandler_lower(auth),FfiConverterTypeTerminalListener_lower(listener),FfiConverterOptionString.lower(accountId),FfiConverterBool.lower(telnetAutoLogin),FfiConverterBool.lower(record),FfiConverterOptionTypeHostKeyChangeHandler.lower(keyChanged)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
@@ -9376,6 +10870,163 @@ public func FfiConverterTypeTermoakCore_lower(_ value: TermoakCore) -> UInt64 {
 
 
 /**
+ * Cancels the transfer it is passed to (`sftp_download`, `sftp_upload`,
+ * `server_sftp_download`, `server_sftp_upload`, `download_recording`).
+ * Create one per transfer and call `cancel()` from anywhere (a "Cancel"
+ * button): the call then fails with `Cancelled` and leaves no partial file
+ * under the final name. Cancelling before the transfer starts makes it fail
+ * at once.
+ */
+public protocol TransferHandleProtocol: AnyObject, Sendable {
+    
+    /**
+     * Stops the transfer (idempotent).
+     */
+    func cancel() 
+    
+    func isCancelled()  -> Bool
+    
+}
+/**
+ * Cancels the transfer it is passed to (`sftp_download`, `sftp_upload`,
+ * `server_sftp_download`, `server_sftp_upload`, `download_recording`).
+ * Create one per transfer and call `cancel()` from anywhere (a "Cancel"
+ * button): the call then fails with `Cancelled` and leaves no partial file
+ * under the final name. Cancelling before the transfer starts makes it fail
+ * at once.
+ */
+open class TransferHandle: TransferHandleProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_transferhandle(self.handle, $0) }
+    }
+public convenience init() {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_constructor_transferhandle_new(uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_transferhandle(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Stops the transfer (idempotent).
+     */
+open func cancel()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_transferhandle_cancel(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+open func isCancelled() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_transferhandle_is_cancelled(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTransferHandle: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = TransferHandle
+
+    public static func lift(_ handle: UInt64) throws -> TransferHandle {
+        return TransferHandle(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: TransferHandle) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransferHandle {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: TransferHandle, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferHandle_lift(_ handle: UInt64) throws -> TransferHandle {
+    return try FfiConverterTypeTransferHandle.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTransferHandle_lower(_ value: TransferHandle) -> UInt64 {
+    return FfiConverterTypeTransferHandle.lower(value)
+}
+
+
+
+
+
+
+/**
  * Progress of an SFTP transfer.
  *
  * **Threads**: called from a background thread after each chunk (256 KiB);
@@ -9758,6 +11409,10 @@ public struct AccountInvite: Equatable, Hashable {
     public var expiresAt: Int64?
     public var usedAt: Int64?
     public var revoked: Bool
+    /**
+     * Role in `team_id` on sign-up (`None`: member).
+     */
+    public var teamRole: TeamRole?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -9770,7 +11425,10 @@ public struct AccountInvite: Equatable, Hashable {
          */isAdmin: Bool, 
         /**
          * Team joined on sign-up.
-         */teamId: String?, createdAt: Int64, expiresAt: Int64?, usedAt: Int64?, revoked: Bool) {
+         */teamId: String?, createdAt: Int64, expiresAt: Int64?, usedAt: Int64?, revoked: Bool, 
+        /**
+         * Role in `team_id` on sign-up (`None`: member).
+         */teamRole: TeamRole? = nil) {
         self.id = id
         self.email = email
         self.isAdmin = isAdmin
@@ -9779,6 +11437,7 @@ public struct AccountInvite: Equatable, Hashable {
         self.expiresAt = expiresAt
         self.usedAt = usedAt
         self.revoked = revoked
+        self.teamRole = teamRole
     }
 
     
@@ -9804,7 +11463,8 @@ public struct FfiConverterTypeAccountInvite: FfiConverterRustBuffer {
                 createdAt: FfiConverterInt64.read(from: &buf), 
                 expiresAt: FfiConverterOptionInt64.read(from: &buf), 
                 usedAt: FfiConverterOptionInt64.read(from: &buf), 
-                revoked: FfiConverterBool.read(from: &buf)
+                revoked: FfiConverterBool.read(from: &buf), 
+                teamRole: FfiConverterOptionTypeTeamRole.read(from: &buf)
         )
     }
 
@@ -9817,6 +11477,7 @@ public struct FfiConverterTypeAccountInvite: FfiConverterRustBuffer {
         FfiConverterOptionInt64.write(value.expiresAt, into: &buf)
         FfiConverterOptionInt64.write(value.usedAt, into: &buf)
         FfiConverterBool.write(value.revoked, into: &buf)
+        FfiConverterOptionTypeTeamRole.write(value.teamRole, into: &buf)
     }
 }
 
@@ -9972,6 +11633,12 @@ public struct AiApproval: Equatable, Hashable {
     public var decidedBy: String?
     public var createdAt: Int64
     public var decidedAt: Int64?
+    /**
+     * What it is about (the command and its risk, the diff of a file, the
+     * plan), to show instead of `input_json`. `None` on servers before 0.6
+     * and for approvals saved by them.
+     */
+    public var preview: AiApprovalPreview?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -9987,7 +11654,12 @@ public struct AiApproval: Equatable, Hashable {
          */summary: String, 
         /**
          * `pending`, `approved`, `denied`...
-         */status: String, decidedBy: String?, createdAt: Int64, decidedAt: Int64?) {
+         */status: String, decidedBy: String?, createdAt: Int64, decidedAt: Int64?, 
+        /**
+         * What it is about (the command and its risk, the diff of a file, the
+         * plan), to show instead of `input_json`. `None` on servers before 0.6
+         * and for approvals saved by them.
+         */preview: AiApprovalPreview? = nil) {
         self.id = id
         self.taskId = taskId
         self.tool = tool
@@ -9997,6 +11669,7 @@ public struct AiApproval: Equatable, Hashable {
         self.decidedBy = decidedBy
         self.createdAt = createdAt
         self.decidedAt = decidedAt
+        self.preview = preview
     }
 
     
@@ -10023,7 +11696,8 @@ public struct FfiConverterTypeAiApproval: FfiConverterRustBuffer {
                 status: FfiConverterString.read(from: &buf), 
                 decidedBy: FfiConverterOptionString.read(from: &buf), 
                 createdAt: FfiConverterInt64.read(from: &buf), 
-                decidedAt: FfiConverterOptionInt64.read(from: &buf)
+                decidedAt: FfiConverterOptionInt64.read(from: &buf), 
+                preview: FfiConverterOptionTypeAiApprovalPreview.read(from: &buf)
         )
     }
 
@@ -10037,6 +11711,7 @@ public struct FfiConverterTypeAiApproval: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.decidedBy, into: &buf)
         FfiConverterInt64.write(value.createdAt, into: &buf)
         FfiConverterOptionInt64.write(value.decidedAt, into: &buf)
+        FfiConverterOptionTypeAiApprovalPreview.write(value.preview, into: &buf)
     }
 }
 
@@ -10053,6 +11728,600 @@ public func FfiConverterTypeAiApproval_lift(_ buf: RustBuffer) throws -> AiAppro
 #endif
 public func FfiConverterTypeAiApproval_lower(_ value: AiApproval) -> RustBuffer {
     return FfiConverterTypeAiApproval.lower(value)
+}
+
+
+/**
+ * What an approval is about, to show it instead of the raw arguments.
+ */
+public struct AiApprovalPreview: Equatable, Hashable {
+    /**
+     * `command` (run_command), `terminal` (send_to_terminal), `file`
+     * (write_file), `plan` (a `plan_first` task's plan) or `other`.
+     */
+    public var kind: String
+    /**
+     * Exact command (or text typed into a terminal).
+     */
+    public var command: String?
+    /**
+     * Host as the model named it, or the terminal's title.
+     */
+    public var host: String?
+    public var risk: AiRiskLevel
+    public var reasons: [AiRiskReason]
+    /**
+     * Why the model wants to do it.
+     */
+    public var explanation: String?
+    /**
+     * File written (`file`).
+     */
+    public var path: String?
+    /**
+     * Unified diff of the file (`--- a/…`, `+++ b/…`, hunks).
+     */
+    public var diff: String?
+    /**
+     * Lines added and removed by the write.
+     */
+    public var added: UInt32?
+    public var removed: UInt32?
+    /**
+     * The file does not exist yet.
+     */
+    public var newFile: Bool
+    /**
+     * The diff was cut (at 64 KB).
+     */
+    public var truncated: Bool
+    /**
+     * Why there is no diff (unreadable, binary or too large file).
+     */
+    public var diffError: String?
+    /**
+     * The plan to approve (`plan`).
+     */
+    public var plan: String?
+    /**
+     * It can be edited before approving (`AiDecision::edited`).
+     */
+    public var editable: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `command` (run_command), `terminal` (send_to_terminal), `file`
+         * (write_file), `plan` (a `plan_first` task's plan) or `other`.
+         */kind: String, 
+        /**
+         * Exact command (or text typed into a terminal).
+         */command: String?, 
+        /**
+         * Host as the model named it, or the terminal's title.
+         */host: String?, risk: AiRiskLevel, reasons: [AiRiskReason], 
+        /**
+         * Why the model wants to do it.
+         */explanation: String?, 
+        /**
+         * File written (`file`).
+         */path: String?, 
+        /**
+         * Unified diff of the file (`--- a/…`, `+++ b/…`, hunks).
+         */diff: String?, 
+        /**
+         * Lines added and removed by the write.
+         */added: UInt32?, removed: UInt32?, 
+        /**
+         * The file does not exist yet.
+         */newFile: Bool, 
+        /**
+         * The diff was cut (at 64 KB).
+         */truncated: Bool, 
+        /**
+         * Why there is no diff (unreadable, binary or too large file).
+         */diffError: String?, 
+        /**
+         * The plan to approve (`plan`).
+         */plan: String?, 
+        /**
+         * It can be edited before approving (`AiDecision::edited`).
+         */editable: Bool) {
+        self.kind = kind
+        self.command = command
+        self.host = host
+        self.risk = risk
+        self.reasons = reasons
+        self.explanation = explanation
+        self.path = path
+        self.diff = diff
+        self.added = added
+        self.removed = removed
+        self.newFile = newFile
+        self.truncated = truncated
+        self.diffError = diffError
+        self.plan = plan
+        self.editable = editable
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiApprovalPreview: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiApprovalPreview: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiApprovalPreview {
+        return
+            try AiApprovalPreview(
+                kind: FfiConverterString.read(from: &buf), 
+                command: FfiConverterOptionString.read(from: &buf), 
+                host: FfiConverterOptionString.read(from: &buf), 
+                risk: FfiConverterTypeAiRiskLevel.read(from: &buf), 
+                reasons: FfiConverterSequenceTypeAiRiskReason.read(from: &buf), 
+                explanation: FfiConverterOptionString.read(from: &buf), 
+                path: FfiConverterOptionString.read(from: &buf), 
+                diff: FfiConverterOptionString.read(from: &buf), 
+                added: FfiConverterOptionUInt32.read(from: &buf), 
+                removed: FfiConverterOptionUInt32.read(from: &buf), 
+                newFile: FfiConverterBool.read(from: &buf), 
+                truncated: FfiConverterBool.read(from: &buf), 
+                diffError: FfiConverterOptionString.read(from: &buf), 
+                plan: FfiConverterOptionString.read(from: &buf), 
+                editable: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiApprovalPreview, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterOptionString.write(value.command, into: &buf)
+        FfiConverterOptionString.write(value.host, into: &buf)
+        FfiConverterTypeAiRiskLevel.write(value.risk, into: &buf)
+        FfiConverterSequenceTypeAiRiskReason.write(value.reasons, into: &buf)
+        FfiConverterOptionString.write(value.explanation, into: &buf)
+        FfiConverterOptionString.write(value.path, into: &buf)
+        FfiConverterOptionString.write(value.diff, into: &buf)
+        FfiConverterOptionUInt32.write(value.added, into: &buf)
+        FfiConverterOptionUInt32.write(value.removed, into: &buf)
+        FfiConverterBool.write(value.newFile, into: &buf)
+        FfiConverterBool.write(value.truncated, into: &buf)
+        FfiConverterOptionString.write(value.diffError, into: &buf)
+        FfiConverterOptionString.write(value.plan, into: &buf)
+        FfiConverterBool.write(value.editable, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiApprovalPreview_lift(_ buf: RustBuffer) throws -> AiApprovalPreview {
+    return try FfiConverterTypeAiApprovalPreview.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiApprovalPreview_lower(_ value: AiApprovalPreview) -> RustBuffer {
+    return FfiConverterTypeAiApprovalPreview.lower(value)
+}
+
+
+/**
+ * Terminal context for the quick assistant.
+ */
+public struct AiAssistContext: Equatable, Hashable {
+    /**
+     * Host OS (`ubuntu`, `alpine`...).
+     */
+    public var os: String?
+    /**
+     * Last visible terminal output. Its secrets are hidden on the device
+     * (`redact_secrets`) before it is sent.
+     */
+    public var screen: String?
+    public var cwd: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Host OS (`ubuntu`, `alpine`...).
+         */os: String? = nil, 
+        /**
+         * Last visible terminal output. Its secrets are hidden on the device
+         * (`redact_secrets`) before it is sent.
+         */screen: String? = nil, cwd: String? = nil) {
+        self.os = os
+        self.screen = screen
+        self.cwd = cwd
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiAssistContext: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiAssistContext: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiAssistContext {
+        return
+            try AiAssistContext(
+                os: FfiConverterOptionString.read(from: &buf), 
+                screen: FfiConverterOptionString.read(from: &buf), 
+                cwd: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiAssistContext, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.os, into: &buf)
+        FfiConverterOptionString.write(value.screen, into: &buf)
+        FfiConverterOptionString.write(value.cwd, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiAssistContext_lift(_ buf: RustBuffer) throws -> AiAssistContext {
+    return try FfiConverterTypeAiAssistContext.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiAssistContext_lower(_ value: AiAssistContext) -> RustBuffer {
+    return FfiConverterTypeAiAssistContext.lower(value)
+}
+
+
+/**
+ * A command suggested by the quick assistant.
+ */
+public struct AiCommandSuggestion: Equatable, Hashable {
+    public var command: String
+    /**
+     * One short sentence.
+     */
+    public var explanation: String
+    /**
+     * `read` (read-only), `write` (changes something) or `dangerous`.
+     */
+    public var risk: String
+    /**
+     * Provider that answered.
+     */
+    public var provider: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(command: String, 
+        /**
+         * One short sentence.
+         */explanation: String, 
+        /**
+         * `read` (read-only), `write` (changes something) or `dangerous`.
+         */risk: String, 
+        /**
+         * Provider that answered.
+         */provider: String) {
+        self.command = command
+        self.explanation = explanation
+        self.risk = risk
+        self.provider = provider
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiCommandSuggestion: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiCommandSuggestion: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiCommandSuggestion {
+        return
+            try AiCommandSuggestion(
+                command: FfiConverterString.read(from: &buf), 
+                explanation: FfiConverterString.read(from: &buf), 
+                risk: FfiConverterString.read(from: &buf), 
+                provider: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiCommandSuggestion, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.command, into: &buf)
+        FfiConverterString.write(value.explanation, into: &buf)
+        FfiConverterString.write(value.risk, into: &buf)
+        FfiConverterString.write(value.provider, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiCommandSuggestion_lift(_ buf: RustBuffer) throws -> AiCommandSuggestion {
+    return try FfiConverterTypeAiCommandSuggestion.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiCommandSuggestion_lower(_ value: AiCommandSuggestion) -> RustBuffer {
+    return FfiConverterTypeAiCommandSuggestion.lower(value)
+}
+
+
+/**
+ * The answer to an approval.
+ */
+public struct AiDecision: Equatable, Hashable {
+    public var approve: Bool
+    /**
+     * Also approve the task's next actions (switches it to autonomous).
+     */
+    public var always: Bool
+    /**
+     * With `approve`, for previews with `editable`: the command or plan to
+     * use instead of the model's. It is what runs, and the model is told.
+     */
+    public var edited: String?
+    /**
+     * Why it was denied (sent to the model, which does not retry the same
+     * action another way), or a note with an approval.
+     */
+    public var reason: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(approve: Bool, 
+        /**
+         * Also approve the task's next actions (switches it to autonomous).
+         */always: Bool = false, 
+        /**
+         * With `approve`, for previews with `editable`: the command or plan to
+         * use instead of the model's. It is what runs, and the model is told.
+         */edited: String? = nil, 
+        /**
+         * Why it was denied (sent to the model, which does not retry the same
+         * action another way), or a note with an approval.
+         */reason: String? = nil) {
+        self.approve = approve
+        self.always = always
+        self.edited = edited
+        self.reason = reason
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiDecision: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiDecision: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiDecision {
+        return
+            try AiDecision(
+                approve: FfiConverterBool.read(from: &buf), 
+                always: FfiConverterBool.read(from: &buf), 
+                edited: FfiConverterOptionString.read(from: &buf), 
+                reason: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiDecision, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.approve, into: &buf)
+        FfiConverterBool.write(value.always, into: &buf)
+        FfiConverterOptionString.write(value.edited, into: &buf)
+        FfiConverterOptionString.write(value.reason, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiDecision_lift(_ buf: RustBuffer) throws -> AiDecision {
+    return try FfiConverterTypeAiDecision.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiDecision_lower(_ value: AiDecision) -> RustBuffer {
+    return FfiConverterTypeAiDecision.lower(value)
+}
+
+
+/**
+ * The quick assistant's explanation of an output or an error.
+ */
+public struct AiExplanation: Equatable, Hashable {
+    /**
+     * Markdown.
+     */
+    public var answer: String
+    /**
+     * Provider that answered.
+     */
+    public var provider: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Markdown.
+         */answer: String, 
+        /**
+         * Provider that answered.
+         */provider: String) {
+        self.answer = answer
+        self.provider = provider
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiExplanation: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiExplanation: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiExplanation {
+        return
+            try AiExplanation(
+                answer: FfiConverterString.read(from: &buf), 
+                provider: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiExplanation, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.answer, into: &buf)
+        FfiConverterString.write(value.provider, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiExplanation_lift(_ buf: RustBuffer) throws -> AiExplanation {
+    return try FfiConverterTypeAiExplanation.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiExplanation_lower(_ value: AiExplanation) -> RustBuffer {
+    return FfiConverterTypeAiExplanation.lower(value)
+}
+
+
+/**
+ * One host of a multi-host (`fan_out`) task.
+ */
+public struct AiHostRun: Equatable, Hashable {
+    public var hostId: String
+    public var label: String
+    /**
+     * The host's own task (its conversation, approvals and steps).
+     */
+    public var taskId: String
+    public var status: AiTaskStatus
+    /**
+     * Its result, shortened.
+     */
+    public var summary: String?
+    public var error: String?
+    public var durationMs: Int64?
+    public var costMicros: Int64
+    public var pendingApprovals: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(hostId: String, label: String, 
+        /**
+         * The host's own task (its conversation, approvals and steps).
+         */taskId: String, status: AiTaskStatus, 
+        /**
+         * Its result, shortened.
+         */summary: String?, error: String?, durationMs: Int64?, costMicros: Int64, pendingApprovals: UInt32) {
+        self.hostId = hostId
+        self.label = label
+        self.taskId = taskId
+        self.status = status
+        self.summary = summary
+        self.error = error
+        self.durationMs = durationMs
+        self.costMicros = costMicros
+        self.pendingApprovals = pendingApprovals
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiHostRun: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiHostRun: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiHostRun {
+        return
+            try AiHostRun(
+                hostId: FfiConverterString.read(from: &buf), 
+                label: FfiConverterString.read(from: &buf), 
+                taskId: FfiConverterString.read(from: &buf), 
+                status: FfiConverterTypeAiTaskStatus.read(from: &buf), 
+                summary: FfiConverterOptionString.read(from: &buf), 
+                error: FfiConverterOptionString.read(from: &buf), 
+                durationMs: FfiConverterOptionInt64.read(from: &buf), 
+                costMicros: FfiConverterInt64.read(from: &buf), 
+                pendingApprovals: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiHostRun, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.hostId, into: &buf)
+        FfiConverterString.write(value.label, into: &buf)
+        FfiConverterString.write(value.taskId, into: &buf)
+        FfiConverterTypeAiTaskStatus.write(value.status, into: &buf)
+        FfiConverterOptionString.write(value.summary, into: &buf)
+        FfiConverterOptionString.write(value.error, into: &buf)
+        FfiConverterOptionInt64.write(value.durationMs, into: &buf)
+        FfiConverterInt64.write(value.costMicros, into: &buf)
+        FfiConverterUInt32.write(value.pendingApprovals, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiHostRun_lift(_ buf: RustBuffer) throws -> AiHostRun {
+    return try FfiConverterTypeAiHostRun.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiHostRun_lower(_ value: AiHostRun) -> RustBuffer {
+    return FfiConverterTypeAiHostRun.lower(value)
 }
 
 
@@ -10424,6 +12693,412 @@ public func FfiConverterTypeAiMemory_lower(_ value: AiMemory) -> RustBuffer {
 
 
 /**
+ * An AI provider of the server.
+ */
+public struct AiProvider: Equatable, Hashable {
+    /**
+     * What `AiTaskRequest::provider` takes (`claude`, `gpt`, `codex`...).
+     */
+    public var key: String
+    public var label: String
+    /**
+     * `anthropic`, `openai`, `codex`, `opencode`, `local`...
+     */
+    public var driver: String
+    /**
+     * Usable by you now (your plan and your own keys considered).
+     */
+    public var available: Bool
+    /**
+     * Hidden from pickers by the server's configuration.
+     */
+    public var hidden: Bool
+    public var defaultModel: String?
+    public var models: [String]
+    /**
+     * Runs on a subscription (Codex with ChatGPT...).
+     */
+    public var subscription: Bool
+    /**
+     * Why it is not available (English).
+     */
+    public var reason: String?
+    /**
+     * Stable code of `reason` to translate: `not_configured`,
+     * `own_key_required` (add your own key) or `plan`.
+     */
+    public var reasonCode: String?
+    /**
+     * Accepts your own API key (`set_ai_key`).
+     */
+    public var acceptsOwnKey: Bool
+    /**
+     * Runs with your own API key.
+     */
+    public var usesOwnKey: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * What `AiTaskRequest::provider` takes (`claude`, `gpt`, `codex`...).
+         */key: String, label: String, 
+        /**
+         * `anthropic`, `openai`, `codex`, `opencode`, `local`...
+         */driver: String, 
+        /**
+         * Usable by you now (your plan and your own keys considered).
+         */available: Bool, 
+        /**
+         * Hidden from pickers by the server's configuration.
+         */hidden: Bool, defaultModel: String?, models: [String], 
+        /**
+         * Runs on a subscription (Codex with ChatGPT...).
+         */subscription: Bool, 
+        /**
+         * Why it is not available (English).
+         */reason: String?, 
+        /**
+         * Stable code of `reason` to translate: `not_configured`,
+         * `own_key_required` (add your own key) or `plan`.
+         */reasonCode: String?, 
+        /**
+         * Accepts your own API key (`set_ai_key`).
+         */acceptsOwnKey: Bool, 
+        /**
+         * Runs with your own API key.
+         */usesOwnKey: Bool) {
+        self.key = key
+        self.label = label
+        self.driver = driver
+        self.available = available
+        self.hidden = hidden
+        self.defaultModel = defaultModel
+        self.models = models
+        self.subscription = subscription
+        self.reason = reason
+        self.reasonCode = reasonCode
+        self.acceptsOwnKey = acceptsOwnKey
+        self.usesOwnKey = usesOwnKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiProvider: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiProvider: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiProvider {
+        return
+            try AiProvider(
+                key: FfiConverterString.read(from: &buf), 
+                label: FfiConverterString.read(from: &buf), 
+                driver: FfiConverterString.read(from: &buf), 
+                available: FfiConverterBool.read(from: &buf), 
+                hidden: FfiConverterBool.read(from: &buf), 
+                defaultModel: FfiConverterOptionString.read(from: &buf), 
+                models: FfiConverterSequenceString.read(from: &buf), 
+                subscription: FfiConverterBool.read(from: &buf), 
+                reason: FfiConverterOptionString.read(from: &buf), 
+                reasonCode: FfiConverterOptionString.read(from: &buf), 
+                acceptsOwnKey: FfiConverterBool.read(from: &buf), 
+                usesOwnKey: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiProvider, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.key, into: &buf)
+        FfiConverterString.write(value.label, into: &buf)
+        FfiConverterString.write(value.driver, into: &buf)
+        FfiConverterBool.write(value.available, into: &buf)
+        FfiConverterBool.write(value.hidden, into: &buf)
+        FfiConverterOptionString.write(value.defaultModel, into: &buf)
+        FfiConverterSequenceString.write(value.models, into: &buf)
+        FfiConverterBool.write(value.subscription, into: &buf)
+        FfiConverterOptionString.write(value.reason, into: &buf)
+        FfiConverterOptionString.write(value.reasonCode, into: &buf)
+        FfiConverterBool.write(value.acceptsOwnKey, into: &buf)
+        FfiConverterBool.write(value.usesOwnKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiProvider_lift(_ buf: RustBuffer) throws -> AiProvider {
+    return try FfiConverterTypeAiProvider.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiProvider_lower(_ value: AiProvider) -> RustBuffer {
+    return FfiConverterTypeAiProvider.lower(value)
+}
+
+
+/**
+ * The server's AI providers and defaults.
+ */
+public struct AiProviders: Equatable, Hashable {
+    /**
+     * Default provider (`provider` or `provider::model`).
+     */
+    public var defaultProvider: String?
+    /**
+     * Fallback chain.
+     */
+    public var fallback: [String]
+    /**
+     * Default permission mode of new tasks.
+     */
+    public var defaultMode: AiPermissionMode?
+    public var providers: [AiProvider]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Default provider (`provider` or `provider::model`).
+         */defaultProvider: String?, 
+        /**
+         * Fallback chain.
+         */fallback: [String], 
+        /**
+         * Default permission mode of new tasks.
+         */defaultMode: AiPermissionMode?, providers: [AiProvider]) {
+        self.defaultProvider = defaultProvider
+        self.fallback = fallback
+        self.defaultMode = defaultMode
+        self.providers = providers
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiProviders: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiProviders: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiProviders {
+        return
+            try AiProviders(
+                defaultProvider: FfiConverterOptionString.read(from: &buf), 
+                fallback: FfiConverterSequenceString.read(from: &buf), 
+                defaultMode: FfiConverterOptionTypeAiPermissionMode.read(from: &buf), 
+                providers: FfiConverterSequenceTypeAiProvider.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiProviders, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.defaultProvider, into: &buf)
+        FfiConverterSequenceString.write(value.fallback, into: &buf)
+        FfiConverterOptionTypeAiPermissionMode.write(value.defaultMode, into: &buf)
+        FfiConverterSequenceTypeAiProvider.write(value.providers, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiProviders_lift(_ buf: RustBuffer) throws -> AiProviders {
+    return try FfiConverterTypeAiProviders.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiProviders_lower(_ value: AiProviders) -> RustBuffer {
+    return FfiConverterTypeAiProviders.lower(value)
+}
+
+
+/**
+ * One of the reasons for a risk level.
+ */
+public struct AiRiskReason: Equatable, Hashable {
+    /**
+     * Stable code to translate: `pipe`, `chain`, `redirect`,
+     * `substitution`, `sudo`, `rm_rf`, `delete`, `disk`, `reboot`,
+     * `service`, `packages`, `firewall`, `permissions`, `kill`, `users`,
+     * `remote_script`, `containers`, `cron`, `git_history`, `system_path`,
+     * `redacted`, `changes`...
+     */
+    public var code: String
+    /**
+     * English text.
+     */
+    public var text: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Stable code to translate: `pipe`, `chain`, `redirect`,
+         * `substitution`, `sudo`, `rm_rf`, `delete`, `disk`, `reboot`,
+         * `service`, `packages`, `firewall`, `permissions`, `kill`, `users`,
+         * `remote_script`, `containers`, `cron`, `git_history`, `system_path`,
+         * `redacted`, `changes`...
+         */code: String, 
+        /**
+         * English text.
+         */text: String) {
+        self.code = code
+        self.text = text
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiRiskReason: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiRiskReason: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiRiskReason {
+        return
+            try AiRiskReason(
+                code: FfiConverterString.read(from: &buf), 
+                text: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiRiskReason, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterString.write(value.text, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRiskReason_lift(_ buf: RustBuffer) throws -> AiRiskReason {
+    return try FfiConverterTypeAiRiskReason.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRiskReason_lower(_ value: AiRiskReason) -> RustBuffer {
+    return FfiConverterTypeAiRiskReason.lower(value)
+}
+
+
+/**
+ * What a task ran, as a snippet to review before saving it.
+ */
+public struct AiRunbook: Equatable, Hashable {
+    /**
+     * Suggested name (the task's title).
+     */
+    public var name: String
+    public var description: String
+    /**
+     * The script (`{{host}}` where the host's name or address was).
+     */
+    public var script: String
+    /**
+     * Its `{{variables}}`.
+     */
+    public var variables: [String]
+    /**
+     * Commands and file writes in it (0: nothing to save).
+     */
+    public var steps: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Suggested name (the task's title).
+         */name: String, description: String, 
+        /**
+         * The script (`{{host}}` where the host's name or address was).
+         */script: String, 
+        /**
+         * Its `{{variables}}`.
+         */variables: [String], 
+        /**
+         * Commands and file writes in it (0: nothing to save).
+         */steps: UInt32) {
+        self.name = name
+        self.description = description
+        self.script = script
+        self.variables = variables
+        self.steps = steps
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiRunbook: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiRunbook: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiRunbook {
+        return
+            try AiRunbook(
+                name: FfiConverterString.read(from: &buf), 
+                description: FfiConverterString.read(from: &buf), 
+                script: FfiConverterString.read(from: &buf), 
+                variables: FfiConverterSequenceString.read(from: &buf), 
+                steps: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiRunbook, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.description, into: &buf)
+        FfiConverterString.write(value.script, into: &buf)
+        FfiConverterSequenceString.write(value.variables, into: &buf)
+        FfiConverterUInt32.write(value.steps, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRunbook_lift(_ buf: RustBuffer) throws -> AiRunbook {
+    return try FfiConverterTypeAiRunbook.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRunbook_lower(_ value: AiRunbook) -> RustBuffer {
+    return FfiConverterTypeAiRunbook.lower(value)
+}
+
+
+/**
  * Background AI task.
  */
 public struct AiTask: Equatable, Hashable {
@@ -10455,6 +13130,30 @@ public struct AiTask: Equatable, Hashable {
      * The full task as returned by the server (conversation, usage...).
      */
     public var rawJson: String
+    /**
+     * The plan of a `plan_first` task (once the model wrote it).
+     */
+    public var plan: AiTaskPlan?
+    /**
+     * Commands and file writes it ran, in order (in `get_ai_task`).
+     */
+    public var steps: [AiTaskStep]
+    /**
+     * Multi-host (`fan_out`) task: one row per host with its own task
+     * (in `get_ai_task`).
+     */
+    public var hosts: [AiHostRun]
+    /**
+     * The multi-host task this host's conversation belongs to.
+     */
+    public var parentId: String?
+    /**
+     * One conversation per host (see `hosts`).
+     */
+    public var fanOut: Bool
+    public var planFirst: Bool
+    public var groupId: String?
+    public var tag: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -10470,7 +13169,23 @@ public struct AiTask: Equatable, Hashable {
          */costMicros: Int64, pendingApprovals: [AiApproval], 
         /**
          * The full task as returned by the server (conversation, usage...).
-         */rawJson: String) {
+         */rawJson: String, 
+        /**
+         * The plan of a `plan_first` task (once the model wrote it).
+         */plan: AiTaskPlan? = nil, 
+        /**
+         * Commands and file writes it ran, in order (in `get_ai_task`).
+         */steps: [AiTaskStep] = [], 
+        /**
+         * Multi-host (`fan_out`) task: one row per host with its own task
+         * (in `get_ai_task`).
+         */hosts: [AiHostRun] = [], 
+        /**
+         * The multi-host task this host's conversation belongs to.
+         */parentId: String? = nil, 
+        /**
+         * One conversation per host (see `hosts`).
+         */fanOut: Bool = false, planFirst: Bool = false, groupId: String? = nil, tag: String? = nil) {
         self.id = id
         self.title = title
         self.prompt = prompt
@@ -10487,6 +13202,14 @@ public struct AiTask: Equatable, Hashable {
         self.costMicros = costMicros
         self.pendingApprovals = pendingApprovals
         self.rawJson = rawJson
+        self.plan = plan
+        self.steps = steps
+        self.hosts = hosts
+        self.parentId = parentId
+        self.fanOut = fanOut
+        self.planFirst = planFirst
+        self.groupId = groupId
+        self.tag = tag
     }
 
     
@@ -10520,7 +13243,15 @@ public struct FfiConverterTypeAiTask: FfiConverterRustBuffer {
                 error: FfiConverterOptionString.read(from: &buf), 
                 costMicros: FfiConverterInt64.read(from: &buf), 
                 pendingApprovals: FfiConverterSequenceTypeAiApproval.read(from: &buf), 
-                rawJson: FfiConverterString.read(from: &buf)
+                rawJson: FfiConverterString.read(from: &buf), 
+                plan: FfiConverterOptionTypeAiTaskPlan.read(from: &buf), 
+                steps: FfiConverterSequenceTypeAiTaskStep.read(from: &buf), 
+                hosts: FfiConverterSequenceTypeAiHostRun.read(from: &buf), 
+                parentId: FfiConverterOptionString.read(from: &buf), 
+                fanOut: FfiConverterBool.read(from: &buf), 
+                planFirst: FfiConverterBool.read(from: &buf), 
+                groupId: FfiConverterOptionString.read(from: &buf), 
+                tag: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -10541,6 +13272,14 @@ public struct FfiConverterTypeAiTask: FfiConverterRustBuffer {
         FfiConverterInt64.write(value.costMicros, into: &buf)
         FfiConverterSequenceTypeAiApproval.write(value.pendingApprovals, into: &buf)
         FfiConverterString.write(value.rawJson, into: &buf)
+        FfiConverterOptionTypeAiTaskPlan.write(value.plan, into: &buf)
+        FfiConverterSequenceTypeAiTaskStep.write(value.steps, into: &buf)
+        FfiConverterSequenceTypeAiHostRun.write(value.hosts, into: &buf)
+        FfiConverterOptionString.write(value.parentId, into: &buf)
+        FfiConverterBool.write(value.fanOut, into: &buf)
+        FfiConverterBool.write(value.planFirst, into: &buf)
+        FfiConverterOptionString.write(value.groupId, into: &buf)
+        FfiConverterOptionString.write(value.tag, into: &buf)
     }
 }
 
@@ -10557,6 +13296,73 @@ public func FfiConverterTypeAiTask_lift(_ buf: RustBuffer) throws -> AiTask {
 #endif
 public func FfiConverterTypeAiTask_lower(_ value: AiTask) -> RustBuffer {
     return FfiConverterTypeAiTask.lower(value)
+}
+
+
+/**
+ * The plan of a `plan_first` task.
+ */
+public struct AiTaskPlan: Equatable, Hashable {
+    public var text: String
+    public var approved: Bool
+    /**
+     * You edited it before approving it.
+     */
+    public var edited: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(text: String, approved: Bool, 
+        /**
+         * You edited it before approving it.
+         */edited: Bool) {
+        self.text = text
+        self.approved = approved
+        self.edited = edited
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiTaskPlan: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiTaskPlan: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiTaskPlan {
+        return
+            try AiTaskPlan(
+                text: FfiConverterString.read(from: &buf), 
+                approved: FfiConverterBool.read(from: &buf), 
+                edited: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiTaskPlan, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.text, into: &buf)
+        FfiConverterBool.write(value.approved, into: &buf)
+        FfiConverterBool.write(value.edited, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiTaskPlan_lift(_ buf: RustBuffer) throws -> AiTaskPlan {
+    return try FfiConverterTypeAiTaskPlan.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiTaskPlan_lower(_ value: AiTaskPlan) -> RustBuffer {
+    return FfiConverterTypeAiTaskPlan.lower(value)
 }
 
 
@@ -10589,6 +13395,25 @@ public struct AiTaskRequest: Equatable, Hashable {
      * Reasoning effort (`low`, `medium`, `high`), if the provider supports it.
      */
     public var effort: String?
+    /**
+     * The model first writes a numbered plan (without tools) that you
+     * approve, edit or deny: an approval with `tool == "plan"` and
+     * `preview.kind == "plan"`; the task's `plan` has it.
+     */
+    public var planFirst: Bool
+    /**
+     * Run it on the hosts of this group (and its subgroups).
+     */
+    public var groupId: String?
+    /**
+     * Run it on the hosts with this tag.
+     */
+    public var tag: String?
+    /**
+     * With several hosts: one conversation per host (the task becomes the
+     * parent; see `AiTask::hosts`) instead of one that goes through them.
+     */
+    public var fanOut: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -10610,7 +13435,22 @@ public struct AiTaskRequest: Equatable, Hashable {
          */sessionId: String? = nil, 
         /**
          * Reasoning effort (`low`, `medium`, `high`), if the provider supports it.
-         */effort: String? = nil) {
+         */effort: String? = nil, 
+        /**
+         * The model first writes a numbered plan (without tools) that you
+         * approve, edit or deny: an approval with `tool == "plan"` and
+         * `preview.kind == "plan"`; the task's `plan` has it.
+         */planFirst: Bool = false, 
+        /**
+         * Run it on the hosts of this group (and its subgroups).
+         */groupId: String? = nil, 
+        /**
+         * Run it on the hosts with this tag.
+         */tag: String? = nil, 
+        /**
+         * With several hosts: one conversation per host (the task becomes the
+         * parent; see `AiTask::hosts`) instead of one that goes through them.
+         */fanOut: Bool = false) {
         self.prompt = prompt
         self.title = title
         self.mode = mode
@@ -10618,6 +13458,10 @@ public struct AiTaskRequest: Equatable, Hashable {
         self.hostIds = hostIds
         self.sessionId = sessionId
         self.effort = effort
+        self.planFirst = planFirst
+        self.groupId = groupId
+        self.tag = tag
+        self.fanOut = fanOut
     }
 
     
@@ -10642,7 +13486,11 @@ public struct FfiConverterTypeAiTaskRequest: FfiConverterRustBuffer {
                 provider: FfiConverterOptionString.read(from: &buf), 
                 hostIds: FfiConverterSequenceString.read(from: &buf), 
                 sessionId: FfiConverterOptionString.read(from: &buf), 
-                effort: FfiConverterOptionString.read(from: &buf)
+                effort: FfiConverterOptionString.read(from: &buf), 
+                planFirst: FfiConverterBool.read(from: &buf), 
+                groupId: FfiConverterOptionString.read(from: &buf), 
+                tag: FfiConverterOptionString.read(from: &buf), 
+                fanOut: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -10654,6 +13502,10 @@ public struct FfiConverterTypeAiTaskRequest: FfiConverterRustBuffer {
         FfiConverterSequenceString.write(value.hostIds, into: &buf)
         FfiConverterOptionString.write(value.sessionId, into: &buf)
         FfiConverterOptionString.write(value.effort, into: &buf)
+        FfiConverterBool.write(value.planFirst, into: &buf)
+        FfiConverterOptionString.write(value.groupId, into: &buf)
+        FfiConverterOptionString.write(value.tag, into: &buf)
+        FfiConverterBool.write(value.fanOut, into: &buf)
     }
 }
 
@@ -10670,6 +13522,127 @@ public func FfiConverterTypeAiTaskRequest_lift(_ buf: RustBuffer) throws -> AiTa
 #endif
 public func FfiConverterTypeAiTaskRequest_lower(_ value: AiTaskRequest) -> RustBuffer {
     return FfiConverterTypeAiTaskRequest.lower(value)
+}
+
+
+/**
+ * A command or file write the task ran.
+ */
+public struct AiTaskStep: Equatable, Hashable {
+    public var callId: String
+    /**
+     * `run_command`, `send_to_terminal` or `write_file`.
+     */
+    public var tool: String
+    public var host: String?
+    /**
+     * What ran (your edit, if you edited it).
+     */
+    public var command: String?
+    /**
+     * File written.
+     */
+    public var path: String?
+    public var ok: Bool
+    /**
+     * You edited it before approving.
+     */
+    public var edited: Bool
+    /**
+     * The model's reason for it.
+     */
+    public var explanation: String?
+    /**
+     * When (ms since the epoch).
+     */
+    public var at: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(callId: String, 
+        /**
+         * `run_command`, `send_to_terminal` or `write_file`.
+         */tool: String, host: String?, 
+        /**
+         * What ran (your edit, if you edited it).
+         */command: String?, 
+        /**
+         * File written.
+         */path: String?, ok: Bool, 
+        /**
+         * You edited it before approving.
+         */edited: Bool, 
+        /**
+         * The model's reason for it.
+         */explanation: String?, 
+        /**
+         * When (ms since the epoch).
+         */at: Int64) {
+        self.callId = callId
+        self.tool = tool
+        self.host = host
+        self.command = command
+        self.path = path
+        self.ok = ok
+        self.edited = edited
+        self.explanation = explanation
+        self.at = at
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AiTaskStep: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiTaskStep: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiTaskStep {
+        return
+            try AiTaskStep(
+                callId: FfiConverterString.read(from: &buf), 
+                tool: FfiConverterString.read(from: &buf), 
+                host: FfiConverterOptionString.read(from: &buf), 
+                command: FfiConverterOptionString.read(from: &buf), 
+                path: FfiConverterOptionString.read(from: &buf), 
+                ok: FfiConverterBool.read(from: &buf), 
+                edited: FfiConverterBool.read(from: &buf), 
+                explanation: FfiConverterOptionString.read(from: &buf), 
+                at: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AiTaskStep, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.callId, into: &buf)
+        FfiConverterString.write(value.tool, into: &buf)
+        FfiConverterOptionString.write(value.host, into: &buf)
+        FfiConverterOptionString.write(value.command, into: &buf)
+        FfiConverterOptionString.write(value.path, into: &buf)
+        FfiConverterBool.write(value.ok, into: &buf)
+        FfiConverterBool.write(value.edited, into: &buf)
+        FfiConverterOptionString.write(value.explanation, into: &buf)
+        FfiConverterInt64.write(value.at, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiTaskStep_lift(_ buf: RustBuffer) throws -> AiTaskStep {
+    return try FfiConverterTypeAiTaskStep.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiTaskStep_lower(_ value: AiTaskStep) -> RustBuffer {
+    return FfiConverterTypeAiTaskStep.lower(value)
 }
 
 
@@ -11748,6 +14721,111 @@ public func FfiConverterTypeHostGroup_lift(_ buf: RustBuffer) throws -> HostGrou
 #endif
 public func FfiConverterTypeHostGroup_lower(_ value: HostGroup) -> RustBuffer {
     return FfiConverterTypeHostGroup.lower(value)
+}
+
+
+/**
+ * The key of a known host is not the one saved.
+ */
+public struct HostKeyChange: Equatable, Hashable {
+    /**
+     * Host (name or address, lowercase) as connected to; a jump host's
+     * when the change is on a jump.
+     */
+    public var host: String
+    public var port: UInt32
+    /**
+     * Key algorithm (`ssh-ed25519`...).
+     */
+    public var keyType: String
+    /**
+     * `SHA256:...` of the saved key.
+     */
+    public var oldFingerprint: String
+    /**
+     * `SHA256:...` of the key the server presents now.
+     */
+    public var newFingerprint: String
+    /**
+     * Account whose known hosts have the old key (`None`: This device).
+     */
+    public var accountId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Host (name or address, lowercase) as connected to; a jump host's
+         * when the change is on a jump.
+         */host: String, port: UInt32, 
+        /**
+         * Key algorithm (`ssh-ed25519`...).
+         */keyType: String, 
+        /**
+         * `SHA256:...` of the saved key.
+         */oldFingerprint: String, 
+        /**
+         * `SHA256:...` of the key the server presents now.
+         */newFingerprint: String, 
+        /**
+         * Account whose known hosts have the old key (`None`: This device).
+         */accountId: String?) {
+        self.host = host
+        self.port = port
+        self.keyType = keyType
+        self.oldFingerprint = oldFingerprint
+        self.newFingerprint = newFingerprint
+        self.accountId = accountId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension HostKeyChange: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHostKeyChange: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HostKeyChange {
+        return
+            try HostKeyChange(
+                host: FfiConverterString.read(from: &buf), 
+                port: FfiConverterUInt32.read(from: &buf), 
+                keyType: FfiConverterString.read(from: &buf), 
+                oldFingerprint: FfiConverterString.read(from: &buf), 
+                newFingerprint: FfiConverterString.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: HostKeyChange, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.host, into: &buf)
+        FfiConverterUInt32.write(value.port, into: &buf)
+        FfiConverterString.write(value.keyType, into: &buf)
+        FfiConverterString.write(value.oldFingerprint, into: &buf)
+        FfiConverterString.write(value.newFingerprint, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostKeyChange_lift(_ buf: RustBuffer) throws -> HostKeyChange {
+    return try FfiConverterTypeHostKeyChange.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostKeyChange_lower(_ value: HostKeyChange) -> RustBuffer {
+    return FfiConverterTypeHostKeyChange.lower(value)
 }
 
 
@@ -16005,6 +19083,87 @@ public func FfiConverterTypeTeam_lower(_ value: Team) -> RustBuffer {
 
 
 /**
+ * Result of inviting someone to a team by email.
+ */
+public struct TeamInviteResult: Equatable, Hashable {
+    /**
+     * They already had an account and are in the team now (`members` is
+     * the updated list).
+     */
+    public var added: Bool
+    public var members: [TeamMember]
+    /**
+     * Without an account: the invitation to sign up that adds them to the
+     * team (emailed when the server can send email: `emailed`).
+     */
+    public var invite: CreatedAccountInvite?
+    public var emailed: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * They already had an account and are in the team now (`members` is
+         * the updated list).
+         */added: Bool, members: [TeamMember], 
+        /**
+         * Without an account: the invitation to sign up that adds them to the
+         * team (emailed when the server can send email: `emailed`).
+         */invite: CreatedAccountInvite?, emailed: Bool) {
+        self.added = added
+        self.members = members
+        self.invite = invite
+        self.emailed = emailed
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TeamInviteResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTeamInviteResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TeamInviteResult {
+        return
+            try TeamInviteResult(
+                added: FfiConverterBool.read(from: &buf), 
+                members: FfiConverterSequenceTypeTeamMember.read(from: &buf), 
+                invite: FfiConverterOptionTypeCreatedAccountInvite.read(from: &buf), 
+                emailed: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TeamInviteResult, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.added, into: &buf)
+        FfiConverterSequenceTypeTeamMember.write(value.members, into: &buf)
+        FfiConverterOptionTypeCreatedAccountInvite.write(value.invite, into: &buf)
+        FfiConverterBool.write(value.emailed, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTeamInviteResult_lift(_ buf: RustBuffer) throws -> TeamInviteResult {
+    return try FfiConverterTypeTeamInviteResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTeamInviteResult_lower(_ value: TeamInviteResult) -> RustBuffer {
+    return FfiConverterTypeTeamInviteResult.lower(value)
+}
+
+
+/**
  * A team member.
  */
 public struct TeamMember: Equatable, Hashable {
@@ -17050,6 +20209,91 @@ public func FfiConverterTypeAiPermissionMode_lower(_ value: AiPermissionMode) ->
 
 
 /**
+ * How risky an action looks.
+ */
+
+public enum AiRiskLevel: Equatable, Hashable {
+    
+    /**
+     * Only reads.
+     */
+    case low
+    /**
+     * Changes something.
+     */
+    case medium
+    /**
+     * Destructive or hard to undo (deleting data, disks, reboots...).
+     */
+    case high
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AiRiskLevel: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAiRiskLevel: FfiConverterRustBuffer {
+    typealias SwiftType = AiRiskLevel
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AiRiskLevel {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .low
+        
+        case 2: return .medium
+        
+        case 3: return .high
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AiRiskLevel, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .low:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .medium:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .high:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRiskLevel_lift(_ buf: RustBuffer) throws -> AiRiskLevel {
+    return try FfiConverterTypeAiRiskLevel.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAiRiskLevel_lower(_ value: AiRiskLevel) -> RustBuffer {
+    return FfiConverterTypeAiRiskLevel.lower(value)
+}
+
+
+
+/**
  * State of an AI task.
  */
 
@@ -17622,6 +20866,110 @@ public func FfiConverterTypeKeyType_lift(_ buf: RustBuffer) throws -> KeyType {
 #endif
 public func FfiConverterTypeKeyType_lower(_ value: KeyType) -> RustBuffer {
     return FfiConverterTypeKeyType.lower(value)
+}
+
+
+
+/**
+ * What a link asks for.
+ */
+
+public enum LinkTarget: Equatable, Hashable {
+    
+    /**
+     * Join a shared session: `termoak://join?server=…&token=…`,
+     * `https://<server>/join/<token>` or `https://<server>/api/v1/join/<token>`
+     * (`join_shared_session`, or `core.join_link` with your account).
+     */
+    case join(server: String, token: String
+    )
+    /**
+     * Sign up with an invitation: `termoak://invite?server=…&token=…` or
+     * `https://<server>/invite/<code>` (`invite_info`, then `sign_up`).
+     */
+    case invite(server: String, code: String
+    )
+    /**
+     * Connect to an address without a saved host: `ssh://[user@]host[:port]`
+     * or `telnet://…` (`protocol` is `ssh` or `telnet`; `port` `None` = 22
+     * or 23).
+     */
+    case quickConnect(`protocol`: String, user: String?, host: String, port: UInt32?
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension LinkTarget: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLinkTarget: FfiConverterRustBuffer {
+    typealias SwiftType = LinkTarget
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LinkTarget {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .join(server: try FfiConverterString.read(from: &buf), token: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .invite(server: try FfiConverterString.read(from: &buf), code: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .quickConnect(protocol: try FfiConverterString.read(from: &buf), user: try FfiConverterOptionString.read(from: &buf), host: try FfiConverterString.read(from: &buf), port: try FfiConverterOptionUInt32.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: LinkTarget, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .join(server,token):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(server, into: &buf)
+            FfiConverterString.write(token, into: &buf)
+            
+        
+        case let .invite(server,code):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(server, into: &buf)
+            FfiConverterString.write(code, into: &buf)
+            
+        
+        case let .quickConnect(`protocol`,user,host,port):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(`protocol`, into: &buf)
+            FfiConverterOptionString.write(user, into: &buf)
+            FfiConverterString.write(host, into: &buf)
+            FfiConverterOptionUInt32.write(port, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkTarget_lift(_ buf: RustBuffer) throws -> LinkTarget {
+    return try FfiConverterTypeLinkTarget.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkTarget_lower(_ value: LinkTarget) -> RustBuffer {
+    return FfiConverterTypeLinkTarget.lower(value)
 }
 
 
@@ -19876,6 +23224,11 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case NotSupportedForTelnet(message: String)
     
+    /**
+     * The app cancelled it (`TransferHandle::cancel`): nothing to show.
+     */
+    case Cancelled(message: String)
+    
 
     
 
@@ -20009,6 +23362,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 27: return .Cancelled(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -20072,6 +23429,8 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(25))
         case .NotSupportedForTelnet(_ /* message is ignored*/):
             writeInt(&buf, Int32(26))
+        case .Cancelled(_ /* message is ignored*/):
+            writeInt(&buf, Int32(27))
 
         
         }
@@ -20671,6 +24030,54 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeHostKeyChangeHandler: FfiConverterRustBuffer {
+    typealias SwiftType = HostKeyChangeHandler?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeHostKeyChangeHandler.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeHostKeyChangeHandler.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTransferHandle: FfiConverterRustBuffer {
+    typealias SwiftType = TransferHandle?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTransferHandle.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTransferHandle.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTransferListener: FfiConverterRustBuffer {
     typealias SwiftType = TransferListener?
 
@@ -20711,6 +24118,102 @@ fileprivate struct FfiConverterOptionTypeAccountInfo: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeAccountInfo.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeAiApprovalPreview: FfiConverterRustBuffer {
+    typealias SwiftType = AiApprovalPreview?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAiApprovalPreview.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAiApprovalPreview.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeAiAssistContext: FfiConverterRustBuffer {
+    typealias SwiftType = AiAssistContext?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAiAssistContext.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAiAssistContext.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeAiTaskPlan: FfiConverterRustBuffer {
+    typealias SwiftType = AiTaskPlan?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeAiTaskPlan.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeAiTaskPlan.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeCreatedAccountInvite: FfiConverterRustBuffer {
+    typealias SwiftType = CreatedAccountInvite?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCreatedAccountInvite.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCreatedAccountInvite.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -20903,6 +24406,30 @@ fileprivate struct FfiConverterOptionTypeItemAccess: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeItemAccess.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeLinkTarget: FfiConverterRustBuffer {
+    typealias SwiftType = LinkTarget?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLinkTarget.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLinkTarget.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -21157,6 +24684,31 @@ fileprivate struct FfiConverterSequenceTypeAiApproval: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeAiHostRun: FfiConverterRustBuffer {
+    typealias SwiftType = [AiHostRun]
+
+    public static func write(_ value: [AiHostRun], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAiHostRun.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AiHostRun] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AiHostRun]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAiHostRun.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeAiKeyInfo: FfiConverterRustBuffer {
     typealias SwiftType = [AiKeyInfo]
 
@@ -21232,6 +24784,56 @@ fileprivate struct FfiConverterSequenceTypeAiMemory: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeAiProvider: FfiConverterRustBuffer {
+    typealias SwiftType = [AiProvider]
+
+    public static func write(_ value: [AiProvider], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAiProvider.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AiProvider] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AiProvider]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAiProvider.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeAiRiskReason: FfiConverterRustBuffer {
+    typealias SwiftType = [AiRiskReason]
+
+    public static func write(_ value: [AiRiskReason], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAiRiskReason.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AiRiskReason] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AiRiskReason]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAiRiskReason.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeAiTask: FfiConverterRustBuffer {
     typealias SwiftType = [AiTask]
 
@@ -21249,6 +24851,31 @@ fileprivate struct FfiConverterSequenceTypeAiTask: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeAiTask.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeAiTaskStep: FfiConverterRustBuffer {
+    typealias SwiftType = [AiTaskStep]
+
+    public static func write(_ value: [AiTaskStep], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAiTaskStep.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AiTaskStep] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AiTaskStep]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAiTaskStep.read(from: &buf))
         }
         return seq
     }
@@ -22290,6 +25917,47 @@ public func qrCode(text: String) -> QrCode?  {
 })
 }
 /**
+ * `termoak://join?server=…&token=…` (to share as a QR code or link).
+ */
+public func joinAppLink(server: String, token: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_join_app_link(
+        FfiConverterString.lower(server),
+        FfiConverterString.lower(token),uniffiCallStatus
+    )
+})
+}
+/**
+ * Reads a link (from a deep link, a QR code or the clipboard). The server
+ * may live under a path (`https://example.com/termoak/join/…` gives the
+ * server `https://example.com/termoak`). `None` when it is none of them or
+ * is incomplete.
+ */
+public func parseLink(text: String) -> LinkTarget?  {
+    return try!  FfiConverterOptionTypeLinkTarget.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_parse_link(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * Reads an address typed to connect without a saved host (a "quick
+ * connect" field): `user@host:port`, `host:port`, `[v6]:port`,
+ * `ssh user@host -p 2222`, `telnet host 23`, `ssh://…`, `telnet://…`. Plain
+ * words (no `@`, `:` or `.`) are not addresses, so it can run on a search
+ * field. Gives `QuickConnect` or `None`.
+ */
+public func parseQuickConnect(text: String) -> LinkTarget?  {
+    return try!  FfiConverterOptionTypeLinkTarget.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_parse_quick_connect(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
  * Enables logging. `level` applies to Termoak; dependencies (russh,
  * reqwest...) only log warnings and errors. Returns `false` if it was
  * already enabled.
@@ -22300,6 +25968,37 @@ public func initLogging(level: LogLevel, listener: LogListener) -> Bool  {
     uniffi_termoak_ffi_fn_func_init_logging(
         FfiConverterTypeLogLevel_lower(level),
         FfiConverterTypeLogListener_lower(listener),uniffiCallStatus
+    )
+})
+}
+/**
+ * Whether [`redact_secrets`] would hide anything in `text` (e.g. to warn
+ * before sending it).
+ */
+public func containsSecrets(text: String) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_contains_secrets(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * Hides the secrets in `text` with `[redacted]`: private key blocks,
+ * `Authorization`/`Cookie` header values, the password of
+ * `scheme://user:password@host` URLs, values of secret-looking keys
+ * (`password=…`, `"api_key": "…"`, `export GITHUB_TOKEN=…`, `--password …`),
+ * well-known token formats (AWS, Google, GitHub, GitLab, Slack, Stripe,
+ * OpenAI/Anthropic, npm, Hugging Face, JWTs) and the token after a bare
+ * `Bearer` (a token a command printed). Key names are kept, so the
+ * text still makes sense. Fast enough to call on every screen sent to the
+ * AI.
+ */
+public func redactSecrets(text: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_redact_secrets(
+        FfiConverterString.lower(text),uniffiCallStatus
     )
 })
 }
@@ -22474,7 +26173,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_qr_code() != 59982) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_join_app_link() != 48870) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_parse_link() != 61697) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_parse_quick_connect() != 2851) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_init_logging() != 8284) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_contains_secrets() != 47455) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_redact_secrets() != 46178) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_join_shared_session() != 45359) {
@@ -22502,6 +26216,84 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_snippet_variables() != 31152) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_add_team_member() != 54210) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_create_team() != 33481) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_current_user() != 61844) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_delete_team() != 21234) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_disable_two_factor() != 43248) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_enable_two_factor() != 26863) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_invite_to_team() != 11764) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_leave_team() != 24862) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_server_session_shares() != 22691) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_team_invites() != 51048) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_team_members() != 158) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_teams() != 9049) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token() != 7086) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member() != 51806) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_rename_team() != 2012) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_revoke_server_session_share() != 59493) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_revoke_team_invite() != 126) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_send_test_push() != 44073) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_locale() != 15974) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role() != 33822) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_setup_two_factor() != 1257) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_share_server_session_with() != 43359) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_stop_sharing_server_session() != 43947) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_two_factor_status() != 2146) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_unregister_push_token() != 30017) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_update_server_session_share() != 4501) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_add_vault_member() != 28653) {
@@ -22618,6 +26410,57 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_vault_members() != 17505) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_ai_explain() != 40338) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_ai_suggest() != 17853) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_decide_approval_with() != 5772) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_delete_ai_task() != 52134) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_get_runbook() != 6902) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_list_ai_providers() != 53743) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook() != 55951) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() != 2181) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod() != 12218) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_delete() != 50794) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_download() != 45487) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_mkdir() != 37897) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_read() != 31973) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_rename() != 6096) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_stat() != 2834) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_upload() != 30591) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_write() != 25501) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_linetracker_at_end() != 39551) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -22637,6 +26480,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_authhandler_on_prompt() != 35175) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed() != 35638) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_loglistener_log() != 13401) {
@@ -22688,6 +26534,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick() != 41720) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_latency_ms() != 46873) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id() != 55958) {
@@ -22876,7 +26725,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_chmod() != 31592) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_download() != 51305) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_download() != 1792) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_home() != 9705) {
@@ -22900,7 +26749,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_stat() != 56066) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_upload() != 19380) {
+    if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_upload() != 50536) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_sshsession_sftp_write() != 12024) {
@@ -22960,6 +26809,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_transferlistener_on_progress() != 29617) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_transferhandle_cancel() != 22930) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_transferhandle_is_cancelled() != 63293) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_add_team_member() != 7882) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -23005,10 +26860,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_enable_two_factor() != 25326) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_invite_to_team() != 23864) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_leave_team() != 44057) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares() != 43171) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_team_invites() != 55864) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members() != 44) {
@@ -23027,6 +26888,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() != 62215) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_revoke_team_invite() != 63743) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push() != 38010) {
@@ -23101,6 +26965,27 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_account() != 61967) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_ai_explain() != 28471) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_ai_suggest() != 22062) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_decide_approval_with() != 60756) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_ai_task() != 7549) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_runbook() != 29879) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_ai_providers() != 44318) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_save_runbook() != 40021) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history() != 33858) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -23119,13 +27004,16 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_record_command() != 5544) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() != 63583) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() != 47334) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod() != 48309) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete() != 12108) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() != 46969) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() != 4961) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_home() != 6174) {
@@ -23137,10 +27025,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_mkdir() != 64712) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_read() != 3288) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename() != 41132) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() != 54240) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_stat() != 61964) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() != 29314) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_write() != 27522) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_replace_known_host() != 21905) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() != 65058) {
@@ -23266,10 +27166,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() != 65042) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 23384) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 336) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 47903) {
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() != 25364) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() != 56000) {
@@ -23392,11 +27292,15 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_constructor_terminalscreen_new() != 21624) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_constructor_transferhandle_new() != 27037) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_constructor_termoakcore_new() != 5775) {
         return InitializationResult.apiChecksumMismatch
     }
 
     uniffiCallbackInitAuthHandler()
+    uniffiCallbackInitHostKeyChangeHandler()
     uniffiCallbackInitLogListener()
     uniffiCallbackInitServerEventListener()
     uniffiCallbackInitServerTerminalListener()

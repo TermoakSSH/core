@@ -22,8 +22,10 @@ use tokio::sync::broadcast::error::{RecvError, TryRecvError};
 
 use crate::auth::{AuthHandler, FfiPrompter};
 use crate::error::{Result, TermoakError};
+use crate::hostkey::HostKeyChangeHandler;
 use crate::models::{ForwardKind, parse_id};
 use crate::runtime::{InRuntime, block_on, run, runtime, spawn_callback_thread};
+use crate::transfer::{TransferHandle, cancellable};
 use crate::vault::TermoakCore;
 
 /// Maximum size of an output chunk delivered to `on_output`.
@@ -445,50 +447,73 @@ impl SshSession {
     }
 
     /// Downloads `remote_path` to `local_path` (a file on the device).
-    /// Returns the bytes copied.
+    /// Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+    /// partial file is removed).
+    #[uniffi::method(default(cancel))]
     pub async fn sftp_download(
         self: Arc<Self>,
         remote_path: String,
         local_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
     ) -> Result<u64> {
         self.with_sftp(move |s| async move {
-            let total = s.stat(&remote_path).await.ok().map(|e| e.size);
-            let file = tokio::fs::File::create(&local_path).await?;
-            let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
-            let res = s
-                .download(
-                    &remote_path,
-                    file,
-                    progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
-                )
-                .await;
-            if res.is_err() {
-                let _ = tokio::fs::remove_file(&local_path).await;
-            }
-            Ok(res?)
+            let cleanup = local_path.clone();
+            cancellable(
+                cancel,
+                async {
+                    let total = s.stat(&remote_path).await.ok().map(|e| e.size);
+                    let file = tokio::fs::File::create(&local_path).await?;
+                    let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
+                    let res = s
+                        .download(
+                            &remote_path,
+                            file,
+                            progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+                        )
+                        .await;
+                    if res.is_err() {
+                        let _ = tokio::fs::remove_file(&local_path).await;
+                    }
+                    Ok(res?)
+                },
+                || async move {
+                    let _ = tokio::fs::remove_file(cleanup).await;
+                },
+            )
+            .await
         })
         .await
     }
 
     /// Uploads `local_path` (a file on the device) to `remote_path`.
-    /// Returns the bytes copied.
+    /// Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+    /// remote file keeps what was written).
+    #[uniffi::method(default(cancel))]
     pub async fn sftp_upload(
         self: Arc<Self>,
         local_path: String,
         remote_path: String,
         listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
     ) -> Result<u64> {
         self.with_sftp(move |s| async move {
-            let file = tokio::fs::File::open(&local_path).await?;
-            let total = file.metadata().await.ok().map(|m| m.len());
-            let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
-            Ok(s.upload(
-                file,
-                &remote_path,
-                progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+            cancellable(
+                cancel,
+                async {
+                    let file = tokio::fs::File::open(&local_path).await?;
+                    let total = file.metadata().await.ok().map(|m| m.len());
+                    let progress = listener.map(|l| move |n: u64| l.on_progress(n, total));
+                    Ok(s.upload(
+                        file,
+                        &remote_path,
+                        progress.as_ref().map(|p| p as &(dyn Fn(u64) + Send + Sync)),
+                    )
+                    .await?)
+                },
+                || async {},
             )
-            .await?)
+            .await
         })
         .await
     }
@@ -925,16 +950,22 @@ impl TermoakCore {
     /// Use-only host gets its credentials from the server just for this
     /// connection (`UseOnlyStrict`: open a server session instead;
     /// `UseOnlyNeedsServer`: offline).
-    #[uniffi::method(default(account_id))]
+    ///
+    /// `key_changed`: asked when the key of a known host (or of a jump)
+    /// changed; if it trusts the new key, it replaces the old one and the
+    /// connection goes on. Without it such a connection fails with
+    /// `HostKey`.
+    #[uniffi::method(default(account_id = None, key_changed = None))]
     pub async fn connect(
         &self,
         host_id: String,
         auth: Arc<dyn AuthHandler>,
         account_id: Option<String>,
+        key_changed: Option<Arc<dyn HostKeyChangeHandler>>,
     ) -> Result<Arc<SshSession>> {
         let item = self.item_of(parse_id(&host_id)?, &account_id)?;
         let ws = self.ws.clone();
-        run(async move { connect(ws, item, auth).await }).await
+        run(async move { connect(ws, item, auth, key_changed).await }).await
     }
 
     /// Shortcut: connects and opens a terminal. The connection remains
@@ -947,7 +978,17 @@ impl TermoakCore {
     /// Telnet hosts automatically"), the host's username and password answer
     /// its first `login:` and `Password:` prompts, each once, during the
     /// first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
-    #[uniffi::method(default(account_id = None, telnet_auto_login = true))]
+    ///
+    /// `record`: record the terminal (asciicast, in the app's data folder;
+    /// `TerminalHandle::recording_path`), also when the host does not ask
+    /// for it. `key_changed`: see [`connect`](Self::connect).
+    #[uniffi::method(default(
+        account_id = None,
+        telnet_auto_login = true,
+        record = false,
+        key_changed = None
+    ))]
+    #[allow(clippy::too_many_arguments)]
     pub async fn connect_terminal(
         &self,
         host_id: String,
@@ -957,13 +998,15 @@ impl TermoakCore {
         listener: Arc<dyn TerminalListener>,
         account_id: Option<String>,
         telnet_auto_login: bool,
+        record: bool,
+        key_changed: Option<Arc<dyn HostKeyChangeHandler>>,
     ) -> Result<Arc<TerminalHandle>> {
         let item = self.item_of(parse_id(&host_id)?, &account_id)?;
         let ws = self.ws.clone();
         run(async move {
             if is_telnet(&ws, item).await? {
                 let term = ws
-                    .open_telnet_item(item, dim(cols), dim(rows), false, telnet_auto_login)
+                    .open_telnet_item(item, dim(cols), dim(rows), record, telnet_auto_login)
                     .await?;
                 let session = Arc::new(SshSession {
                     host_id: item.id,
@@ -978,11 +1021,11 @@ impl TermoakCore {
                     listener,
                 ));
             }
-            let session = connect(ws, item, auth).await?;
+            let session = connect(ws, item, auth, key_changed).await?;
             let conn = session.ssh("SSH")?;
             let term = session
                 .ws
-                .open_terminal_item(session.item(), conn, dim(cols), dim(rows), false)
+                .open_terminal_item(session.item(), conn, dim(cols), dim(rows), record)
                 .await?;
             Ok(TerminalHandle::start(
                 Terminal::Ssh(term),
@@ -1009,6 +1052,7 @@ async fn connect(
     ws: Workspace,
     item: ItemRef,
     auth: Arc<dyn AuthHandler>,
+    key_changed: Option<Arc<dyn HostKeyChangeHandler>>,
 ) -> Result<Arc<SshSession>> {
     if is_telnet(&ws, item).await? {
         return Err(TermoakError::NotSupportedForTelnet(
@@ -1016,8 +1060,45 @@ async fn connect(
                 .into(),
         ));
     }
-    let prompter = Arc::new(FfiPrompter { handler: auth });
-    let conn = ws.connect_item(item, prompter, false).await?;
+    // New fingerprints the user trusted after a key change: accepted on the
+    // retry without asking again (one per hop at most).
+    let mut trusted: Vec<String> = Vec::new();
+    let conn = loop {
+        let prompter = Arc::new(FfiPrompter {
+            handler: auth.clone(),
+            trusted: trusted.clone(),
+        });
+        match ws.connect_item(item, prompter, false).await {
+            Ok(conn) => break conn,
+            Err(termoak_client::ClientError::Ssh(termoak_ssh::SshError::HostKeyChanged {
+                host,
+                expected,
+                actual,
+            })) if key_changed.is_some() && !trusted.contains(&actual) && trusted.len() < 4 => {
+                let original = termoak_ssh::SshError::HostKeyChanged {
+                    host: host.clone(),
+                    expected: expected.clone(),
+                    actual: actual.clone(),
+                };
+                let change =
+                    crate::hostkey::describe(&ws, item.scope, &host, &expected, &actual).await?;
+                let handler = key_changed.clone().expect("checked");
+                if !crate::hostkey::ask(handler, change.clone()).await {
+                    return Err(original.into());
+                }
+                crate::hostkey::forget(
+                    &ws,
+                    item.scope,
+                    &change.host,
+                    change.port as u16,
+                    &change.key_type,
+                )
+                .await?;
+                trusted.push(actual);
+            }
+            Err(e) => return Err(e.into()),
+        }
+    };
     Ok(Arc::new(SshSession {
         host_id: item.id,
         scope: item.scope,

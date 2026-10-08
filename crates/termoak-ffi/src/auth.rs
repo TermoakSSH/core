@@ -60,6 +60,9 @@ pub trait AuthHandler: Send + Sync {
 /// Adapts the app's `AuthHandler` to the SSH engine's `AuthPrompter`.
 pub(crate) struct FfiPrompter {
     pub(crate) handler: Arc<dyn AuthHandler>,
+    /// Fingerprints already confirmed through `HostKeyChangeHandler`
+    /// (changed keys the user trusted): accepted without asking again.
+    pub(crate) trusted: Vec<String>,
 }
 
 impl FfiPrompter {
@@ -88,6 +91,9 @@ impl AuthPrompter for FfiPrompter {
         key_type: &str,
         fingerprint: &str,
     ) -> bool {
+        if self.trusted.iter().any(|t| t == fingerprint) {
+            return true;
+        }
         let handler = self.handler.clone();
         let (host, key_type, fingerprint) = (
             host.to_string(),

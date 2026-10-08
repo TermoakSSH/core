@@ -35,7 +35,9 @@ pub mod message;
 pub mod policy;
 pub mod pricing;
 pub mod provider;
-pub mod redact;
+/// Secret redaction (moved to [`termoak_core::redact`] so the mobile
+/// library can use it without the AI engine; re-exported here).
+pub use termoak_core::redact;
 pub mod runbook;
 pub mod sse;
 pub mod tools;

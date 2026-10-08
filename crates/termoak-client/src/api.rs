@@ -491,6 +491,76 @@ impl ApiClient {
         Self::parse(resp).await
     }
 
+    /// Authenticated `GET` of a binary response into memory (a file to
+    /// preview or edit), refusing more than `max_bytes`
+    /// ([`ClientError::Invalid`]) before reading it all when the server
+    /// says the size.
+    pub async fn download_bytes(&self, path: &str, max_bytes: u64) -> Result<Vec<u8>> {
+        use futures::StreamExt;
+
+        let too_big = || {
+            ClientError::Invalid(format!(
+                "the file is larger than the {max_bytes} bytes allowed"
+            ))
+        };
+        let send = |token: String| self.http.get(self.url(path)).bearer_auth(token).send();
+        let mut resp = send(self.ensure_fresh().await?).await?;
+        if resp.status().as_u16() == 401 {
+            if let Some(t) = self.tokens.lock().as_mut() {
+                t.access_expires_at = 0;
+            }
+            resp = send(self.refresh().await?).await?;
+        }
+        if !resp.status().is_success() {
+            return Err(Self::error_of(resp).await);
+        }
+        let total = resp.content_length();
+        if total.is_some_and(|t| t > max_bytes) {
+            return Err(too_big());
+        }
+        let mut out = Vec::with_capacity(total.unwrap_or(0).min(max_bytes) as usize);
+        let mut stream = resp.bytes_stream();
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            if out.len() as u64 + chunk.len() as u64 > max_bytes {
+                return Err(too_big());
+            }
+            out.extend_from_slice(&chunk);
+        }
+        if let Some(t) = total
+            && out.len() as u64 != t
+        {
+            return Err(ClientError::Network(format!(
+                "incomplete download ({} of {t} bytes)",
+                out.len()
+            )));
+        }
+        Ok(out)
+    }
+
+    /// Authenticated `POST` with `data` as the binary body (a file written
+    /// from memory). Returns the JSON response.
+    pub async fn upload_bytes(&self, path: &str, data: Vec<u8>) -> Result<Value> {
+        // `Bytes`: sent again after a refresh without copying it.
+        let data = bytes::Bytes::from(data);
+        let send = |token: String, data: bytes::Bytes| {
+            self.http
+                .post(self.url(path))
+                .bearer_auth(token)
+                .header(reqwest::header::CONTENT_TYPE, "application/octet-stream")
+                .body(data)
+                .send()
+        };
+        let mut resp = send(self.ensure_fresh().await?, data.clone()).await?;
+        if resp.status().as_u16() == 401 {
+            if let Some(t) = self.tokens.lock().as_mut() {
+                t.access_expires_at = 0;
+            }
+            resp = send(self.refresh().await?, data).await?;
+        }
+        Self::parse(resp).await
+    }
+
     /// Unauthenticated `POST` (password recovery, email verification...).
     pub async fn post_public<T: DeserializeOwned>(&self, path: &str, body: &Value) -> Result<T> {
         Self::parse(self.http.post(self.url(path)).json(body).send().await?).await

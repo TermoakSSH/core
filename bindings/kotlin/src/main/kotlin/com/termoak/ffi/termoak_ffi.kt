@@ -665,6 +665,9 @@ internal interface UniffiCallbackInterfaceAuthHandlerMethod0 : com.sun.jna.Callb
 internal interface UniffiCallbackInterfaceAuthHandlerMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceHostKeyChangeHandlerMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`change`: RustBuffer.ByValue,`uniffiOutReturn`: ByteByReference,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceLogListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`level`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
@@ -708,6 +711,25 @@ internal open class UniffiVTableCallbackInterfaceAuthHandler(
         `uniffiClone` = other.`uniffiClone`
         `onHostKey` = other.`onHostKey`
         `onPrompt` = other.`onPrompt`
+    }
+
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onHostKeyChanged")
+internal open class UniffiVTableCallbackInterfaceHostKeyChangeHandler(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `onHostKeyChanged`: UniffiCallbackInterfaceHostKeyChangeHandlerMethod0? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `onHostKeyChanged`: UniffiCallbackInterfaceHostKeyChangeHandlerMethod0? = null,
+    ): UniffiVTableCallbackInterfaceHostKeyChangeHandler(`uniffiFree`,`uniffiClone`,`onHostKeyChanged`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceHostKeyChangeHandler) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `onHostKeyChanged` = other.`onHostKeyChanged`
     }
 
 }
@@ -868,7 +890,17 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_qr_code(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_join_app_link(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_parse_link(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_parse_quick_connect(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_init_logging(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_contains_secrets(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_redact_secrets(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_join_shared_session(
     ): Int
@@ -887,6 +919,58 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_func_render_snippet(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_snippet_variables(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_add_team_member(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_create_team(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_current_user(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_delete_team(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_disable_two_factor(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_enable_two_factor(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_invite_to_team(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_leave_team(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_server_session_shares(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_team_invites(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_team_members(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_teams(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_rename_team(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_revoke_server_session_share(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_revoke_team_invite(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_send_test_push(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_locale(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_setup_two_factor(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_share_server_session_with(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_stop_sharing_server_session(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_two_factor_status(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_unregister_push_token(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_update_server_session_share(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_add_vault_member(
     ): Int
@@ -964,6 +1048,40 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_vault_members(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_ai_explain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_ai_suggest(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_decide_approval_with(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_delete_ai_task(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_get_runbook(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_ai_providers(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_download_recording(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_delete(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_download(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_mkdir(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_read(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_rename(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_stat(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_upload(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_write(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_linetracker_at_end(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_linetracker_current(
@@ -977,6 +1095,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_authhandler_on_host_key(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_authhandler_on_prompt(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_loglistener_log(
     ): Int
@@ -1011,6 +1131,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_is_waiting(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_latency_ms(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id(
     ): Int
@@ -1192,6 +1314,10 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_transferlistener_on_progress(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_transferhandle_cancel(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_transferhandle_is_cancelled(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_add_team_member(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_admin_audit(
@@ -1222,9 +1348,13 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_enable_two_factor(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_invite_to_team(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_leave_team(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_team_invites(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members(
     ): Int
@@ -1237,6 +1367,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_rename_team(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_revoke_team_invite(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push(
     ): Int
@@ -1286,6 +1418,20 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_verify_account(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_ai_explain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_ai_suggest(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_decide_approval_with(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_ai_task(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_get_runbook(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_ai_providers(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_runbook(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_command_history(
@@ -1300,6 +1446,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_download_recording(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download(
@@ -1310,9 +1458,17 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_mkdir(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_read(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_stat(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_write(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_replace_known_host(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session(
     ): Int
@@ -1480,6 +1636,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_constructor_terminalscreen_new(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_constructor_transferhandle_new(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_constructor_termoakcore_new(
     ): Int
     external fun ffi_termoak_ffi_uniffi_contract_version(
@@ -1499,6 +1657,7 @@ internal object UniffiLib {
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "termoak_ffi"))
         uniffiCallbackInterfaceAuthHandler.register(this)
+        uniffiCallbackInterfaceHostKeyChangeHandler.register(this)
         uniffiCallbackInterfaceLogListener.register(this)
         uniffiCallbackInterfaceServerEventListener.register(this)
         uniffiCallbackInterfaceServerTerminalListener.register(this)
@@ -1513,6 +1672,58 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_free_accounthandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_add_team_member(`ptr`: Long,`teamId`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_create_team(`ptr`: Long,`name`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_current_user(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_delete_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_disable_two_factor(`ptr`: Long,`password`: RustBuffer.ByValue,`code`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_enable_two_factor(`ptr`: Long,`code`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_invite_to_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_leave_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_list_server_session_shares(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_list_team_invites(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_list_team_members(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_list_teams(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(`ptr`: Long,`platform`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`sandbox`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_remove_team_member(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_rename_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_revoke_server_session_share(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`shareId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_revoke_team_invite(`ptr`: Long,`teamId`: RustBuffer.ByValue,`inviteId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_send_test_push(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_locale(`ptr`: Long,`locale`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_team_member_role(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_setup_two_factor(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_share_server_session_with(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`options`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_stop_sharing_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_two_factor_status(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_unregister_push_token(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_update_server_session_share(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`shareId`: RustBuffer.ByValue,`changes`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_add_vault_member(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_ai_access(`ptr`: Long,
@@ -1589,6 +1800,40 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_vault_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_ai_explain(`ptr`: Long,`text`: RustBuffer.ByValue,`question`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,`provider`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_ai_suggest(`ptr`: Long,`request`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,`provider`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_decide_approval_with(`ptr`: Long,`taskId`: RustBuffer.ByValue,`approvalId`: RustBuffer.ByValue,`decision`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_delete_ai_task(`ptr`: Long,`taskId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_get_runbook(`ptr`: Long,`taskId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_list_ai_providers(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_save_runbook(`ptr`: Long,`taskId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_chmod(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`mode`: Int,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_delete(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`recursive`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_download(`ptr`: Long,`hostId`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_mkdir(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`parents`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_read(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`maxBytes`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_rename(`ptr`: Long,`hostId`: RustBuffer.ByValue,`from`: RustBuffer.ByValue,`to`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_stat(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_upload(`ptr`: Long,`hostId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_write(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`data`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_clone_linetracker(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_linetracker(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -1615,6 +1860,14 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_authhandler_on_prompt(`ptr`: Long,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_clone_hostkeychangehandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_hostkeychangehandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_init_callback_vtable_hostkeychangehandler(`vtable`: UniffiVTableCallbackInterfaceHostKeyChangeHandler,
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_hostkeychangehandler_on_host_key_changed(`ptr`: Long,`change`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_clone_loglistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_loglistener(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -1669,6 +1922,8 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_kick(`ptr`: Long,`participantId`: RustBuffer.ByValue,`revokeShare`: Byte,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_latency_ms(`ptr`: Long,`timeoutMs`: Int,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_participant_id(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_serverterminalhandle_release_control(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -1823,7 +2078,7 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_chmod(`ptr`: Long,`path`: RustBuffer.ByValue,`mode`: Int,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_download(`ptr`: Long,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_download(`ptr`: Long,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_home(`ptr`: Long,
     ): Long
@@ -1839,7 +2094,7 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_stat(`ptr`: Long,`path`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_upload(`ptr`: Long,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_upload(`ptr`: Long,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_sshsession_sftp_write(`ptr`: Long,`path`: RustBuffer.ByValue,`data`: RustBuffer.ByValue,
     ): Long
@@ -1895,6 +2150,16 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_transferlistener_on_progress(`ptr`: Long,`transferred`: Long,`total`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_clone_transferhandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_transferhandle(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_constructor_transferhandle_new(uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_transferhandle_cancel(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_transferhandle_is_cancelled(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_clone_termoakcore(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_termoakcore(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -1931,9 +2196,13 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_enable_two_factor(`ptr`: Long,`code`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_invite_to_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_leave_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_server_session_shares(`ptr`: Long,`sessionId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_list_team_invites(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_team_members(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
@@ -1946,6 +2215,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_rename_team(`ptr`: Long,`teamId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_revoke_server_session_share(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`shareId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_revoke_team_invite(`ptr`: Long,`teamId`: RustBuffer.ByValue,`inviteId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_send_test_push(`ptr`: Long,
     ): Long
@@ -1995,6 +2266,20 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_verify_account(`ptr`: Long,`accountId`: RustBuffer.ByValue,`code`: RustBuffer.ByValue,`totpCode`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_ai_explain(`ptr`: Long,`text`: RustBuffer.ByValue,`question`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,`provider`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_ai_suggest(`ptr`: Long,`request`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,`provider`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_decide_approval_with(`ptr`: Long,`taskId`: RustBuffer.ByValue,`approvalId`: RustBuffer.ByValue,`decision`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_ai_task(`ptr`: Long,`taskId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_get_runbook(`ptr`: Long,`taskId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_list_ai_providers(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_save_runbook(`ptr`: Long,`taskId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_clear_command_history(`ptr`: Long,`hostId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_command_history(`ptr`: Long,`hostId`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,`limit`: Int,uniffi_out_err: UniffiRustCallStatus, 
@@ -2007,11 +2292,13 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_record_command(`ptr`: Long,`hostId`: RustBuffer.ByValue,`command`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_chmod(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`mode`: Int,`accountId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_delete(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`recursive`: Byte,`accountId`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_download(`ptr`: Long,`hostId`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_download(`ptr`: Long,`hostId`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_home(`ptr`: Long,`hostId`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
     ): Long
@@ -2019,10 +2306,18 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_mkdir(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`parents`: Byte,`accountId`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_read(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`maxBytes`: Long,`accountId`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_rename(`ptr`: Long,`hostId`: RustBuffer.ByValue,`from`: RustBuffer.ByValue,`to`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(`ptr`: Long,`hostId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_stat(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(`ptr`: Long,`hostId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_write(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`data`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_replace_known_host(`ptr`: Long,`host`: RustBuffer.ByValue,`port`: Int,`publicKey`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_attach_server_session(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`listener`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_join_link(`ptr`: Long,`token`: RustBuffer.ByValue,`listener`: Long,
@@ -2105,9 +2400,9 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_verify_code(`ptr`: Long,`url`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`code`: RustBuffer.ByValue,`totpCode`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect(`ptr`: Long,`hostId`: RustBuffer.ByValue,`auth`: Long,`accountId`: RustBuffer.ByValue,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect(`ptr`: Long,`hostId`: RustBuffer.ByValue,`auth`: Long,`accountId`: RustBuffer.ByValue,`keyChanged`: RustBuffer.ByValue,
     ): Long
-    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,`telnetAutoLogin`: Byte,
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,`telnetAutoLogin`: Byte,`record`: Byte,`keyChanged`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_data_dir(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2197,8 +2492,18 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_qr_code(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_join_app_link(`server`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_parse_link(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_parse_quick_connect(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_init_logging(`level`: RustBuffer.ByValue,`listener`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_func_contains_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_func_redact_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_join_shared_session(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`listener`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_func_join_shared_session_as(`serverUrl`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`listener`: Long,
@@ -2354,7 +2659,22 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_qr_code() and 0xFFFF) != 59982) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_func_join_app_link() and 0xFFFF) != 48870) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_parse_link() and 0xFFFF) != 61697) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_parse_quick_connect() and 0xFFFF) != 2851) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_func_init_logging() and 0xFFFF) != 8284) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_contains_secrets() and 0xFFFF) != 47455) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_redact_secrets() and 0xFFFF) != 46178) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_join_shared_session() and 0xFFFF) != 45359) {
@@ -2382,6 +2702,84 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_snippet_variables() and 0xFFFF) != 31152) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_add_team_member() and 0xFFFF) != 54210) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_create_team() and 0xFFFF) != 33481) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_current_user() and 0xFFFF) != 61844) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_delete_team() and 0xFFFF) != 21234) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_disable_two_factor() and 0xFFFF) != 43248) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_enable_two_factor() and 0xFFFF) != 26863) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_invite_to_team() and 0xFFFF) != 11764) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_leave_team() and 0xFFFF) != 24862) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_server_session_shares() and 0xFFFF) != 22691) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_team_invites() and 0xFFFF) != 51048) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_team_members() and 0xFFFF) != 158) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_teams() and 0xFFFF) != 9049) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token() and 0xFFFF) != 7086) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member() and 0xFFFF) != 51806) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_rename_team() and 0xFFFF) != 2012) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_revoke_server_session_share() and 0xFFFF) != 59493) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_revoke_team_invite() and 0xFFFF) != 126) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_send_test_push() and 0xFFFF) != 44073) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_locale() and 0xFFFF) != 15974) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role() and 0xFFFF) != 33822) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_setup_two_factor() and 0xFFFF) != 1257) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_share_server_session_with() and 0xFFFF) != 43359) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_stop_sharing_server_session() and 0xFFFF) != 43947) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_two_factor_status() and 0xFFFF) != 2146) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_unregister_push_token() and 0xFFFF) != 30017) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_update_server_session_share() and 0xFFFF) != 4501) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_add_vault_member() and 0xFFFF) != 28653) {
@@ -2498,6 +2896,57 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_vault_members() and 0xFFFF) != 17505) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_ai_explain() and 0xFFFF) != 40338) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_ai_suggest() and 0xFFFF) != 17853) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_decide_approval_with() and 0xFFFF) != 5772) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_delete_ai_task() and 0xFFFF) != 52134) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_get_runbook() and 0xFFFF) != 6902) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_ai_providers() and 0xFFFF) != 53743) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook() and 0xFFFF) != 55951) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() and 0xFFFF) != 2181) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod() and 0xFFFF) != 12218) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_delete() and 0xFFFF) != 50794) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_download() and 0xFFFF) != 45487) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_mkdir() and 0xFFFF) != 37897) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_read() and 0xFFFF) != 31973) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_rename() and 0xFFFF) != 6096) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_stat() and 0xFFFF) != 2834) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_upload() and 0xFFFF) != 30591) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_write() and 0xFFFF) != 25501) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_linetracker_at_end() and 0xFFFF) != 39551) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2517,6 +2966,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_authhandler_on_prompt() and 0xFFFF) != 35175) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed() and 0xFFFF) != 35638) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_loglistener_log() and 0xFFFF) != 13401) {
@@ -2568,6 +3020,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_kick() and 0xFFFF) != 41720) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_latency_ms() and 0xFFFF) != 46873) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_serverterminalhandle_participant_id() and 0xFFFF) != 55958) {
@@ -2756,7 +3211,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_chmod() and 0xFFFF) != 31592) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_download() and 0xFFFF) != 51305) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_download() and 0xFFFF) != 1792) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_home() and 0xFFFF) != 9705) {
@@ -2780,7 +3235,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_stat() and 0xFFFF) != 56066) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_upload() and 0xFFFF) != 19380) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_upload() and 0xFFFF) != 50536) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_sshsession_sftp_write() and 0xFFFF) != 12024) {
@@ -2840,6 +3295,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_transferlistener_on_progress() and 0xFFFF) != 29617) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_transferhandle_cancel() and 0xFFFF) != 22930) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_transferhandle_is_cancelled() and 0xFFFF) != 63293) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_add_team_member() and 0xFFFF) != 7882) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2885,10 +3346,16 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_enable_two_factor() and 0xFFFF) != 25326) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_invite_to_team() and 0xFFFF) != 23864) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_leave_team() and 0xFFFF) != 44057) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_server_session_shares() and 0xFFFF) != 43171) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_team_invites() and 0xFFFF) != 55864) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_team_members() and 0xFFFF) != 44) {
@@ -2907,6 +3374,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_server_session_share() and 0xFFFF) != 62215) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_team_invite() and 0xFFFF) != 63743) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push() and 0xFFFF) != 38010) {
@@ -2981,6 +3451,27 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verify_account() and 0xFFFF) != 61967) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ai_explain() and 0xFFFF) != 28471) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ai_suggest() and 0xFFFF) != 22062) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_decide_approval_with() and 0xFFFF) != 60756) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_ai_task() and 0xFFFF) != 7549) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_get_runbook() and 0xFFFF) != 29879) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_ai_providers() and 0xFFFF) != 44318) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_save_runbook() and 0xFFFF) != 40021) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_clear_command_history() and 0xFFFF) != 33858) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2999,13 +3490,16 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_record_command() and 0xFFFF) != 5544) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() and 0xFFFF) != 63583) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() and 0xFFFF) != 47334) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod() and 0xFFFF) != 48309) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete() and 0xFFFF) != 12108) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() and 0xFFFF) != 46969) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_download() and 0xFFFF) != 4961) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_home() and 0xFFFF) != 6174) {
@@ -3017,10 +3511,22 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_mkdir() and 0xFFFF) != 64712) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_read() and 0xFFFF) != 3288) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename() and 0xFFFF) != 41132) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() and 0xFFFF) != 54240) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_stat() and 0xFFFF) != 61964) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() and 0xFFFF) != 29314) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_write() and 0xFFFF) != 27522) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_replace_known_host() and 0xFFFF) != 21905) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() and 0xFFFF) != 65058) {
@@ -3146,10 +3652,10 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() and 0xFFFF) != 65042) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect() and 0xFFFF) != 23384) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect() and 0xFFFF) != 336) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() and 0xFFFF) != 47903) {
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() and 0xFFFF) != 25364) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() and 0xFFFF) != 56000) {
@@ -3270,6 +3776,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_constructor_terminalscreen_new() and 0xFFFF) != 21624) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_constructor_transferhandle_new() and 0xFFFF) != 27037) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_constructor_termoakcore_new() and 0xFFFF) != 5775) {
@@ -3872,6 +4381,71 @@ public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
  */
 public interface AccountHandleInterface {
     
+    suspend fun `addTeamMember`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole): List<TeamMember>
+    
+    suspend fun `createTeam`(`name`: kotlin.String): Team
+    
+    /**
+     * This account's user, including its language (`locale`).
+     */
+    suspend fun `currentUser`(): ServerUser
+    
+    suspend fun `deleteTeam`(`teamId`: kotlin.String)
+    
+    suspend fun `disableTwoFactor`(`password`: kotlin.String, `code`: kotlin.String)
+    
+    suspend fun `enableTwoFactor`(`code`: kotlin.String): List<kotlin.String>
+    
+    suspend fun `inviteToTeam`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole): TeamInviteResult
+    
+    suspend fun `leaveTeam`(`teamId`: kotlin.String)
+    
+    suspend fun `listServerSessionShares`(`sessionId`: kotlin.String): List<SessionShareInfo>
+    
+    suspend fun `listTeamInvites`(`teamId`: kotlin.String): List<AccountInvite>
+    
+    suspend fun `listTeamMembers`(`teamId`: kotlin.String): List<TeamMember>
+    
+    suspend fun `listTeams`(): List<Team>
+    
+    /**
+     * Enables notifications of this account on this device (call it for
+     * every signed-in account, with the same system token).
+     */
+    suspend fun `registerPushToken`(`platform`: PushPlatform, `token`: kotlin.String, `sandbox`: kotlin.Boolean): kotlin.Boolean
+    
+    suspend fun `removeTeamMember`(`teamId`: kotlin.String, `userId`: kotlin.String)
+    
+    suspend fun `renameTeam`(`teamId`: kotlin.String, `name`: kotlin.String): Team
+    
+    suspend fun `revokeServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String)
+    
+    suspend fun `revokeTeamInvite`(`teamId`: kotlin.String, `inviteId`: kotlin.String)
+    
+    suspend fun `sendTestPush`()
+    
+    /**
+     * Saves this account's preferred language (BCP 47) on its server.
+     */
+    suspend fun `setLocale`(`locale`: kotlin.String): ServerUser
+    
+    suspend fun `setTeamMemberRole`(`teamId`: kotlin.String, `userId`: kotlin.String, `role`: TeamRole): List<TeamMember>
+    
+    suspend fun `setupTwoFactor`(): TwoFactorSetup
+    
+    /**
+     * Shares one of this account's server sessions with every option.
+     */
+    suspend fun `shareServerSessionWith`(`sessionId`: kotlin.String, `target`: ShareTarget, `options`: ShareOptions): ShareInvite
+    
+    suspend fun `stopSharingServerSession`(`sessionId`: kotlin.String): kotlin.UInt
+    
+    suspend fun `twoFactorStatus`(): TwoFactorStatus
+    
+    suspend fun `unregisterPushToken`()
+    
+    suspend fun `updateServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String, `changes`: ShareChanges): SessionShareInfo
+    
     /**
      * Shares a vault with a user (by email) or a team, as `Editor` or
      * `UseOnly`.
@@ -3990,6 +4564,49 @@ public interface AccountHandleInterface {
      */
     suspend fun `vaultMembers`(`vaultId`: kotlin.String): List<VaultMember>
     
+    suspend fun `aiExplain`(`text`: kotlin.String, `question`: kotlin.String? = null, `context`: AiAssistContext? = null, `provider`: kotlin.String? = null): AiExplanation
+    
+    suspend fun `aiSuggest`(`request`: kotlin.String, `context`: AiAssistContext? = null, `provider`: kotlin.String? = null): AiCommandSuggestion
+    
+    /**
+     * See [`TermoakCore::decide_approval_with`].
+     */
+    suspend fun `decideApprovalWith`(`taskId`: kotlin.String, `approvalId`: kotlin.String, `decision`: AiDecision)
+    
+    suspend fun `deleteAiTask`(`taskId`: kotlin.String)
+    
+    suspend fun `getRunbook`(`taskId`: kotlin.String): AiRunbook
+    
+    suspend fun `listAiProviders`(): AiProviders
+    
+    /**
+     * See [`TermoakCore::save_runbook`].
+     */
+    suspend fun `saveRunbook`(`taskId`: kotlin.String, `vaultId`: kotlin.String? = null, `name`: kotlin.String? = null): Snippet
+    
+    /**
+     * Downloads the recording of one of this account's server sessions.
+     */
+    suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt)
+    
+    suspend fun `serverSftpDelete`(`hostId`: kotlin.String, `path`: kotlin.String, `recursive`: kotlin.Boolean)
+    
+    suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    suspend fun `serverSftpMkdir`(`hostId`: kotlin.String, `path`: kotlin.String, `parents`: kotlin.Boolean)
+    
+    suspend fun `serverSftpRead`(`hostId`: kotlin.String, `path`: kotlin.String, `maxBytes`: kotlin.ULong = 0uL): kotlin.ByteArray
+    
+    suspend fun `serverSftpRename`(`hostId`: kotlin.String, `from`: kotlin.String, `to`: kotlin.String)
+    
+    suspend fun `serverSftpStat`(`hostId`: kotlin.String, `path`: kotlin.String): RemoteFile
+    
+    suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    suspend fun `serverSftpWrite`(`hostId`: kotlin.String, `path`: kotlin.String, `data`: kotlin.ByteArray): kotlin.ULong
+    
     companion object
 }
 
@@ -4095,6 +4712,610 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         return uniffiRustCall() { status ->
             UniffiLib.uniffi_termoak_ffi_fn_clone_accounthandle(handle, status)
         }
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addTeamMember`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole) : List<TeamMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_add_team_member(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`email`),
+        FfiConverterTypeTeamRole.lower(`role`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createTeam`(`name`: kotlin.String) : Team {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_create_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`name`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeam.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * This account's user, including its language (`locale`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `currentUser`() : ServerUser {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_current_user(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeServerUser.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteTeam`(`teamId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_delete_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `disableTwoFactor`(`password`: kotlin.String, `code`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_disable_two_factor(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`password`),
+        FfiConverterString.lower(`code`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `enableTwoFactor`(`code`: kotlin.String) : List<kotlin.String> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_enable_two_factor(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`code`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `inviteToTeam`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole) : TeamInviteResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_invite_to_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`email`),
+        FfiConverterTypeTeamRole.lower(`role`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamInviteResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `leaveTeam`(`teamId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_leave_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listServerSessionShares`(`sessionId`: kotlin.String) : List<SessionShareInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_list_server_session_shares(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeSessionShareInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listTeamInvites`(`teamId`: kotlin.String) : List<AccountInvite> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_list_team_invites(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccountInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listTeamMembers`(`teamId`: kotlin.String) : List<TeamMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_list_team_members(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listTeams`() : List<Team> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_list_teams(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeam.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Enables notifications of this account on this device (call it for
+     * every signed-in account, with the same system token).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `registerPushToken`(`platform`: PushPlatform, `token`: kotlin.String, `sandbox`: kotlin.Boolean) : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(
+                uniffiHandle,
+                
+        FfiConverterTypePushPlatform.lower(`platform`),
+        FfiConverterString.lower(`token`),
+        FfiConverterBoolean.lower(`sandbox`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeTeamMember`(`teamId`: kotlin.String, `userId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_remove_team_member(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`userId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `renameTeam`(`teamId`: kotlin.String, `name`: kotlin.String) : Team {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_rename_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`name`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeam.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_revoke_server_session_share(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`shareId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeTeamInvite`(`teamId`: kotlin.String, `inviteId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_revoke_team_invite(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`inviteId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `sendTestPush`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_send_test_push(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Saves this account's preferred language (BCP 47) on its server.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setLocale`(`locale`: kotlin.String) : ServerUser {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_locale(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`locale`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeServerUser.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamMemberRole`(`teamId`: kotlin.String, `userId`: kotlin.String, `role`: TeamRole) : List<TeamMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_team_member_role(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`userId`),
+        FfiConverterTypeTeamRole.lower(`role`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setupTwoFactor`() : TwoFactorSetup {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_setup_two_factor(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTwoFactorSetup.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Shares one of this account's server sessions with every option.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `shareServerSessionWith`(`sessionId`: kotlin.String, `target`: ShareTarget, `options`: ShareOptions) : ShareInvite {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_share_server_session_with(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterTypeShareTarget.lower(`target`),
+        FfiConverterTypeShareOptions.lower(`options`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeShareInvite.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `stopSharingServerSession`(`sessionId`: kotlin.String) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_stop_sharing_server_session(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `twoFactorStatus`() : TwoFactorStatus {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_two_factor_status(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTwoFactorStatus.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `unregisterPushToken`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_unregister_push_token(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String, `changes`: ShareChanges) : SessionShareInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_update_server_session_share(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`shareId`),
+        FfiConverterTypeShareChanges.lower(`changes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSessionShareInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
     }
 
     
@@ -4979,6 +6200,427 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterSequenceTypeVaultMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `aiExplain`(`text`: kotlin.String, `question`: kotlin.String?, `context`: AiAssistContext?, `provider`: kotlin.String?) : AiExplanation {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_ai_explain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`text`),
+        FfiConverterOptionalString.lower(`question`),
+        FfiConverterOptionalTypeAiAssistContext.lower(`context`),
+        FfiConverterOptionalString.lower(`provider`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiExplanation.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `aiSuggest`(`request`: kotlin.String, `context`: AiAssistContext?, `provider`: kotlin.String?) : AiCommandSuggestion {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_ai_suggest(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`request`),
+        FfiConverterOptionalTypeAiAssistContext.lower(`context`),
+        FfiConverterOptionalString.lower(`provider`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiCommandSuggestion.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * See [`TermoakCore::decide_approval_with`].
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `decideApprovalWith`(`taskId`: kotlin.String, `approvalId`: kotlin.String, `decision`: AiDecision) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_decide_approval_with(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+        FfiConverterString.lower(`approvalId`),
+        FfiConverterTypeAiDecision.lower(`decision`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAiTask`(`taskId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_delete_ai_task(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getRunbook`(`taskId`: kotlin.String) : AiRunbook {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_get_runbook(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiRunbook.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listAiProviders`() : AiProviders {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_list_ai_providers(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiProviders.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * See [`TermoakCore::save_runbook`].
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `saveRunbook`(`taskId`: kotlin.String, `vaultId`: kotlin.String?, `name`: kotlin.String?) : Snippet {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_save_runbook(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterOptionalString.lower(`name`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSnippet.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Downloads the recording of one of this account's server sessions.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_download_recording(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_chmod(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterUInt.lower(`mode`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpDelete`(`hostId`: kotlin.String, `path`: kotlin.String, `recursive`: kotlin.Boolean) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_delete(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterBoolean.lower(`recursive`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_download(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`remotePath`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpMkdir`(`hostId`: kotlin.String, `path`: kotlin.String, `parents`: kotlin.Boolean) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_mkdir(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterBoolean.lower(`parents`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpRead`(`hostId`: kotlin.String, `path`: kotlin.String, `maxBytes`: kotlin.ULong) : kotlin.ByteArray {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_read(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterULong.lower(`maxBytes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterByteArray.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpRename`(`hostId`: kotlin.String, `from`: kotlin.String, `to`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_rename(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`from`),
+        FfiConverterString.lower(`to`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpStat`(`hostId`: kotlin.String, `path`: kotlin.String) : RemoteFile {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_stat(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeRemoteFile.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_upload(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterString.lower(`remotePath`),
+        FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpWrite`(`hostId`: kotlin.String, `path`: kotlin.String, `data`: kotlin.ByteArray) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_write(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterByteArray.lower(`data`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -6020,6 +7662,344 @@ public object FfiConverterTypeEventSubscription: FfiConverter<EventSubscription,
     override fun allocationSize(value: EventSubscription) = 8UL
 
     override fun write(value: EventSubscription, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
+ * Implemented by the app to decide about a changed host key ("The key of
+ * web-1 changed. Trust the new key?"), passed to `connect` /
+ * `connect_terminal` as `key_changed`.
+ *
+ * **Threads**: called from a background thread; it **may block** while
+ * the dialog is shown (like `AuthHandler`).
+ */
+public interface HostKeyChangeHandler {
+    
+    /**
+     * `true`: forget the old key, trust the new one and go on connecting
+     * (the new key is saved in place of the old one). `false`: the
+     * connection fails with `HostKey`, as without a handler.
+     */
+    fun `onHostKeyChanged`(`change`: HostKeyChange): kotlin.Boolean
+    
+    companion object
+}
+
+/**
+ * Implemented by the app to decide about a changed host key ("The key of
+ * web-1 changed. Trust the new key?"), passed to `connect` /
+ * `connect_terminal` as `key_changed`.
+ *
+ * **Threads**: called from a background thread; it **may block** while
+ * the dialog is shown (like `AuthHandler`).
+ */
+open class HostKeyChangeHandlerImpl: Disposable, AutoCloseable, HostKeyChangeHandler
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_hostkeychangehandler(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_hostkeychangehandler(handle, status)
+        }
+    }
+
+    
+    /**
+     * `true`: forget the old key, trust the new one and go on connecting
+     * (the new key is saved in place of the old one). `false`: the
+     * connection fails with `HostKey`, as without a handler.
+     */override fun `onHostKeyChanged`(`change`: HostKeyChange): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_hostkeychangehandler_on_host_key_changed(
+        it,
+        
+        FfiConverterTypeHostKeyChange.lower(`change`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceHostKeyChangeHandler {
+    internal object `onHostKeyChanged`: UniffiCallbackInterfaceHostKeyChangeHandlerMethod0 {
+        override fun callback(`uniffiHandle`: Long,`change`: RustBuffer.ByValue,`uniffiOutReturn`: ByteByReference,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeHostKeyChangeHandler.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onHostKeyChanged`(
+                    FfiConverterTypeHostKeyChange.lift(`change`),
+                )
+            }
+            val writeReturn = { value: kotlin.Boolean -> uniffiOutReturn.setValue(FfiConverterBoolean.lower(value)) }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeHostKeyChangeHandler.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeHostKeyChangeHandler.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceHostKeyChangeHandler.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `onHostKeyChanged`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_termoak_ffi_fn_init_callback_vtable_hostkeychangehandler(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHostKeyChangeHandler: FfiConverter<HostKeyChangeHandler, Long> {
+    internal val handleMap = UniffiHandleMap<HostKeyChangeHandler>()
+
+    override fun lower(value: HostKeyChangeHandler): Long {
+        if (value is HostKeyChangeHandlerImpl) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): HostKeyChangeHandler {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return HostKeyChangeHandlerImpl(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): HostKeyChangeHandler {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: HostKeyChangeHandler) = 8UL
+
+    override fun write(value: HostKeyChangeHandler, buf: ByteBuffer) {
         buf.putLong(lower(value))
     }
 }
@@ -7290,6 +9270,15 @@ public interface ServerTerminalHandleInterface {
     fun `kick`(`participantId`: kotlin.String, `revokeShare`: kotlin.Boolean)
     
     /**
+     * Round trip to the Termoak server in milliseconds (a `ping` on the
+     * session's WebSocket, behind what is being typed), for a latency
+     * badge. Only to the server: it does not report the one from the
+     * server to the host. No answer within `timeout_ms` (reconnecting,
+     * closed, or a server that does not answer pings) gives `Connection`.
+     */
+    suspend fun `latencyMs`(`timeoutMs`: kotlin.UInt = 5000u): kotlin.Double
+    
+    /**
      * Your participant id (once in).
      */
     fun `participantId`(): kotlin.String?
@@ -7664,6 +9653,35 @@ open class ServerTerminalHandle: Disposable, AutoCloseable, ServerTerminalHandle
     }
     
     
+
+    
+    /**
+     * Round trip to the Termoak server in milliseconds (a `ping` on the
+     * session's WebSocket, behind what is being typed), for a latency
+     * badge. Only to the server: it does not report the one from the
+     * server to the host. No answer within `timeout_ms` (reconnecting,
+     * closed, or a server that does not answer pings) gives `Connection`.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `latencyMs`(`timeoutMs`: kotlin.UInt) : kotlin.Double {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_serverterminalhandle_latency_ms(
+                uniffiHandle,
+                
+        FfiConverterUInt.lower(`timeoutMs`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_f64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_f64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_f64(future) },
+        // lift function
+        { FfiConverterDouble.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
 
     
     /**
@@ -9484,9 +11502,10 @@ public interface SshSessionInterface {
     
     /**
      * Downloads `remote_path` to `local_path` (a file on the device).
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * partial file is removed).
      */
-    suspend fun `sftpDownload`(`remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?): kotlin.ULong
+    suspend fun `sftpDownload`(`remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
     
     /**
      * The user's home directory.
@@ -9522,9 +11541,10 @@ public interface SshSessionInterface {
     
     /**
      * Uploads `local_path` (a file on the device) to `remote_path`.
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * remote file keeps what was written).
      */
-    suspend fun `sftpUpload`(`localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?): kotlin.ULong
+    suspend fun `sftpUpload`(`localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
     
     /**
      * Writes (creates or overwrites) a file.
@@ -9922,11 +11942,12 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
     
     /**
      * Downloads `remote_path` to `local_path` (a file on the device).
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * partial file is removed).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `sftpDownload`(`remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?) : kotlin.ULong {
+    override suspend fun `sftpDownload`(`remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_sshsession_sftp_download(
@@ -9935,6 +11956,7 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
         FfiConverterString.lower(`remotePath`),
         FfiConverterString.lower(`localPath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -10128,11 +12150,12 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
     
     /**
      * Uploads `local_path` (a file on the device) to `remote_path`.
-     * Returns the bytes copied.
+     * Returns the bytes copied. `cancel` stops it (`Cancelled`; the
+     * remote file keeps what was written).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `sftpUpload`(`localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?) : kotlin.ULong {
+    override suspend fun `sftpUpload`(`localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_sshsession_sftp_upload(
@@ -10141,6 +12164,7 @@ open class SshSession: Disposable, AutoCloseable, SshSessionInterface
         FfiConverterString.lower(`localPath`),
         FfiConverterString.lower(`remotePath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -11936,6 +13960,14 @@ public interface TermoakCoreInterface {
     suspend fun `enableTwoFactor`(`code`: kotlin.String): List<kotlin.String>
     
     /**
+     * Invites someone to a team by email (team admins; only owners appoint
+     * owners): with an account they join at once; otherwise they get an
+     * invitation to sign up (when the server's registration is open or you
+     * are a server admin).
+     */
+    suspend fun `inviteToTeam`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole): TeamInviteResult
+    
+    /**
      * Leaves a team (the last owner cannot leave: appoint another owner or
      * delete the team first).
      */
@@ -11945,6 +13977,11 @@ public interface TermoakCoreInterface {
      * The invitations of one of your sessions (also revoked and expired ones).
      */
     suspend fun `listServerSessionShares`(`sessionId`: kotlin.String): List<SessionShareInfo>
+    
+    /**
+     * Pending invitations of a team (team admins).
+     */
+    suspend fun `listTeamInvites`(`teamId`: kotlin.String): List<AccountInvite>
     
     /**
      * Members of a team.
@@ -11981,6 +14018,11 @@ public interface TermoakCoreInterface {
      * has no other one leaves).
      */
     suspend fun `revokeServerSessionShare`(`sessionId`: kotlin.String, `shareId`: kotlin.String)
+    
+    /**
+     * Revokes a pending team invitation.
+     */
+    suspend fun `revokeTeamInvite`(`teamId`: kotlin.String, `inviteId`: kotlin.String)
     
     /**
      * Sends a test notification to this device.
@@ -12132,6 +14174,49 @@ public interface TermoakCoreInterface {
     suspend fun `verifyAccount`(`accountId`: kotlin.String, `code`: kotlin.String, `totpCode`: kotlin.String? = null): AccountInfo
     
     /**
+     * Quick assistant: explains an output or an error (`question`: what
+     * to ask about it). `text` is sent as given: pass it through
+     * `redact_secrets` first if it may hold secrets.
+     */
+    suspend fun `aiExplain`(`text`: kotlin.String, `question`: kotlin.String? = null, `context`: AiAssistContext? = null, `provider`: kotlin.String? = null): AiExplanation
+    
+    /**
+     * Quick assistant: one shell command for a request in natural language.
+     */
+    suspend fun `aiSuggest`(`request`: kotlin.String, `context`: AiAssistContext? = null, `provider`: kotlin.String? = null): AiCommandSuggestion
+    
+    /**
+     * Answers an approval with every option: `edited` (approve this
+     * command or plan instead of the model's) and `reason` (why it was
+     * denied, for the model). Servers before 0.6 ignore both.
+     */
+    suspend fun `decideApprovalWith`(`taskId`: kotlin.String, `approvalId`: kotlin.String, `decision`: AiDecision)
+    
+    /**
+     * Deletes a task (cancel it first if it is running).
+     */
+    suspend fun `deleteAiTask`(`taskId`: kotlin.String)
+    
+    /**
+     * What the task ran, as a snippet to review (`steps == 0`: nothing).
+     */
+    suspend fun `getRunbook`(`taskId`: kotlin.String): AiRunbook
+    
+    /**
+     * The server's AI providers, whether you can use each one and why not.
+     */
+    suspend fun `listAiProviders`(): AiProviders
+    
+    /**
+     * Saves the task's runbook as a snippet (tags `ai` and `runbook`) in
+     * `vault_id` (default: your personal vault; you must be an Editor
+     * there), named `name` (default: the task's title), and syncs so it
+     * shows up in the snippets. `Invalid` (`runbook_empty`) if the task
+     * ran no commands.
+     */
+    suspend fun `saveRunbook`(`taskId`: kotlin.String, `vaultId`: kotlin.String? = null, `name`: kotlin.String? = null): Snippet
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
     fun `clearCommandHistory`(`hostId`: kotlin.String?)
@@ -12174,9 +14259,14 @@ public interface TermoakCoreInterface {
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
-     * `local_path`. Returns the number of bytes.
+     * `local_path`. Returns the number of bytes. `cancel` stops it.
      */
-    suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?): kotlin.ULong
+    suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    /**
+     * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
+     */
+    suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt, `accountId`: kotlin.String? = null)
     
     /**
      * Deletes a remote file or directory (`recursive` for non-empty
@@ -12187,8 +14277,9 @@ public interface TermoakCoreInterface {
     /**
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
+     * `cancel` stops it (`Cancelled`, the `.part` file is removed).
      */
-    suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String? = null): kotlin.ULong
+    suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String? = null, `cancel`: TransferHandle? = null): kotlin.ULong
     
     /**
      * The user's home directory on a host, over SFTP from the server.
@@ -12206,15 +14297,43 @@ public interface TermoakCoreInterface {
     suspend fun `serverSftpMkdir`(`hostId`: kotlin.String, `path`: kotlin.String, `parents`: kotlin.Boolean, `accountId`: kotlin.String? = null)
     
     /**
+     * Reads a whole remote file into memory (viewers and editors). Fails
+     * with `Invalid` above `max_bytes` (0 = 16 MiB).
+     */
+    suspend fun `serverSftpRead`(`hostId`: kotlin.String, `path`: kotlin.String, `maxBytes`: kotlin.ULong = 0uL, `accountId`: kotlin.String? = null): kotlin.ByteArray
+    
+    /**
      * Renames or moves a remote file.
      */
     suspend fun `serverSftpRename`(`hostId`: kotlin.String, `from`: kotlin.String, `to`: kotlin.String, `accountId`: kotlin.String? = null)
     
     /**
-     * Uploads a local file to `remote_path` (replacing it if it exists).
-     * Returns the number of bytes.
+     * Details of a remote file or directory (size, permissions, dates),
+     * over SFTP from the server.
      */
-    suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String? = null): kotlin.ULong
+    suspend fun `serverSftpStat`(`hostId`: kotlin.String, `path`: kotlin.String, `accountId`: kotlin.String? = null): RemoteFile
+    
+    /**
+     * Uploads a local file to `remote_path` (replacing it if it exists).
+     * Returns the number of bytes. `cancel` stops it (`Cancelled`; the
+     * server keeps whatever arrived, as with a dropped connection).
+     */
+    suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String? = null, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    /**
+     * Writes (creates or replaces) a remote file with `data`. Returns the
+     * number of bytes written.
+     */
+    suspend fun `serverSftpWrite`(`hostId`: kotlin.String, `path`: kotlin.String, `data`: kotlin.ByteArray, `accountId`: kotlin.String? = null): kotlin.ULong
+    
+    /**
+     * Trusts `public_key` (OpenSSH format, `ssh-ed25519 AAAA…`) for
+     * `host:port`, replacing the saved keys of the same type (a "trust the
+     * new key" button, or a key checked another way). `account_id`: the
+     * account of the host being connected to (its known hosts are used),
+     * `None` for This device. Returns the saved entry.
+     */
+    fun `replaceKnownHost`(`host`: kotlin.String, `port`: kotlin.UInt, `publicKey`: kotlin.String, `accountId`: kotlin.String? = null): KnownHost
     
     /**
      * Attaches to a server session (yours or shared with you). `Hello`
@@ -12473,8 +14592,13 @@ public interface TermoakCoreInterface {
      * Use-only host gets its credentials from the server just for this
      * connection (`UseOnlyStrict`: open a server session instead;
      * `UseOnlyNeedsServer`: offline).
+     *
+     * `key_changed`: asked when the key of a known host (or of a jump)
+     * changed; if it trusts the new key, it replaces the old one and the
+     * connection goes on. Without it such a connection fails with
+     * `HostKey`.
      */
-    suspend fun `connect`(`hostId`: kotlin.String, `auth`: AuthHandler, `accountId`: kotlin.String? = null): SshSession
+    suspend fun `connect`(`hostId`: kotlin.String, `auth`: AuthHandler, `accountId`: kotlin.String? = null, `keyChanged`: HostKeyChangeHandler? = null): SshSession
     
     /**
      * Shortcut: connects and opens a terminal. The connection remains
@@ -12487,8 +14611,12 @@ public interface TermoakCoreInterface {
      * Telnet hosts automatically"), the host's username and password answer
      * its first `login:` and `Password:` prompts, each once, during the
      * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
+     *
+     * `record`: record the terminal (asciicast, in the app's data folder;
+     * `TerminalHandle::recording_path`), also when the host does not ask
+     * for it. `key_changed`: see [`connect`](Self::connect).
      */
-    suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String? = null, `telnetAutoLogin`: kotlin.Boolean = true): TerminalHandle
+    suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String? = null, `telnetAutoLogin`: kotlin.Boolean = true, `record`: kotlin.Boolean = false, `keyChanged`: HostKeyChangeHandler? = null): TerminalHandle
     
     /**
      * The vault's data directory.
@@ -13152,6 +15280,36 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * Invites someone to a team by email (team admins; only owners appoint
+     * owners): with an account they join at once; otherwise they get an
+     * invitation to sign up (when the server's registration is open or you
+     * are a server admin).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `inviteToTeam`(`teamId`: kotlin.String, `email`: kotlin.String, `role`: TeamRole) : TeamInviteResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_invite_to_team(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`email`),
+        FfiConverterTypeTeamRole.lower(`role`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamInviteResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Leaves a team (the last owner cannot leave: appoint another owner or
      * delete the team first).
      */
@@ -13197,6 +15355,31 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterSequenceTypeSessionShareInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Pending invitations of a team (team admins).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listTeamInvites`(`teamId`: kotlin.String) : List<AccountInvite> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_list_team_invites(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccountInvite.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -13351,6 +15534,33 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
                 
         FfiConverterString.lower(`sessionId`),
         FfiConverterString.lower(`shareId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Revokes a pending team invitation.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeTeamInvite`(`teamId`: kotlin.String, `inviteId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_revoke_team_invite(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`inviteId`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
@@ -13954,6 +16164,199 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * Quick assistant: explains an output or an error (`question`: what
+     * to ask about it). `text` is sent as given: pass it through
+     * `redact_secrets` first if it may hold secrets.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `aiExplain`(`text`: kotlin.String, `question`: kotlin.String?, `context`: AiAssistContext?, `provider`: kotlin.String?) : AiExplanation {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_ai_explain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`text`),
+        FfiConverterOptionalString.lower(`question`),
+        FfiConverterOptionalTypeAiAssistContext.lower(`context`),
+        FfiConverterOptionalString.lower(`provider`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiExplanation.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Quick assistant: one shell command for a request in natural language.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `aiSuggest`(`request`: kotlin.String, `context`: AiAssistContext?, `provider`: kotlin.String?) : AiCommandSuggestion {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_ai_suggest(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`request`),
+        FfiConverterOptionalTypeAiAssistContext.lower(`context`),
+        FfiConverterOptionalString.lower(`provider`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiCommandSuggestion.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Answers an approval with every option: `edited` (approve this
+     * command or plan instead of the model's) and `reason` (why it was
+     * denied, for the model). Servers before 0.6 ignore both.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `decideApprovalWith`(`taskId`: kotlin.String, `approvalId`: kotlin.String, `decision`: AiDecision) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_decide_approval_with(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+        FfiConverterString.lower(`approvalId`),
+        FfiConverterTypeAiDecision.lower(`decision`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Deletes a task (cancel it first if it is running).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAiTask`(`taskId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_delete_ai_task(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * What the task ran, as a snippet to review (`steps == 0`: nothing).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getRunbook`(`taskId`: kotlin.String) : AiRunbook {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_get_runbook(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiRunbook.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * The server's AI providers, whether you can use each one and why not.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `listAiProviders`() : AiProviders {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_list_ai_providers(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAiProviders.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Saves the task's runbook as a snippet (tags `ai` and `runbook`) in
+     * `vault_id` (default: your personal vault; you must be an Editor
+     * there), named `name` (default: the task's title), and syncs so it
+     * shows up in the snippets. `Invalid` (`runbook_empty`) if the task
+     * ran no commands.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `saveRunbook`(`taskId`: kotlin.String, `vaultId`: kotlin.String?, `name`: kotlin.String?) : Snippet {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_save_runbook(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`taskId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterOptionalString.lower(`name`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSnippet.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Clears the command history of a host (or all of it if `None`).
      */
     @Throws(TermoakException::class)override fun `clearCommandHistory`(`hostId`: kotlin.String?)
@@ -14081,11 +16484,11 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
-     * `local_path`. Returns the number of bytes.
+     * `local_path`. Returns the number of bytes. `cancel` stops it.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?) : kotlin.ULong {
+    override suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_download_recording(
@@ -14094,6 +16497,7 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`sessionId`),
         FfiConverterString.lower(`localPath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -14101,6 +16505,35 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
         // lift function
         { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt, `accountId`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_chmod(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterUInt.lower(`mode`),
+        FfiConverterOptionalString.lower(`accountId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -14140,10 +16573,11 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     /**
      * Downloads a remote file to `local_path` (streamed; while in progress it
      * is written to `local_path.part`). Returns the number of bytes.
+     * `cancel` stops it (`Cancelled`, the `.part` file is removed).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String?) : kotlin.ULong {
+    override suspend fun `serverSftpDownload`(`hostId`: kotlin.String, `remotePath`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String?, `cancel`: TransferHandle?) : kotlin.ULong {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_download(
@@ -14154,6 +16588,7 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`localPath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
         FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -14250,6 +16685,35 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * Reads a whole remote file into memory (viewers and editors). Fails
+     * with `Invalid` above `max_bytes` (0 = 16 MiB).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpRead`(`hostId`: kotlin.String, `path`: kotlin.String, `maxBytes`: kotlin.ULong, `accountId`: kotlin.String?) : kotlin.ByteArray {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_read(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterULong.lower(`maxBytes`),
+        FfiConverterOptionalString.lower(`accountId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterByteArray.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Renames or moves a remote file.
      */
     @Throws(TermoakException::class)
@@ -14279,12 +16743,41 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
-     * Uploads a local file to `remote_path` (replacing it if it exists).
-     * Returns the number of bytes.
+     * Details of a remote file or directory (size, permissions, dates),
+     * over SFTP from the server.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String?) : kotlin.ULong {
+    override suspend fun `serverSftpStat`(`hostId`: kotlin.String, `path`: kotlin.String, `accountId`: kotlin.String?) : RemoteFile {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_stat(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterOptionalString.lower(`accountId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeRemoteFile.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Uploads a local file to `remote_path` (replacing it if it exists).
+     * Returns the number of bytes. `cancel` stops it (`Cancelled`; the
+     * server keeps whatever arrived, as with a dropped connection).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `accountId`: kotlin.String?, `cancel`: TransferHandle?) : kotlin.ULong {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(
@@ -14294,6 +16787,36 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`localPath`),
         FfiConverterString.lower(`remotePath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Writes (creates or replaces) a remote file with `data`. Returns the
+     * number of bytes written.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `serverSftpWrite`(`hostId`: kotlin.String, `path`: kotlin.String, `data`: kotlin.ByteArray, `accountId`: kotlin.String?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_write(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterByteArray.lower(`data`),
         FfiConverterOptionalString.lower(`accountId`),
             )
         },
@@ -14306,6 +16829,31 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         TermoakException.ErrorHandler,
     )
     }
+
+    
+    /**
+     * Trusts `public_key` (OpenSSH format, `ssh-ed25519 AAAA…`) for
+     * `host:port`, replacing the saved keys of the same type (a "trust the
+     * new key" button, or a key checked another way). `account_id`: the
+     * account of the host being connected to (its known hosts are used),
+     * `None` for This device. Returns the saved entry.
+     */
+    @Throws(TermoakException::class)override fun `replaceKnownHost`(`host`: kotlin.String, `port`: kotlin.UInt, `publicKey`: kotlin.String, `accountId`: kotlin.String?): KnownHost {
+            return FfiConverterTypeKnownHost.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_replace_known_host(
+        it,
+        
+        FfiConverterString.lower(`host`),
+        FfiConverterUInt.lower(`port`),
+        FfiConverterString.lower(`publicKey`),
+        FfiConverterOptionalString.lower(`accountId`),_status)
+}
+    }
+    )
+    }
+    
 
     
     /**
@@ -15400,10 +17948,15 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * Use-only host gets its credentials from the server just for this
      * connection (`UseOnlyStrict`: open a server session instead;
      * `UseOnlyNeedsServer`: offline).
+     *
+     * `key_changed`: asked when the key of a known host (or of a jump)
+     * changed; if it trusts the new key, it replaces the old one and the
+     * connection goes on. Without it such a connection fails with
+     * `HostKey`.
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `connect`(`hostId`: kotlin.String, `auth`: AuthHandler, `accountId`: kotlin.String?) : SshSession {
+    override suspend fun `connect`(`hostId`: kotlin.String, `auth`: AuthHandler, `accountId`: kotlin.String?, `keyChanged`: HostKeyChangeHandler?) : SshSession {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_connect(
@@ -15412,6 +17965,7 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterString.lower(`hostId`),
         FfiConverterTypeAuthHandler.lower(`auth`),
         FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalTypeHostKeyChangeHandler.lower(`keyChanged`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -15436,10 +17990,14 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
      * Telnet hosts automatically"), the host's username and password answer
      * its first `login:` and `Password:` prompts, each once, during the
      * first 30 seconds. Jump hosts on a Telnet host give `Invalid`.
+     *
+     * `record`: record the terminal (asciicast, in the app's data folder;
+     * `TerminalHandle::recording_path`), also when the host does not ask
+     * for it. `key_changed`: see [`connect`](Self::connect).
      */
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String?, `telnetAutoLogin`: kotlin.Boolean) : TerminalHandle {
+    override suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String?, `telnetAutoLogin`: kotlin.Boolean, `record`: kotlin.Boolean, `keyChanged`: HostKeyChangeHandler?) : TerminalHandle {
         return uniffiRustCallAsync(
         callWithHandle { uniffiHandle ->
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(
@@ -15452,6 +18010,8 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterTypeTerminalListener.lower(`listener`),
         FfiConverterOptionalString.lower(`accountId`),
         FfiConverterBoolean.lower(`telnetAutoLogin`),
+        FfiConverterBoolean.lower(`record`),
+        FfiConverterOptionalTypeHostKeyChangeHandler.lower(`keyChanged`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
@@ -16269,6 +18829,305 @@ public object FfiConverterTypeTermoakCore: FfiConverter<TermoakCore, Long> {
 
 
 /**
+ * Cancels the transfer it is passed to (`sftp_download`, `sftp_upload`,
+ * `server_sftp_download`, `server_sftp_upload`, `download_recording`).
+ * Create one per transfer and call `cancel()` from anywhere (a "Cancel"
+ * button): the call then fails with `Cancelled` and leaves no partial file
+ * under the final name. Cancelling before the transfer starts makes it fail
+ * at once.
+ */
+public interface TransferHandleInterface {
+    
+    /**
+     * Stops the transfer (idempotent).
+     */
+    fun `cancel`()
+    
+    fun `isCancelled`(): kotlin.Boolean
+    
+    companion object
+}
+
+/**
+ * Cancels the transfer it is passed to (`sftp_download`, `sftp_upload`,
+ * `server_sftp_download`, `server_sftp_upload`, `download_recording`).
+ * Create one per transfer and call `cancel()` from anywhere (a "Cancel"
+ * button): the call then fails with `Cancelled` and leaves no partial file
+ * under the final name. Cancelling before the transfer starts makes it fail
+ * at once.
+ */
+open class TransferHandle: Disposable, AutoCloseable, TransferHandleInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+    constructor() :
+        this(UniffiWithHandle, 
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_constructor_transferhandle_new(
+    
+        _status)
+}
+    )
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_transferhandle(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_transferhandle(handle, status)
+        }
+    }
+
+    
+    /**
+     * Stops the transfer (idempotent).
+     */override fun `cancel`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_transferhandle_cancel(
+        it,
+        _status)
+}
+    }
+    
+    
+
+    override fun `isCancelled`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_transferhandle_is_cancelled(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTransferHandle: FfiConverter<TransferHandle, Long> {
+    override fun lower(value: TransferHandle): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): TransferHandle {
+        return TransferHandle(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): TransferHandle {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: TransferHandle) = 8UL
+
+    override fun write(value: TransferHandle, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
  * Progress of an SFTP transfer.
  *
  * **Threads**: called from a background thread after each chunk (256 KiB);
@@ -16648,6 +19507,11 @@ data class AccountInvite (
     var `usedAt`: kotlin.Long?
     , 
     var `revoked`: kotlin.Boolean
+    , 
+    /**
+     * Role in `team_id` on sign-up (`None`: member).
+     */
+    var `teamRole`: TeamRole? = null 
     
 ){
     
@@ -16672,6 +19536,7 @@ public object FfiConverterTypeAccountInvite: FfiConverterRustBuffer<AccountInvit
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalLong.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeTeamRole.read(buf),
         )
     }
 
@@ -16683,7 +19548,8 @@ public object FfiConverterTypeAccountInvite: FfiConverterRustBuffer<AccountInvit
             FfiConverterLong.allocationSize(value.`createdAt`) +
             FfiConverterOptionalLong.allocationSize(value.`expiresAt`) +
             FfiConverterOptionalLong.allocationSize(value.`usedAt`) +
-            FfiConverterBoolean.allocationSize(value.`revoked`)
+            FfiConverterBoolean.allocationSize(value.`revoked`) +
+            FfiConverterOptionalTypeTeamRole.allocationSize(value.`teamRole`)
     )
 
     override fun write(value: AccountInvite, buf: ByteBuffer) {
@@ -16695,6 +19561,7 @@ public object FfiConverterTypeAccountInvite: FfiConverterRustBuffer<AccountInvit
             FfiConverterOptionalLong.write(value.`expiresAt`, buf)
             FfiConverterOptionalLong.write(value.`usedAt`, buf)
             FfiConverterBoolean.write(value.`revoked`, buf)
+            FfiConverterOptionalTypeTeamRole.write(value.`teamRole`, buf)
     }
 }
 
@@ -16813,6 +19680,13 @@ data class AiApproval (
     var `createdAt`: kotlin.Long
     , 
     var `decidedAt`: kotlin.Long?
+    , 
+    /**
+     * What it is about (the command and its risk, the diff of a file, the
+     * plan), to show instead of `input_json`. `None` on servers before 0.6
+     * and for approvals saved by them.
+     */
+    var `preview`: AiApprovalPreview? = null 
     
 ){
     
@@ -16838,6 +19712,7 @@ public object FfiConverterTypeAiApproval: FfiConverterRustBuffer<AiApproval> {
             FfiConverterOptionalString.read(buf),
             FfiConverterLong.read(buf),
             FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalTypeAiApprovalPreview.read(buf),
         )
     }
 
@@ -16850,7 +19725,8 @@ public object FfiConverterTypeAiApproval: FfiConverterRustBuffer<AiApproval> {
             FfiConverterString.allocationSize(value.`status`) +
             FfiConverterOptionalString.allocationSize(value.`decidedBy`) +
             FfiConverterLong.allocationSize(value.`createdAt`) +
-            FfiConverterOptionalLong.allocationSize(value.`decidedAt`)
+            FfiConverterOptionalLong.allocationSize(value.`decidedAt`) +
+            FfiConverterOptionalTypeAiApprovalPreview.allocationSize(value.`preview`)
     )
 
     override fun write(value: AiApproval, buf: ByteBuffer) {
@@ -16863,6 +19739,454 @@ public object FfiConverterTypeAiApproval: FfiConverterRustBuffer<AiApproval> {
             FfiConverterOptionalString.write(value.`decidedBy`, buf)
             FfiConverterLong.write(value.`createdAt`, buf)
             FfiConverterOptionalLong.write(value.`decidedAt`, buf)
+            FfiConverterOptionalTypeAiApprovalPreview.write(value.`preview`, buf)
+    }
+}
+
+
+
+/**
+ * What an approval is about, to show it instead of the raw arguments.
+ */
+data class AiApprovalPreview (
+    /**
+     * `command` (run_command), `terminal` (send_to_terminal), `file`
+     * (write_file), `plan` (a `plan_first` task's plan) or `other`.
+     */
+    var `kind`: kotlin.String
+    , 
+    /**
+     * Exact command (or text typed into a terminal).
+     */
+    var `command`: kotlin.String?
+    , 
+    /**
+     * Host as the model named it, or the terminal's title.
+     */
+    var `host`: kotlin.String?
+    , 
+    var `risk`: AiRiskLevel
+    , 
+    var `reasons`: List<AiRiskReason>
+    , 
+    /**
+     * Why the model wants to do it.
+     */
+    var `explanation`: kotlin.String?
+    , 
+    /**
+     * File written (`file`).
+     */
+    var `path`: kotlin.String?
+    , 
+    /**
+     * Unified diff of the file (`--- a/…`, `+++ b/…`, hunks).
+     */
+    var `diff`: kotlin.String?
+    , 
+    /**
+     * Lines added and removed by the write.
+     */
+    var `added`: kotlin.UInt?
+    , 
+    var `removed`: kotlin.UInt?
+    , 
+    /**
+     * The file does not exist yet.
+     */
+    var `newFile`: kotlin.Boolean
+    , 
+    /**
+     * The diff was cut (at 64 KB).
+     */
+    var `truncated`: kotlin.Boolean
+    , 
+    /**
+     * Why there is no diff (unreadable, binary or too large file).
+     */
+    var `diffError`: kotlin.String?
+    , 
+    /**
+     * The plan to approve (`plan`).
+     */
+    var `plan`: kotlin.String?
+    , 
+    /**
+     * It can be edited before approving (`AiDecision::edited`).
+     */
+    var `editable`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiApprovalPreview: FfiConverterRustBuffer<AiApprovalPreview> {
+    override fun read(buf: ByteBuffer): AiApprovalPreview {
+        return AiApprovalPreview(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterTypeAiRiskLevel.read(buf),
+            FfiConverterSequenceTypeAiRiskReason.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiApprovalPreview) = (
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterOptionalString.allocationSize(value.`command`) +
+            FfiConverterOptionalString.allocationSize(value.`host`) +
+            FfiConverterTypeAiRiskLevel.allocationSize(value.`risk`) +
+            FfiConverterSequenceTypeAiRiskReason.allocationSize(value.`reasons`) +
+            FfiConverterOptionalString.allocationSize(value.`explanation`) +
+            FfiConverterOptionalString.allocationSize(value.`path`) +
+            FfiConverterOptionalString.allocationSize(value.`diff`) +
+            FfiConverterOptionalUInt.allocationSize(value.`added`) +
+            FfiConverterOptionalUInt.allocationSize(value.`removed`) +
+            FfiConverterBoolean.allocationSize(value.`newFile`) +
+            FfiConverterBoolean.allocationSize(value.`truncated`) +
+            FfiConverterOptionalString.allocationSize(value.`diffError`) +
+            FfiConverterOptionalString.allocationSize(value.`plan`) +
+            FfiConverterBoolean.allocationSize(value.`editable`)
+    )
+
+    override fun write(value: AiApprovalPreview, buf: ByteBuffer) {
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterOptionalString.write(value.`command`, buf)
+            FfiConverterOptionalString.write(value.`host`, buf)
+            FfiConverterTypeAiRiskLevel.write(value.`risk`, buf)
+            FfiConverterSequenceTypeAiRiskReason.write(value.`reasons`, buf)
+            FfiConverterOptionalString.write(value.`explanation`, buf)
+            FfiConverterOptionalString.write(value.`path`, buf)
+            FfiConverterOptionalString.write(value.`diff`, buf)
+            FfiConverterOptionalUInt.write(value.`added`, buf)
+            FfiConverterOptionalUInt.write(value.`removed`, buf)
+            FfiConverterBoolean.write(value.`newFile`, buf)
+            FfiConverterBoolean.write(value.`truncated`, buf)
+            FfiConverterOptionalString.write(value.`diffError`, buf)
+            FfiConverterOptionalString.write(value.`plan`, buf)
+            FfiConverterBoolean.write(value.`editable`, buf)
+    }
+}
+
+
+
+/**
+ * Terminal context for the quick assistant.
+ */
+data class AiAssistContext (
+    /**
+     * Host OS (`ubuntu`, `alpine`...).
+     */
+    var `os`: kotlin.String? = null 
+    , 
+    /**
+     * Last visible terminal output. Its secrets are hidden on the device
+     * (`redact_secrets`) before it is sent.
+     */
+    var `screen`: kotlin.String? = null 
+    , 
+    var `cwd`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiAssistContext: FfiConverterRustBuffer<AiAssistContext> {
+    override fun read(buf: ByteBuffer): AiAssistContext {
+        return AiAssistContext(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiAssistContext) = (
+            FfiConverterOptionalString.allocationSize(value.`os`) +
+            FfiConverterOptionalString.allocationSize(value.`screen`) +
+            FfiConverterOptionalString.allocationSize(value.`cwd`)
+    )
+
+    override fun write(value: AiAssistContext, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`os`, buf)
+            FfiConverterOptionalString.write(value.`screen`, buf)
+            FfiConverterOptionalString.write(value.`cwd`, buf)
+    }
+}
+
+
+
+/**
+ * A command suggested by the quick assistant.
+ */
+data class AiCommandSuggestion (
+    var `command`: kotlin.String
+    , 
+    /**
+     * One short sentence.
+     */
+    var `explanation`: kotlin.String
+    , 
+    /**
+     * `read` (read-only), `write` (changes something) or `dangerous`.
+     */
+    var `risk`: kotlin.String
+    , 
+    /**
+     * Provider that answered.
+     */
+    var `provider`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiCommandSuggestion: FfiConverterRustBuffer<AiCommandSuggestion> {
+    override fun read(buf: ByteBuffer): AiCommandSuggestion {
+        return AiCommandSuggestion(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiCommandSuggestion) = (
+            FfiConverterString.allocationSize(value.`command`) +
+            FfiConverterString.allocationSize(value.`explanation`) +
+            FfiConverterString.allocationSize(value.`risk`) +
+            FfiConverterString.allocationSize(value.`provider`)
+    )
+
+    override fun write(value: AiCommandSuggestion, buf: ByteBuffer) {
+            FfiConverterString.write(value.`command`, buf)
+            FfiConverterString.write(value.`explanation`, buf)
+            FfiConverterString.write(value.`risk`, buf)
+            FfiConverterString.write(value.`provider`, buf)
+    }
+}
+
+
+
+/**
+ * The answer to an approval.
+ */
+data class AiDecision (
+    var `approve`: kotlin.Boolean
+    , 
+    /**
+     * Also approve the task's next actions (switches it to autonomous).
+     */
+    var `always`: kotlin.Boolean = false 
+    , 
+    /**
+     * With `approve`, for previews with `editable`: the command or plan to
+     * use instead of the model's. It is what runs, and the model is told.
+     */
+    var `edited`: kotlin.String? = null 
+    , 
+    /**
+     * Why it was denied (sent to the model, which does not retry the same
+     * action another way), or a note with an approval.
+     */
+    var `reason`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiDecision: FfiConverterRustBuffer<AiDecision> {
+    override fun read(buf: ByteBuffer): AiDecision {
+        return AiDecision(
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiDecision) = (
+            FfiConverterBoolean.allocationSize(value.`approve`) +
+            FfiConverterBoolean.allocationSize(value.`always`) +
+            FfiConverterOptionalString.allocationSize(value.`edited`) +
+            FfiConverterOptionalString.allocationSize(value.`reason`)
+    )
+
+    override fun write(value: AiDecision, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`approve`, buf)
+            FfiConverterBoolean.write(value.`always`, buf)
+            FfiConverterOptionalString.write(value.`edited`, buf)
+            FfiConverterOptionalString.write(value.`reason`, buf)
+    }
+}
+
+
+
+/**
+ * The quick assistant's explanation of an output or an error.
+ */
+data class AiExplanation (
+    /**
+     * Markdown.
+     */
+    var `answer`: kotlin.String
+    , 
+    /**
+     * Provider that answered.
+     */
+    var `provider`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiExplanation: FfiConverterRustBuffer<AiExplanation> {
+    override fun read(buf: ByteBuffer): AiExplanation {
+        return AiExplanation(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiExplanation) = (
+            FfiConverterString.allocationSize(value.`answer`) +
+            FfiConverterString.allocationSize(value.`provider`)
+    )
+
+    override fun write(value: AiExplanation, buf: ByteBuffer) {
+            FfiConverterString.write(value.`answer`, buf)
+            FfiConverterString.write(value.`provider`, buf)
+    }
+}
+
+
+
+/**
+ * One host of a multi-host (`fan_out`) task.
+ */
+data class AiHostRun (
+    var `hostId`: kotlin.String
+    , 
+    var `label`: kotlin.String
+    , 
+    /**
+     * The host's own task (its conversation, approvals and steps).
+     */
+    var `taskId`: kotlin.String
+    , 
+    var `status`: AiTaskStatus
+    , 
+    /**
+     * Its result, shortened.
+     */
+    var `summary`: kotlin.String?
+    , 
+    var `error`: kotlin.String?
+    , 
+    var `durationMs`: kotlin.Long?
+    , 
+    var `costMicros`: kotlin.Long
+    , 
+    var `pendingApprovals`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiHostRun: FfiConverterRustBuffer<AiHostRun> {
+    override fun read(buf: ByteBuffer): AiHostRun {
+        return AiHostRun(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeAiTaskStatus.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiHostRun) = (
+            FfiConverterString.allocationSize(value.`hostId`) +
+            FfiConverterString.allocationSize(value.`label`) +
+            FfiConverterString.allocationSize(value.`taskId`) +
+            FfiConverterTypeAiTaskStatus.allocationSize(value.`status`) +
+            FfiConverterOptionalString.allocationSize(value.`summary`) +
+            FfiConverterOptionalString.allocationSize(value.`error`) +
+            FfiConverterOptionalLong.allocationSize(value.`durationMs`) +
+            FfiConverterLong.allocationSize(value.`costMicros`) +
+            FfiConverterUInt.allocationSize(value.`pendingApprovals`)
+    )
+
+    override fun write(value: AiHostRun, buf: ByteBuffer) {
+            FfiConverterString.write(value.`hostId`, buf)
+            FfiConverterString.write(value.`label`, buf)
+            FfiConverterString.write(value.`taskId`, buf)
+            FfiConverterTypeAiTaskStatus.write(value.`status`, buf)
+            FfiConverterOptionalString.write(value.`summary`, buf)
+            FfiConverterOptionalString.write(value.`error`, buf)
+            FfiConverterOptionalLong.write(value.`durationMs`, buf)
+            FfiConverterLong.write(value.`costMicros`, buf)
+            FfiConverterUInt.write(value.`pendingApprovals`, buf)
     }
 }
 
@@ -17142,6 +20466,304 @@ public object FfiConverterTypeAiMemory: FfiConverterRustBuffer<AiMemory> {
 
 
 /**
+ * An AI provider of the server.
+ */
+data class AiProvider (
+    /**
+     * What `AiTaskRequest::provider` takes (`claude`, `gpt`, `codex`...).
+     */
+    var `key`: kotlin.String
+    , 
+    var `label`: kotlin.String
+    , 
+    /**
+     * `anthropic`, `openai`, `codex`, `opencode`, `local`...
+     */
+    var `driver`: kotlin.String
+    , 
+    /**
+     * Usable by you now (your plan and your own keys considered).
+     */
+    var `available`: kotlin.Boolean
+    , 
+    /**
+     * Hidden from pickers by the server's configuration.
+     */
+    var `hidden`: kotlin.Boolean
+    , 
+    var `defaultModel`: kotlin.String?
+    , 
+    var `models`: List<kotlin.String>
+    , 
+    /**
+     * Runs on a subscription (Codex with ChatGPT...).
+     */
+    var `subscription`: kotlin.Boolean
+    , 
+    /**
+     * Why it is not available (English).
+     */
+    var `reason`: kotlin.String?
+    , 
+    /**
+     * Stable code of `reason` to translate: `not_configured`,
+     * `own_key_required` (add your own key) or `plan`.
+     */
+    var `reasonCode`: kotlin.String?
+    , 
+    /**
+     * Accepts your own API key (`set_ai_key`).
+     */
+    var `acceptsOwnKey`: kotlin.Boolean
+    , 
+    /**
+     * Runs with your own API key.
+     */
+    var `usesOwnKey`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiProvider: FfiConverterRustBuffer<AiProvider> {
+    override fun read(buf: ByteBuffer): AiProvider {
+        return AiProvider(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiProvider) = (
+            FfiConverterString.allocationSize(value.`key`) +
+            FfiConverterString.allocationSize(value.`label`) +
+            FfiConverterString.allocationSize(value.`driver`) +
+            FfiConverterBoolean.allocationSize(value.`available`) +
+            FfiConverterBoolean.allocationSize(value.`hidden`) +
+            FfiConverterOptionalString.allocationSize(value.`defaultModel`) +
+            FfiConverterSequenceString.allocationSize(value.`models`) +
+            FfiConverterBoolean.allocationSize(value.`subscription`) +
+            FfiConverterOptionalString.allocationSize(value.`reason`) +
+            FfiConverterOptionalString.allocationSize(value.`reasonCode`) +
+            FfiConverterBoolean.allocationSize(value.`acceptsOwnKey`) +
+            FfiConverterBoolean.allocationSize(value.`usesOwnKey`)
+    )
+
+    override fun write(value: AiProvider, buf: ByteBuffer) {
+            FfiConverterString.write(value.`key`, buf)
+            FfiConverterString.write(value.`label`, buf)
+            FfiConverterString.write(value.`driver`, buf)
+            FfiConverterBoolean.write(value.`available`, buf)
+            FfiConverterBoolean.write(value.`hidden`, buf)
+            FfiConverterOptionalString.write(value.`defaultModel`, buf)
+            FfiConverterSequenceString.write(value.`models`, buf)
+            FfiConverterBoolean.write(value.`subscription`, buf)
+            FfiConverterOptionalString.write(value.`reason`, buf)
+            FfiConverterOptionalString.write(value.`reasonCode`, buf)
+            FfiConverterBoolean.write(value.`acceptsOwnKey`, buf)
+            FfiConverterBoolean.write(value.`usesOwnKey`, buf)
+    }
+}
+
+
+
+/**
+ * The server's AI providers and defaults.
+ */
+data class AiProviders (
+    /**
+     * Default provider (`provider` or `provider::model`).
+     */
+    var `defaultProvider`: kotlin.String?
+    , 
+    /**
+     * Fallback chain.
+     */
+    var `fallback`: List<kotlin.String>
+    , 
+    /**
+     * Default permission mode of new tasks.
+     */
+    var `defaultMode`: AiPermissionMode?
+    , 
+    var `providers`: List<AiProvider>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiProviders: FfiConverterRustBuffer<AiProviders> {
+    override fun read(buf: ByteBuffer): AiProviders {
+        return AiProviders(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalTypeAiPermissionMode.read(buf),
+            FfiConverterSequenceTypeAiProvider.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiProviders) = (
+            FfiConverterOptionalString.allocationSize(value.`defaultProvider`) +
+            FfiConverterSequenceString.allocationSize(value.`fallback`) +
+            FfiConverterOptionalTypeAiPermissionMode.allocationSize(value.`defaultMode`) +
+            FfiConverterSequenceTypeAiProvider.allocationSize(value.`providers`)
+    )
+
+    override fun write(value: AiProviders, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`defaultProvider`, buf)
+            FfiConverterSequenceString.write(value.`fallback`, buf)
+            FfiConverterOptionalTypeAiPermissionMode.write(value.`defaultMode`, buf)
+            FfiConverterSequenceTypeAiProvider.write(value.`providers`, buf)
+    }
+}
+
+
+
+/**
+ * One of the reasons for a risk level.
+ */
+data class AiRiskReason (
+    /**
+     * Stable code to translate: `pipe`, `chain`, `redirect`,
+     * `substitution`, `sudo`, `rm_rf`, `delete`, `disk`, `reboot`,
+     * `service`, `packages`, `firewall`, `permissions`, `kill`, `users`,
+     * `remote_script`, `containers`, `cron`, `git_history`, `system_path`,
+     * `redacted`, `changes`...
+     */
+    var `code`: kotlin.String
+    , 
+    /**
+     * English text.
+     */
+    var `text`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiRiskReason: FfiConverterRustBuffer<AiRiskReason> {
+    override fun read(buf: ByteBuffer): AiRiskReason {
+        return AiRiskReason(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiRiskReason) = (
+            FfiConverterString.allocationSize(value.`code`) +
+            FfiConverterString.allocationSize(value.`text`)
+    )
+
+    override fun write(value: AiRiskReason, buf: ByteBuffer) {
+            FfiConverterString.write(value.`code`, buf)
+            FfiConverterString.write(value.`text`, buf)
+    }
+}
+
+
+
+/**
+ * What a task ran, as a snippet to review before saving it.
+ */
+data class AiRunbook (
+    /**
+     * Suggested name (the task's title).
+     */
+    var `name`: kotlin.String
+    , 
+    var `description`: kotlin.String
+    , 
+    /**
+     * The script (`{{host}}` where the host's name or address was).
+     */
+    var `script`: kotlin.String
+    , 
+    /**
+     * Its `{{variables}}`.
+     */
+    var `variables`: List<kotlin.String>
+    , 
+    /**
+     * Commands and file writes in it (0: nothing to save).
+     */
+    var `steps`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiRunbook: FfiConverterRustBuffer<AiRunbook> {
+    override fun read(buf: ByteBuffer): AiRunbook {
+        return AiRunbook(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiRunbook) = (
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`description`) +
+            FfiConverterString.allocationSize(value.`script`) +
+            FfiConverterSequenceString.allocationSize(value.`variables`) +
+            FfiConverterUInt.allocationSize(value.`steps`)
+    )
+
+    override fun write(value: AiRunbook, buf: ByteBuffer) {
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`description`, buf)
+            FfiConverterString.write(value.`script`, buf)
+            FfiConverterSequenceString.write(value.`variables`, buf)
+            FfiConverterUInt.write(value.`steps`, buf)
+    }
+}
+
+
+
+/**
  * Background AI task.
  */
 data class AiTask (
@@ -17188,6 +20810,38 @@ data class AiTask (
      * The full task as returned by the server (conversation, usage...).
      */
     var `rawJson`: kotlin.String
+    , 
+    /**
+     * The plan of a `plan_first` task (once the model wrote it).
+     */
+    var `plan`: AiTaskPlan? = null 
+    , 
+    /**
+     * Commands and file writes it ran, in order (in `get_ai_task`).
+     */
+    var `steps`: List<AiTaskStep> = listOf() 
+    , 
+    /**
+     * Multi-host (`fan_out`) task: one row per host with its own task
+     * (in `get_ai_task`).
+     */
+    var `hosts`: List<AiHostRun> = listOf() 
+    , 
+    /**
+     * The multi-host task this host's conversation belongs to.
+     */
+    var `parentId`: kotlin.String? = null 
+    , 
+    /**
+     * One conversation per host (see `hosts`).
+     */
+    var `fanOut`: kotlin.Boolean = false 
+    , 
+    var `planFirst`: kotlin.Boolean = false 
+    , 
+    var `groupId`: kotlin.String? = null 
+    , 
+    var `tag`: kotlin.String? = null 
     
 ){
     
@@ -17220,6 +20874,14 @@ public object FfiConverterTypeAiTask: FfiConverterRustBuffer<AiTask> {
             FfiConverterLong.read(buf),
             FfiConverterSequenceTypeAiApproval.read(buf),
             FfiConverterString.read(buf),
+            FfiConverterOptionalTypeAiTaskPlan.read(buf),
+            FfiConverterSequenceTypeAiTaskStep.read(buf),
+            FfiConverterSequenceTypeAiHostRun.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -17239,7 +20901,15 @@ public object FfiConverterTypeAiTask: FfiConverterRustBuffer<AiTask> {
             FfiConverterOptionalString.allocationSize(value.`error`) +
             FfiConverterLong.allocationSize(value.`costMicros`) +
             FfiConverterSequenceTypeAiApproval.allocationSize(value.`pendingApprovals`) +
-            FfiConverterString.allocationSize(value.`rawJson`)
+            FfiConverterString.allocationSize(value.`rawJson`) +
+            FfiConverterOptionalTypeAiTaskPlan.allocationSize(value.`plan`) +
+            FfiConverterSequenceTypeAiTaskStep.allocationSize(value.`steps`) +
+            FfiConverterSequenceTypeAiHostRun.allocationSize(value.`hosts`) +
+            FfiConverterOptionalString.allocationSize(value.`parentId`) +
+            FfiConverterBoolean.allocationSize(value.`fanOut`) +
+            FfiConverterBoolean.allocationSize(value.`planFirst`) +
+            FfiConverterOptionalString.allocationSize(value.`groupId`) +
+            FfiConverterOptionalString.allocationSize(value.`tag`)
     )
 
     override fun write(value: AiTask, buf: ByteBuffer) {
@@ -17259,6 +20929,63 @@ public object FfiConverterTypeAiTask: FfiConverterRustBuffer<AiTask> {
             FfiConverterLong.write(value.`costMicros`, buf)
             FfiConverterSequenceTypeAiApproval.write(value.`pendingApprovals`, buf)
             FfiConverterString.write(value.`rawJson`, buf)
+            FfiConverterOptionalTypeAiTaskPlan.write(value.`plan`, buf)
+            FfiConverterSequenceTypeAiTaskStep.write(value.`steps`, buf)
+            FfiConverterSequenceTypeAiHostRun.write(value.`hosts`, buf)
+            FfiConverterOptionalString.write(value.`parentId`, buf)
+            FfiConverterBoolean.write(value.`fanOut`, buf)
+            FfiConverterBoolean.write(value.`planFirst`, buf)
+            FfiConverterOptionalString.write(value.`groupId`, buf)
+            FfiConverterOptionalString.write(value.`tag`, buf)
+    }
+}
+
+
+
+/**
+ * The plan of a `plan_first` task.
+ */
+data class AiTaskPlan (
+    var `text`: kotlin.String
+    , 
+    var `approved`: kotlin.Boolean
+    , 
+    /**
+     * You edited it before approving it.
+     */
+    var `edited`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiTaskPlan: FfiConverterRustBuffer<AiTaskPlan> {
+    override fun read(buf: ByteBuffer): AiTaskPlan {
+        return AiTaskPlan(
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiTaskPlan) = (
+            FfiConverterString.allocationSize(value.`text`) +
+            FfiConverterBoolean.allocationSize(value.`approved`) +
+            FfiConverterBoolean.allocationSize(value.`edited`)
+    )
+
+    override fun write(value: AiTaskPlan, buf: ByteBuffer) {
+            FfiConverterString.write(value.`text`, buf)
+            FfiConverterBoolean.write(value.`approved`, buf)
+            FfiConverterBoolean.write(value.`edited`, buf)
     }
 }
 
@@ -17299,6 +21026,29 @@ data class AiTaskRequest (
      * Reasoning effort (`low`, `medium`, `high`), if the provider supports it.
      */
     var `effort`: kotlin.String? = null 
+    , 
+    /**
+     * The model first writes a numbered plan (without tools) that you
+     * approve, edit or deny: an approval with `tool == "plan"` and
+     * `preview.kind == "plan"`; the task's `plan` has it.
+     */
+    var `planFirst`: kotlin.Boolean = false 
+    , 
+    /**
+     * Run it on the hosts of this group (and its subgroups).
+     */
+    var `groupId`: kotlin.String? = null 
+    , 
+    /**
+     * Run it on the hosts with this tag.
+     */
+    var `tag`: kotlin.String? = null 
+    , 
+    /**
+     * With several hosts: one conversation per host (the task becomes the
+     * parent; see `AiTask::hosts`) instead of one that goes through them.
+     */
+    var `fanOut`: kotlin.Boolean = false 
     
 ){
     
@@ -17322,6 +21072,10 @@ public object FfiConverterTypeAiTaskRequest: FfiConverterRustBuffer<AiTaskReques
             FfiConverterSequenceString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
@@ -17332,7 +21086,11 @@ public object FfiConverterTypeAiTaskRequest: FfiConverterRustBuffer<AiTaskReques
             FfiConverterOptionalString.allocationSize(value.`provider`) +
             FfiConverterSequenceString.allocationSize(value.`hostIds`) +
             FfiConverterOptionalString.allocationSize(value.`sessionId`) +
-            FfiConverterOptionalString.allocationSize(value.`effort`)
+            FfiConverterOptionalString.allocationSize(value.`effort`) +
+            FfiConverterBoolean.allocationSize(value.`planFirst`) +
+            FfiConverterOptionalString.allocationSize(value.`groupId`) +
+            FfiConverterOptionalString.allocationSize(value.`tag`) +
+            FfiConverterBoolean.allocationSize(value.`fanOut`)
     )
 
     override fun write(value: AiTaskRequest, buf: ByteBuffer) {
@@ -17343,6 +21101,104 @@ public object FfiConverterTypeAiTaskRequest: FfiConverterRustBuffer<AiTaskReques
             FfiConverterSequenceString.write(value.`hostIds`, buf)
             FfiConverterOptionalString.write(value.`sessionId`, buf)
             FfiConverterOptionalString.write(value.`effort`, buf)
+            FfiConverterBoolean.write(value.`planFirst`, buf)
+            FfiConverterOptionalString.write(value.`groupId`, buf)
+            FfiConverterOptionalString.write(value.`tag`, buf)
+            FfiConverterBoolean.write(value.`fanOut`, buf)
+    }
+}
+
+
+
+/**
+ * A command or file write the task ran.
+ */
+data class AiTaskStep (
+    var `callId`: kotlin.String
+    , 
+    /**
+     * `run_command`, `send_to_terminal` or `write_file`.
+     */
+    var `tool`: kotlin.String
+    , 
+    var `host`: kotlin.String?
+    , 
+    /**
+     * What ran (your edit, if you edited it).
+     */
+    var `command`: kotlin.String?
+    , 
+    /**
+     * File written.
+     */
+    var `path`: kotlin.String?
+    , 
+    var `ok`: kotlin.Boolean
+    , 
+    /**
+     * You edited it before approving.
+     */
+    var `edited`: kotlin.Boolean
+    , 
+    /**
+     * The model's reason for it.
+     */
+    var `explanation`: kotlin.String?
+    , 
+    /**
+     * When (ms since the epoch).
+     */
+    var `at`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiTaskStep: FfiConverterRustBuffer<AiTaskStep> {
+    override fun read(buf: ByteBuffer): AiTaskStep {
+        return AiTaskStep(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AiTaskStep) = (
+            FfiConverterString.allocationSize(value.`callId`) +
+            FfiConverterString.allocationSize(value.`tool`) +
+            FfiConverterOptionalString.allocationSize(value.`host`) +
+            FfiConverterOptionalString.allocationSize(value.`command`) +
+            FfiConverterOptionalString.allocationSize(value.`path`) +
+            FfiConverterBoolean.allocationSize(value.`ok`) +
+            FfiConverterBoolean.allocationSize(value.`edited`) +
+            FfiConverterOptionalString.allocationSize(value.`explanation`) +
+            FfiConverterLong.allocationSize(value.`at`)
+    )
+
+    override fun write(value: AiTaskStep, buf: ByteBuffer) {
+            FfiConverterString.write(value.`callId`, buf)
+            FfiConverterString.write(value.`tool`, buf)
+            FfiConverterOptionalString.write(value.`host`, buf)
+            FfiConverterOptionalString.write(value.`command`, buf)
+            FfiConverterOptionalString.write(value.`path`, buf)
+            FfiConverterBoolean.write(value.`ok`, buf)
+            FfiConverterBoolean.write(value.`edited`, buf)
+            FfiConverterOptionalString.write(value.`explanation`, buf)
+            FfiConverterLong.write(value.`at`, buf)
     }
 }
 
@@ -18169,6 +22025,83 @@ public object FfiConverterTypeHostGroup: FfiConverterRustBuffer<HostGroup> {
             FfiConverterOptionalString.write(value.`vaultId`, buf)
             FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
             FfiConverterBoolean.write(value.`secretHidden`, buf)
+    }
+}
+
+
+
+/**
+ * The key of a known host is not the one saved.
+ */
+data class HostKeyChange (
+    /**
+     * Host (name or address, lowercase) as connected to; a jump host's
+     * when the change is on a jump.
+     */
+    var `host`: kotlin.String
+    , 
+    var `port`: kotlin.UInt
+    , 
+    /**
+     * Key algorithm (`ssh-ed25519`...).
+     */
+    var `keyType`: kotlin.String
+    , 
+    /**
+     * `SHA256:...` of the saved key.
+     */
+    var `oldFingerprint`: kotlin.String
+    , 
+    /**
+     * `SHA256:...` of the key the server presents now.
+     */
+    var `newFingerprint`: kotlin.String
+    , 
+    /**
+     * Account whose known hosts have the old key (`None`: This device).
+     */
+    var `accountId`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHostKeyChange: FfiConverterRustBuffer<HostKeyChange> {
+    override fun read(buf: ByteBuffer): HostKeyChange {
+        return HostKeyChange(
+            FfiConverterString.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: HostKeyChange) = (
+            FfiConverterString.allocationSize(value.`host`) +
+            FfiConverterUInt.allocationSize(value.`port`) +
+            FfiConverterString.allocationSize(value.`keyType`) +
+            FfiConverterString.allocationSize(value.`oldFingerprint`) +
+            FfiConverterString.allocationSize(value.`newFingerprint`) +
+            FfiConverterOptionalString.allocationSize(value.`accountId`)
+    )
+
+    override fun write(value: HostKeyChange, buf: ByteBuffer) {
+            FfiConverterString.write(value.`host`, buf)
+            FfiConverterUInt.write(value.`port`, buf)
+            FfiConverterString.write(value.`keyType`, buf)
+            FfiConverterString.write(value.`oldFingerprint`, buf)
+            FfiConverterString.write(value.`newFingerprint`, buf)
+            FfiConverterOptionalString.write(value.`accountId`, buf)
     }
 }
 
@@ -21464,6 +25397,65 @@ public object FfiConverterTypeTeam: FfiConverterRustBuffer<Team> {
 
 
 /**
+ * Result of inviting someone to a team by email.
+ */
+data class TeamInviteResult (
+    /**
+     * They already had an account and are in the team now (`members` is
+     * the updated list).
+     */
+    var `added`: kotlin.Boolean
+    , 
+    var `members`: List<TeamMember>
+    , 
+    /**
+     * Without an account: the invitation to sign up that adds them to the
+     * team (emailed when the server can send email: `emailed`).
+     */
+    var `invite`: CreatedAccountInvite?
+    , 
+    var `emailed`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTeamInviteResult: FfiConverterRustBuffer<TeamInviteResult> {
+    override fun read(buf: ByteBuffer): TeamInviteResult {
+        return TeamInviteResult(
+            FfiConverterBoolean.read(buf),
+            FfiConverterSequenceTypeTeamMember.read(buf),
+            FfiConverterOptionalTypeCreatedAccountInvite.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TeamInviteResult) = (
+            FfiConverterBoolean.allocationSize(value.`added`) +
+            FfiConverterSequenceTypeTeamMember.allocationSize(value.`members`) +
+            FfiConverterOptionalTypeCreatedAccountInvite.allocationSize(value.`invite`) +
+            FfiConverterBoolean.allocationSize(value.`emailed`)
+    )
+
+    override fun write(value: TeamInviteResult, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`added`, buf)
+            FfiConverterSequenceTypeTeamMember.write(value.`members`, buf)
+            FfiConverterOptionalTypeCreatedAccountInvite.write(value.`invite`, buf)
+            FfiConverterBoolean.write(value.`emailed`, buf)
+    }
+}
+
+
+
+/**
  * A team member.
  */
 data class TeamMember (
@@ -22237,6 +26229,55 @@ public object FfiConverterTypeAiPermissionMode: FfiConverterRustBuffer<AiPermiss
 
 
 /**
+ * How risky an action looks.
+ */
+
+enum class AiRiskLevel {
+    
+    /**
+     * Only reads.
+     */
+    LOW,
+    /**
+     * Changes something.
+     */
+    MEDIUM,
+    /**
+     * Destructive or hard to undo (deleting data, disks, reboots...).
+     */
+    HIGH;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiRiskLevel: FfiConverterRustBuffer<AiRiskLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AiRiskLevel.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AiRiskLevel) = 4UL
+
+    override fun write(value: AiRiskLevel, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * State of an AI task.
  */
 
@@ -22518,6 +26559,150 @@ public object FfiConverterTypeKeyType: FfiConverterRustBuffer<KeyType> {
 
     override fun write(value: KeyType, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What a link asks for.
+ */
+sealed class LinkTarget {
+    
+    /**
+     * Join a shared session: `termoak://join?server=…&token=…`,
+     * `https://<server>/join/<token>` or `https://<server>/api/v1/join/<token>`
+     * (`join_shared_session`, or `core.join_link` with your account).
+     */
+    data class Join(
+        val `server`: kotlin.String, 
+        val `token`: kotlin.String) : LinkTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Sign up with an invitation: `termoak://invite?server=…&token=…` or
+     * `https://<server>/invite/<code>` (`invite_info`, then `sign_up`).
+     */
+    data class Invite(
+        val `server`: kotlin.String, 
+        val `code`: kotlin.String) : LinkTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Connect to an address without a saved host: `ssh://[user@]host[:port]`
+     * or `telnet://…` (`protocol` is `ssh` or `telnet`; `port` `None` = 22
+     * or 23).
+     */
+    data class QuickConnect(
+        val `protocol`: kotlin.String, 
+        val `user`: kotlin.String?, 
+        val `host`: kotlin.String, 
+        val `port`: kotlin.UInt?) : LinkTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLinkTarget : FfiConverterRustBuffer<LinkTarget>{
+    override fun read(buf: ByteBuffer): LinkTarget {
+        return when(buf.getInt()) {
+            1 -> LinkTarget.Join(
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                )
+            2 -> LinkTarget.Invite(
+                FfiConverterString.read(buf),
+                FfiConverterString.read(buf),
+                )
+            3 -> LinkTarget.QuickConnect(
+                FfiConverterString.read(buf),
+                FfiConverterOptionalString.read(buf),
+                FfiConverterString.read(buf),
+                FfiConverterOptionalUInt.read(buf),
+                )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: LinkTarget): ULong = when(value) {
+        is LinkTarget.Join -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`server`)
+                + FfiConverterString.allocationSize(value.`token`)
+            )
+        }
+        is LinkTarget.Invite -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`server`)
+                + FfiConverterString.allocationSize(value.`code`)
+            )
+        }
+        is LinkTarget.QuickConnect -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`protocol`)
+                + FfiConverterOptionalString.allocationSize(value.`user`)
+                + FfiConverterString.allocationSize(value.`host`)
+                + FfiConverterOptionalUInt.allocationSize(value.`port`)
+            )
+        }
+    }
+
+    override fun write(value: LinkTarget, buf: ByteBuffer) {
+        when(value) {
+            is LinkTarget.Join -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`server`, buf)
+                FfiConverterString.write(value.`token`, buf)
+                Unit
+            }
+            is LinkTarget.Invite -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`server`, buf)
+                FfiConverterString.write(value.`code`, buf)
+                Unit
+            }
+            is LinkTarget.QuickConnect -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`protocol`, buf)
+                FfiConverterOptionalString.write(value.`user`, buf)
+                FfiConverterString.write(value.`host`, buf)
+                FfiConverterOptionalUInt.write(value.`port`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 }
 
@@ -24941,6 +29126,11 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class NotSupportedForTelnet(message: String) : TermoakException(message)
         
+    /**
+     * The app cancelled it (`TransferHandle::cancel`): nothing to show.
+     */
+        class Cancelled(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -24980,6 +29170,7 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             24 -> TermoakException.UseOnlyStrict(FfiConverterString.read(buf))
             25 -> TermoakException.UseOnlyNeedsServer(FfiConverterString.read(buf))
             26 -> TermoakException.NotSupportedForTelnet(FfiConverterString.read(buf))
+            27 -> TermoakException.Cancelled(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -25093,6 +29284,10 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.NotSupportedForTelnet -> {
                 buf.putInt(26)
+                Unit
+            }
+            is TermoakException.Cancelled -> {
+                buf.putInt(27)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -25598,6 +29793,70 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeHostKeyChangeHandler: FfiConverterRustBuffer<HostKeyChangeHandler?> {
+    override fun read(buf: ByteBuffer): HostKeyChangeHandler? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeHostKeyChangeHandler.read(buf)
+    }
+
+    override fun allocationSize(value: HostKeyChangeHandler?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeHostKeyChangeHandler.allocationSize(value)
+        }
+    }
+
+    override fun write(value: HostKeyChangeHandler?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeHostKeyChangeHandler.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTransferHandle: FfiConverterRustBuffer<TransferHandle?> {
+    override fun read(buf: ByteBuffer): TransferHandle? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTransferHandle.read(buf)
+    }
+
+    override fun allocationSize(value: TransferHandle?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTransferHandle.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TransferHandle?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTransferHandle.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeTransferListener: FfiConverterRustBuffer<TransferListener?> {
     override fun read(buf: ByteBuffer): TransferListener? {
         if (buf.get().toInt() == 0) {
@@ -25652,6 +29911,134 @@ public object FfiConverterOptionalTypeAccountInfo: FfiConverterRustBuffer<Accoun
         } else {
             buf.put(1)
             FfiConverterTypeAccountInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeAiApprovalPreview: FfiConverterRustBuffer<AiApprovalPreview?> {
+    override fun read(buf: ByteBuffer): AiApprovalPreview? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAiApprovalPreview.read(buf)
+    }
+
+    override fun allocationSize(value: AiApprovalPreview?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAiApprovalPreview.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AiApprovalPreview?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAiApprovalPreview.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeAiAssistContext: FfiConverterRustBuffer<AiAssistContext?> {
+    override fun read(buf: ByteBuffer): AiAssistContext? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAiAssistContext.read(buf)
+    }
+
+    override fun allocationSize(value: AiAssistContext?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAiAssistContext.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AiAssistContext?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAiAssistContext.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeAiTaskPlan: FfiConverterRustBuffer<AiTaskPlan?> {
+    override fun read(buf: ByteBuffer): AiTaskPlan? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAiTaskPlan.read(buf)
+    }
+
+    override fun allocationSize(value: AiTaskPlan?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAiTaskPlan.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AiTaskPlan?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAiTaskPlan.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeCreatedAccountInvite: FfiConverterRustBuffer<CreatedAccountInvite?> {
+    override fun read(buf: ByteBuffer): CreatedAccountInvite? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCreatedAccountInvite.read(buf)
+    }
+
+    override fun allocationSize(value: CreatedAccountInvite?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCreatedAccountInvite.allocationSize(value)
+        }
+    }
+
+    override fun write(value: CreatedAccountInvite?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCreatedAccountInvite.write(value, buf)
         }
     }
 }
@@ -25908,6 +30295,38 @@ public object FfiConverterOptionalTypeItemAccess: FfiConverterRustBuffer<ItemAcc
         } else {
             buf.put(1)
             FfiConverterTypeItemAccess.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeLinkTarget: FfiConverterRustBuffer<LinkTarget?> {
+    override fun read(buf: ByteBuffer): LinkTarget? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeLinkTarget.read(buf)
+    }
+
+    override fun allocationSize(value: LinkTarget?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeLinkTarget.allocationSize(value)
+        }
+    }
+
+    override fun write(value: LinkTarget?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeLinkTarget.write(value, buf)
         }
     }
 }
@@ -26214,6 +30633,34 @@ public object FfiConverterSequenceTypeAiApproval: FfiConverterRustBuffer<List<Ai
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeAiHostRun: FfiConverterRustBuffer<List<AiHostRun>> {
+    override fun read(buf: ByteBuffer): List<AiHostRun> {
+        val len = buf.getInt()
+        return List<AiHostRun>(len) {
+            FfiConverterTypeAiHostRun.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AiHostRun>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAiHostRun.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AiHostRun>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAiHostRun.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeAiKeyInfo: FfiConverterRustBuffer<List<AiKeyInfo>> {
     override fun read(buf: ByteBuffer): List<AiKeyInfo> {
         val len = buf.getInt()
@@ -26298,6 +30745,62 @@ public object FfiConverterSequenceTypeAiMemory: FfiConverterRustBuffer<List<AiMe
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeAiProvider: FfiConverterRustBuffer<List<AiProvider>> {
+    override fun read(buf: ByteBuffer): List<AiProvider> {
+        val len = buf.getInt()
+        return List<AiProvider>(len) {
+            FfiConverterTypeAiProvider.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AiProvider>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAiProvider.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AiProvider>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAiProvider.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeAiRiskReason: FfiConverterRustBuffer<List<AiRiskReason>> {
+    override fun read(buf: ByteBuffer): List<AiRiskReason> {
+        val len = buf.getInt()
+        return List<AiRiskReason>(len) {
+            FfiConverterTypeAiRiskReason.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AiRiskReason>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAiRiskReason.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AiRiskReason>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAiRiskReason.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeAiTask: FfiConverterRustBuffer<List<AiTask>> {
     override fun read(buf: ByteBuffer): List<AiTask> {
         val len = buf.getInt()
@@ -26316,6 +30819,34 @@ public object FfiConverterSequenceTypeAiTask: FfiConverterRustBuffer<List<AiTask
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeAiTask.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeAiTaskStep: FfiConverterRustBuffer<List<AiTaskStep>> {
+    override fun read(buf: ByteBuffer): List<AiTaskStep> {
+        val len = buf.getInt()
+        return List<AiTaskStep>(len) {
+            FfiConverterTypeAiTaskStep.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AiTaskStep>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAiTaskStep.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AiTaskStep>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAiTaskStep.write(it, buf)
         }
     }
 }
@@ -27452,6 +31983,56 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
 
         /**
+         * `termoak://join?server=…&token=…` (to share as a QR code or link).
+         */ fun `joinAppLink`(`server`: kotlin.String, `token`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_join_app_link(
+    
+        
+        FfiConverterString.lower(`server`),
+        FfiConverterString.lower(`token`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Reads a link (from a deep link, a QR code or the clipboard). The server
+         * may live under a path (`https://example.com/termoak/join/…` gives the
+         * server `https://example.com/termoak`). `None` when it is none of them or
+         * is incomplete.
+         */ fun `parseLink`(`text`: kotlin.String): LinkTarget? {
+            return FfiConverterOptionalTypeLinkTarget.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_parse_link(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Reads an address typed to connect without a saved host (a "quick
+         * connect" field): `user@host:port`, `host:port`, `[v6]:port`,
+         * `ssh user@host -p 2222`, `telnet host 23`, `ssh://…`, `telnet://…`. Plain
+         * words (no `@`, `:` or `.`) are not addresses, so it can run on a search
+         * field. Gives `QuickConnect` or `None`.
+         */ fun `parseQuickConnect`(`text`: kotlin.String): LinkTarget? {
+            return FfiConverterOptionalTypeLinkTarget.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_parse_quick_connect(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
          * Enables logging. `level` applies to Termoak; dependencies (russh,
          * reqwest...) only log warnings and errors. Returns `false` if it was
          * already enabled.
@@ -27463,6 +32044,43 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         
         FfiConverterTypeLogLevel.lower(`level`),
         FfiConverterTypeLogListener.lower(`listener`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Whether [`redact_secrets`] would hide anything in `text` (e.g. to warn
+         * before sending it).
+         */ fun `containsSecrets`(`text`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_contains_secrets(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Hides the secrets in `text` with `[redacted]`: private key blocks,
+         * `Authorization`/`Cookie` header values, the password of
+         * `scheme://user:password@host` URLs, values of secret-looking keys
+         * (`password=…`, `"api_key": "…"`, `export GITHUB_TOKEN=…`, `--password …`),
+         * well-known token formats (AWS, Google, GitHub, GitLab, Slack, Stripe,
+         * OpenAI/Anthropic, npm, Hugging Face, JWTs) and the token after a bare
+         * `Bearer` (a token a command printed). Key names are kept, so the
+         * text still makes sense. Fast enough to call on every screen sent to the
+         * AI.
+         */ fun `redactSecrets`(`text`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_redact_secrets(
+    
+        
+        FfiConverterString.lower(`text`),_status)
 }
     )
     }

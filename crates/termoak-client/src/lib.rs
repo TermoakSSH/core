@@ -12,6 +12,8 @@
 //!   those stores.
 //! - [`servers`]: the official server and canonical server URLs.
 //! - [`layout`]: the one-time migration of 0.3 data to one store per account.
+//! - [`links`]: `termoak://join` / `invite` links, their web forms (also for
+//!   servers under a path) and quick-connect addresses.
 
 pub mod accounts;
 pub mod api;
@@ -22,6 +24,7 @@ pub mod import;
 pub mod items;
 pub mod layout;
 pub mod line;
+pub mod links;
 pub mod qr;
 pub mod relay;
 pub mod remote;
