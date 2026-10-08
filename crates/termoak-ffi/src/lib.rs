@@ -18,7 +18,8 @@
 //! - AI in the terminal ([`CommandWatcher`], [`nl_request`],
 //!   [`typeable_command`], context chips), account aliases and hidden
 //!   emails ([`account_display_name`], [`mask_email`]) and command palette
-//!   ranking ([`palette_rank`]): the desktop's rules, shared.
+//!   ranking ([`palette_rank`]): the desktop's rules, shared. Host
+//!   reachability for status dots (`TermoakCore::probe_hosts`).
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Several accounts (servers) on one device ([`AccountHandle`],
@@ -44,6 +45,7 @@ mod logging;
 mod models;
 mod names;
 mod palette;
+mod probe;
 mod remote;
 mod runtime;
 mod screen;
@@ -66,6 +68,7 @@ pub use remote::{
 };
 pub use names::*;
 pub use palette::*;
+pub use probe::{HostProbe, HostReach, ProbeSkip};
 pub use screen::{
     FindStatus, KeyModifiers, MouseEncoding, MouseMode, ScreenCursor, ScreenCursorShape,
     ScreenEvent, ScreenHighlight, ScreenLine, ScreenPoint, ScreenRange, ScreenRun, ScreenSnapshot,

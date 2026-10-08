@@ -15,7 +15,8 @@
 //! - Shared app logic without UI (moved from the desktop so every app
 //!   behaves the same): [`find`] in a terminal, [`command_watch`] and
 //!   [`ai_assist`] (AI in the terminal), [`account_names`] (aliases and
-//!   hidden emails), [`palette`] (command palette ranking).
+//!   hidden emails), [`palette`] (command palette ranking), [`host_status`]
+//!   (reachability dots of the hosts lists).
 
 pub mod account_names;
 pub mod accounts;
@@ -26,6 +27,7 @@ pub mod complete;
 pub mod error;
 pub mod events;
 pub mod find;
+pub mod host_status;
 pub mod import;
 pub mod items;
 pub mod layout;
