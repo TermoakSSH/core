@@ -876,7 +876,12 @@ mod tests {
         assert!(!ev.started && ev.ended.is_none());
         assert!(t.integrated());
         assert!(!t.enter(t0, Some("make".into()), Some("$ ".into())));
-        let ev = t.output(t0, b"\r\n\x1b]133;C\x07cc x.c\r\nx.c:1: error: y\r\n", false, &none);
+        let ev = t.output(
+            t0,
+            b"\r\n\x1b]133;C\x07cc x.c\r\nx.c:1: error: y\r\n",
+            false,
+            &none,
+        );
         assert!(ev.started);
         let ev = t.output(
             t0 + std::time::Duration::from_secs(3),
@@ -902,7 +907,12 @@ mod tests {
         let mut t = CommandTracker::default();
         assert!(t.enter(t0, Some("gti status".into()), Some("ana@web:~$ ".into())));
         assert!(t.waiting_for_prompt());
-        t.output(t0, b"\r\nbash: gti: command not found\r\nana@web:~$ ", false, &screen);
+        t.output(
+            t0,
+            b"\r\nbash: gti: command not found\r\nana@web:~$ ",
+            false,
+            &screen,
+        );
         let later = t0 + std::time::Duration::from_secs(5);
         let ended = t.idle(later, false, "ana@web:~$ ", true, &screen).unwrap();
         let last = ended.last.unwrap();
@@ -915,7 +925,13 @@ mod tests {
         t.output(later, b"\x1b[?1049h~", true, &screen);
         t.output(later, b"\x1b[?1049l$ ", false, &screen);
         let ended = t
-            .idle(later + std::time::Duration::from_secs(5), false, "$ ", true, &screen)
+            .idle(
+                later + std::time::Duration::from_secs(5),
+                false,
+                "$ ",
+                true,
+                &screen,
+            )
             .unwrap();
         assert!(ended.finished.interactive && ended.last.is_none());
         assert_eq!(t.last().unwrap().command.as_deref(), Some("gti status"));

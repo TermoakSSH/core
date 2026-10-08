@@ -33,10 +33,10 @@ use termoak_core::resolve::ResolvedProxy;
 use termoak_core::time::now_ms;
 use zeroize::Zeroize;
 
+use crate::LOCAL_OWNER;
 use crate::error::Result as ClientResult;
 use crate::items::{ItemRef, Scope};
 use crate::workspace::Workspace;
-use crate::LOCAL_OWNER;
 
 /// Time between checks of a host while the list is on screen.
 pub const EVERY: Duration = Duration::from_secs(60);
@@ -275,17 +275,13 @@ pub async fn check(target: &Target, proxy_password: Option<&str>) -> Reach {
         settings,
         password: proxy_password.map(str::to_string),
     });
-    let reach = match termoak_ssh::probe::tcp_probe(
-        &target.address,
-        target.port,
-        proxy.as_ref(),
-        TIMEOUT,
-    )
-    .await
-    {
-        Some(rtt) => Reach::Up(rtt),
-        None => Reach::Down,
-    };
+    let reach =
+        match termoak_ssh::probe::tcp_probe(&target.address, target.port, proxy.as_ref(), TIMEOUT)
+            .await
+        {
+            Some(rtt) => Reach::Up(rtt),
+            None => Reach::Down,
+        };
     if let Some(mut p) = proxy
         && let Some(pw) = p.password.as_mut()
     {
@@ -374,7 +370,11 @@ impl Workspace {
         off: &[Id],
         concurrency: usize,
     ) -> Vec<HostProbe> {
-        let concurrency = if concurrency == 0 { CONCURRENCY } else { concurrency };
+        let concurrency = if concurrency == 0 {
+            CONCURRENCY
+        } else {
+            concurrency
+        };
         let mut out: Vec<HostProbe> = Vec::with_capacity(items.len());
         let mut probes: Vec<(usize, Probe)> = Vec::new();
         for (i, item) in items.iter().enumerate() {
@@ -406,7 +406,12 @@ impl Workspace {
             m.entry(p.host_id).or_default().push(*i);
             m
         });
-        let results = run(self, probes.into_iter().map(|(_, p)| p).collect(), concurrency).await;
+        let results = run(
+            self,
+            probes.into_iter().map(|(_, p)| p).collect(),
+            concurrency,
+        )
+        .await;
         let mut taken: HashSet<usize> = HashSet::new();
         for (p, reach) in results {
             let Some(i) = index
@@ -647,21 +652,30 @@ mod tests {
                     .item()
             }
         };
-        let mut up = host(None, HostSettings {
-            port: Some(port),
-            ..Default::default()
-        });
+        let mut up = host(
+            None,
+            HostSettings {
+                port: Some(port),
+                ..Default::default()
+            },
+        );
         up.address = "127.0.0.1".into();
         let up = save(up).await;
-        let jump = save(host(None, HostSettings {
-            jump_host_ids: Some(vec![up.id]),
-            ..Default::default()
-        }))
+        let jump = save(host(
+            None,
+            HostSettings {
+                jump_host_ids: Some(vec![up.id]),
+                ..Default::default()
+            },
+        ))
         .await;
-        let mut down = host(None, HostSettings {
-            port: Some(1),
-            ..Default::default()
-        });
+        let mut down = host(
+            None,
+            HostSettings {
+                port: Some(1),
+                ..Default::default()
+            },
+        );
         down.address = "127.0.0.1".into();
         let down = save(down).await;
         let off = save(host(None, HostSettings::default())).await;

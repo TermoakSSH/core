@@ -419,7 +419,10 @@ mod tests {
         assert!(chip.text.contains("(exit status 2)"));
         let block = copilot_context_block(
             "web-1".into(),
-            vec![context_chip_host("web-1".into(), Some("Ubuntu".into())), chip],
+            vec![
+                context_chip_host("web-1".into(), Some("Ubuntu".into())),
+                chip,
+            ],
         );
         assert!(block.starts_with("<context>\nFrom the user's terminal (web-1):\nHost: web-1\n"));
         assert!(block.ends_with("</context>\n\n"));
@@ -466,7 +469,10 @@ mod tests {
             ),
             Some(CommandFailure::Likely)
         );
-        assert_eq!(clean_terminal_output(b"a\x1b[31mb\x1b[0m\r\n".to_vec()), "ab\n");
+        assert_eq!(
+            clean_terminal_output(b"a\x1b[31mb\x1b[0m\r\n".to_vec()),
+            "ab\n"
+        );
         assert_eq!(text_tail("a\nb\nc".into(), 2, 100), "b\nc");
         assert_eq!(shorten_text("abcdef".into(), 4, false), "abc…");
         assert_eq!(shorten_text("abcdef".into(), 4, true), "…def");

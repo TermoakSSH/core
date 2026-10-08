@@ -268,7 +268,9 @@ pub fn terminal_themes() -> Vec<TerminalThemeInfo> {
 /// anything else (or nothing) follows the app.
 #[uniffi::export]
 pub fn terminal_theme_for_host(value: Option<String>, app_theme: String) -> String {
-    themes::for_host(value.as_deref(), &app_theme).id.to_string()
+    themes::for_host(value.as_deref(), &app_theme)
+        .id
+        .to_string()
 }
 
 fn theme_info(t: &themes::TerminalTheme) -> TerminalThemeInfo {
@@ -380,7 +382,11 @@ impl Inner {
     /// wrapped lines joined, trailing blanks dropped; `block` takes the same
     /// columns of every line.
     fn text_between(&mut self, start: Point, end: Point, block: bool) -> String {
-        let (start, end) = if start <= end { (start, end) } else { (end, start) };
+        let (start, end) = if start <= end {
+            (start, end)
+        } else {
+            (end, start)
+        };
         let ty = if block {
             SelectionType::Block
         } else {
@@ -601,9 +607,7 @@ impl TerminalScreen {
                             false,
                         ),
                         258 => palette.cursor,
-                        i if i < 256 => {
-                            resolve(Color::Indexed(i as u8), &colors, &palette, true)
-                        }
+                        i if i < 256 => resolve(Color::Indexed(i as u8), &colors, &palette, true),
                         _ => palette.foreground,
                     };
                     Some(ScreenEvent::Write {
@@ -1203,8 +1207,9 @@ fn resolve(color: Color, colors: &Colors, palette: &Palette, is_fg: bool) -> u32
     let ansi = &palette.ansi;
     match color {
         Color::Spec(c) => rgb(c.r, c.g, c.b),
-        Color::Indexed(i) => colors[i as usize]
-            .map_or_else(|| indexed(i, palette), |c| rgb(c.r, c.g, c.b)),
+        Color::Indexed(i) => {
+            colors[i as usize].map_or_else(|| indexed(i, palette), |c| rgb(c.r, c.g, c.b))
+        }
         Color::Named(named) => {
             let idx = named as usize;
             if let Some(c) = colors[idx] {
@@ -1503,7 +1508,10 @@ mod tests {
         assert_eq!(all[0].id, "termoak");
         assert!(all.iter().any(|t| t.id == "claro" && t.is_light));
         assert_eq!(all[2].colors.ansi.len(), 16);
-        assert_eq!(terminal_theme_for_host(Some("light".into()), "nord".into()), "claro");
+        assert_eq!(
+            terminal_theme_for_host(Some("light".into()), "nord".into()),
+            "claro"
+        );
         assert_eq!(terminal_theme_for_host(None, "nord".into()), "nord");
     }
 
@@ -1526,7 +1534,10 @@ mod tests {
         assert_eq!(snap.display_offset, 0);
         let current: Vec<_> = snap.highlights.iter().filter(|h| h.current).collect();
         assert_eq!(current.len(), 1);
-        assert_eq!((current[0].row, current[0].col, current[0].cells), (1, 7, 5));
+        assert_eq!(
+            (current[0].row, current[0].col, current[0].cells),
+            (1, 7, 5)
+        );
         assert_eq!(snap.highlights.len(), 2);
 
         // Older ones scroll the view up.

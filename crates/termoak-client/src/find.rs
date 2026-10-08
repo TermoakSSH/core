@@ -138,11 +138,7 @@ pub fn highlights(
         if row < 0 || row as usize >= lines {
             continue;
         }
-        let first = if line == start.line {
-            start.column
-        } else {
-            0
-        };
+        let first = if line == start.line { start.column } else { 0 };
         let last = if line == end.line {
             end.column
         } else {

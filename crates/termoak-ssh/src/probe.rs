@@ -23,10 +23,8 @@ pub async fn tcp_probe(
     let attempt = async {
         match proxy {
             None => {
-                let addrs: Vec<std::net::SocketAddr> = tokio::net::lookup_host((host, port))
-                    .await
-                    .ok()?
-                    .collect();
+                let addrs: Vec<std::net::SocketAddr> =
+                    tokio::net::lookup_host((host, port)).await.ok()?.collect();
                 for addr in addrs {
                     let start = Instant::now();
                     if TcpStream::connect(addr).await.is_ok() {

@@ -141,7 +141,10 @@ mod tests {
         );
         assert_eq!(mask_email("oihalitz@termoak.com".into()), "o•••@t•••.com");
         assert_eq!(clean_account_alias("  ".into()), None);
-        assert_eq!(clean_account_alias(" Home ".into()).as_deref(), Some("Home"));
+        assert_eq!(
+            clean_account_alias(" Home ".into()).as_deref(),
+            Some("Home")
+        );
         assert_eq!(ACCOUNT_ALIAS_MAX, 40);
     }
 }
