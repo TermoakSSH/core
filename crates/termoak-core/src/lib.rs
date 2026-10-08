@@ -6,6 +6,7 @@ pub mod crypto;
 pub mod error;
 pub mod model;
 pub mod qr;
+pub mod redact;
 pub mod resolve;
 pub mod store;
 pub mod time;

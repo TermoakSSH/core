@@ -36,6 +36,7 @@ mod error;
 mod files;
 mod logging;
 mod models;
+mod redact;
 mod remote;
 mod runtime;
 mod screen;
@@ -50,6 +51,7 @@ pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};
 pub use logging::{LogLevel, LogListener, init_logging};
 pub use models::*;
+pub use redact::{contains_secrets, redact_secrets};
 pub use remote::{
     EventSubscription, LinkInvite, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,
     ServerTerminalListener, ShareInvite, SharedTerminal, SharedTerminalEvent,
