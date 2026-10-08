@@ -721,6 +721,8 @@ fn ssh_end_to_end() {
         listener.clone(),
         None,
         true,
+        false,
+        None,
     ))
     .unwrap();
     assert!(!term.is_telnet());
@@ -858,7 +860,7 @@ fn ssh_end_to_end() {
     block_on(session.disconnect()).unwrap();
 
     // Second connection: the fingerprint is already known and not asked.
-    let session = block_on(core.connect(h.id.clone(), auth.clone(), None)).unwrap();
+    let session = block_on(core.connect(h.id.clone(), auth.clone(), None, None)).unwrap();
     assert_eq!(auth.host_keys.lock().len(), 1);
     let listener2 = Arc::new(Collector::default());
     let term2 = block_on(
@@ -901,11 +903,124 @@ fn ssh_end_to_end() {
         ))
         .unwrap();
     }
-    let err = block_on(core.connect(h.id.clone(), auth.clone(), None))
+    let err = block_on(core.connect(h.id.clone(), auth.clone(), None, None))
         .err()
         .unwrap();
     assert!(matches!(err, TermoakError::HostKey(_)), "{err:?}");
     assert_eq!(auth.host_keys.lock().len(), 1);
+
+    // With a handler: it gets what changed; saying no keeps the error.
+    let refuse = Arc::new(KeyChanges::new(false));
+    let err = block_on(core.connect(h.id.clone(), auth.clone(), None, Some(refuse.clone())))
+        .err()
+        .unwrap();
+    assert!(matches!(err, TermoakError::HostKey(_)), "{err:?}");
+    let seen = refuse.seen.lock().clone();
+    assert_eq!(seen.len(), 1);
+    assert_eq!(seen[0].host, "127.0.0.1");
+    assert_eq!(seen[0].port, u32::from(sshd.port));
+    assert_eq!(seen[0].old_fingerprint, "SHA256:fake");
+    assert!(seen[0].new_fingerprint.starts_with("SHA256:"));
+    assert!(!seen[0].key_type.is_empty());
+    assert_eq!(seen[0].account_id, None);
+    // Trusting the new key replaces the old one and connects, without
+    // asking `on_host_key` again.
+    let accept = Arc::new(KeyChanges::new(true));
+    let session =
+        block_on(core.connect(h.id.clone(), auth.clone(), None, Some(accept.clone()))).unwrap();
+    assert_eq!(accept.seen.lock().len(), 1);
+    assert_eq!(auth.host_keys.lock().len(), 1);
+    let known = core.list_known_hosts(None).unwrap();
+    assert_eq!(known.len(), 1);
+    assert_eq!(known[0].fingerprint, seen[0].new_fingerprint);
+    let real_key = known[0].public_key.clone();
+    block_on(session.disconnect()).unwrap();
+    // Known now: the handler is not asked again.
+    let session =
+        block_on(core.connect(h.id.clone(), auth.clone(), None, Some(accept.clone()))).unwrap();
+    assert_eq!(accept.seen.lock().len(), 1);
+
+    // A cancelled transfer fails with `Cancelled` and leaves no file.
+    let cancel = TransferHandle::new();
+    cancel.cancel();
+    let cancelled_file = dir.path().join("cancelled.txt");
+    let err = block_on(session.clone().sftp_download(
+        "/etc/hostname".into(),
+        cancelled_file.to_string_lossy().into_owned(),
+        None,
+        Some(cancel.clone()),
+    ))
+    .err()
+    .unwrap();
+    assert!(matches!(err, TermoakError::Cancelled(_)), "{err:?}");
+    assert!(!cancelled_file.exists());
+    block_on(session.disconnect()).unwrap();
+
+    // `replace_known_host`: a wrong key makes the next connection fail,
+    // the right one makes it work again.
+    let other = termoak_ssh::keys::generate(termoak_ssh::keys::KeyType::Ed25519, "", None)
+        .unwrap()
+        .public_openssh;
+    let replaced = core
+        .replace_known_host("127.0.0.1".into(), sshd.port.into(), other, None)
+        .unwrap();
+    assert_eq!(replaced.key_type, "ssh-ed25519");
+    assert_eq!(core.list_known_hosts(None).unwrap().len(), 1);
+    assert!(matches!(
+        block_on(core.connect(h.id.clone(), auth.clone(), None, None)).err(),
+        Some(TermoakError::HostKey(_))
+    ));
+    assert!(matches!(
+        core.replace_known_host("127.0.0.1".into(), 0, real_key.clone(), None),
+        Err(TermoakError::Invalid(_))
+    ));
+    core.replace_known_host("127.0.0.1".into(), sshd.port.into(), real_key, None)
+        .unwrap();
+
+    // `record`: the terminal is recorded in the data folder.
+    let listener3 = Arc::new(Collector::default());
+    let term3 = block_on(core.connect_terminal(
+        h.id.clone(),
+        80,
+        24,
+        auth.clone(),
+        listener3.clone(),
+        None,
+        true,
+        true,
+        None,
+    ))
+    .unwrap();
+    let path = term3.recording_path().expect("recording");
+    assert!(path.contains("recordings"), "{path}");
+    term3.write_text("echo recorded-$((1+1))\n".into()).unwrap();
+    listener3.wait_output("recorded-2");
+    term3.close_terminal();
+    listener3.wait_closed();
+    assert!(std::path::Path::new(&path).exists());
+    assert_eq!(auth.host_keys.lock().len(), 1);
+}
+
+/// Test `HostKeyChangeHandler`: answers `accept` and keeps what it saw.
+struct KeyChanges {
+    accept: bool,
+    seen: Mutex<Vec<HostKeyChange>>,
+}
+
+impl KeyChanges {
+    fn new(accept: bool) -> Self {
+        Self {
+            accept,
+            seen: Mutex::new(Vec::new()),
+        }
+    }
+}
+
+impl HostKeyChangeHandler for KeyChanges {
+    fn on_host_key_changed(&self, change: HostKeyChange) -> bool {
+        self.seen.lock().push(change);
+        self.accept
+    }
 }
 
 // ----- Telnet -----
@@ -967,6 +1082,8 @@ fn telnet_terminal_through_the_ffi() {
         listener.clone(),
         None,
         true,
+        false,
+        None,
     ))
     .unwrap();
     let (mut srv, _) = server.accept().unwrap();
@@ -1044,7 +1161,7 @@ fn telnet_terminal_through_the_ffi() {
         .map(drop),
     );
     // An SSH connection to a Telnet host (for files or tunnels).
-    refused(block_on(core.connect(h.id.clone(), auth.clone(), None)).map(drop));
+    refused(block_on(core.connect(h.id.clone(), auth.clone(), None, None)).map(drop));
     assert!(!session.is_closed());
 
     // Closing: the host sees the end, the app gets Closed.
@@ -1085,6 +1202,8 @@ fn telnet_without_auto_login_and_host_hanging_up() {
         listener.clone(),
         None,
         false,
+        false,
+        None,
     ))
     .unwrap();
     let (mut srv, _) = server.accept().unwrap();
@@ -1106,6 +1225,8 @@ fn telnet_without_auto_login_and_host_hanging_up() {
         Arc::new(Collector::default()),
         None,
         false,
+        false,
+        None,
     ))
     .unwrap();
     let _raw_srv = fresh.accept().unwrap();

@@ -15,6 +15,10 @@
 //!   output into a screen ready to draw.
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
+//! - Typed background AI (approval previews, edits and reasons, plans,
+//!   multi-host tasks, runbooks, providers, quick assistant), secret
+//!   redaction on the device (`redact_secrets`), one link parser
+//!   (`parse_link`) and cancellable transfers ([`TransferHandle`]).
 //! - Several accounts (servers) on one device ([`AccountHandle`],
 //!   `sign_in`, `accounts`, `set_account_view`), vaults (`vaults`,
 //!   `AccountHandle::create_vault`...) and moving items between This device,
@@ -35,6 +39,7 @@ mod assist;
 mod auth;
 mod error;
 mod files;
+mod hostkey;
 mod links;
 mod logging;
 mod models;
@@ -53,6 +58,7 @@ pub use ai::*;
 pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};
+pub use hostkey::{HostKeyChange, HostKeyChangeHandler};
 pub use links::{LinkTarget, join_app_link, parse_link, parse_quick_connect};
 pub use logging::{LogLevel, LogListener, init_logging};
 pub use models::*;
