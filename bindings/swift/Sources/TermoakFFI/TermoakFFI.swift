@@ -2007,6 +2007,290 @@ public func FfiConverterTypeAuthHandler_lower(_ value: AuthHandler) -> UInt64 {
 
 
 /**
+ * Follows the commands of one terminal, like [`crate::LineTracker`]
+ * follows its line. Feed it every piece of output with
+ * [`Self::output`] (after the emulator, to know whether the alternate
+ * screen is on), call [`Self::enter`] when the user presses Enter at a
+ * shell line (not in a full-screen program, not a bracketed paste) and,
+ * while [`Self::waiting_for_prompt`], [`Self::idle`] every half second.
+ *
+ * With shell integration (OSC 133 from the shell's scripts, or OSC 633
+ * from VS Code's) start, end and exit status are exact; without it a
+ * command ends when the output goes quiet for a second with a prompt at
+ * the cursor.
+ */
+public protocol CommandWatcherProtocol: AnyObject, Sendable {
+    
+    /**
+     * Enter was pressed at a shell line: `command` is the line typed (the
+     * `LineTracker`'s, if it is trusted) and `prompt` what is in front of
+     * it on screen. Whether a command started (without shell
+     * integration; then start calling [`Self::idle`]).
+     */
+    func enter(command: String?, prompt: String?)  -> Bool
+    
+    /**
+     * The periodic check without shell integration: `before_cursor` is the
+     * text in front of the cursor on its line and `after_blank` whether the
+     * rest of the line is empty.
+     */
+    func idle(alternateScreen: Bool, beforeCursor: String, afterBlank: Bool)  -> CommandEnded?
+    
+    /**
+     * The shell marks its prompts and commands (OSC 133/633).
+     */
+    func integrated()  -> Bool
+    
+    /**
+     * The last command that ended (for the copilot's context chip).
+     */
+    func lastCommand()  -> LastCommandInfo?
+    
+    /**
+     * A piece of terminal output; `alternate_screen`: the screen in use
+     * after it.
+     */
+    func output(data: Data, alternateScreen: Bool)  -> CommandOutputEvent
+    
+    /**
+     * Forgets everything (a new connection).
+     */
+    func reset() 
+    
+    /**
+     * Without shell integration, a command is waiting for its prompt:
+     * call [`Self::idle`] every half second meanwhile.
+     */
+    func waitingForPrompt()  -> Bool
+    
+}
+/**
+ * Follows the commands of one terminal, like [`crate::LineTracker`]
+ * follows its line. Feed it every piece of output with
+ * [`Self::output`] (after the emulator, to know whether the alternate
+ * screen is on), call [`Self::enter`] when the user presses Enter at a
+ * shell line (not in a full-screen program, not a bracketed paste) and,
+ * while [`Self::waiting_for_prompt`], [`Self::idle`] every half second.
+ *
+ * With shell integration (OSC 133 from the shell's scripts, or OSC 633
+ * from VS Code's) start, end and exit status are exact; without it a
+ * command ends when the output goes quiet for a second with a prompt at
+ * the cursor.
+ */
+open class CommandWatcher: CommandWatcherProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_commandwatcher(self.handle, $0) }
+    }
+    /**
+     * `screen`: the terminal's [`TerminalScreen`] (Android); without it
+     * (iOS) a command whose start was not seen ends with no output.
+     */
+public convenience init(screen: TerminalScreen? = nil) {
+    let handle =
+        try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_constructor_commandwatcher_new(
+        FfiConverterOptionTypeTerminalScreen.lower(screen),uniffiCallStatus
+    )
+}
+    self.init(unsafeFromHandle: handle)
+}
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_commandwatcher(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Enter was pressed at a shell line: `command` is the line typed (the
+     * `LineTracker`'s, if it is trusted) and `prompt` what is in front of
+     * it on screen. Whether a command started (without shell
+     * integration; then start calling [`Self::idle`]).
+     */
+open func enter(command: String? = nil, prompt: String? = nil) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_enter(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionString.lower(command),
+        FfiConverterOptionString.lower(prompt),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The periodic check without shell integration: `before_cursor` is the
+     * text in front of the cursor on its line and `after_blank` whether the
+     * rest of the line is empty.
+     */
+open func idle(alternateScreen: Bool, beforeCursor: String, afterBlank: Bool) -> CommandEnded?  {
+    return try!  FfiConverterOptionTypeCommandEnded.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_idle(
+            self.uniffiCloneHandle(),
+        FfiConverterBool.lower(alternateScreen),
+        FfiConverterString.lower(beforeCursor),
+        FfiConverterBool.lower(afterBlank),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The shell marks its prompts and commands (OSC 133/633).
+     */
+open func integrated() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_integrated(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The last command that ended (for the copilot's context chip).
+     */
+open func lastCommand() -> LastCommandInfo?  {
+    return try!  FfiConverterOptionTypeLastCommandInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_last_command(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * A piece of terminal output; `alternate_screen`: the screen in use
+     * after it.
+     */
+open func output(data: Data, alternateScreen: Bool) -> CommandOutputEvent  {
+    return try!  FfiConverterTypeCommandOutputEvent_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_output(
+            self.uniffiCloneHandle(),
+        FfiConverterData.lower(data),
+        FfiConverterBool.lower(alternateScreen),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Forgets everything (a new connection).
+     */
+open func reset()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_reset(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Without shell integration, a command is waiting for its prompt:
+     * call [`Self::idle`] every half second meanwhile.
+     */
+open func waitingForPrompt() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_commandwatcher_waiting_for_prompt(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCommandWatcher: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = CommandWatcher
+
+    public static func lift(_ handle: UInt64) throws -> CommandWatcher {
+        return CommandWatcher(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: CommandWatcher) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CommandWatcher {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: CommandWatcher, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandWatcher_lift(_ handle: UInt64) throws -> CommandWatcher {
+    return try FfiConverterTypeCommandWatcher.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandWatcher_lower(_ value: CommandWatcher) -> UInt64 {
+    return FfiConverterTypeCommandWatcher.lower(value)
+}
+
+
+
+
+
+
+/**
  * Subscription to the user's events. Closed with `unsubscribe` or when
  * dropped.
  */
@@ -2131,6 +2415,345 @@ public func FfiConverterTypeEventSubscription_lift(_ handle: UInt64) throws -> E
 #endif
 public func FfiConverterTypeEventSubscription_lower(_ value: EventSubscription) -> UInt64 {
     return FfiConverterTypeEventSubscription.lower(value)
+}
+
+
+
+
+
+
+/**
+ * A file read for the import, before anything is saved. Immutable:
+ * [`Self::with_mapping`] and [`Self::unlock`] return a new preview.
+ */
+public protocol ImportPreviewProtocol: AnyObject, Sendable {
+    
+    /**
+     * Names of the CSV columns (the headers, or `Column 3`).
+     */
+    func csvColumns()  -> [String]
+    
+    /**
+     * The column mapping of a CSV (`None` for other formats). Without an
+     * address column nothing is imported: let the user map it.
+     */
+    func csvMapping()  -> CsvMapping?
+    
+    /**
+     * The first rows of a CSV (at most `max`), to show next to the
+     * mapping.
+     */
+    func csvSample(max: UInt32)  -> [[String]]
+    
+    /**
+     * The format read.
+     */
+    func format()  -> ImportFormat
+    
+    /**
+     * Groups (folders) the file brings.
+     */
+    func groupCount()  -> UInt32
+    
+    func hosts()  -> [ImportHostPreview]
+    
+    func identityCount()  -> UInt32
+    
+    /**
+     * Keys, identities and snippets (Termoak JSON).
+     */
+    func keyCount()  -> UInt32
+    
+    /**
+     * A Termoak export with sealed passwords and keys that are not open
+     * yet: ask for the passphrase ([`Self::unlock`]), or import the rest
+     * without them.
+     */
+    func needsPassphrase()  -> Bool
+    
+    /**
+     * The file's name.
+     */
+    func origin()  -> String
+    
+    func snippetCount()  -> UInt32
+    
+    /**
+     * Opens the sealed secrets (takes a moment). `None`: wrong passphrase.
+     */
+    func unlock(passphrase: String) throws  -> ImportPreview?
+    
+    func warnings()  -> [ImportWarningInfo]
+    
+    /**
+     * The same file with another CSV column mapping.
+     */
+    func withMapping(mapping: CsvMapping)  -> ImportPreview
+    
+}
+/**
+ * A file read for the import, before anything is saved. Immutable:
+ * [`Self::with_mapping`] and [`Self::unlock`] return a new preview.
+ */
+open class ImportPreview: ImportPreviewProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_importpreview(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_importpreview(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Names of the CSV columns (the headers, or `Column 3`).
+     */
+open func csvColumns() -> [String]  {
+    return try!  FfiConverterSequenceString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_csv_columns(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The column mapping of a CSV (`None` for other formats). Without an
+     * address column nothing is imported: let the user map it.
+     */
+open func csvMapping() -> CsvMapping?  {
+    return try!  FfiConverterOptionTypeCsvMapping.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_csv_mapping(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The first rows of a CSV (at most `max`), to show next to the
+     * mapping.
+     */
+open func csvSample(max: UInt32 = UInt32(5)) -> [[String]]  {
+    return try!  FfiConverterSequenceSequenceString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_csv_sample(
+            self.uniffiCloneHandle(),
+        FfiConverterUInt32.lower(max),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The format read.
+     */
+open func format() -> ImportFormat  {
+    return try!  FfiConverterTypeImportFormat_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_format(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Groups (folders) the file brings.
+     */
+open func groupCount() -> UInt32  {
+    return try!  FfiConverterUInt32.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_group_count(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func hosts() -> [ImportHostPreview]  {
+    return try!  FfiConverterSequenceTypeImportHostPreview.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_hosts(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func identityCount() -> UInt32  {
+    return try!  FfiConverterUInt32.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_identity_count(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Keys, identities and snippets (Termoak JSON).
+     */
+open func keyCount() -> UInt32  {
+    return try!  FfiConverterUInt32.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_key_count(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * A Termoak export with sealed passwords and keys that are not open
+     * yet: ask for the passphrase ([`Self::unlock`]), or import the rest
+     * without them.
+     */
+open func needsPassphrase() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_needs_passphrase(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The file's name.
+     */
+open func origin() -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_origin(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+open func snippetCount() -> UInt32  {
+    return try!  FfiConverterUInt32.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_snippet_count(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Opens the sealed secrets (takes a moment). `None`: wrong passphrase.
+     */
+open func unlock(passphrase: String)throws  -> ImportPreview?  {
+    return try  FfiConverterOptionTypeImportPreview.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_unlock(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(passphrase),uniffiCallStatus
+    )
+})
+}
+    
+open func warnings() -> [ImportWarningInfo]  {
+    return try!  FfiConverterSequenceTypeImportWarningInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_warnings(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The same file with another CSV column mapping.
+     */
+open func withMapping(mapping: CsvMapping) -> ImportPreview  {
+    return try!  FfiConverterTypeImportPreview_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_importpreview_with_mapping(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeCsvMapping_lower(mapping),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportPreview: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = ImportPreview
+
+    public static func lift(_ handle: UInt64) throws -> ImportPreview {
+        return ImportPreview(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: ImportPreview) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportPreview {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: ImportPreview, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportPreview_lift(_ handle: UInt64) throws -> ImportPreview {
+    return try FfiConverterTypeImportPreview.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportPreview_lower(_ value: ImportPreview) -> UInt64 {
+    return FfiConverterTypeImportPreview.lower(value)
 }
 
 
@@ -5657,6 +6280,16 @@ public protocol TerminalScreenProtocol: AnyObject, Sendable {
      */
     func character(ch: String, modifiers: KeyModifiers)  -> Data
     
+    /**
+     * Ends the search (no more highlights).
+     */
+    func clearFind() 
+    
+    /**
+     * The colours in use.
+     */
+    func colors()  -> TerminalColors
+    
     func cols()  -> UInt32
     
     /**
@@ -5666,9 +6299,42 @@ public protocol TerminalScreenProtocol: AnyObject, Sendable {
     func feed(data: Data)  -> [ScreenEvent]
     
     /**
+     * Searches the screen and the scrollback for `query` (literal text, or
+     * a regular expression with `regex`; `case_sensitive` or not) and goes
+     * to the newest match at or above the bottom of the view (scrolling to
+     * it). The snapshot then highlights the matches on screen. An empty
+     * query clears the search.
+     */
+    func find(query: String, caseSensitive: Bool, regex: Bool)  -> FindStatus
+    
+    /**
+     * The search as it is now (counted again: call it after new output to
+     * refresh "3 of 12", at most a few times a second).
+     */
+    func findStatus()  -> FindStatus
+    
+    /**
+     * Goes to the next match: `older` upwards (Enter), otherwise downwards
+     * (Shift+Enter); both wrap around. Lists the matches again first (new
+     * output may have added some).
+     */
+    func findStep(older: Bool)  -> FindStatus
+    
+    /**
+     * Lines of scrollback above the screen (`ScreenPoint::line` goes down
+     * to minus this).
+     */
+    func historySize()  -> UInt32
+    
+    /**
      * Bytes of a special key, according to the remote program's mode.
      */
     func key(key: TerminalKey, modifiers: KeyModifiers)  -> Data
+    
+    /**
+     * The whole line at a point (triple tap), across wrapped lines.
+     */
+    func lineAt(point: ScreenPoint)  -> ScreenRange
     
     /**
      * Link at the visible cell `row`, `col`: the one the program marks
@@ -5677,10 +6343,21 @@ public protocol TerminalScreenProtocol: AnyObject, Sendable {
     func linkAt(row: UInt32, col: UInt32)  -> String?
     
     /**
+     * What the remote program has turned on: mouse reporting and its
+     * encoding, bracketed paste, application cursor and keypad...
+     */
+    func modes()  -> TerminalModes
+    
+    /**
      * Pasted text: bracketed if the program asked for it, with line breaks
      * sent as Enter.
      */
     func paste(text: String)  -> Data
+    
+    /**
+     * The grid point under viewport `row`, `col` (with the current scroll).
+     */
+    func pointAt(row: UInt32, col: UInt32)  -> ScreenPoint
     
     /**
      * Clears screen and scrollback (e.g. on `ServerTerminalEvent::Resync`).
@@ -5707,9 +6384,43 @@ public protocol TerminalScreenProtocol: AnyObject, Sendable {
     func scrollToBottom() 
     
     /**
+     * Scrolls the view so `line` is on screen (e.g. a selection handle
+     * dragged past the top).
+     */
+    func scrollToLine(line: Int32) 
+    
+    /**
+     * Uses these colours (ARGB). Missing ANSI colours keep the current
+     * ones; `selection` is only kept to be read back.
+     */
+    func setColors(colors: TerminalColors) 
+    
+    /**
+     * Uses a theme of [`terminal_themes`] (by id). `false` (and nothing
+     * changes) for an unknown id. Colours the program set (OSC 4/10/11)
+     * still win until it resets them.
+     */
+    func setTheme(id: String)  -> Bool
+    
+    /**
      * The visible screen, ready to paint.
      */
     func snapshot()  -> ScreenSnapshot
+    
+    /**
+     * Text from `start` to `end` (inclusive, in either order), anywhere in
+     * the screen or the scrollback: wrapped lines are joined, trailing
+     * blanks dropped. `block`: the same columns of every line (a
+     * rectangle).
+     */
+    func textRange(start: ScreenPoint, end: ScreenPoint, block: Bool)  -> String
+    
+    /**
+     * The word at a point (double tap): letters, digits and the
+     * characters around them that are not separators (spaces, quotes,
+     * brackets, `|`, `:`...); across wrapped lines. `None` on a blank.
+     */
+    func wordAt(point: ScreenPoint)  -> ScreenRange?
     
 }
 /**
@@ -5811,6 +6522,29 @@ open func character(ch: String, modifiers: KeyModifiers) -> Data  {
 })
 }
     
+    /**
+     * Ends the search (no more highlights).
+     */
+open func clearFind()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_clear_find(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * The colours in use.
+     */
+open func colors() -> TerminalColors  {
+    return try!  FfiConverterTypeTerminalColors_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_colors(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
 open func cols() -> UInt32  {
     return try!  FfiConverterUInt32.lift(try! rustCall() {
         uniffiCallStatus in
@@ -5835,6 +6569,66 @@ open func feed(data: Data) -> [ScreenEvent]  {
 }
     
     /**
+     * Searches the screen and the scrollback for `query` (literal text, or
+     * a regular expression with `regex`; `case_sensitive` or not) and goes
+     * to the newest match at or above the bottom of the view (scrolling to
+     * it). The snapshot then highlights the matches on screen. An empty
+     * query clears the search.
+     */
+open func find(query: String, caseSensitive: Bool = false, regex: Bool = false) -> FindStatus  {
+    return try!  FfiConverterTypeFindStatus_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_find(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),
+        FfiConverterBool.lower(caseSensitive),
+        FfiConverterBool.lower(regex),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The search as it is now (counted again: call it after new output to
+     * refresh "3 of 12", at most a few times a second).
+     */
+open func findStatus() -> FindStatus  {
+    return try!  FfiConverterTypeFindStatus_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_find_status(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Goes to the next match: `older` upwards (Enter), otherwise downwards
+     * (Shift+Enter); both wrap around. Lists the matches again first (new
+     * output may have added some).
+     */
+open func findStep(older: Bool) -> FindStatus  {
+    return try!  FfiConverterTypeFindStatus_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_find_step(
+            self.uniffiCloneHandle(),
+        FfiConverterBool.lower(older),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Lines of scrollback above the screen (`ScreenPoint::line` goes down
+     * to minus this).
+     */
+open func historySize() -> UInt32  {
+    return try!  FfiConverterUInt32.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_history_size(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Bytes of a special key, according to the remote program's mode.
      */
 open func key(key: TerminalKey, modifiers: KeyModifiers) -> Data  {
@@ -5844,6 +6638,19 @@ open func key(key: TerminalKey, modifiers: KeyModifiers) -> Data  {
             self.uniffiCloneHandle(),
         FfiConverterTypeTerminalKey_lower(key),
         FfiConverterTypeKeyModifiers_lower(modifiers),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The whole line at a point (triple tap), across wrapped lines.
+     */
+open func lineAt(point: ScreenPoint) -> ScreenRange  {
+    return try!  FfiConverterTypeScreenRange_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_line_at(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeScreenPoint_lower(point),uniffiCallStatus
     )
 })
 }
@@ -5864,6 +6671,19 @@ open func linkAt(row: UInt32, col: UInt32) -> String?  {
 }
     
     /**
+     * What the remote program has turned on: mouse reporting and its
+     * encoding, bracketed paste, application cursor and keypad...
+     */
+open func modes() -> TerminalModes  {
+    return try!  FfiConverterTypeTerminalModes_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_modes(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * Pasted text: bracketed if the program asked for it, with line breaks
      * sent as Enter.
      */
@@ -5873,6 +6693,20 @@ open func paste(text: String) -> Data  {
     uniffi_termoak_ffi_fn_method_terminalscreen_paste(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The grid point under viewport `row`, `col` (with the current scroll).
+     */
+open func pointAt(row: UInt32, col: UInt32) -> ScreenPoint  {
+    return try!  FfiConverterTypeScreenPoint_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_point_at(
+            self.uniffiCloneHandle(),
+        FfiConverterUInt32.lower(row),
+        FfiConverterUInt32.lower(col),uniffiCallStatus
     )
 })
 }
@@ -5943,6 +6777,47 @@ open func scrollToBottom()  {try! rustCall() {
 }
     
     /**
+     * Scrolls the view so `line` is on screen (e.g. a selection handle
+     * dragged past the top).
+     */
+open func scrollToLine(line: Int32)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_line(
+            self.uniffiCloneHandle(),
+        FfiConverterInt32.lower(line),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Uses these colours (ARGB). Missing ANSI colours keep the current
+     * ones; `selection` is only kept to be read back.
+     */
+open func setColors(colors: TerminalColors)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_set_colors(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeTerminalColors_lower(colors),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Uses a theme of [`terminal_themes`] (by id). `false` (and nothing
+     * changes) for an unknown id. Colours the program set (OSC 4/10/11)
+     * still win until it resets them.
+     */
+open func setTheme(id: String) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_set_theme(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),uniffiCallStatus
+    )
+})
+}
+    
+    /**
      * The visible screen, ready to paint.
      */
 open func snapshot() -> ScreenSnapshot  {
@@ -5950,6 +6825,39 @@ open func snapshot() -> ScreenSnapshot  {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_terminalscreen_snapshot(
             self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Text from `start` to `end` (inclusive, in either order), anywhere in
+     * the screen or the scrollback: wrapped lines are joined, trailing
+     * blanks dropped. `block`: the same columns of every line (a
+     * rectangle).
+     */
+open func textRange(start: ScreenPoint, end: ScreenPoint, block: Bool = false) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_text_range(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeScreenPoint_lower(start),
+        FfiConverterTypeScreenPoint_lower(end),
+        FfiConverterBool.lower(block),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The word at a point (double tap): letters, digits and the
+     * characters around them that are not separators (spaces, quotes,
+     * brackets, `|`, `:`...); across wrapped lines. `None` on a blank.
+     */
+open func wordAt(point: ScreenPoint) -> ScreenRange?  {
+    return try!  FfiConverterOptionTypeScreenRange.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_terminalscreen_word_at(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeScreenPoint_lower(point),uniffiCallStatus
     )
 })
 }
@@ -6375,6 +7283,44 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * Returns the number of bytes.
      */
     func serverSftpUpload(hostId: String, localPath: String, remotePath: String, listener: TransferListener?, accountId: String?) async throws  -> UInt64
+    
+    /**
+     * Saves a previewed import. The target may differ from the preview's:
+     * duplicates are found again against it.
+     */
+    func applyImport(preview: ImportPreview, options: ImportOptions) async throws  -> ImportSummary
+    
+    /**
+     * Writes an export of a vault (or This device, or one group). Secrets
+     * only go into a Termoak JSON, with `include_secrets` and a passphrase
+     * of at least 8 characters (sealing takes a moment). `app` names the
+     * app in the file ("Termoak for iOS 0.6.1").
+     */
+    func exportHosts(format: ExportFormat, scope: ExportScope, includeSecrets: Bool, passphrase: String?, app: String?) async throws  -> ExportResult
+    
+    /**
+     * Reads a file for the import preview, against the vault it would go
+     * to (`account_id` / `vault_id`, default the current account's
+     * personal vault; `device_only`: This device) to find duplicates.
+     * `file_name` helps guess the format. Fails with `Invalid` when the
+     * file cannot be read as that format (an `ssh_config` too: use
+     * `import_ssh_config`).
+     */
+    func previewImport(data: Data, fileName: String, format: ImportFormat?, accountId: String?, vaultId: String?, deviceOnly: Bool) async throws  -> ImportPreview
+    
+    /**
+     * [`Self::preview_import`] of a file on the device.
+     */
+    func previewImportFile(path: String, format: ImportFormat?, accountId: String?, vaultId: String?, deviceOnly: Bool) async throws  -> ImportPreview
+    
+    /**
+     * Checks whether hosts answer, at most `concurrency` at a time (0: 8),
+     * each within 5 seconds, and answers in the order given. Hosts behind
+     * jump hosts, of Strict vaults or with a proxy whose password cannot be
+     * read are skipped; `off` are ids of hosts the user turned the check
+     * off for.
+     */
+    func probeHosts(hosts: [ItemRef], off: [String], concurrency: UInt32) async throws  -> [HostProbe]
     
     /**
      * Attaches to a server session (yours or shared with you). `Hello`
@@ -7993,6 +8939,114 @@ open func serverSftpUpload(hostId: String, localPath: String, remotePath: String
             completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
             freeFunc: ffi_termoak_ffi_rust_future_free_u64,
             liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Saves a previewed import. The target may differ from the preview's:
+     * duplicates are found again against it.
+     */
+open func applyImport(preview: ImportPreview, options: ImportOptions)async throws  -> ImportSummary  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_apply_import(
+                        self.uniffiCloneHandle(),FfiConverterTypeImportPreview_lower(preview),FfiConverterTypeImportOptions_lower(options)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeImportSummary_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Writes an export of a vault (or This device, or one group). Secrets
+     * only go into a Termoak JSON, with `include_secrets` and a passphrase
+     * of at least 8 characters (sealing takes a moment). `app` names the
+     * app in the file ("Termoak for iOS 0.6.1").
+     */
+open func exportHosts(format: ExportFormat, scope: ExportScope, includeSecrets: Bool = false, passphrase: String? = nil, app: String? = nil)async throws  -> ExportResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_export_hosts(
+                        self.uniffiCloneHandle(),FfiConverterTypeExportFormat_lower(format),FfiConverterTypeExportScope_lower(scope),FfiConverterBool.lower(includeSecrets),FfiConverterOptionString.lower(passphrase),FfiConverterOptionString.lower(app)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeExportResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Reads a file for the import preview, against the vault it would go
+     * to (`account_id` / `vault_id`, default the current account's
+     * personal vault; `device_only`: This device) to find duplicates.
+     * `file_name` helps guess the format. Fails with `Invalid` when the
+     * file cannot be read as that format (an `ssh_config` too: use
+     * `import_ssh_config`).
+     */
+open func previewImport(data: Data, fileName: String, format: ImportFormat? = nil, accountId: String? = nil, vaultId: String? = nil, deviceOnly: Bool = false)async throws  -> ImportPreview  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_preview_import(
+                        self.uniffiCloneHandle(),FfiConverterData.lower(data),FfiConverterString.lower(fileName),FfiConverterOptionTypeImportFormat.lower(format),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId),FfiConverterBool.lower(deviceOnly)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeImportPreview_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * [`Self::preview_import`] of a file on the device.
+     */
+open func previewImportFile(path: String, format: ImportFormat? = nil, accountId: String? = nil, vaultId: String? = nil, deviceOnly: Bool = false)async throws  -> ImportPreview  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_preview_import_file(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(path),FfiConverterOptionTypeImportFormat.lower(format),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId),FfiConverterBool.lower(deviceOnly)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeImportPreview_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Checks whether hosts answer, at most `concurrency` at a time (0: 8),
+     * each within 5 seconds, and answers in the order given. Hosts behind
+     * jump hosts, of Strict vaults or with a proxy whose password cannot be
+     * read are skipped; `off` are ids of hosts the user turned the check
+     * off for.
+     */
+open func probeHosts(hosts: [ItemRef], off: [String] = [], concurrency: UInt32 = UInt32(0))async throws  -> [HostProbe]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_probe_hosts(
+                        self.uniffiCloneHandle(),FfiConverterSequenceTypeItemRef.lower(hosts),FfiConverterSequenceString.lower(off),FfiConverterUInt32.lower(concurrency)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeHostProbe.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -9837,6 +10891,75 @@ public func FfiConverterTypeAccountInvite_lower(_ value: AccountInvite) -> RustB
 
 
 /**
+ * The names of your accounts on this device.
+ */
+public struct AccountNames: Equatable, Hashable {
+    /**
+     * Alias by account id (`AccountInfo.id`).
+     */
+    public var aliases: [String: String]
+    /**
+     * "Hide email addresses": emails of your accounts are masked.
+     */
+    public var hideEmails: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Alias by account id (`AccountInfo.id`).
+         */aliases: [String: String] = [:], 
+        /**
+         * "Hide email addresses": emails of your accounts are masked.
+         */hideEmails: Bool = false) {
+        self.aliases = aliases
+        self.hideEmails = hideEmails
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AccountNames: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAccountNames: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountNames {
+        return
+            try AccountNames(
+                aliases: FfiConverterDictionaryStringString.read(from: &buf), 
+                hideEmails: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AccountNames, into buf: inout [UInt8]) {
+        FfiConverterDictionaryStringString.write(value.aliases, into: &buf)
+        FfiConverterBool.write(value.hideEmails, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountNames_lift(_ buf: RustBuffer) throws -> AccountNames {
+    return try FfiConverterTypeAccountNames.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAccountNames_lower(_ value: AccountNames) -> RustBuffer {
+    return FfiConverterTypeAccountNames.lower(value)
+}
+
+
+/**
  * Your AI situation, to explain it in the AI settings.
  */
 public struct AiAccessInfo: Equatable, Hashable {
@@ -10957,6 +12080,99 @@ public func FfiConverterTypeAuthorPeriod_lower(_ value: AuthorPeriod) -> RustBuf
 
 
 /**
+ * A command that ended.
+ */
+public struct CommandEnded: Equatable, Hashable {
+    public var command: String?
+    /**
+     * From its start to its end (to the prompt, without shell
+     * integration). Notify when it is long and the terminal is not in
+     * view.
+     */
+    public var durationMs: UInt64
+    public var exitCode: Int32?
+    /**
+     * It used the alternate screen (vim, less, top...): not notified,
+     * no chip.
+     */
+    public var interactive: Bool
+    /**
+     * `None` for interactive programs.
+     */
+    public var last: LastCommandInfo?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(command: String?, 
+        /**
+         * From its start to its end (to the prompt, without shell
+         * integration). Notify when it is long and the terminal is not in
+         * view.
+         */durationMs: UInt64, exitCode: Int32?, 
+        /**
+         * It used the alternate screen (vim, less, top...): not notified,
+         * no chip.
+         */interactive: Bool, 
+        /**
+         * `None` for interactive programs.
+         */last: LastCommandInfo?) {
+        self.command = command
+        self.durationMs = durationMs
+        self.exitCode = exitCode
+        self.interactive = interactive
+        self.last = last
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CommandEnded: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCommandEnded: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CommandEnded {
+        return
+            try CommandEnded(
+                command: FfiConverterOptionString.read(from: &buf), 
+                durationMs: FfiConverterUInt64.read(from: &buf), 
+                exitCode: FfiConverterOptionInt32.read(from: &buf), 
+                interactive: FfiConverterBool.read(from: &buf), 
+                last: FfiConverterOptionTypeLastCommandInfo.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CommandEnded, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.command, into: &buf)
+        FfiConverterUInt64.write(value.durationMs, into: &buf)
+        FfiConverterOptionInt32.write(value.exitCode, into: &buf)
+        FfiConverterBool.write(value.interactive, into: &buf)
+        FfiConverterOptionTypeLastCommandInfo.write(value.last, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandEnded_lift(_ buf: RustBuffer) throws -> CommandEnded {
+    return try FfiConverterTypeCommandEnded.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandEnded_lower(_ value: CommandEnded) -> RustBuffer {
+    return FfiConverterTypeCommandEnded.lower(value)
+}
+
+
+/**
  * A command from the history.
  */
 public struct CommandHistoryItem: Equatable, Hashable {
@@ -11026,6 +12242,71 @@ public func FfiConverterTypeCommandHistoryItem_lift(_ buf: RustBuffer) throws ->
 #endif
 public func FfiConverterTypeCommandHistoryItem_lower(_ value: CommandHistoryItem) -> RustBuffer {
     return FfiConverterTypeCommandHistoryItem.lower(value)
+}
+
+
+/**
+ * What a piece of output did.
+ */
+public struct CommandOutputEvent: Equatable, Hashable {
+    /**
+     * A command started (shell integration): hide the chip of the previous
+     * one.
+     */
+    public var started: Bool
+    public var ended: CommandEnded?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * A command started (shell integration): hide the chip of the previous
+         * one.
+         */started: Bool, ended: CommandEnded?) {
+        self.started = started
+        self.ended = ended
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CommandOutputEvent: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCommandOutputEvent: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CommandOutputEvent {
+        return
+            try CommandOutputEvent(
+                started: FfiConverterBool.read(from: &buf), 
+                ended: FfiConverterOptionTypeCommandEnded.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CommandOutputEvent, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.started, into: &buf)
+        FfiConverterOptionTypeCommandEnded.write(value.ended, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandOutputEvent_lift(_ buf: RustBuffer) throws -> CommandOutputEvent {
+    return try FfiConverterTypeCommandOutputEvent.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandOutputEvent_lower(_ value: CommandOutputEvent) -> RustBuffer {
+    return FfiConverterTypeCommandOutputEvent.lower(value)
 }
 
 
@@ -11206,6 +12487,80 @@ public func FfiConverterTypeConnectionDetails_lower(_ value: ConnectionDetails) 
 
 
 /**
+ * A piece of terminal context the copilot sends with the next message,
+ * shown as a chip the user can remove before sending.
+ */
+public struct ContextChip: Equatable, Hashable {
+    public var kind: ContextChipKind
+    /**
+     * Short text of the chip.
+     */
+    public var label: String
+    /**
+     * What the AI gets.
+     */
+    public var text: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(kind: ContextChipKind, 
+        /**
+         * Short text of the chip.
+         */label: String, 
+        /**
+         * What the AI gets.
+         */text: String) {
+        self.kind = kind
+        self.label = label
+        self.text = text
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ContextChip: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeContextChip: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ContextChip {
+        return
+            try ContextChip(
+                kind: FfiConverterTypeContextChipKind.read(from: &buf), 
+                label: FfiConverterString.read(from: &buf), 
+                text: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ContextChip, into buf: inout [UInt8]) {
+        FfiConverterTypeContextChipKind.write(value.kind, into: &buf)
+        FfiConverterString.write(value.label, into: &buf)
+        FfiConverterString.write(value.text, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextChip_lift(_ buf: RustBuffer) throws -> ContextChip {
+    return try FfiConverterTypeContextChip.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextChip_lower(_ value: ContextChip) -> RustBuffer {
+    return FfiConverterTypeContextChip.lower(value)
+}
+
+
+/**
  * An item copied (or reused) with a new id.
  */
 public struct CopiedItem: Equatable, Hashable {
@@ -11346,6 +12701,132 @@ public func FfiConverterTypeCreatedAccountInvite_lift(_ buf: RustBuffer) throws 
 #endif
 public func FfiConverterTypeCreatedAccountInvite_lower(_ value: CreatedAccountInvite) -> RustBuffer {
     return FfiConverterTypeCreatedAccountInvite.lower(value)
+}
+
+
+/**
+ * A column mapped to a field.
+ */
+public struct CsvColumn: Equatable, Hashable {
+    public var field: CsvField
+    /**
+     * Column index (from 0).
+     */
+    public var column: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(field: CsvField, 
+        /**
+         * Column index (from 0).
+         */column: UInt32) {
+        self.field = field
+        self.column = column
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CsvColumn: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCsvColumn: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CsvColumn {
+        return
+            try CsvColumn(
+                field: FfiConverterTypeCsvField.read(from: &buf), 
+                column: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CsvColumn, into buf: inout [UInt8]) {
+        FfiConverterTypeCsvField.write(value.field, into: &buf)
+        FfiConverterUInt32.write(value.column, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvColumn_lift(_ buf: RustBuffer) throws -> CsvColumn {
+    return try FfiConverterTypeCsvColumn.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvColumn_lower(_ value: CsvColumn) -> RustBuffer {
+    return FfiConverterTypeCsvColumn.lower(value)
+}
+
+
+/**
+ * Which column feeds each field of a CSV.
+ */
+public struct CsvMapping: Equatable, Hashable {
+    /**
+     * The first row has the column names.
+     */
+    public var hasHeader: Bool
+    public var columns: [CsvColumn]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The first row has the column names.
+         */hasHeader: Bool, columns: [CsvColumn]) {
+        self.hasHeader = hasHeader
+        self.columns = columns
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CsvMapping: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCsvMapping: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CsvMapping {
+        return
+            try CsvMapping(
+                hasHeader: FfiConverterBool.read(from: &buf), 
+                columns: FfiConverterSequenceTypeCsvColumn.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CsvMapping, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.hasHeader, into: &buf)
+        FfiConverterSequenceTypeCsvColumn.write(value.columns, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvMapping_lift(_ buf: RustBuffer) throws -> CsvMapping {
+    return try FfiConverterTypeCsvMapping.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvMapping_lower(_ value: CsvMapping) -> RustBuffer {
+    return FfiConverterTypeCsvMapping.lower(value)
 }
 
 
@@ -11556,6 +13037,298 @@ public func FfiConverterTypeExecResult_lower(_ value: ExecResult) -> RustBuffer 
 
 
 /**
+ * An export file, ready to save (with the share sheet or the file
+ * picker).
+ */
+public struct ExportResult: Equatable, Hashable {
+    public var data: Data
+    /**
+     * Suggested name (`termoak-hosts-2026-10-08.json`).
+     */
+    public var fileName: String
+    public var mimeType: String
+    public var hosts: UInt32
+    /**
+     * Secrets that could not be read (Use-only vaults) and are not in it.
+     */
+    public var hiddenSecrets: UInt32
+    /**
+     * It has passwords or keys (sealed): store it carefully.
+     */
+    public var hasSecrets: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(data: Data, 
+        /**
+         * Suggested name (`termoak-hosts-2026-10-08.json`).
+         */fileName: String, mimeType: String, hosts: UInt32, 
+        /**
+         * Secrets that could not be read (Use-only vaults) and are not in it.
+         */hiddenSecrets: UInt32, 
+        /**
+         * It has passwords or keys (sealed): store it carefully.
+         */hasSecrets: Bool) {
+        self.data = data
+        self.fileName = fileName
+        self.mimeType = mimeType
+        self.hosts = hosts
+        self.hiddenSecrets = hiddenSecrets
+        self.hasSecrets = hasSecrets
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExportResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExportResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExportResult {
+        return
+            try ExportResult(
+                data: FfiConverterData.read(from: &buf), 
+                fileName: FfiConverterString.read(from: &buf), 
+                mimeType: FfiConverterString.read(from: &buf), 
+                hosts: FfiConverterUInt32.read(from: &buf), 
+                hiddenSecrets: FfiConverterUInt32.read(from: &buf), 
+                hasSecrets: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExportResult, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.data, into: &buf)
+        FfiConverterString.write(value.fileName, into: &buf)
+        FfiConverterString.write(value.mimeType, into: &buf)
+        FfiConverterUInt32.write(value.hosts, into: &buf)
+        FfiConverterUInt32.write(value.hiddenSecrets, into: &buf)
+        FfiConverterBool.write(value.hasSecrets, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportResult_lift(_ buf: RustBuffer) throws -> ExportResult {
+    return try FfiConverterTypeExportResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportResult_lower(_ value: ExportResult) -> RustBuffer {
+    return FfiConverterTypeExportResult.lower(value)
+}
+
+
+/**
+ * Which items an export takes.
+ */
+public struct ExportScope: Equatable, Hashable {
+    /**
+     * Account (default: the current one; This device without one).
+     */
+    public var accountId: String?
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    public var vaultId: String?
+    /**
+     * This device.
+     */
+    public var deviceOnly: Bool
+    /**
+     * Only this group and its subgroups (with what their hosts use).
+     */
+    public var groupId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Account (default: the current one; This device without one).
+         */accountId: String? = nil, 
+        /**
+         * Vault of that account (default: its personal vault).
+         */vaultId: String? = nil, 
+        /**
+         * This device.
+         */deviceOnly: Bool = false, 
+        /**
+         * Only this group and its subgroups (with what their hosts use).
+         */groupId: String? = nil) {
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.deviceOnly = deviceOnly
+        self.groupId = groupId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExportScope: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExportScope: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExportScope {
+        return
+            try ExportScope(
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                deviceOnly: FfiConverterBool.read(from: &buf), 
+                groupId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExportScope, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterBool.write(value.deviceOnly, into: &buf)
+        FfiConverterOptionString.write(value.groupId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportScope_lift(_ buf: RustBuffer) throws -> ExportScope {
+    return try FfiConverterTypeExportScope.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportScope_lower(_ value: ExportScope) -> RustBuffer {
+    return FfiConverterTypeExportScope.lower(value)
+}
+
+
+/**
+ * How a search went.
+ */
+public struct FindStatus: Equatable, Hashable {
+    /**
+     * Matches in the screen and the scrollback (at most 5,000).
+     */
+    public var count: UInt32
+    /**
+     * There were more than 5,000 ("5000+").
+     */
+    public var capped: Bool
+    /**
+     * Index of the current match, counted from the top of the scrollback.
+     */
+    public var current: UInt32?
+    /**
+     * Number to show for the current one: "1 of 12" is the newest (at the
+     * bottom), since a terminal is searched upwards.
+     */
+    public var ordinal: UInt32?
+    /**
+     * The current match (the view scrolls to show it).
+     */
+    public var currentMatch: ScreenRange?
+    /**
+     * The regular expression is not valid (nothing is found).
+     */
+    public var invalid: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Matches in the screen and the scrollback (at most 5,000).
+         */count: UInt32, 
+        /**
+         * There were more than 5,000 ("5000+").
+         */capped: Bool, 
+        /**
+         * Index of the current match, counted from the top of the scrollback.
+         */current: UInt32?, 
+        /**
+         * Number to show for the current one: "1 of 12" is the newest (at the
+         * bottom), since a terminal is searched upwards.
+         */ordinal: UInt32?, 
+        /**
+         * The current match (the view scrolls to show it).
+         */currentMatch: ScreenRange?, 
+        /**
+         * The regular expression is not valid (nothing is found).
+         */invalid: Bool) {
+        self.count = count
+        self.capped = capped
+        self.current = current
+        self.ordinal = ordinal
+        self.currentMatch = currentMatch
+        self.invalid = invalid
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension FindStatus: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFindStatus: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FindStatus {
+        return
+            try FindStatus(
+                count: FfiConverterUInt32.read(from: &buf), 
+                capped: FfiConverterBool.read(from: &buf), 
+                current: FfiConverterOptionUInt32.read(from: &buf), 
+                ordinal: FfiConverterOptionUInt32.read(from: &buf), 
+                currentMatch: FfiConverterOptionTypeScreenRange.read(from: &buf), 
+                invalid: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FindStatus, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.count, into: &buf)
+        FfiConverterBool.write(value.capped, into: &buf)
+        FfiConverterOptionUInt32.write(value.current, into: &buf)
+        FfiConverterOptionUInt32.write(value.ordinal, into: &buf)
+        FfiConverterOptionTypeScreenRange.write(value.currentMatch, into: &buf)
+        FfiConverterBool.write(value.invalid, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFindStatus_lift(_ buf: RustBuffer) throws -> FindStatus {
+    return try FfiConverterTypeFindStatus.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFindStatus_lower(_ value: FindStatus) -> RustBuffer {
+    return FfiConverterTypeFindStatus.lower(value)
+}
+
+
+/**
  * Tunnel statistics.
  */
 public struct ForwardStats: Equatable, Hashable {
@@ -11748,6 +13521,113 @@ public func FfiConverterTypeHostGroup_lift(_ buf: RustBuffer) throws -> HostGrou
 #endif
 public func FfiConverterTypeHostGroup_lower(_ value: HostGroup) -> RustBuffer {
     return FfiConverterTypeHostGroup.lower(value)
+}
+
+
+/**
+ * The check of one host.
+ */
+public struct HostProbe: Equatable, Hashable {
+    public var hostId: String
+    /**
+     * `None`: This device.
+     */
+    public var accountId: String?
+    public var status: HostReach
+    /**
+     * Time the connection took (only `Up`).
+     */
+    public var ms: UInt32?
+    /**
+     * When it was checked (ms since the epoch; 0 if it was not).
+     */
+    public var checkedAt: Int64
+    public var skipped: ProbeSkip?
+    /**
+     * Address and port checked (a host whose target changed, edited
+     * address, port or proxy, should be checked again).
+     */
+    public var address: String?
+    public var port: UInt16?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(hostId: String, 
+        /**
+         * `None`: This device.
+         */accountId: String?, status: HostReach, 
+        /**
+         * Time the connection took (only `Up`).
+         */ms: UInt32?, 
+        /**
+         * When it was checked (ms since the epoch; 0 if it was not).
+         */checkedAt: Int64, skipped: ProbeSkip?, 
+        /**
+         * Address and port checked (a host whose target changed, edited
+         * address, port or proxy, should be checked again).
+         */address: String?, port: UInt16?) {
+        self.hostId = hostId
+        self.accountId = accountId
+        self.status = status
+        self.ms = ms
+        self.checkedAt = checkedAt
+        self.skipped = skipped
+        self.address = address
+        self.port = port
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension HostProbe: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHostProbe: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HostProbe {
+        return
+            try HostProbe(
+                hostId: FfiConverterString.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                status: FfiConverterTypeHostReach.read(from: &buf), 
+                ms: FfiConverterOptionUInt32.read(from: &buf), 
+                checkedAt: FfiConverterInt64.read(from: &buf), 
+                skipped: FfiConverterOptionTypeProbeSkip.read(from: &buf), 
+                address: FfiConverterOptionString.read(from: &buf), 
+                port: FfiConverterOptionUInt16.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: HostProbe, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.hostId, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterTypeHostReach.write(value.status, into: &buf)
+        FfiConverterOptionUInt32.write(value.ms, into: &buf)
+        FfiConverterInt64.write(value.checkedAt, into: &buf)
+        FfiConverterOptionTypeProbeSkip.write(value.skipped, into: &buf)
+        FfiConverterOptionString.write(value.address, into: &buf)
+        FfiConverterOptionUInt16.write(value.port, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostProbe_lift(_ buf: RustBuffer) throws -> HostProbe {
+    return try FfiConverterTypeHostProbe.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostProbe_lower(_ value: HostProbe) -> RustBuffer {
+    return FfiConverterTypeHostProbe.lower(value)
 }
 
 
@@ -11974,6 +13854,426 @@ public func FfiConverterTypeHostSettings_lift(_ buf: RustBuffer) throws -> HostS
 #endif
 public func FfiConverterTypeHostSettings_lower(_ value: HostSettings) -> RustBuffer {
     return FfiConverterTypeHostSettings.lower(value)
+}
+
+
+/**
+ * A host of the file, as the preview shows it.
+ */
+public struct ImportHostPreview: Equatable, Hashable {
+    /**
+     * Index in the file (for `ImportOptions.excluded`).
+     */
+    public var index: UInt32
+    public var label: String
+    public var address: String
+    public var port: UInt16?
+    public var username: String?
+    /**
+     * `ssh` or `telnet`.
+     */
+    public var `protocol`: String
+    /**
+     * `user@host:port` (`telnet://` in front for Telnet).
+     */
+    public var target: String
+    /**
+     * Folder path (`Prod / Web`).
+     */
+    public var group: String?
+    public var tags: [String]
+    public var notes: String
+    public var hasPassword: Bool
+    /**
+     * Private key file the source points to.
+     */
+    public var keyFile: String?
+    public var duplicate: ImportDuplicate?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Index in the file (for `ImportOptions.excluded`).
+         */index: UInt32, label: String, address: String, port: UInt16?, username: String?, 
+        /**
+         * `ssh` or `telnet`.
+         */`protocol`: String, 
+        /**
+         * `user@host:port` (`telnet://` in front for Telnet).
+         */target: String, 
+        /**
+         * Folder path (`Prod / Web`).
+         */group: String?, tags: [String], notes: String, hasPassword: Bool, 
+        /**
+         * Private key file the source points to.
+         */keyFile: String?, duplicate: ImportDuplicate?) {
+        self.index = index
+        self.label = label
+        self.address = address
+        self.port = port
+        self.username = username
+        self.`protocol` = `protocol`
+        self.target = target
+        self.group = group
+        self.tags = tags
+        self.notes = notes
+        self.hasPassword = hasPassword
+        self.keyFile = keyFile
+        self.duplicate = duplicate
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ImportHostPreview: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportHostPreview: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportHostPreview {
+        return
+            try ImportHostPreview(
+                index: FfiConverterUInt32.read(from: &buf), 
+                label: FfiConverterString.read(from: &buf), 
+                address: FfiConverterString.read(from: &buf), 
+                port: FfiConverterOptionUInt16.read(from: &buf), 
+                username: FfiConverterOptionString.read(from: &buf), 
+                protocol: FfiConverterString.read(from: &buf), 
+                target: FfiConverterString.read(from: &buf), 
+                group: FfiConverterOptionString.read(from: &buf), 
+                tags: FfiConverterSequenceString.read(from: &buf), 
+                notes: FfiConverterString.read(from: &buf), 
+                hasPassword: FfiConverterBool.read(from: &buf), 
+                keyFile: FfiConverterOptionString.read(from: &buf), 
+                duplicate: FfiConverterOptionTypeImportDuplicate.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImportHostPreview, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.index, into: &buf)
+        FfiConverterString.write(value.label, into: &buf)
+        FfiConverterString.write(value.address, into: &buf)
+        FfiConverterOptionUInt16.write(value.port, into: &buf)
+        FfiConverterOptionString.write(value.username, into: &buf)
+        FfiConverterString.write(value.`protocol`, into: &buf)
+        FfiConverterString.write(value.target, into: &buf)
+        FfiConverterOptionString.write(value.group, into: &buf)
+        FfiConverterSequenceString.write(value.tags, into: &buf)
+        FfiConverterString.write(value.notes, into: &buf)
+        FfiConverterBool.write(value.hasPassword, into: &buf)
+        FfiConverterOptionString.write(value.keyFile, into: &buf)
+        FfiConverterOptionTypeImportDuplicate.write(value.duplicate, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportHostPreview_lift(_ buf: RustBuffer) throws -> ImportHostPreview {
+    return try FfiConverterTypeImportHostPreview.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportHostPreview_lower(_ value: ImportHostPreview) -> RustBuffer {
+    return FfiConverterTypeImportHostPreview.lower(value)
+}
+
+
+/**
+ * Where and how an import is saved.
+ */
+public struct ImportOptions: Equatable, Hashable {
+    /**
+     * Account (default: the current one; This device without one).
+     */
+    public var accountId: String?
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    public var vaultId: String?
+    /**
+     * This device, whatever the account.
+     */
+    public var deviceOnly: Bool
+    /**
+     * An existing group of the target to put everything under.
+     */
+    public var groupId: String?
+    /**
+     * Or a top-level group by name (found or created), e.g. "PuTTY".
+     */
+    public var groupName: String?
+    public var duplicatePolicy: DuplicatePolicy
+    /**
+     * Hosts the user unchecked (`ImportHostPreview.index`).
+     */
+    public var excluded: [UInt32]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Account (default: the current one; This device without one).
+         */accountId: String? = nil, 
+        /**
+         * Vault of that account (default: its personal vault).
+         */vaultId: String? = nil, 
+        /**
+         * This device, whatever the account.
+         */deviceOnly: Bool = false, 
+        /**
+         * An existing group of the target to put everything under.
+         */groupId: String? = nil, 
+        /**
+         * Or a top-level group by name (found or created), e.g. "PuTTY".
+         */groupName: String? = nil, duplicatePolicy: DuplicatePolicy, 
+        /**
+         * Hosts the user unchecked (`ImportHostPreview.index`).
+         */excluded: [UInt32] = []) {
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.deviceOnly = deviceOnly
+        self.groupId = groupId
+        self.groupName = groupName
+        self.duplicatePolicy = duplicatePolicy
+        self.excluded = excluded
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ImportOptions: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportOptions {
+        return
+            try ImportOptions(
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                deviceOnly: FfiConverterBool.read(from: &buf), 
+                groupId: FfiConverterOptionString.read(from: &buf), 
+                groupName: FfiConverterOptionString.read(from: &buf), 
+                duplicatePolicy: FfiConverterTypeDuplicatePolicy.read(from: &buf), 
+                excluded: FfiConverterSequenceUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImportOptions, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterBool.write(value.deviceOnly, into: &buf)
+        FfiConverterOptionString.write(value.groupId, into: &buf)
+        FfiConverterOptionString.write(value.groupName, into: &buf)
+        FfiConverterTypeDuplicatePolicy.write(value.duplicatePolicy, into: &buf)
+        FfiConverterSequenceUInt32.write(value.excluded, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportOptions_lift(_ buf: RustBuffer) throws -> ImportOptions {
+    return try FfiConverterTypeImportOptions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportOptions_lower(_ value: ImportOptions) -> RustBuffer {
+    return FfiConverterTypeImportOptions.lower(value)
+}
+
+
+/**
+ * What an import did.
+ */
+public struct ImportSummary: Equatable, Hashable {
+    public var created: UInt32
+    public var updated: UInt32
+    public var skipped: UInt32
+    public var groups: UInt32
+    public var keys: UInt32
+    /**
+     * Keys that were already there (same fingerprint).
+     */
+    public var keysReused: UInt32
+    public var identities: UInt32
+    public var snippets: UInt32
+    public var warnings: [ImportWarningInfo]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(created: UInt32, updated: UInt32, skipped: UInt32, groups: UInt32, keys: UInt32, 
+        /**
+         * Keys that were already there (same fingerprint).
+         */keysReused: UInt32, identities: UInt32, snippets: UInt32, warnings: [ImportWarningInfo]) {
+        self.created = created
+        self.updated = updated
+        self.skipped = skipped
+        self.groups = groups
+        self.keys = keys
+        self.keysReused = keysReused
+        self.identities = identities
+        self.snippets = snippets
+        self.warnings = warnings
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ImportSummary: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportSummary: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportSummary {
+        return
+            try ImportSummary(
+                created: FfiConverterUInt32.read(from: &buf), 
+                updated: FfiConverterUInt32.read(from: &buf), 
+                skipped: FfiConverterUInt32.read(from: &buf), 
+                groups: FfiConverterUInt32.read(from: &buf), 
+                keys: FfiConverterUInt32.read(from: &buf), 
+                keysReused: FfiConverterUInt32.read(from: &buf), 
+                identities: FfiConverterUInt32.read(from: &buf), 
+                snippets: FfiConverterUInt32.read(from: &buf), 
+                warnings: FfiConverterSequenceTypeImportWarningInfo.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImportSummary, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.created, into: &buf)
+        FfiConverterUInt32.write(value.updated, into: &buf)
+        FfiConverterUInt32.write(value.skipped, into: &buf)
+        FfiConverterUInt32.write(value.groups, into: &buf)
+        FfiConverterUInt32.write(value.keys, into: &buf)
+        FfiConverterUInt32.write(value.keysReused, into: &buf)
+        FfiConverterUInt32.write(value.identities, into: &buf)
+        FfiConverterUInt32.write(value.snippets, into: &buf)
+        FfiConverterSequenceTypeImportWarningInfo.write(value.warnings, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportSummary_lift(_ buf: RustBuffer) throws -> ImportSummary {
+    return try FfiConverterTypeImportSummary.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportSummary_lower(_ value: ImportSummary) -> RustBuffer {
+    return FfiConverterTypeImportSummary.lower(value)
+}
+
+
+/**
+ * A warning of the import (a host left out or changed).
+ */
+public struct ImportWarningInfo: Equatable, Hashable {
+    /**
+     * Stable code to translate by: `not_ssh`, `no_address`,
+     * `no_address_line`, `bad_port`, `proxy_unsupported`, `key_file`,
+     * `key_without_private`.
+     */
+    public var code: String
+    /**
+     * The English text.
+     */
+    public var message: String
+    /**
+     * Values for a translated text (`name`, `protocol`, `line`, `port`,
+     * `path`, `error`).
+     */
+    public var params: [String: String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Stable code to translate by: `not_ssh`, `no_address`,
+         * `no_address_line`, `bad_port`, `proxy_unsupported`, `key_file`,
+         * `key_without_private`.
+         */code: String, 
+        /**
+         * The English text.
+         */message: String, 
+        /**
+         * Values for a translated text (`name`, `protocol`, `line`, `port`,
+         * `path`, `error`).
+         */params: [String: String]) {
+        self.code = code
+        self.message = message
+        self.params = params
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ImportWarningInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportWarningInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportWarningInfo {
+        return
+            try ImportWarningInfo(
+                code: FfiConverterString.read(from: &buf), 
+                message: FfiConverterString.read(from: &buf), 
+                params: FfiConverterDictionaryStringString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ImportWarningInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterString.write(value.message, into: &buf)
+        FfiConverterDictionaryStringString.write(value.params, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportWarningInfo_lift(_ buf: RustBuffer) throws -> ImportWarningInfo {
+    return try FfiConverterTypeImportWarningInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportWarningInfo_lower(_ value: ImportWarningInfo) -> RustBuffer {
+    return FfiConverterTypeImportWarningInfo.lower(value)
 }
 
 
@@ -12475,6 +14775,101 @@ public func FfiConverterTypeKnownHost_lower(_ value: KnownHost) -> RustBuffer {
 
 
 /**
+ * The last command that ended in a terminal (not a full-screen program).
+ */
+public struct LastCommandInfo: Equatable, Hashable {
+    /**
+     * The command line, when known (typed and seen on screen, or sent by
+     * the shell).
+     */
+    public var command: String?
+    /**
+     * Exit status (only with shell integration).
+     */
+    public var exitCode: Int32?
+    /**
+     * The end of what it printed, cleaned (at most 60 lines and 4,000
+     * characters; not redacted).
+     */
+    public var output: String
+    /**
+     * Whether it failed, by the chip's rules. The app also checks its own
+     * setting and that an AI can be asked.
+     */
+    public var failure: CommandFailure?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The command line, when known (typed and seen on screen, or sent by
+         * the shell).
+         */command: String?, 
+        /**
+         * Exit status (only with shell integration).
+         */exitCode: Int32?, 
+        /**
+         * The end of what it printed, cleaned (at most 60 lines and 4,000
+         * characters; not redacted).
+         */output: String, 
+        /**
+         * Whether it failed, by the chip's rules. The app also checks its own
+         * setting and that an AI can be asked.
+         */failure: CommandFailure?) {
+        self.command = command
+        self.exitCode = exitCode
+        self.output = output
+        self.failure = failure
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension LastCommandInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLastCommandInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LastCommandInfo {
+        return
+            try LastCommandInfo(
+                command: FfiConverterOptionString.read(from: &buf), 
+                exitCode: FfiConverterOptionInt32.read(from: &buf), 
+                output: FfiConverterString.read(from: &buf), 
+                failure: FfiConverterOptionTypeCommandFailure.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LastCommandInfo, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.command, into: &buf)
+        FfiConverterOptionInt32.write(value.exitCode, into: &buf)
+        FfiConverterString.write(value.output, into: &buf)
+        FfiConverterOptionTypeCommandFailure.write(value.failure, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLastCommandInfo_lift(_ buf: RustBuffer) throws -> LastCommandInfo {
+    return try FfiConverterTypeLastCommandInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLastCommandInfo_lower(_ value: LastCommandInfo) -> RustBuffer {
+    return FfiConverterTypeLastCommandInfo.lower(value)
+}
+
+
+/**
  * Details of a link invitation (no account needed), to show before joining.
  */
 public struct LinkInvite: Equatable, Hashable {
@@ -12667,6 +15062,170 @@ public func FfiConverterTypeNewVault_lift(_ buf: RustBuffer) throws -> NewVault 
 #endif
 public func FfiConverterTypeNewVault_lower(_ value: NewVault) -> RustBuffer {
     return FfiConverterTypeNewVault.lower(value)
+}
+
+
+/**
+ * An entry of the palette.
+ */
+public struct PaletteEntry: Equatable, Hashable {
+    /**
+     * Stable identity, to remember it among the recent ones (`host:<id>`,
+     * `cmd:<name>`...).
+     */
+    public var key: String
+    public var kind: PaletteKind
+    public var title: String
+    /**
+     * Second line (address, command, menu...).
+     */
+    public var detail: String
+    /**
+     * More words it is found by (tags, names in English...).
+     */
+    public var keywords: [String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Stable identity, to remember it among the recent ones (`host:<id>`,
+         * `cmd:<name>`...).
+         */key: String, kind: PaletteKind, title: String, 
+        /**
+         * Second line (address, command, menu...).
+         */detail: String = "", 
+        /**
+         * More words it is found by (tags, names in English...).
+         */keywords: [String] = []) {
+        self.key = key
+        self.kind = kind
+        self.title = title
+        self.detail = detail
+        self.keywords = keywords
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PaletteEntry: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePaletteEntry: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PaletteEntry {
+        return
+            try PaletteEntry(
+                key: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypePaletteKind.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                detail: FfiConverterString.read(from: &buf), 
+                keywords: FfiConverterSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PaletteEntry, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.key, into: &buf)
+        FfiConverterTypePaletteKind.write(value.kind, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.detail, into: &buf)
+        FfiConverterSequenceString.write(value.keywords, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteEntry_lift(_ buf: RustBuffer) throws -> PaletteEntry {
+    return try FfiConverterTypePaletteEntry.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteEntry_lower(_ value: PaletteEntry) -> RustBuffer {
+    return FfiConverterTypePaletteEntry.lower(value)
+}
+
+
+/**
+ * An entry to show.
+ */
+public struct PaletteMatch: Equatable, Hashable {
+    /**
+     * Index in the entries given.
+     */
+    public var index: UInt32
+    public var score: Double
+    /**
+     * Characters of the title that matched (positions in characters, not
+     * bytes), to highlight them.
+     */
+    public var hits: [UInt32]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Index in the entries given.
+         */index: UInt32, score: Double, 
+        /**
+         * Characters of the title that matched (positions in characters, not
+         * bytes), to highlight them.
+         */hits: [UInt32]) {
+        self.index = index
+        self.score = score
+        self.hits = hits
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PaletteMatch: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePaletteMatch: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PaletteMatch {
+        return
+            try PaletteMatch(
+                index: FfiConverterUInt32.read(from: &buf), 
+                score: FfiConverterDouble.read(from: &buf), 
+                hits: FfiConverterSequenceUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PaletteMatch, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.index, into: &buf)
+        FfiConverterDouble.write(value.score, into: &buf)
+        FfiConverterSequenceUInt32.write(value.hits, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteMatch_lift(_ buf: RustBuffer) throws -> PaletteMatch {
+    return try FfiConverterTypePaletteMatch.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteMatch_lower(_ value: PaletteMatch) -> RustBuffer {
+    return FfiConverterTypePaletteMatch.lower(value)
 }
 
 
@@ -13175,13 +15734,21 @@ public struct ScreenCursor: Equatable, Hashable {
     public var row: UInt32
     public var col: UInt32
     public var shape: ScreenCursorShape
+    /**
+     * The program asked for a blinking cursor (DECSCUSR 1/3/5, `CSI ?12h`).
+     */
+    public var blinking: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(row: UInt32, col: UInt32, shape: ScreenCursorShape) {
+    public init(row: UInt32, col: UInt32, shape: ScreenCursorShape, 
+        /**
+         * The program asked for a blinking cursor (DECSCUSR 1/3/5, `CSI ?12h`).
+         */blinking: Bool = false) {
         self.row = row
         self.col = col
         self.shape = shape
+        self.blinking = blinking
     }
 
     
@@ -13202,7 +15769,8 @@ public struct FfiConverterTypeScreenCursor: FfiConverterRustBuffer {
             try ScreenCursor(
                 row: FfiConverterUInt32.read(from: &buf), 
                 col: FfiConverterUInt32.read(from: &buf), 
-                shape: FfiConverterTypeScreenCursorShape.read(from: &buf)
+                shape: FfiConverterTypeScreenCursorShape.read(from: &buf), 
+                blinking: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -13210,6 +15778,7 @@ public struct FfiConverterTypeScreenCursor: FfiConverterRustBuffer {
         FfiConverterUInt32.write(value.row, into: &buf)
         FfiConverterUInt32.write(value.col, into: &buf)
         FfiConverterTypeScreenCursorShape.write(value.shape, into: &buf)
+        FfiConverterBool.write(value.blinking, into: &buf)
     }
 }
 
@@ -13226,6 +15795,77 @@ public func FfiConverterTypeScreenCursor_lift(_ buf: RustBuffer) throws -> Scree
 #endif
 public func FfiConverterTypeScreenCursor_lower(_ value: ScreenCursor) -> RustBuffer {
     return FfiConverterTypeScreenCursor.lower(value)
+}
+
+
+/**
+ * Cells to paint over a find match on screen (one per row it covers).
+ */
+public struct ScreenHighlight: Equatable, Hashable {
+    public var row: UInt32
+    public var col: UInt32
+    public var cells: UInt32
+    /**
+     * The current match (paint it differently).
+     */
+    public var current: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(row: UInt32, col: UInt32, cells: UInt32, 
+        /**
+         * The current match (paint it differently).
+         */current: Bool) {
+        self.row = row
+        self.col = col
+        self.cells = cells
+        self.current = current
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ScreenHighlight: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeScreenHighlight: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ScreenHighlight {
+        return
+            try ScreenHighlight(
+                row: FfiConverterUInt32.read(from: &buf), 
+                col: FfiConverterUInt32.read(from: &buf), 
+                cells: FfiConverterUInt32.read(from: &buf), 
+                current: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ScreenHighlight, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.row, into: &buf)
+        FfiConverterUInt32.write(value.col, into: &buf)
+        FfiConverterUInt32.write(value.cells, into: &buf)
+        FfiConverterBool.write(value.current, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenHighlight_lift(_ buf: RustBuffer) throws -> ScreenHighlight {
+    return try FfiConverterTypeScreenHighlight.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenHighlight_lower(_ value: ScreenHighlight) -> RustBuffer {
+    return FfiConverterTypeScreenHighlight.lower(value)
 }
 
 
@@ -13276,6 +15916,132 @@ public func FfiConverterTypeScreenLine_lift(_ buf: RustBuffer) throws -> ScreenL
 #endif
 public func FfiConverterTypeScreenLine_lower(_ value: ScreenLine) -> RustBuffer {
     return FfiConverterTypeScreenLine.lower(value)
+}
+
+
+/**
+ * A cell of the grid (screen and scrollback): see the module docs.
+ */
+public struct ScreenPoint: Equatable, Hashable {
+    /**
+     * 0: the top of the screen at the bottom of the scrollback; negative:
+     * the scrollback.
+     */
+    public var line: Int32
+    public var col: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * 0: the top of the screen at the bottom of the scrollback; negative:
+         * the scrollback.
+         */line: Int32, col: UInt32) {
+        self.line = line
+        self.col = col
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ScreenPoint: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeScreenPoint: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ScreenPoint {
+        return
+            try ScreenPoint(
+                line: FfiConverterInt32.read(from: &buf), 
+                col: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ScreenPoint, into buf: inout [UInt8]) {
+        FfiConverterInt32.write(value.line, into: &buf)
+        FfiConverterUInt32.write(value.col, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenPoint_lift(_ buf: RustBuffer) throws -> ScreenPoint {
+    return try FfiConverterTypeScreenPoint.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenPoint_lower(_ value: ScreenPoint) -> RustBuffer {
+    return FfiConverterTypeScreenPoint.lower(value)
+}
+
+
+/**
+ * A range of cells (inclusive) and its text.
+ */
+public struct ScreenRange: Equatable, Hashable {
+    public var start: ScreenPoint
+    public var end: ScreenPoint
+    public var text: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(start: ScreenPoint, end: ScreenPoint, text: String) {
+        self.start = start
+        self.end = end
+        self.text = text
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ScreenRange: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeScreenRange: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ScreenRange {
+        return
+            try ScreenRange(
+                start: FfiConverterTypeScreenPoint.read(from: &buf), 
+                end: FfiConverterTypeScreenPoint.read(from: &buf), 
+                text: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ScreenRange, into buf: inout [UInt8]) {
+        FfiConverterTypeScreenPoint.write(value.start, into: &buf)
+        FfiConverterTypeScreenPoint.write(value.end, into: &buf)
+        FfiConverterString.write(value.text, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenRange_lift(_ buf: RustBuffer) throws -> ScreenRange {
+    return try FfiConverterTypeScreenRange.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeScreenRange_lower(_ value: ScreenRange) -> RustBuffer {
+    return FfiConverterTypeScreenRange.lower(value)
 }
 
 
@@ -13416,6 +16182,11 @@ public struct ScreenSnapshot: Equatable, Hashable {
     public var background: UInt32
     public var foreground: UInt32
     public var cursorColor: UInt32
+    /**
+     * Find matches on screen (empty without a search: see
+     * [`TerminalScreen::find`]).
+     */
+    public var highlights: [ScreenHighlight]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -13425,7 +16196,11 @@ public struct ScreenSnapshot: Equatable, Hashable {
          */cursor: ScreenCursor?, 
         /**
          * Scrollback lines above the view (0: at the bottom).
-         */displayOffset: UInt32, background: UInt32, foreground: UInt32, cursorColor: UInt32) {
+         */displayOffset: UInt32, background: UInt32, foreground: UInt32, cursorColor: UInt32, 
+        /**
+         * Find matches on screen (empty without a search: see
+         * [`TerminalScreen::find`]).
+         */highlights: [ScreenHighlight] = []) {
         self.cols = cols
         self.rows = rows
         self.lines = lines
@@ -13434,6 +16209,7 @@ public struct ScreenSnapshot: Equatable, Hashable {
         self.background = background
         self.foreground = foreground
         self.cursorColor = cursorColor
+        self.highlights = highlights
     }
 
     
@@ -13459,7 +16235,8 @@ public struct FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer {
                 displayOffset: FfiConverterUInt32.read(from: &buf), 
                 background: FfiConverterUInt32.read(from: &buf), 
                 foreground: FfiConverterUInt32.read(from: &buf), 
-                cursorColor: FfiConverterUInt32.read(from: &buf)
+                cursorColor: FfiConverterUInt32.read(from: &buf), 
+                highlights: FfiConverterSequenceTypeScreenHighlight.read(from: &buf)
         )
     }
 
@@ -13472,6 +16249,7 @@ public struct FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer {
         FfiConverterUInt32.write(value.background, into: &buf)
         FfiConverterUInt32.write(value.foreground, into: &buf)
         FfiConverterUInt32.write(value.cursorColor, into: &buf)
+        FfiConverterSequenceTypeScreenHighlight.write(value.highlights, into: &buf)
     }
 }
 
@@ -15095,6 +17873,15 @@ public struct SshConfigImportOptions: Equatable, Hashable {
      * Save hosts and keys as "this device only".
      */
     public var deviceOnly: Bool
+    /**
+     * Account to import into (default: the current account; This device
+     * without one). Ignored with `device_only`.
+     */
+    public var accountId: String?
+    /**
+     * Vault of that account (default: its personal vault).
+     */
+    public var vaultId: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -15107,10 +17894,19 @@ public struct SshConfigImportOptions: Equatable, Hashable {
          */group: String? = nil, 
         /**
          * Save hosts and keys as "this device only".
-         */deviceOnly: Bool = false) {
+         */deviceOnly: Bool = false, 
+        /**
+         * Account to import into (default: the current account; This device
+         * without one). Ignored with `device_only`.
+         */accountId: String? = nil, 
+        /**
+         * Vault of that account (default: its personal vault).
+         */vaultId: String? = nil) {
         self.dryRun = dryRun
         self.group = group
         self.deviceOnly = deviceOnly
+        self.accountId = accountId
+        self.vaultId = vaultId
     }
 
     
@@ -15131,7 +17927,9 @@ public struct FfiConverterTypeSshConfigImportOptions: FfiConverterRustBuffer {
             try SshConfigImportOptions(
                 dryRun: FfiConverterBool.read(from: &buf), 
                 group: FfiConverterOptionString.read(from: &buf), 
-                deviceOnly: FfiConverterBool.read(from: &buf)
+                deviceOnly: FfiConverterBool.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -15139,6 +17937,8 @@ public struct FfiConverterTypeSshConfigImportOptions: FfiConverterRustBuffer {
         FfiConverterBool.write(value.dryRun, into: &buf)
         FfiConverterOptionString.write(value.group, into: &buf)
         FfiConverterBool.write(value.deviceOnly, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
     }
 }
 
@@ -16070,6 +18870,284 @@ public func FfiConverterTypeTeamMember_lift(_ buf: RustBuffer) throws -> TeamMem
 #endif
 public func FfiConverterTypeTeamMember_lower(_ value: TeamMember) -> RustBuffer {
     return FfiConverterTypeTeamMember.lower(value)
+}
+
+
+/**
+ * Colours of a terminal, in ARGB (`0xAARRGGBB`).
+ */
+public struct TerminalColors: Equatable, Hashable {
+    public var background: UInt32
+    public var foreground: UInt32
+    public var cursor: UInt32
+    /**
+     * Selection (and find matches) over the background; the apps may use
+     * it with some transparency.
+     */
+    public var selection: UInt32
+    /**
+     * The 16 ANSI colours: normal (0–7) and bright (8–15). Missing ones
+     * keep the current palette's.
+     */
+    public var ansi: [UInt32]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(background: UInt32, foreground: UInt32, cursor: UInt32, 
+        /**
+         * Selection (and find matches) over the background; the apps may use
+         * it with some transparency.
+         */selection: UInt32, 
+        /**
+         * The 16 ANSI colours: normal (0–7) and bright (8–15). Missing ones
+         * keep the current palette's.
+         */ansi: [UInt32]) {
+        self.background = background
+        self.foreground = foreground
+        self.cursor = cursor
+        self.selection = selection
+        self.ansi = ansi
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TerminalColors: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTerminalColors: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TerminalColors {
+        return
+            try TerminalColors(
+                background: FfiConverterUInt32.read(from: &buf), 
+                foreground: FfiConverterUInt32.read(from: &buf), 
+                cursor: FfiConverterUInt32.read(from: &buf), 
+                selection: FfiConverterUInt32.read(from: &buf), 
+                ansi: FfiConverterSequenceUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TerminalColors, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.background, into: &buf)
+        FfiConverterUInt32.write(value.foreground, into: &buf)
+        FfiConverterUInt32.write(value.cursor, into: &buf)
+        FfiConverterUInt32.write(value.selection, into: &buf)
+        FfiConverterSequenceUInt32.write(value.ansi, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalColors_lift(_ buf: RustBuffer) throws -> TerminalColors {
+    return try FfiConverterTypeTerminalColors.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalColors_lower(_ value: TerminalColors) -> RustBuffer {
+    return FfiConverterTypeTerminalColors.lower(value)
+}
+
+
+/**
+ * What the remote program has turned on.
+ */
+public struct TerminalModes: Equatable, Hashable {
+    public var mouseMode: MouseMode
+    public var mouseEncoding: MouseEncoding
+    /**
+     * Pasted text goes between `ESC [200~` and `ESC [201~` (see
+     * [`TerminalScreen::paste`]).
+     */
+    public var bracketedPaste: Bool
+    /**
+     * Arrow keys send `ESC O A` (see [`TerminalScreen::key`]).
+     */
+    public var appCursor: Bool
+    /**
+     * The keypad sends application sequences (DECKPAM).
+     */
+    public var appKeypad: Bool
+    /**
+     * Alternate screen (vim, less, htop...).
+     */
+    public var alternateScreen: Bool
+    /**
+     * In the alternate screen, the wheel (and swipes) should send arrows.
+     */
+    public var alternateScroll: Bool
+    /**
+     * The program wants focus in/out reports (`ESC [I`, `ESC [O`).
+     */
+    public var focusReporting: Bool
+    public var cursorVisible: Bool
+    public var cursorBlinking: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(mouseMode: MouseMode, mouseEncoding: MouseEncoding, 
+        /**
+         * Pasted text goes between `ESC [200~` and `ESC [201~` (see
+         * [`TerminalScreen::paste`]).
+         */bracketedPaste: Bool, 
+        /**
+         * Arrow keys send `ESC O A` (see [`TerminalScreen::key`]).
+         */appCursor: Bool, 
+        /**
+         * The keypad sends application sequences (DECKPAM).
+         */appKeypad: Bool, 
+        /**
+         * Alternate screen (vim, less, htop...).
+         */alternateScreen: Bool, 
+        /**
+         * In the alternate screen, the wheel (and swipes) should send arrows.
+         */alternateScroll: Bool, 
+        /**
+         * The program wants focus in/out reports (`ESC [I`, `ESC [O`).
+         */focusReporting: Bool, cursorVisible: Bool, cursorBlinking: Bool) {
+        self.mouseMode = mouseMode
+        self.mouseEncoding = mouseEncoding
+        self.bracketedPaste = bracketedPaste
+        self.appCursor = appCursor
+        self.appKeypad = appKeypad
+        self.alternateScreen = alternateScreen
+        self.alternateScroll = alternateScroll
+        self.focusReporting = focusReporting
+        self.cursorVisible = cursorVisible
+        self.cursorBlinking = cursorBlinking
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TerminalModes: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTerminalModes: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TerminalModes {
+        return
+            try TerminalModes(
+                mouseMode: FfiConverterTypeMouseMode.read(from: &buf), 
+                mouseEncoding: FfiConverterTypeMouseEncoding.read(from: &buf), 
+                bracketedPaste: FfiConverterBool.read(from: &buf), 
+                appCursor: FfiConverterBool.read(from: &buf), 
+                appKeypad: FfiConverterBool.read(from: &buf), 
+                alternateScreen: FfiConverterBool.read(from: &buf), 
+                alternateScroll: FfiConverterBool.read(from: &buf), 
+                focusReporting: FfiConverterBool.read(from: &buf), 
+                cursorVisible: FfiConverterBool.read(from: &buf), 
+                cursorBlinking: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TerminalModes, into buf: inout [UInt8]) {
+        FfiConverterTypeMouseMode.write(value.mouseMode, into: &buf)
+        FfiConverterTypeMouseEncoding.write(value.mouseEncoding, into: &buf)
+        FfiConverterBool.write(value.bracketedPaste, into: &buf)
+        FfiConverterBool.write(value.appCursor, into: &buf)
+        FfiConverterBool.write(value.appKeypad, into: &buf)
+        FfiConverterBool.write(value.alternateScreen, into: &buf)
+        FfiConverterBool.write(value.alternateScroll, into: &buf)
+        FfiConverterBool.write(value.focusReporting, into: &buf)
+        FfiConverterBool.write(value.cursorVisible, into: &buf)
+        FfiConverterBool.write(value.cursorBlinking, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalModes_lift(_ buf: RustBuffer) throws -> TerminalModes {
+    return try FfiConverterTypeTerminalModes.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalModes_lower(_ value: TerminalModes) -> RustBuffer {
+    return FfiConverterTypeTerminalModes.lower(value)
+}
+
+
+/**
+ * A colour theme of the shared list (the same ids on desktop, iOS and
+ * Android: stored in settings and in `HostSettings::theme`).
+ */
+public struct TerminalThemeInfo: Equatable, Hashable {
+    public var id: String
+    public var name: String
+    public var isLight: Bool
+    public var colors: TerminalColors
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, name: String, isLight: Bool, colors: TerminalColors) {
+        self.id = id
+        self.name = name
+        self.isLight = isLight
+        self.colors = colors
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TerminalThemeInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTerminalThemeInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TerminalThemeInfo {
+        return
+            try TerminalThemeInfo(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                isLight: FfiConverterBool.read(from: &buf), 
+                colors: FfiConverterTypeTerminalColors.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TerminalThemeInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterBool.write(value.isLight, into: &buf)
+        FfiConverterTypeTerminalColors.write(value.colors, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalThemeInfo_lift(_ buf: RustBuffer) throws -> TerminalThemeInfo {
+    return try FfiConverterTypeTerminalThemeInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTerminalThemeInfo_lower(_ value: TerminalThemeInfo) -> RustBuffer {
+    return FfiConverterTypeTerminalThemeInfo.lower(value)
 }
 
 
@@ -17245,6 +20323,448 @@ public func FfiConverterTypeAuthPromptKind_lower(_ value: AuthPromptKind) -> Rus
 
 
 /**
+ * How a command failed, for the chip.
+ */
+
+public enum CommandFailure: Equatable, Hashable {
+    
+    /**
+     * The shell gave this exit status (shell integration).
+     */
+    case exit(code: Int32
+    )
+    /**
+     * No exit status, but its output ends like an error.
+     */
+    case likely
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension CommandFailure: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCommandFailure: FfiConverterRustBuffer {
+    typealias SwiftType = CommandFailure
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CommandFailure {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .exit(code: try FfiConverterInt32.read(from: &buf)
+        )
+        
+        case 2: return .likely
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CommandFailure, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .exit(code):
+            writeInt(&buf, Int32(1))
+            FfiConverterInt32.write(code, into: &buf)
+            
+        
+        case .likely:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandFailure_lift(_ buf: RustBuffer) throws -> CommandFailure {
+    return try FfiConverterTypeCommandFailure.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCommandFailure_lower(_ value: CommandFailure) -> RustBuffer {
+    return FfiConverterTypeCommandFailure.lower(value)
+}
+
+
+
+/**
+ * What a piece of copilot context is.
+ */
+
+public enum ContextChipKind: Equatable, Hashable {
+    
+    case host
+    case directory
+    case lastCommand
+    case selection
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ContextChipKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeContextChipKind: FfiConverterRustBuffer {
+    typealias SwiftType = ContextChipKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ContextChipKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .host
+        
+        case 2: return .directory
+        
+        case 3: return .lastCommand
+        
+        case 4: return .selection
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ContextChipKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .host:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .directory:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .lastCommand:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .selection:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextChipKind_lift(_ buf: RustBuffer) throws -> ContextChipKind {
+    return try FfiConverterTypeContextChipKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeContextChipKind_lower(_ value: ContextChipKind) -> RustBuffer {
+    return FfiConverterTypeContextChipKind.lower(value)
+}
+
+
+
+/**
+ * A field a CSV column can feed.
+ */
+
+public enum CsvField: Equatable, Hashable {
+    
+    case label
+    case address
+    case port
+    case user
+    case group
+    case tags
+    case notes
+    case password
+    case `protocol`
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension CsvField: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCsvField: FfiConverterRustBuffer {
+    typealias SwiftType = CsvField
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CsvField {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .label
+        
+        case 2: return .address
+        
+        case 3: return .port
+        
+        case 4: return .user
+        
+        case 5: return .group
+        
+        case 6: return .tags
+        
+        case 7: return .notes
+        
+        case 8: return .password
+        
+        case 9: return .`protocol`
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CsvField, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .label:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .address:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .port:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .user:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .group:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .tags:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .notes:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .password:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .`protocol`:
+            writeInt(&buf, Int32(9))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvField_lift(_ buf: RustBuffer) throws -> CsvField {
+    return try FfiConverterTypeCsvField.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCsvField_lower(_ value: CsvField) -> RustBuffer {
+    return FfiConverterTypeCsvField.lower(value)
+}
+
+
+
+/**
+ * What to do with hosts that are already in the vault.
+ */
+
+public enum DuplicatePolicy: Equatable, Hashable {
+    
+    /**
+     * Leave them out.
+     */
+    case skip
+    /**
+     * Update the existing host (address, port, user, proxy, tags, notes,
+     * passwords).
+     */
+    case update
+    /**
+     * Import them anyway, as `web (2)`.
+     */
+    case copy
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension DuplicatePolicy: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeDuplicatePolicy: FfiConverterRustBuffer {
+    typealias SwiftType = DuplicatePolicy
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DuplicatePolicy {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .skip
+        
+        case 2: return .update
+        
+        case 3: return .copy
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: DuplicatePolicy, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .skip:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .update:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .copy:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDuplicatePolicy_lift(_ buf: RustBuffer) throws -> DuplicatePolicy {
+    return try FfiConverterTypeDuplicatePolicy.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeDuplicatePolicy_lower(_ value: DuplicatePolicy) -> RustBuffer {
+    return FfiConverterTypeDuplicatePolicy.lower(value)
+}
+
+
+
+/**
+ * What an export writes.
+ */
+
+public enum ExportFormat: Equatable, Hashable {
+    
+    /**
+     * Termoak JSON: hosts, groups, identities, keys (public parts) and
+     * snippets; passwords and private keys only with `include_secrets`,
+     * sealed with a passphrase.
+     */
+    case termoakJson
+    /**
+     * CSV of the hosts (for spreadsheets and other apps); never secrets.
+     */
+    case csv
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ExportFormat: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExportFormat: FfiConverterRustBuffer {
+    typealias SwiftType = ExportFormat
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExportFormat {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .termoakJson
+        
+        case 2: return .csv
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ExportFormat, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .termoakJson:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .csv:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportFormat_lift(_ buf: RustBuffer) throws -> ExportFormat {
+    return try FfiConverterTypeExportFormat.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExportFormat_lower(_ value: ExportFormat) -> RustBuffer {
+    return FfiConverterTypeExportFormat.lower(value)
+}
+
+
+
+/**
  * Tunnel type.
  */
 
@@ -17325,6 +20845,92 @@ public func FfiConverterTypeForwardKind_lift(_ buf: RustBuffer) throws -> Forwar
 #endif
 public func FfiConverterTypeForwardKind_lower(_ value: ForwardKind) -> RustBuffer {
     return FfiConverterTypeForwardKind.lower(value)
+}
+
+
+
+/**
+ * Whether a host answered.
+ */
+
+public enum HostReach: Equatable, Hashable {
+    
+    /**
+     * It accepted the connection (green, with `ms`).
+     */
+    case up
+    /**
+     * Refused, timed out, the name does not resolve, or the host could not
+     * be read (red).
+     */
+    case down
+    /**
+     * Not checked: see `skipped` (gray).
+     */
+    case skipped
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension HostReach: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeHostReach: FfiConverterRustBuffer {
+    typealias SwiftType = HostReach
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HostReach {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .up
+        
+        case 2: return .down
+        
+        case 3: return .skipped
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: HostReach, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .up:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .down:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .skipped:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostReach_lift(_ buf: RustBuffer) throws -> HostReach {
+    return try FfiConverterTypeHostReach.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeHostReach_lower(_ value: HostReach) -> RustBuffer {
+    return FfiConverterTypeHostReach.lower(value)
 }
 
 
@@ -17415,6 +21021,217 @@ public func FfiConverterTypeHttpMethod_lift(_ buf: RustBuffer) throws -> HttpMet
 #endif
 public func FfiConverterTypeHttpMethod_lower(_ value: HttpMethod) -> RustBuffer {
     return FfiConverterTypeHttpMethod.lower(value)
+}
+
+
+
+/**
+ * Why a host of the file is a duplicate (same address, port and user).
+ */
+
+public enum ImportDuplicate: Equatable, Hashable {
+    
+    /**
+     * Of a host already in the target vault.
+     */
+    case existing(hostId: String, label: String
+    )
+    /**
+     * Of an earlier host of the same file.
+     */
+    case inFile(index: UInt32
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ImportDuplicate: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportDuplicate: FfiConverterRustBuffer {
+    typealias SwiftType = ImportDuplicate
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportDuplicate {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .existing(hostId: try FfiConverterString.read(from: &buf), label: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 2: return .inFile(index: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ImportDuplicate, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case let .existing(hostId,label):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(hostId, into: &buf)
+            FfiConverterString.write(label, into: &buf)
+            
+        
+        case let .inFile(index):
+            writeInt(&buf, Int32(2))
+            FfiConverterUInt32.write(index, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportDuplicate_lift(_ buf: RustBuffer) throws -> ImportDuplicate {
+    return try FfiConverterTypeImportDuplicate.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportDuplicate_lower(_ value: ImportDuplicate) -> RustBuffer {
+    return FfiConverterTypeImportDuplicate.lower(value)
+}
+
+
+
+/**
+ * What a file is.
+ */
+
+public enum ImportFormat: Equatable, Hashable {
+    
+    /**
+     * Guess from the name and the content.
+     */
+    case auto
+    case termoakJson
+    case csv
+    /**
+     * An `ssh_config`: use `import_ssh_config` (it keeps jumps and
+     * tunnels).
+     */
+    case sshConfig
+    case termius
+    /**
+     * A `.reg` export of PuTTY's sessions (the registry itself is only
+     * read by the Windows desktop app).
+     */
+    case putty
+    case mobaXterm
+    case secureCrt
+    case zoc
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ImportFormat: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeImportFormat: FfiConverterRustBuffer {
+    typealias SwiftType = ImportFormat
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ImportFormat {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .auto
+        
+        case 2: return .termoakJson
+        
+        case 3: return .csv
+        
+        case 4: return .sshConfig
+        
+        case 5: return .termius
+        
+        case 6: return .putty
+        
+        case 7: return .mobaXterm
+        
+        case 8: return .secureCrt
+        
+        case 9: return .zoc
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ImportFormat, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .auto:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .termoakJson:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .csv:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .sshConfig:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .termius:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .putty:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .mobaXterm:
+            writeInt(&buf, Int32(7))
+        
+        
+        case .secureCrt:
+            writeInt(&buf, Int32(8))
+        
+        
+        case .zoc:
+            writeInt(&buf, Int32(9))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportFormat_lift(_ buf: RustBuffer) throws -> ImportFormat {
+    return try FfiConverterTypeImportFormat.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeImportFormat_lower(_ value: ImportFormat) -> RustBuffer {
+    return FfiConverterTypeImportFormat.lower(value)
 }
 
 
@@ -17717,6 +21534,291 @@ public func FfiConverterTypeLogLevel_lower(_ value: LogLevel) -> RustBuffer {
 
 
 /**
+ * How mouse events are encoded.
+ */
+
+public enum MouseEncoding: Equatable, Hashable {
+    
+    /**
+     * `CSI M` with bytes (X10, coordinates up to 223).
+     */
+    case `default`
+    /**
+     * `CSI M` with UTF-8 coordinates (1005).
+     */
+    case utf8
+    /**
+     * `CSI < b;x;y M/m` (1006).
+     */
+    case sgr
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension MouseEncoding: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMouseEncoding: FfiConverterRustBuffer {
+    typealias SwiftType = MouseEncoding
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MouseEncoding {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .`default`
+        
+        case 2: return .utf8
+        
+        case 3: return .sgr
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MouseEncoding, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .`default`:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .utf8:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .sgr:
+            writeInt(&buf, Int32(3))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMouseEncoding_lift(_ buf: RustBuffer) throws -> MouseEncoding {
+    return try FfiConverterTypeMouseEncoding.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMouseEncoding_lower(_ value: MouseEncoding) -> RustBuffer {
+    return FfiConverterTypeMouseEncoding.lower(value)
+}
+
+
+
+/**
+ * Mouse events the program asked for.
+ */
+
+public enum MouseMode: Equatable, Hashable {
+    
+    /**
+     * No reporting: the app scrolls and selects.
+     */
+    case off
+    /**
+     * Presses and releases (1000).
+     */
+    case click
+    /**
+     * Also motion with a button down (1002).
+     */
+    case drag
+    /**
+     * Every motion (1003).
+     */
+    case motion
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension MouseMode: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeMouseMode: FfiConverterRustBuffer {
+    typealias SwiftType = MouseMode
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> MouseMode {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .off
+        
+        case 2: return .click
+        
+        case 3: return .drag
+        
+        case 4: return .motion
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: MouseMode, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .off:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .click:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .drag:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .motion:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMouseMode_lift(_ buf: RustBuffer) throws -> MouseMode {
+    return try FfiConverterTypeMouseMode.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeMouseMode_lower(_ value: MouseMode) -> RustBuffer {
+    return FfiConverterTypeMouseMode.lower(value)
+}
+
+
+
+/**
+ * Kind of entry (also the order of the groups with nothing typed).
+ */
+
+public enum PaletteKind: Equatable, Hashable {
+    
+    /**
+     * An open tab: switch to it.
+     */
+    case tab
+    /**
+     * A saved host: connect.
+     */
+    case host
+    /**
+     * A server session: attach.
+     */
+    case session
+    /**
+     * A snippet: run it in the current terminal.
+     */
+    case snippet
+    /**
+     * An action of the app.
+     */
+    case command
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PaletteKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePaletteKind: FfiConverterRustBuffer {
+    typealias SwiftType = PaletteKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PaletteKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .tab
+        
+        case 2: return .host
+        
+        case 3: return .session
+        
+        case 4: return .snippet
+        
+        case 5: return .command
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PaletteKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .tab:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .host:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .session:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .snippet:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .command:
+            writeInt(&buf, Int32(5))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteKind_lift(_ buf: RustBuffer) throws -> PaletteKind {
+    return try FfiConverterTypePaletteKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePaletteKind_lower(_ value: PaletteKind) -> RustBuffer {
+    return FfiConverterTypePaletteKind.lower(value)
+}
+
+
+
+/**
  * Kind of participant in a shared session.
  */
 
@@ -17797,6 +21899,101 @@ public func FfiConverterTypeParticipantKind_lift(_ buf: RustBuffer) throws -> Pa
 #endif
 public func FfiConverterTypeParticipantKind_lower(_ value: ParticipantKind) -> RustBuffer {
     return FfiConverterTypeParticipantKind.lower(value)
+}
+
+
+
+/**
+ * Why a host is not checked.
+ */
+
+public enum ProbeSkip: Equatable, Hashable {
+    
+    /**
+     * The user turned the check off for this host.
+     */
+    case off
+    /**
+     * It is reached through jump hosts (the path is inside SSH).
+     */
+    case jumpHosts
+    /**
+     * It is in a Strict vault (only reached through the server).
+     */
+    case strict
+    /**
+     * Its proxy needs a password this (Use-only) user cannot read.
+     */
+    case useOnly
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ProbeSkip: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeProbeSkip: FfiConverterRustBuffer {
+    typealias SwiftType = ProbeSkip
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ProbeSkip {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .off
+        
+        case 2: return .jumpHosts
+        
+        case 3: return .strict
+        
+        case 4: return .useOnly
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ProbeSkip, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .off:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .jumpHosts:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .strict:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .useOnly:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProbeSkip_lift(_ buf: RustBuffer) throws -> ProbeSkip {
+    return try FfiConverterTypeProbeSkip.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeProbeSkip_lower(_ value: ProbeSkip) -> RustBuffer {
+    return FfiConverterTypeProbeSkip.lower(value)
 }
 
 
@@ -20551,6 +24748,30 @@ fileprivate struct FfiConverterOptionUInt32: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionInt32: FfiConverterRustBuffer {
+    typealias SwiftType = Int32?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterInt32.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterInt32.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionUInt64: FfiConverterRustBuffer {
     typealias SwiftType = UInt64?
 
@@ -20671,6 +24892,54 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeImportPreview: FfiConverterRustBuffer {
+    typealias SwiftType = ImportPreview?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeImportPreview.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeImportPreview.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTerminalScreen: FfiConverterRustBuffer {
+    typealias SwiftType = TerminalScreen?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTerminalScreen.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTerminalScreen.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTransferListener: FfiConverterRustBuffer {
     typealias SwiftType = TransferListener?
 
@@ -20719,6 +24988,54 @@ fileprivate struct FfiConverterOptionTypeAccountInfo: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeCommandEnded: FfiConverterRustBuffer {
+    typealias SwiftType = CommandEnded?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCommandEnded.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCommandEnded.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeCsvMapping: FfiConverterRustBuffer {
+    typealias SwiftType = CsvMapping?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCsvMapping.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCsvMapping.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeHostProxy: FfiConverterRustBuffer {
     typealias SwiftType = HostProxy?
 
@@ -20759,6 +25076,30 @@ fileprivate struct FfiConverterOptionTypeItemFilter: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeItemFilter.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeLastCommandInfo: FfiConverterRustBuffer {
+    typealias SwiftType = LastCommandInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLastCommandInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLastCommandInfo.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -20839,6 +25180,30 @@ fileprivate struct FfiConverterOptionTypeScreenCursor: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeScreenRange: FfiConverterRustBuffer {
+    typealias SwiftType = ScreenRange?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeScreenRange.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeScreenRange.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSessionActivity: FfiConverterRustBuffer {
     typealias SwiftType = SessionActivity?
 
@@ -20887,6 +25252,78 @@ fileprivate struct FfiConverterOptionTypeAiPermissionMode: FfiConverterRustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeCommandFailure: FfiConverterRustBuffer {
+    typealias SwiftType = CommandFailure?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCommandFailure.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCommandFailure.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeImportDuplicate: FfiConverterRustBuffer {
+    typealias SwiftType = ImportDuplicate?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeImportDuplicate.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeImportDuplicate.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeImportFormat: FfiConverterRustBuffer {
+    typealias SwiftType = ImportFormat?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeImportFormat.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeImportFormat.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeItemAccess: FfiConverterRustBuffer {
     typealias SwiftType = ItemAccess?
 
@@ -20903,6 +25340,30 @@ fileprivate struct FfiConverterOptionTypeItemAccess: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeItemAccess.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeProbeSkip: FfiConverterRustBuffer {
+    typealias SwiftType = ProbeSkip?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeProbeSkip.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeProbeSkip.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -21001,6 +25462,31 @@ fileprivate struct FfiConverterOptionSequenceString: FfiConverterRustBuffer {
         case 1: return try FfiConverterSequenceString.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceUInt32: FfiConverterRustBuffer {
+    typealias SwiftType = [UInt32]
+
+    public static func write(_ value: [UInt32], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterUInt32.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [UInt32] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [UInt32]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterUInt32.read(from: &buf))
+        }
+        return seq
     }
 }
 
@@ -21357,6 +25843,31 @@ fileprivate struct FfiConverterSequenceTypeCommandSuggestion: FfiConverterRustBu
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeContextChip: FfiConverterRustBuffer {
+    typealias SwiftType = [ContextChip]
+
+    public static func write(_ value: [ContextChip], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeContextChip.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ContextChip] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ContextChip]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeContextChip.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeCopiedItem: FfiConverterRustBuffer {
     typealias SwiftType = [CopiedItem]
 
@@ -21374,6 +25885,31 @@ fileprivate struct FfiConverterSequenceTypeCopiedItem: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCopiedItem.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCsvColumn: FfiConverterRustBuffer {
+    typealias SwiftType = [CsvColumn]
+
+    public static func write(_ value: [CsvColumn], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCsvColumn.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CsvColumn] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CsvColumn]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCsvColumn.read(from: &buf))
         }
         return seq
     }
@@ -21457,6 +25993,81 @@ fileprivate struct FfiConverterSequenceTypeHostGroup: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeHostProbe: FfiConverterRustBuffer {
+    typealias SwiftType = [HostProbe]
+
+    public static func write(_ value: [HostProbe], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeHostProbe.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [HostProbe] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [HostProbe]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeHostProbe.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeImportHostPreview: FfiConverterRustBuffer {
+    typealias SwiftType = [ImportHostPreview]
+
+    public static func write(_ value: [ImportHostPreview], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeImportHostPreview.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ImportHostPreview] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ImportHostPreview]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeImportHostPreview.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeImportWarningInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [ImportWarningInfo]
+
+    public static func write(_ value: [ImportWarningInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeImportWarningInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ImportWarningInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ImportWarningInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeImportWarningInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeItemRef: FfiConverterRustBuffer {
     typealias SwiftType = [ItemRef]
 
@@ -21499,6 +26110,56 @@ fileprivate struct FfiConverterSequenceTypeKnownHost: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeKnownHost.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePaletteEntry: FfiConverterRustBuffer {
+    typealias SwiftType = [PaletteEntry]
+
+    public static func write(_ value: [PaletteEntry], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePaletteEntry.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PaletteEntry] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PaletteEntry]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePaletteEntry.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypePaletteMatch: FfiConverterRustBuffer {
+    typealias SwiftType = [PaletteMatch]
+
+    public static func write(_ value: [PaletteMatch], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePaletteMatch.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PaletteMatch] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PaletteMatch]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePaletteMatch.read(from: &buf))
         }
         return seq
     }
@@ -21574,6 +26235,31 @@ fileprivate struct FfiConverterSequenceTypeRemoteFile: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeRemoteFile.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeScreenHighlight: FfiConverterRustBuffer {
+    typealias SwiftType = [ScreenHighlight]
+
+    public static func write(_ value: [ScreenHighlight], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeScreenHighlight.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ScreenHighlight] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ScreenHighlight]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeScreenHighlight.read(from: &buf))
         }
         return seq
     }
@@ -21982,6 +26668,31 @@ fileprivate struct FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeTerminalThemeInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [TerminalThemeInfo]
+
+    public static func write(_ value: [TerminalThemeInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTerminalThemeInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TerminalThemeInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TerminalThemeInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTerminalThemeInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeTransferWarning: FfiConverterRustBuffer {
     typealias SwiftType = [TransferWarning]
 
@@ -22124,6 +26835,31 @@ fileprivate struct FfiConverterSequenceTypeScreenEvent: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeScreenEvent.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [[String]]
+
+    public static func write(_ value: [[String]], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterSequenceString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [[String]] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [[String]]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterSequenceString.read(from: &buf))
         }
         return seq
     }
@@ -22290,6 +27026,18 @@ public func qrCode(text: String) -> QrCode?  {
 })
 }
 /**
+ * The format a file looks like, from its name and its content.
+ */
+public func detectImportFormat(data: Data, fileName: String) -> ImportFormat  {
+    return try!  FfiConverterTypeImportFormat_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_detect_import_format(
+        FfiConverterData.lower(data),
+        FfiConverterString.lower(fileName),uniffiCallStatus
+    )
+})
+}
+/**
  * Enables logging. `level` applies to Termoak; dependencies (russh,
  * reqwest...) only log warnings and errors. Returns `false` if it was
  * already enabled.
@@ -22300,6 +27048,115 @@ public func initLogging(level: LogLevel, listener: LogListener) -> Bool  {
     uniffi_termoak_ffi_fn_func_init_logging(
         FfiConverterTypeLogLevel_lower(level),
         FfiConverterTypeLogListener_lower(listener),uniffiCallStatus
+    )
+})
+}
+/**
+ * An email of one of your accounts as shown (masked when emails are
+ * hidden), e.g. while signing in, before there is an account id.
+ */
+public func accountDisplayEmail(names: AccountNames, email: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_account_display_email(
+        FfiConverterTypeAccountNames_lower(names),
+        FfiConverterString.lower(email),uniffiCallStatus
+    )
+})
+}
+/**
+ * "Work" or "ana@example.com", followed by " · <server>" when `server` is
+ * given (accounts of a server that is not the official one).
+ */
+public func accountDisplayLabel(names: AccountNames, accountId: String, email: String, server: String? = nil) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_account_display_label(
+        FfiConverterTypeAccountNames_lower(names),
+        FfiConverterString.lower(accountId),
+        FfiConverterString.lower(email),
+        FfiConverterOptionString.lower(server),uniffiCallStatus
+    )
+})
+}
+/**
+ * Name of one of your accounts: its alias, or its email (masked when
+ * emails are hidden).
+ */
+public func accountDisplayName(names: AccountNames, accountId: String, email: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_account_display_name(
+        FfiConverterTypeAccountNames_lower(names),
+        FfiConverterString.lower(accountId),
+        FfiConverterString.lower(email),uniffiCallStatus
+    )
+})
+}
+/**
+ * Letter of an account's avatar: from its alias, or from the name the
+ * server knows and the email.
+ */
+public func accountInitial(names: AccountNames, accountId: String, name: String, email: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_account_initial(
+        FfiConverterTypeAccountNames_lower(names),
+        FfiConverterString.lower(accountId),
+        FfiConverterString.lower(name),
+        FfiConverterString.lower(email),uniffiCallStatus
+    )
+})
+}
+/**
+ * An alias as it should be saved: trimmed and at most 40 characters.
+ * `None`: blank (remove the alias; the email is shown again).
+ */
+public func cleanAccountAlias(alias: String) -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_clean_account_alias(
+        FfiConverterString.lower(alias),uniffiCallStatus
+    )
+})
+}
+/**
+ * An email with only its first letters: "oihalitz@termoak.com" →
+ * "o•••@t•••.com" (the top-level domain stays).
+ */
+public func maskEmail(email: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_mask_email(
+        FfiConverterString.lower(email),uniffiCallStatus
+    )
+})
+}
+/**
+ * The entries to show for `query`, best first (every word must match
+ * somewhere). With nothing typed: the recent ones first, then by kind.
+ * `recent`: keys, the most recent first (see [`palette_remember`]).
+ */
+public func paletteRank(query: String, entries: [PaletteEntry], recent: [String] = []) -> [PaletteMatch]  {
+    return try!  FfiConverterSequenceTypePaletteMatch.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_palette_rank(
+        FfiConverterString.lower(query),
+        FfiConverterSequenceTypePaletteEntry.lower(entries),
+        FfiConverterSequenceString.lower(recent),uniffiCallStatus
+    )
+})
+}
+/**
+ * The recent keys with `key` first (at most 20): save them and pass them
+ * to [`palette_rank`].
+ */
+public func paletteRemember(recent: [String], key: String) -> [String]  {
+    return try!  FfiConverterSequenceString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_palette_remember(
+        FfiConverterSequenceString.lower(recent),
+        FfiConverterString.lower(key),uniffiCallStatus
     )
 })
 }
@@ -22360,6 +27217,33 @@ public func linkInviteInfo(serverUrl: String, token: String)async throws  -> Lin
         )
 }
 /**
+ * Theme id for a host's terminal: `value` is its effective
+ * `HostSettings::theme` and `app_theme` the app's theme id. `dark` and
+ * `light` (what the desktop's host editor saves) keep the app's theme when
+ * it is of that kind and otherwise use Termoak's; a theme id uses it;
+ * anything else (or nothing) follows the app.
+ */
+public func terminalThemeForHost(value: String?, appTheme: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_terminal_theme_for_host(
+        FfiConverterOptionString.lower(value),
+        FfiConverterString.lower(appTheme),uniffiCallStatus
+    )
+})
+}
+/**
+ * Every terminal colour theme, in the order the pickers show them (the
+ * first one is the default).
+ */
+public func terminalThemes() -> [TerminalThemeInfo]  {
+    return try!  FfiConverterSequenceTypeTerminalThemeInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_terminal_themes(uniffiCallStatus
+    )
+})
+}
+/**
  * Public information about a server (version, whether it needs initial
  * setup...), without signing in. Useful to validate the URL.
  */
@@ -22376,6 +27260,156 @@ public func serverInfo(url: String)async throws  -> String  {
             liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+/**
+ * Text of raw terminal output: escape sequences removed, carriage returns
+ * and backspaces applied as on screen (a progress bar leaves its last
+ * state).
+ */
+public func cleanTerminalOutput(data: Data) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_clean_terminal_output(
+        FfiConverterData.lower(data),uniffiCallStatus
+    )
+})
+}
+/**
+ * When a command counts as failed for the "Fix with AI" chip: with an
+ * exit status, non-zero but not Ctrl+C, SIGTERM, Ctrl+Z or a closed pipe
+ * (130, 143, 148, 141); without one, when the last lines of its output
+ * look like an error. Never for full-screen programs, a command line that
+ * is a comment (`# request` run by mistake) or an unknown command.
+ * `output` is the end of what it printed, cleaned.
+ */
+public func commandFailure(command: String?, output: String, exitCode: Int32? = nil, interactive: Bool = false) -> CommandFailure?  {
+    return try!  FfiConverterOptionTypeCommandFailure.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_command_failure(
+        FfiConverterOptionString.lower(command),
+        FfiConverterString.lower(output),
+        FfiConverterOptionInt32.lower(exitCode),
+        FfiConverterBool.lower(interactive),uniffiCallStatus
+    )
+})
+}
+/**
+ * Chip of the working directory (the label keeps its end).
+ */
+public func contextChipDirectory(cwd: String) -> ContextChip  {
+    return try!  FfiConverterTypeContextChip_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_context_chip_directory(
+        FfiConverterString.lower(cwd),uniffiCallStatus
+    )
+})
+}
+/**
+ * Chip of the host ("web-1 · Ubuntu 24.04").
+ */
+public func contextChipHost(name: String, os: String? = nil) -> ContextChip  {
+    return try!  FfiConverterTypeContextChip_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_context_chip_host(
+        FfiConverterString.lower(name),
+        FfiConverterOptionString.lower(os),uniffiCallStatus
+    )
+})
+}
+/**
+ * Chip of the last command and the end of its output; `label` is how the
+ * chip reads ("make · exit 2", translated by the app).
+ */
+public func contextChipLastCommand(last: LastCommandInfo, label: String) -> ContextChip  {
+    return try!  FfiConverterTypeContextChip_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_context_chip_last_command(
+        FfiConverterTypeLastCommandInfo_lower(last),
+        FfiConverterString.lower(label),uniffiCallStatus
+    )
+})
+}
+/**
+ * Chip of the selected text (its last 200 lines); `label` is how the chip
+ * reads ("Selection · 4 lines", translated by the app).
+ */
+public func contextChipSelection(text: String, label: String) -> ContextChip  {
+    return try!  FfiConverterTypeContextChip_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_context_chip_selection(
+        FfiConverterString.lower(text),
+        FfiConverterString.lower(label),uniffiCallStatus
+    )
+})
+}
+/**
+ * The `<context>` block to put in front of the user's message with the
+ * chips still there (empty without chips); `label` names the terminal
+ * (the host).
+ */
+public func copilotContextBlock(label: String, chips: [ContextChip]) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_copilot_context_block(
+        FfiConverterString.lower(label),
+        FfiConverterSequenceTypeContextChip.lower(chips),uniffiCallStatus
+    )
+})
+}
+/**
+ * A `# <request>` line typed at the prompt: the request in the user's
+ * words (to turn into a command with the AI, Ctrl/⌘+Enter). `None` for a
+ * shebang (`#!`), a command with a comment after it, or a bare `#`.
+ */
+public func nlRequest(line: String) -> String?  {
+    return try!  FfiConverterOptionString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_nl_request(
+        FfiConverterString.lower(line),uniffiCallStatus
+    )
+})
+}
+/**
+ * At most `max` characters: the start (`…` after) or, with `from_end`,
+ * the end (`…` before). For chip labels.
+ */
+public func shortenText(text: String, max: UInt32, fromEnd: Bool = false) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_shorten_text(
+        FfiConverterString.lower(text),
+        FfiConverterUInt32.lower(max),
+        FfiConverterBool.lower(fromEnd),uniffiCallStatus
+    )
+})
+}
+/**
+ * The end of a text: its last `max_lines` lines and at most `max_chars`
+ * characters (cut at a line start when possible).
+ */
+public func textTail(text: String, maxLines: UInt32, maxChars: UInt32) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_text_tail(
+        FfiConverterString.lower(text),
+        FfiConverterUInt32.lower(maxLines),
+        FfiConverterUInt32.lower(maxChars),uniffiCallStatus
+    )
+})
+}
+/**
+ * A command the AI proposes, safe to type without running it: one line
+ * (several become `a; b`; `\`, `&&`, `|` and `;` continuations are
+ * joined) and no control characters (a carriage return or an escape
+ * sequence would run it or do something else).
+ */
+public func typeableCommand(command: String) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_typeable_command(
+        FfiConverterString.lower(command),uniffiCallStatus
+    )
+})
 }
 /**
  * Generates a new vault key (256 bits in base64). The app stores it in the
@@ -22474,7 +27508,34 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_qr_code() != 59982) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_detect_import_format() != 49613) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_init_logging() != 8284) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_account_display_email() != 25844) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_account_display_label() != 56242) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_account_display_name() != 46395) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_account_initial() != 24735) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_clean_account_alias() != 12026) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_mask_email() != 47508) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_palette_rank() != 52488) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_palette_remember() != 11346) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_join_shared_session() != 45359) {
@@ -22486,7 +27547,46 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_link_invite_info() != 34812) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_terminal_theme_for_host() != 7359) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_terminal_themes() != 64850) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_server_info() != 52695) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_clean_terminal_output() != 54293) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_command_failure() != 51252) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_context_chip_directory() != 33795) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_context_chip_host() != 24938) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_context_chip_last_command() != 22036) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_context_chip_selection() != 54306) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_copilot_context_block() != 15137) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_nl_request() != 58158) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_shorten_text() != 44765) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_text_tail() != 12836) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_typeable_command() != 2754) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_generate_vault_key() != 53872) {
@@ -22639,6 +27739,48 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_authhandler_on_prompt() != 35175) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_csv_columns() != 23564) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_csv_mapping() != 56350) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_csv_sample() != 41755) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_format() != 39083) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_group_count() != 28272) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_hosts() != 29788) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_identity_count() != 25115) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_key_count() != 48038) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_needs_passphrase() != 24335) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_origin() != 27369) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_snippet_count() != 57080) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_unlock() != 30099) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_warnings() != 3705) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_importpreview_with_mapping() != 8325) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_loglistener_log() != 13401) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -22786,19 +27928,46 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_character() != 2130) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_clear_find() != 16164) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_colors() != 56810) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_cols() != 18291) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_feed() != 60656) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_find() != 47758) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_find_status() != 28842) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_find_step() != 14618) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_history_size() != 16404) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_key() != 63380) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_line_at() != 54981) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_link_at() != 40070) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_modes() != 37183) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_paste() != 3239) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_point_at() != 53784) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_reset() != 42809) {
@@ -22819,7 +27988,22 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_bottom() != 64946) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_line() != 6208) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_set_colors() != 15545) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_set_theme() != 24994) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_snapshot() != 60373) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_text_range() != 52713) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_terminalscreen_word_at() != 18500) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_activeforward_bound_port() != 14052) {
@@ -22958,6 +28142,27 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_transferlistener_on_progress() != 29617) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_enter() != 47461) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_idle() != 40541) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_integrated() != 46400) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_last_command() != 16816) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_output() != 53972) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_reset() != 20374) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_commandwatcher_waiting_for_prompt() != 32712) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_add_team_member() != 7882) {
@@ -23141,6 +28346,21 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload() != 54240) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_apply_import() != 16483) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_export_hosts() != 27760) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_preview_import() != 34914) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_preview_import_file() != 767) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_probe_hosts() != 2857) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_attach_server_session() != 65058) {
@@ -23390,6 +28610,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_constructor_terminalscreen_new() != 21624) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_constructor_commandwatcher_new() != 42454) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_constructor_termoakcore_new() != 5775) {

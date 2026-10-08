@@ -645,6 +645,86 @@ int8_t uniffi_termoak_ffi_fn_method_authhandler_on_host_key(uint64_t ptr, RustBu
 RustBuffer uniffi_termoak_ffi_fn_method_authhandler_on_prompt(uint64_t ptr, RustBuffer request, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_IMPORTPREVIEW
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_IMPORTPREVIEW
+uint64_t uniffi_termoak_ffi_fn_clone_importpreview(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_IMPORTPREVIEW
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_IMPORTPREVIEW
+void uniffi_termoak_ffi_fn_free_importpreview(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_COLUMNS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_COLUMNS
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_csv_columns(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_MAPPING
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_MAPPING
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_csv_mapping(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_SAMPLE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_CSV_SAMPLE
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_csv_sample(uint64_t ptr, uint32_t max, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_FORMAT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_FORMAT
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_format(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_GROUP_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_GROUP_COUNT
+uint32_t uniffi_termoak_ffi_fn_method_importpreview_group_count(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_HOSTS
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_hosts(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_IDENTITY_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_IDENTITY_COUNT
+uint32_t uniffi_termoak_ffi_fn_method_importpreview_identity_count(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_KEY_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_KEY_COUNT
+uint32_t uniffi_termoak_ffi_fn_method_importpreview_key_count(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_NEEDS_PASSPHRASE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_NEEDS_PASSPHRASE
+int8_t uniffi_termoak_ffi_fn_method_importpreview_needs_passphrase(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_ORIGIN
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_ORIGIN
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_origin(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_SNIPPET_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_SNIPPET_COUNT
+uint32_t uniffi_termoak_ffi_fn_method_importpreview_snippet_count(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_UNLOCK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_UNLOCK
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_unlock(uint64_t ptr, RustBuffer passphrase, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_WARNINGS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_WARNINGS
+RustBuffer uniffi_termoak_ffi_fn_method_importpreview_warnings(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_WITH_MAPPING
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_IMPORTPREVIEW_WITH_MAPPING
+uint64_t uniffi_termoak_ffi_fn_method_importpreview_with_mapping(uint64_t ptr, RustBuffer mapping, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_LOGLISTENER
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_LOGLISTENER
 uint64_t uniffi_termoak_ffi_fn_clone_loglistener(uint64_t handle, RustCallStatus *_Nonnull out_status
@@ -995,6 +1075,16 @@ int8_t uniffi_termoak_ffi_fn_method_terminalscreen_alternate_screen(uint64_t ptr
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_character(uint64_t ptr, RustBuffer ch, RustBuffer modifiers, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_CLEAR_FIND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_CLEAR_FIND
+void uniffi_termoak_ffi_fn_method_terminalscreen_clear_find(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_COLORS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_COLORS
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_colors(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_COLS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_COLS
 uint32_t uniffi_termoak_ffi_fn_method_terminalscreen_cols(uint64_t ptr, RustCallStatus *_Nonnull out_status
@@ -1005,9 +1095,34 @@ uint32_t uniffi_termoak_ffi_fn_method_terminalscreen_cols(uint64_t ptr, RustCall
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_feed(uint64_t ptr, RustBuffer data, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_find(uint64_t ptr, RustBuffer query, int8_t case_sensitive, int8_t regex, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND_STATUS
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_find_status(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND_STEP
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_FIND_STEP
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_find_step(uint64_t ptr, int8_t older, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_HISTORY_SIZE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_HISTORY_SIZE
+uint32_t uniffi_termoak_ffi_fn_method_terminalscreen_history_size(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_KEY
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_key(uint64_t ptr, RustBuffer key, RustBuffer modifiers, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_LINE_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_LINE_AT
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_line_at(uint64_t ptr, RustBuffer point, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_LINK_AT
@@ -1015,9 +1130,19 @@ RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_key(uint64_t ptr, RustBuf
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_link_at(uint64_t ptr, uint32_t row, uint32_t col, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_MODES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_MODES
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_modes(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_PASTE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_PASTE
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_paste(uint64_t ptr, RustBuffer text, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_POINT_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_POINT_AT
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_point_at(uint64_t ptr, uint32_t row, uint32_t col, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_RESET
@@ -1050,9 +1175,34 @@ void uniffi_termoak_ffi_fn_method_terminalscreen_scroll(uint64_t ptr, int32_t li
 void uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_bottom(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SCROLL_TO_LINE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SCROLL_TO_LINE
+void uniffi_termoak_ffi_fn_method_terminalscreen_scroll_to_line(uint64_t ptr, int32_t line, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SET_COLORS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SET_COLORS
+void uniffi_termoak_ffi_fn_method_terminalscreen_set_colors(uint64_t ptr, RustBuffer colors, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SET_THEME
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SET_THEME
+int8_t uniffi_termoak_ffi_fn_method_terminalscreen_set_theme(uint64_t ptr, RustBuffer id, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SNAPSHOT
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_SNAPSHOT
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_snapshot(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_TEXT_RANGE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_TEXT_RANGE
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_text_range(uint64_t ptr, RustBuffer start, RustBuffer end, int8_t block, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_WORD_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMINALSCREEN_WORD_AT
+RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_word_at(uint64_t ptr, RustBuffer point, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_ACTIVEFORWARD
@@ -1343,6 +1493,56 @@ void uniffi_termoak_ffi_fn_init_callback_vtable_transferlistener(const UniffiVTa
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TRANSFERLISTENER_ON_PROGRESS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TRANSFERLISTENER_ON_PROGRESS
 void uniffi_termoak_ffi_fn_method_transferlistener_on_progress(uint64_t ptr, uint64_t transferred, RustBuffer total, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_COMMANDWATCHER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_COMMANDWATCHER
+uint64_t uniffi_termoak_ffi_fn_clone_commandwatcher(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_COMMANDWATCHER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_COMMANDWATCHER
+void uniffi_termoak_ffi_fn_free_commandwatcher(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CONSTRUCTOR_COMMANDWATCHER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CONSTRUCTOR_COMMANDWATCHER_NEW
+uint64_t uniffi_termoak_ffi_fn_constructor_commandwatcher_new(RustBuffer screen, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_ENTER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_ENTER
+int8_t uniffi_termoak_ffi_fn_method_commandwatcher_enter(uint64_t ptr, RustBuffer command, RustBuffer prompt, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_IDLE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_IDLE
+RustBuffer uniffi_termoak_ffi_fn_method_commandwatcher_idle(uint64_t ptr, int8_t alternate_screen, RustBuffer before_cursor, int8_t after_blank, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_INTEGRATED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_INTEGRATED
+int8_t uniffi_termoak_ffi_fn_method_commandwatcher_integrated(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_LAST_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_LAST_COMMAND
+RustBuffer uniffi_termoak_ffi_fn_method_commandwatcher_last_command(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_OUTPUT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_OUTPUT
+RustBuffer uniffi_termoak_ffi_fn_method_commandwatcher_output(uint64_t ptr, RustBuffer data, int8_t alternate_screen, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_RESET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_RESET
+void uniffi_termoak_ffi_fn_method_commandwatcher_reset(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_WAITING_FOR_PROMPT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_COMMANDWATCHER_WAITING_FOR_PROMPT
+int8_t uniffi_termoak_ffi_fn_method_commandwatcher_waiting_for_prompt(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_TERMOAKCORE
@@ -1663,6 +1863,31 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_rename(uint64_t pt
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SERVER_SFTP_UPLOAD
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SERVER_SFTP_UPLOAD
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_upload(uint64_t ptr, RustBuffer host_id, RustBuffer local_path, RustBuffer remote_path, RustBuffer listener, RustBuffer account_id
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_APPLY_IMPORT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_APPLY_IMPORT
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_apply_import(uint64_t ptr, uint64_t preview, RustBuffer options
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_EXPORT_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_EXPORT_HOSTS
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_export_hosts(uint64_t ptr, RustBuffer format, RustBuffer scope, int8_t include_secrets, RustBuffer passphrase, RustBuffer app
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PREVIEW_IMPORT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PREVIEW_IMPORT
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_preview_import(uint64_t ptr, RustBuffer data, RustBuffer file_name, RustBuffer format, RustBuffer account_id, RustBuffer vault_id, int8_t device_only
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PREVIEW_IMPORT_FILE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PREVIEW_IMPORT_FILE
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_preview_import_file(uint64_t ptr, RustBuffer path, RustBuffer format, RustBuffer account_id, RustBuffer vault_id, int8_t device_only
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PROBE_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PROBE_HOSTS
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_probe_hosts(uint64_t ptr, RustBuffer hosts, RustBuffer off, uint32_t concurrency
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_ATTACH_SERVER_SESSION
@@ -2101,9 +2326,54 @@ int8_t uniffi_termoak_ffi_fn_func_command_echoed(RustBuffer line, RustBuffer bef
 RustBuffer uniffi_termoak_ffi_fn_func_qr_code(RustBuffer text, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_DETECT_IMPORT_FORMAT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_DETECT_IMPORT_FORMAT
+RustBuffer uniffi_termoak_ffi_fn_func_detect_import_format(RustBuffer data, RustBuffer file_name, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_INIT_LOGGING
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_INIT_LOGGING
 int8_t uniffi_termoak_ffi_fn_func_init_logging(RustBuffer level, uint64_t listener, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_EMAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_EMAIL
+RustBuffer uniffi_termoak_ffi_fn_func_account_display_email(RustBuffer names, RustBuffer email, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_LABEL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_LABEL
+RustBuffer uniffi_termoak_ffi_fn_func_account_display_label(RustBuffer names, RustBuffer account_id, RustBuffer email, RustBuffer server, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_NAME
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_DISPLAY_NAME
+RustBuffer uniffi_termoak_ffi_fn_func_account_display_name(RustBuffer names, RustBuffer account_id, RustBuffer email, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_INITIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_ACCOUNT_INITIAL
+RustBuffer uniffi_termoak_ffi_fn_func_account_initial(RustBuffer names, RustBuffer account_id, RustBuffer name, RustBuffer email, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CLEAN_ACCOUNT_ALIAS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CLEAN_ACCOUNT_ALIAS
+RustBuffer uniffi_termoak_ffi_fn_func_clean_account_alias(RustBuffer alias, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_MASK_EMAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_MASK_EMAIL
+RustBuffer uniffi_termoak_ffi_fn_func_mask_email(RustBuffer email, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PALETTE_RANK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PALETTE_RANK
+RustBuffer uniffi_termoak_ffi_fn_func_palette_rank(RustBuffer query, RustBuffer entries, RustBuffer recent, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PALETTE_REMEMBER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PALETTE_REMEMBER
+RustBuffer uniffi_termoak_ffi_fn_func_palette_remember(RustBuffer recent, RustBuffer key, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_JOIN_SHARED_SESSION
@@ -2121,9 +2391,75 @@ uint64_t uniffi_termoak_ffi_fn_func_join_shared_session_as(RustBuffer server_url
 uint64_t uniffi_termoak_ffi_fn_func_link_invite_info(RustBuffer server_url, RustBuffer token
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TERMINAL_THEME_FOR_HOST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TERMINAL_THEME_FOR_HOST
+RustBuffer uniffi_termoak_ffi_fn_func_terminal_theme_for_host(RustBuffer value, RustBuffer app_theme, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TERMINAL_THEMES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TERMINAL_THEMES
+RustBuffer uniffi_termoak_ffi_fn_func_terminal_themes(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SERVER_INFO
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SERVER_INFO
 uint64_t uniffi_termoak_ffi_fn_func_server_info(RustBuffer url
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CLEAN_TERMINAL_OUTPUT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CLEAN_TERMINAL_OUTPUT
+RustBuffer uniffi_termoak_ffi_fn_func_clean_terminal_output(RustBuffer data, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_COMMAND_FAILURE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_COMMAND_FAILURE
+RustBuffer uniffi_termoak_ffi_fn_func_command_failure(RustBuffer command, RustBuffer output, RustBuffer exit_code, int8_t interactive, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_DIRECTORY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_DIRECTORY
+RustBuffer uniffi_termoak_ffi_fn_func_context_chip_directory(RustBuffer cwd, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_HOST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_HOST
+RustBuffer uniffi_termoak_ffi_fn_func_context_chip_host(RustBuffer name, RustBuffer os, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_LAST_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_LAST_COMMAND
+RustBuffer uniffi_termoak_ffi_fn_func_context_chip_last_command(RustBuffer last, RustBuffer label, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_SELECTION
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTEXT_CHIP_SELECTION
+RustBuffer uniffi_termoak_ffi_fn_func_context_chip_selection(RustBuffer text, RustBuffer label, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_COPILOT_CONTEXT_BLOCK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_COPILOT_CONTEXT_BLOCK
+RustBuffer uniffi_termoak_ffi_fn_func_copilot_context_block(RustBuffer label, RustBuffer chips, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_NL_REQUEST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_NL_REQUEST
+RustBuffer uniffi_termoak_ffi_fn_func_nl_request(RustBuffer line, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SHORTEN_TEXT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SHORTEN_TEXT
+RustBuffer uniffi_termoak_ffi_fn_func_shorten_text(RustBuffer text, uint32_t max, int8_t from_end, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TEXT_TAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TEXT_TAIL
+RustBuffer uniffi_termoak_ffi_fn_func_text_tail(RustBuffer text, uint32_t max_lines, uint32_t max_chars, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TYPEABLE_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_TYPEABLE_COMMAND
+RustBuffer uniffi_termoak_ffi_fn_func_typeable_command(RustBuffer command, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_GENERATE_VAULT_KEY
@@ -2449,9 +2785,63 @@ uint16_t uniffi_termoak_ffi_checksum_func_qr_code(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_DETECT_IMPORT_FORMAT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_DETECT_IMPORT_FORMAT
+uint16_t uniffi_termoak_ffi_checksum_func_detect_import_format(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_INIT_LOGGING
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_INIT_LOGGING
 uint16_t uniffi_termoak_ffi_checksum_func_init_logging(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_EMAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_EMAIL
+uint16_t uniffi_termoak_ffi_checksum_func_account_display_email(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_LABEL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_LABEL
+uint16_t uniffi_termoak_ffi_checksum_func_account_display_label(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_NAME
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_DISPLAY_NAME
+uint16_t uniffi_termoak_ffi_checksum_func_account_display_name(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_INITIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_ACCOUNT_INITIAL
+uint16_t uniffi_termoak_ffi_checksum_func_account_initial(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CLEAN_ACCOUNT_ALIAS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CLEAN_ACCOUNT_ALIAS
+uint16_t uniffi_termoak_ffi_checksum_func_clean_account_alias(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_MASK_EMAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_MASK_EMAIL
+uint16_t uniffi_termoak_ffi_checksum_func_mask_email(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PALETTE_RANK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PALETTE_RANK
+uint16_t uniffi_termoak_ffi_checksum_func_palette_rank(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PALETTE_REMEMBER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PALETTE_REMEMBER
+uint16_t uniffi_termoak_ffi_checksum_func_palette_remember(void
     
 );
 #endif
@@ -2473,9 +2863,87 @@ uint16_t uniffi_termoak_ffi_checksum_func_link_invite_info(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TERMINAL_THEME_FOR_HOST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TERMINAL_THEME_FOR_HOST
+uint16_t uniffi_termoak_ffi_checksum_func_terminal_theme_for_host(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TERMINAL_THEMES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TERMINAL_THEMES
+uint16_t uniffi_termoak_ffi_checksum_func_terminal_themes(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SERVER_INFO
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SERVER_INFO
 uint16_t uniffi_termoak_ffi_checksum_func_server_info(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CLEAN_TERMINAL_OUTPUT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CLEAN_TERMINAL_OUTPUT
+uint16_t uniffi_termoak_ffi_checksum_func_clean_terminal_output(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_COMMAND_FAILURE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_COMMAND_FAILURE
+uint16_t uniffi_termoak_ffi_checksum_func_command_failure(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_DIRECTORY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_DIRECTORY
+uint16_t uniffi_termoak_ffi_checksum_func_context_chip_directory(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_HOST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_HOST
+uint16_t uniffi_termoak_ffi_checksum_func_context_chip_host(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_LAST_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_LAST_COMMAND
+uint16_t uniffi_termoak_ffi_checksum_func_context_chip_last_command(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_SELECTION
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTEXT_CHIP_SELECTION
+uint16_t uniffi_termoak_ffi_checksum_func_context_chip_selection(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_COPILOT_CONTEXT_BLOCK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_COPILOT_CONTEXT_BLOCK
+uint16_t uniffi_termoak_ffi_checksum_func_copilot_context_block(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_NL_REQUEST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_NL_REQUEST
+uint16_t uniffi_termoak_ffi_checksum_func_nl_request(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SHORTEN_TEXT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SHORTEN_TEXT
+uint16_t uniffi_termoak_ffi_checksum_func_shorten_text(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TEXT_TAIL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TEXT_TAIL
+uint16_t uniffi_termoak_ffi_checksum_func_text_tail(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TYPEABLE_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_TYPEABLE_COMMAND
+uint16_t uniffi_termoak_ffi_checksum_func_typeable_command(void
     
 );
 #endif
@@ -2779,6 +3247,90 @@ uint16_t uniffi_termoak_ffi_checksum_method_authhandler_on_prompt(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_COLUMNS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_COLUMNS
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_csv_columns(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_MAPPING
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_MAPPING
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_csv_mapping(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_SAMPLE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_CSV_SAMPLE
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_csv_sample(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_FORMAT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_FORMAT
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_format(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_GROUP_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_GROUP_COUNT
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_group_count(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_HOSTS
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_hosts(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_IDENTITY_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_IDENTITY_COUNT
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_identity_count(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_KEY_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_KEY_COUNT
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_key_count(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_NEEDS_PASSPHRASE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_NEEDS_PASSPHRASE
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_needs_passphrase(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_ORIGIN
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_ORIGIN
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_origin(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_SNIPPET_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_SNIPPET_COUNT
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_snippet_count(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_UNLOCK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_UNLOCK
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_unlock(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_WARNINGS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_WARNINGS
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_warnings(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_WITH_MAPPING
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_IMPORTPREVIEW_WITH_MAPPING
+uint16_t uniffi_termoak_ffi_checksum_method_importpreview_with_mapping(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_LOGLISTENER_LOG
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_LOGLISTENER_LOG
 uint16_t uniffi_termoak_ffi_checksum_method_loglistener_log(void
@@ -3073,6 +3625,18 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_character(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_CLEAR_FIND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_CLEAR_FIND
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_clear_find(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_COLORS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_COLORS
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_colors(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_COLS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_COLS
 uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_cols(void
@@ -3085,9 +3649,39 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_feed(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_find(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND_STATUS
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_find_status(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND_STEP
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_FIND_STEP
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_find_step(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_HISTORY_SIZE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_HISTORY_SIZE
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_history_size(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_KEY
 uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_LINE_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_LINE_AT
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_line_at(void
     
 );
 #endif
@@ -3097,9 +3691,21 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_link_at(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_MODES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_MODES
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_modes(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_PASTE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_PASTE
 uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_paste(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_POINT_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_POINT_AT
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_point_at(void
     
 );
 #endif
@@ -3139,9 +3745,39 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_bottom(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SCROLL_TO_LINE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SCROLL_TO_LINE
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_scroll_to_line(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SET_COLORS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SET_COLORS
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_set_colors(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SET_THEME
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SET_THEME
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_set_theme(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SNAPSHOT
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_SNAPSHOT
 uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_snapshot(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_TEXT_RANGE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_TEXT_RANGE
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_text_range(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_WORD_AT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMINALSCREEN_WORD_AT
+uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_word_at(void
     
 );
 #endif
@@ -3418,6 +4054,48 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminallistener_on_status(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TRANSFERLISTENER_ON_PROGRESS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TRANSFERLISTENER_ON_PROGRESS
 uint16_t uniffi_termoak_ffi_checksum_method_transferlistener_on_progress(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_ENTER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_ENTER
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_enter(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_IDLE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_IDLE
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_idle(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_INTEGRATED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_INTEGRATED
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_integrated(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_LAST_COMMAND
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_LAST_COMMAND
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_last_command(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_OUTPUT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_OUTPUT
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_output(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_RESET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_RESET
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_reset(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_WAITING_FOR_PROMPT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_COMMANDWATCHER_WAITING_FOR_PROMPT
+uint16_t uniffi_termoak_ffi_checksum_method_commandwatcher_waiting_for_prompt(void
     
 );
 #endif
@@ -3784,6 +4462,36 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_rename(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SERVER_SFTP_UPLOAD
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SERVER_SFTP_UPLOAD
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_upload(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_APPLY_IMPORT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_APPLY_IMPORT
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_apply_import(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_EXPORT_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_EXPORT_HOSTS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_export_hosts(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PREVIEW_IMPORT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PREVIEW_IMPORT
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_preview_import(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PREVIEW_IMPORT_FILE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PREVIEW_IMPORT_FILE
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_preview_import_file(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PROBE_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PROBE_HOSTS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_probe_hosts(void
     
 );
 #endif
@@ -4282,6 +4990,12 @@ uint16_t uniffi_termoak_ffi_checksum_constructor_linetracker_new(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_CONSTRUCTOR_TERMINALSCREEN_NEW
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_CONSTRUCTOR_TERMINALSCREEN_NEW
 uint16_t uniffi_termoak_ffi_checksum_constructor_terminalscreen_new(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_CONSTRUCTOR_COMMANDWATCHER_NEW
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_CONSTRUCTOR_COMMANDWATCHER_NEW
+uint16_t uniffi_termoak_ffi_checksum_constructor_commandwatcher_new(void
     
 );
 #endif

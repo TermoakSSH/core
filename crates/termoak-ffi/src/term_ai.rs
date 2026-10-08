@@ -247,12 +247,13 @@ impl CommandWatcher {
 /// (130, 143, 148, 141); without one, when the last lines of its output
 /// look like an error. Never for full-screen programs, a command line that
 /// is a comment (`# request` run by mistake) or an unknown command.
+/// `output` is the end of what it printed, cleaned.
 #[uniffi::export(default(exit_code = None, interactive = false))]
 pub fn command_failure(
     command: Option<String>,
+    output: String,
     exit_code: Option<i32>,
     interactive: bool,
-    output: String,
 ) -> Option<CommandFailure> {
     aa::failure(&aa::ChipInput {
         enabled: true,
@@ -453,19 +454,19 @@ mod tests {
         assert_eq!(nl_request("#!/bin/sh".into()), None);
         assert_eq!(typeable_command("cd /tmp\nls".into()), "cd /tmp; ls");
         assert_eq!(
-            command_failure(Some("gti".into()), Some(127), false, String::new()),
+            command_failure(Some("gti".into()), String::new(), Some(127), false),
             Some(CommandFailure::Exit { code: 127 })
         );
         assert_eq!(
-            command_failure(Some("x".into()), Some(130), false, String::new()),
+            command_failure(Some("x".into()), String::new(), Some(130), false),
             None
         );
         assert_eq!(
             command_failure(
                 Some("cat x".into()),
+                "cat: x: No such file or directory".into(),
                 None,
-                false,
-                "cat: x: No such file or directory".into()
+                false
             ),
             Some(CommandFailure::Likely)
         );
