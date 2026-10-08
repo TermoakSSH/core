@@ -48,6 +48,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid.workspace = true
 parking_lot.workspace = true
+chrono.workspace = true
 # Terminal emulator (the same one as the desktop app).
 alacritty_terminal = "0.26"
 reqwest.workspace = true

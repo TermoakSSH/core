@@ -556,6 +556,7 @@ async fn run(cli: Cli) -> Result<()> {
                         dry_run,
                         group,
                         device_only,
+                        ..Default::default()
                     },
                 )
                 .await

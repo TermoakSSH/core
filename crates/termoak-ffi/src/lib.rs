@@ -19,7 +19,9 @@
 //!   [`typeable_command`], context chips), account aliases and hidden
 //!   emails ([`account_display_name`], [`mask_email`]) and command palette
 //!   ranking ([`palette_rank`]): the desktop's rules, shared. Host
-//!   reachability for status dots (`TermoakCore::probe_hosts`).
+//!   reachability for status dots (`TermoakCore::probe_hosts`). Import of
+//!   hosts from other apps' files and the export ([`ImportPreview`],
+//!   `TermoakCore::preview_import`, `apply_import`, `export_hosts`).
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Several accounts (servers) on one device ([`AccountHandle`],
@@ -41,6 +43,7 @@ mod assist;
 mod auth;
 mod error;
 mod files;
+mod import_export;
 mod logging;
 mod models;
 mod names;
@@ -59,16 +62,17 @@ pub use accounts::*;
 pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};
+pub use import_export::*;
 pub use logging::{LogLevel, LogListener, init_logging};
 pub use models::*;
+pub use names::*;
+pub use palette::*;
+pub use probe::{HostProbe, HostReach, ProbeSkip};
 pub use remote::{
     EventSubscription, LinkInvite, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,
     ServerTerminalListener, ShareInvite, SharedTerminal, SharedTerminalEvent,
     SharedTerminalListener, join_shared_session, join_shared_session_as, link_invite_info,
 };
-pub use names::*;
-pub use palette::*;
-pub use probe::{HostProbe, HostReach, ProbeSkip};
 pub use screen::{
     FindStatus, KeyModifiers, MouseEncoding, MouseMode, ScreenCursor, ScreenCursorShape,
     ScreenEvent, ScreenHighlight, ScreenLine, ScreenPoint, ScreenRange, ScreenRun, ScreenSnapshot,

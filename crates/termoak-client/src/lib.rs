@@ -16,7 +16,8 @@
 //!   behaves the same): [`find`] in a terminal, [`command_watch`] and
 //!   [`ai_assist`] (AI in the terminal), [`account_names`] (aliases and
 //!   hidden emails), [`palette`] (command palette ranking), [`host_status`]
-//!   (reachability dots of the hosts lists).
+//!   (reachability dots of the hosts lists), [`importers`] (hosts from
+//!   other apps' files and Termoak's export, and the exporters).
 
 pub mod account_names;
 pub mod accounts;
@@ -29,6 +30,7 @@ pub mod events;
 pub mod find;
 pub mod host_status;
 pub mod import;
+pub mod importers;
 pub mod items;
 pub mod layout;
 pub mod line;

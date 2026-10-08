@@ -27,18 +27,27 @@ pub struct SshConfigImportOptions {
     /// Save hosts and keys as "this device only".
     #[uniffi(default)]
     pub device_only: bool,
+    /// Account to import into (default: the current account; This device
+    /// without one). Ignored with `device_only`.
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of that account (default: its personal vault).
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
 }
 
-impl From<SshConfigImportOptions> for CcImportOptions {
-    fn from(o: SshConfigImportOptions) -> Self {
-        CcImportOptions {
-            dry_run: o.dry_run,
-            group: o
+impl SshConfigImportOptions {
+    fn into_client(self) -> Result<CcImportOptions> {
+        Ok(CcImportOptions {
+            dry_run: self.dry_run,
+            group: self
                 .group
                 .map(|g| g.trim().to_string())
                 .filter(|g| !g.is_empty()),
-            device_only: o.device_only,
-        }
+            device_only: self.device_only,
+            account: parse_opt_id(&self.account_id)?,
+            vault: parse_opt_id(&self.vault_id)?,
+        })
     }
 }
 
@@ -200,7 +209,7 @@ impl TermoakCore {
     ) -> Result<SshConfigImportReport> {
         let base = termoak_ssh::sshconfig::ssh_dir();
         let parsed = termoak_ssh::sshconfig::parse_str(&text, &base);
-        Ok(block_on(self.ws.import_hosts(parsed, &options.into()))?.into())
+        Ok(block_on(self.ws.import_hosts(parsed, &options.into_client()?))?.into())
     }
 
     /// Imports an `ssh_config` from a path on the device (following its
@@ -216,7 +225,7 @@ impl TermoakCore {
             .map(PathBuf::from)
             .unwrap_or_else(termoak_ssh::sshconfig::ssh_dir);
         let parsed = termoak_ssh::sshconfig::parse_str(&text, &base);
-        Ok(block_on(self.ws.import_hosts(parsed, &options.into()))?.into())
+        Ok(block_on(self.ws.import_hosts(parsed, &options.into_client()?))?.into())
     }
 
     // ----- Autocompletion -----

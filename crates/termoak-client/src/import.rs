@@ -24,6 +24,11 @@ pub struct ImportOptions {
     pub group: Option<String>,
     /// Save hosts and keys as "this device only".
     pub device_only: bool,
+    /// Account whose store gets them (default: the current account; This
+    /// device without one). Ignored with `device_only`.
+    pub account: Option<Id>,
+    /// Vault of that account (default: its personal vault).
+    pub vault: Option<Id>,
 }
 
 /// Import result.
@@ -66,21 +71,32 @@ fn parse_jump(entry: &str) -> (Option<String>, String, Option<u16>) {
 }
 
 impl Workspace {
-    /// Where imported items go: the current account's store (its personal
-    /// vault) or, for device-only imports or without an account, This
-    /// device.
-    fn import_target(&self, device_only: bool) -> (termoak_core::Store, Option<Id>) {
-        match self.current() {
-            Some(acc) if !device_only => {
-                let vault = acc
+    /// Where imported items go: the chosen account (or the current one)
+    /// and vault (or its personal vault) or, for device-only imports or
+    /// without an account, This device.
+    fn import_target(&self, opts: &ImportOptions) -> Result<(termoak_core::Store, Option<Id>)> {
+        if opts.device_only {
+            return Ok((self.store.clone(), None));
+        }
+        let acc = match opts.account {
+            Some(id) => Some(self.require_account(id)?),
+            None => self.current(),
+        };
+        Ok(match acc {
+            Some(acc) => {
+                let personal = acc
                     .info()
                     .vaults_supported()
                     .then(|| acc.user_id())
                     .flatten();
+                let vault = match opts.vault {
+                    Some(v) if acc.info().vaults_supported() => Some(v),
+                    _ => personal,
+                };
                 (acc.store.clone(), vault)
             }
-            _ => (self.store.clone(), None),
-        }
+            None => (self.store.clone(), None),
+        })
     }
 
     /// Imports an `ssh_config`. Hosts whose name already exists are skipped,
@@ -102,7 +118,7 @@ impl Workspace {
     ) -> Result<ImportReport> {
         let owner = self.owner();
         let sync = opts.device_only.then_some(SyncMode::DeviceOnly);
-        let (store, vault) = self.import_target(opts.device_only);
+        let (store, vault) = self.import_target(opts)?;
         let mut report = ImportReport::default();
 
         // What is already there.
@@ -397,7 +413,7 @@ impl Workspace {
         key_labels: &mut Vec<String>,
         report: &mut ImportReport,
     ) -> Result<Option<Id>> {
-        let (store, vault) = self.import_target(opts.device_only);
+        let (store, vault) = self.import_target(opts)?;
         let pem = match std::fs::read_to_string(path) {
             Ok(p) => p,
             Err(e) => {
