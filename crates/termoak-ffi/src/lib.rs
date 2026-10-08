@@ -16,7 +16,9 @@
 //!   ([`terminal_themes`]), find in the scrollback, text of any range and
 //!   the program's modes.
 //! - AI in the terminal ([`CommandWatcher`], [`nl_request`],
-//!   [`typeable_command`], context chips): the desktop's rules, shared.
+//!   [`typeable_command`], context chips), account aliases and hidden
+//!   emails ([`account_display_name`], [`mask_email`]) and command palette
+//!   ranking ([`palette_rank`]): the desktop's rules, shared.
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Several accounts (servers) on one device ([`AccountHandle`],
@@ -40,6 +42,8 @@ mod error;
 mod files;
 mod logging;
 mod models;
+mod names;
+mod palette;
 mod remote;
 mod runtime;
 mod screen;
@@ -60,6 +64,8 @@ pub use remote::{
     ServerTerminalListener, ShareInvite, SharedTerminal, SharedTerminalEvent,
     SharedTerminalListener, join_shared_session, join_shared_session_as, link_invite_info,
 };
+pub use names::*;
+pub use palette::*;
 pub use screen::{
     FindStatus, KeyModifiers, MouseEncoding, MouseMode, ScreenCursor, ScreenCursorShape,
     ScreenEvent, ScreenHighlight, ScreenLine, ScreenPoint, ScreenRange, ScreenRun, ScreenSnapshot,

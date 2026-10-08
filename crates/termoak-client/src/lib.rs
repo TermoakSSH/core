@@ -14,8 +14,10 @@
 //! - [`layout`]: the one-time migration of 0.3 data to one store per account.
 //! - Shared app logic without UI (moved from the desktop so every app
 //!   behaves the same): [`find`] in a terminal, [`command_watch`] and
-//!   [`ai_assist`] (AI in the terminal).
+//!   [`ai_assist`] (AI in the terminal), [`account_names`] (aliases and
+//!   hidden emails), [`palette`] (command palette ranking).
 
+pub mod account_names;
 pub mod accounts;
 pub mod ai_assist;
 pub mod api;
@@ -28,6 +30,7 @@ pub mod import;
 pub mod items;
 pub mod layout;
 pub mod line;
+pub mod palette;
 pub mod qr;
 pub mod relay;
 pub mod remote;
