@@ -7,6 +7,7 @@
 use serde_json::{Value, json};
 use termoak_core::model as cm;
 
+use crate::accounts::AccountHandle;
 use crate::error::{Result, TermoakError};
 use crate::models::parse_id;
 use crate::remote::ShareInvite;
@@ -288,6 +289,9 @@ pub struct AccountInvite {
     pub expires_at: Option<i64>,
     pub used_at: Option<i64>,
     pub revoked: bool,
+    /// Role in `team_id` on sign-up (`None`: member).
+    #[uniffi(default)]
+    pub team_role: Option<TeamRole>,
 }
 
 impl From<cm::Invite> for AccountInvite {
@@ -301,6 +305,7 @@ impl From<cm::Invite> for AccountInvite {
             expires_at: i.expires_at,
             used_at: i.used_at,
             revoked: i.revoked,
+            team_role: i.team_role.map(Into::into),
         }
     }
 }
@@ -384,6 +389,19 @@ impl From<cm::AuditEntry> for AuditEvent {
             created_at: e.created_at,
         }
     }
+}
+
+/// Result of inviting someone to a team by email.
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct TeamInviteResult {
+    /// They already had an account and are in the team now (`members` is
+    /// the updated list).
+    pub added: bool,
+    pub members: Vec<TeamMember>,
+    /// Without an account: the invitation to sign up that adds them to the
+    /// team (emailed when the server can send email: `emailed`).
+    pub invite: Option<CreatedAccountInvite>,
+    pub emailed: bool,
 }
 
 /// System push notification service.
@@ -753,6 +771,72 @@ impl TermoakCore {
         .await
     }
 
+    /// Pending invitations of a team (team admins).
+    pub async fn list_team_invites(&self, team_id: String) -> Result<Vec<AccountInvite>> {
+        let id = parse_id(&team_id)?;
+        self.with_api(move |api| async move {
+            let list: Vec<cm::Invite> =
+                from_value(api.get(&format!("/api/v1/teams/{id}/invites")).await?)?;
+            Ok(list.into_iter().map(Into::into).collect())
+        })
+        .await
+    }
+
+    /// Invites someone to a team by email (team admins; only owners appoint
+    /// owners): with an account they join at once; otherwise they get an
+    /// invitation to sign up (when the server's registration is open or you
+    /// are a server admin).
+    pub async fn invite_to_team(
+        &self,
+        team_id: String,
+        email: String,
+        role: TeamRole,
+    ) -> Result<TeamInviteResult> {
+        let id = parse_id(&team_id)?;
+        let role = cm::TeamRole::from(role).as_str();
+        self.with_api(move |api| async move {
+            let v: Value = api
+                .post(
+                    &format!("/api/v1/teams/{id}/invites"),
+                    &json!({"email": email.trim(), "role": role}),
+                )
+                .await?;
+            let members: Vec<cm::TeamMember> = match &v["members"] {
+                Value::Array(_) => from_value(v["members"].clone())?,
+                _ => Vec::new(),
+            };
+            let invite = if v["invite"].is_object() {
+                let invite: cm::Invite = from_value(v["invite"].clone())?;
+                Some(CreatedAccountInvite {
+                    invite: invite.into(),
+                    token: str_of(&v["token"]),
+                    server: str_of(&v["server"]),
+                    app_link: str_of(&v["url"]),
+                })
+            } else {
+                None
+            };
+            Ok(TeamInviteResult {
+                added: v["added"].as_bool().unwrap_or(false),
+                members: members.into_iter().map(Into::into).collect(),
+                invite,
+                emailed: v["emailed"].as_bool().unwrap_or(false),
+            })
+        })
+        .await
+    }
+
+    /// Revokes a pending team invitation.
+    pub async fn revoke_team_invite(&self, team_id: String, invite_id: String) -> Result<()> {
+        let (id, invite) = (parse_id(&team_id)?, parse_id(&invite_id)?);
+        self.with_api(move |api| async move {
+            api.delete(&format!("/api/v1/teams/{id}/invites/{invite}"))
+                .await?;
+            Ok(())
+        })
+        .await
+    }
+
     /// Shares a persistent server session with a user, a team or through a
     /// link (`control` = can ask for the keyboard; links wait for your
     /// approval).
@@ -989,5 +1073,172 @@ impl TermoakCore {
             Ok(list.into_iter().map(Into::into).collect())
         })
         .await
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The same, per account
+// ---------------------------------------------------------------------------
+
+/// The account calls of [`TermoakCore`] for one account (they work on the
+/// current account there): its user and language, two-factor
+/// authentication, push notifications (register the token on every signed-in
+/// account) and teams.
+#[uniffi::export]
+impl AccountHandle {
+    /// This account's user, including its language (`locale`).
+    pub async fn current_user(&self) -> Result<ServerUser> {
+        self.core().current_user().await
+    }
+
+    /// Saves this account's preferred language (BCP 47) on its server.
+    pub async fn set_locale(&self, locale: String) -> Result<ServerUser> {
+        self.core().set_locale(locale).await
+    }
+
+    pub async fn two_factor_status(&self) -> Result<TwoFactorStatus> {
+        self.core().two_factor_status().await
+    }
+
+    pub async fn setup_two_factor(&self) -> Result<TwoFactorSetup> {
+        self.core().setup_two_factor().await
+    }
+
+    pub async fn enable_two_factor(&self, code: String) -> Result<Vec<String>> {
+        self.core().enable_two_factor(code).await
+    }
+
+    pub async fn disable_two_factor(&self, password: String, code: String) -> Result<()> {
+        self.core().disable_two_factor(password, code).await
+    }
+
+    /// Enables notifications of this account on this device (call it for
+    /// every signed-in account, with the same system token).
+    pub async fn register_push_token(
+        &self,
+        platform: PushPlatform,
+        token: String,
+        sandbox: bool,
+    ) -> Result<bool> {
+        self.core()
+            .register_push_token(platform, token, sandbox)
+            .await
+    }
+
+    pub async fn unregister_push_token(&self) -> Result<()> {
+        self.core().unregister_push_token().await
+    }
+
+    pub async fn send_test_push(&self) -> Result<()> {
+        self.core().send_test_push().await
+    }
+
+    pub async fn list_teams(&self) -> Result<Vec<Team>> {
+        self.core().list_teams().await
+    }
+
+    pub async fn create_team(&self, name: String) -> Result<Team> {
+        self.core().create_team(name).await
+    }
+
+    pub async fn rename_team(&self, team_id: String, name: String) -> Result<Team> {
+        self.core().rename_team(team_id, name).await
+    }
+
+    pub async fn delete_team(&self, team_id: String) -> Result<()> {
+        self.core().delete_team(team_id).await
+    }
+
+    pub async fn list_team_members(&self, team_id: String) -> Result<Vec<TeamMember>> {
+        self.core().list_team_members(team_id).await
+    }
+
+    pub async fn add_team_member(
+        &self,
+        team_id: String,
+        email: String,
+        role: TeamRole,
+    ) -> Result<Vec<TeamMember>> {
+        self.core().add_team_member(team_id, email, role).await
+    }
+
+    pub async fn set_team_member_role(
+        &self,
+        team_id: String,
+        user_id: String,
+        role: TeamRole,
+    ) -> Result<Vec<TeamMember>> {
+        self.core()
+            .set_team_member_role(team_id, user_id, role)
+            .await
+    }
+
+    pub async fn remove_team_member(&self, team_id: String, user_id: String) -> Result<()> {
+        self.core().remove_team_member(team_id, user_id).await
+    }
+
+    pub async fn leave_team(&self, team_id: String) -> Result<()> {
+        self.core().leave_team(team_id).await
+    }
+
+    pub async fn list_team_invites(&self, team_id: String) -> Result<Vec<AccountInvite>> {
+        self.core().list_team_invites(team_id).await
+    }
+
+    pub async fn invite_to_team(
+        &self,
+        team_id: String,
+        email: String,
+        role: TeamRole,
+    ) -> Result<TeamInviteResult> {
+        self.core().invite_to_team(team_id, email, role).await
+    }
+
+    pub async fn revoke_team_invite(&self, team_id: String, invite_id: String) -> Result<()> {
+        self.core().revoke_team_invite(team_id, invite_id).await
+    }
+
+    /// Shares one of this account's server sessions with every option.
+    pub async fn share_server_session_with(
+        &self,
+        session_id: String,
+        target: ShareTarget,
+        options: ShareOptions,
+    ) -> Result<ShareInvite> {
+        self.core()
+            .share_server_session_with(session_id, target, options)
+            .await
+    }
+
+    pub async fn list_server_session_shares(
+        &self,
+        session_id: String,
+    ) -> Result<Vec<SessionShareInfo>> {
+        self.core().list_server_session_shares(session_id).await
+    }
+
+    pub async fn update_server_session_share(
+        &self,
+        session_id: String,
+        share_id: String,
+        changes: ShareChanges,
+    ) -> Result<SessionShareInfo> {
+        self.core()
+            .update_server_session_share(session_id, share_id, changes)
+            .await
+    }
+
+    pub async fn stop_sharing_server_session(&self, session_id: String) -> Result<u32> {
+        self.core().stop_sharing_server_session(session_id).await
+    }
+
+    pub async fn revoke_server_session_share(
+        &self,
+        session_id: String,
+        share_id: String,
+    ) -> Result<()> {
+        self.core()
+            .revoke_server_session_share(session_id, share_id)
+            .await
     }
 }
