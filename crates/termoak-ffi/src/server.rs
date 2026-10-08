@@ -410,7 +410,7 @@ impl AiPermissionMode {
         }
     }
 
-    fn parse(s: &str) -> Self {
+    pub(crate) fn parse(s: &str) -> Self {
         match s {
             "read_only" => AiPermissionMode::ReadOnly,
             "confirm" => AiPermissionMode::Confirm,
@@ -435,7 +435,7 @@ pub enum AiTaskStatus {
 }
 
 impl AiTaskStatus {
-    fn parse(s: &str) -> Self {
+    pub(crate) fn parse(s: &str) -> Self {
         match s {
             "queued" => AiTaskStatus::Queued,
             "running" => AiTaskStatus::Running,
@@ -470,6 +470,21 @@ pub struct AiTaskRequest {
     /// Reasoning effort (`low`, `medium`, `high`), if the provider supports it.
     #[uniffi(default)]
     pub effort: Option<String>,
+    /// The model first writes a numbered plan (without tools) that you
+    /// approve, edit or deny: an approval with `tool == "plan"` and
+    /// `preview.kind == "plan"`; the task's `plan` has it.
+    #[uniffi(default)]
+    pub plan_first: bool,
+    /// Run it on the hosts of this group (and its subgroups).
+    #[uniffi(default)]
+    pub group_id: Option<String>,
+    /// Run it on the hosts with this tag.
+    #[uniffi(default)]
+    pub tag: Option<String>,
+    /// With several hosts: one conversation per host (the task becomes the
+    /// parent; see `AiTask::hosts`) instead of one that goes through them.
+    #[uniffi(default)]
+    pub fan_out: bool,
 }
 
 /// AI action pending approval (or already decided).
@@ -488,10 +503,15 @@ pub struct AiApproval {
     pub decided_by: Option<String>,
     pub created_at: i64,
     pub decided_at: Option<i64>,
+    /// What it is about (the command and its risk, the diff of a file, the
+    /// plan), to show instead of `input_json`. `None` on servers before 0.6
+    /// and for approvals saved by them.
+    #[uniffi(default)]
+    pub preview: Option<crate::ai::AiApprovalPreview>,
 }
 
 impl AiApproval {
-    fn from_json(v: &Value) -> Self {
+    pub(crate) fn from_json(v: &Value) -> Self {
         AiApproval {
             id: str_of(&v["id"]),
             task_id: str_of(&v["task_id"]),
@@ -502,10 +522,11 @@ impl AiApproval {
             decided_by: v["decided_by"].as_str().map(str::to_string),
             created_at: v["created_at"].as_i64().unwrap_or(0),
             decided_at: v["decided_at"].as_i64(),
+            preview: crate::ai::AiApprovalPreview::from_json(&v["preview"]),
         }
     }
 
-    fn list_from_json(v: &Value) -> Vec<Self> {
+    pub(crate) fn list_from_json(v: &Value) -> Vec<Self> {
         v.as_array()
             .map(|a| a.iter().map(AiApproval::from_json).collect())
             .unwrap_or_default()
@@ -535,10 +556,32 @@ pub struct AiTask {
     pub pending_approvals: Vec<AiApproval>,
     /// The full task as returned by the server (conversation, usage...).
     pub raw_json: String,
+    /// The plan of a `plan_first` task (once the model wrote it).
+    #[uniffi(default)]
+    pub plan: Option<crate::ai::AiTaskPlan>,
+    /// Commands and file writes it ran, in order (in `get_ai_task`).
+    #[uniffi(default)]
+    pub steps: Vec<crate::ai::AiTaskStep>,
+    /// Multi-host (`fan_out`) task: one row per host with its own task
+    /// (in `get_ai_task`).
+    #[uniffi(default)]
+    pub hosts: Vec<crate::ai::AiHostRun>,
+    /// The multi-host task this host's conversation belongs to.
+    #[uniffi(default)]
+    pub parent_id: Option<String>,
+    /// One conversation per host (see `hosts`).
+    #[uniffi(default)]
+    pub fan_out: bool,
+    #[uniffi(default)]
+    pub plan_first: bool,
+    #[uniffi(default)]
+    pub group_id: Option<String>,
+    #[uniffi(default)]
+    pub tag: Option<String>,
 }
 
 impl AiTask {
-    fn from_json(v: &Value) -> Self {
+    pub(crate) fn from_json(v: &Value) -> Self {
         AiTask {
             id: str_of(&v["id"]),
             title: str_of(&v["title"]),
@@ -563,6 +606,14 @@ impl AiTask {
             cost_micros: v["cost_micros"].as_i64().unwrap_or(0),
             pending_approvals: AiApproval::list_from_json(&v["pending_approvals"]),
             raw_json: v.to_string(),
+            plan: crate::ai::AiTaskPlan::from_json(&v["plan"]),
+            steps: crate::ai::AiTaskStep::list_from_json(&v["steps"]),
+            hosts: crate::ai::AiHostRun::list_from_json(&v["hosts"]),
+            parent_id: v["parent_id"].as_str().map(str::to_string),
+            fan_out: v["fan_out"].as_bool().unwrap_or(false),
+            plan_first: v["plan_first"].as_bool().unwrap_or(false),
+            group_id: v["group_id"].as_str().map(str::to_string),
+            tag: v["tag"].as_str().map(str::to_string),
         }
     }
 }
@@ -1160,7 +1211,10 @@ impl TermoakCore {
         if let Some(s) = &request.session_id {
             parse_id(s)?;
         }
-        let body = json!({
+        if let Some(g) = &request.group_id {
+            parse_id(g)?;
+        }
+        let mut body = json!({
             "prompt": request.prompt,
             "title": request.title,
             "mode": request.mode.map(AiPermissionMode::as_str),
@@ -1169,6 +1223,24 @@ impl TermoakCore {
             "session_id": request.session_id,
             "effort": request.effort,
         });
+        // Only when asked: servers before 0.6 refuse nothing, but keep the
+        // body as it was for plain tasks.
+        if request.plan_first {
+            body["plan_first"] = json!(true);
+        }
+        if request.fan_out {
+            body["fan_out"] = json!(true);
+        }
+        if let Some(g) = request.group_id {
+            body["group_id"] = json!(g);
+        }
+        if let Some(t) = request
+            .tag
+            .map(|t| t.trim().to_string())
+            .filter(|t| !t.is_empty())
+        {
+            body["tag"] = json!(t);
+        }
         self.with_api(move |api| async move {
             let v: Value = api.post("/api/v1/ai/tasks", &body).await?;
             Ok(AiTask::from_json(&v))

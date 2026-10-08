@@ -30,6 +30,7 @@ uniffi::setup_scaffolding!();
 
 mod account;
 mod accounts;
+mod ai;
 mod assist;
 mod auth;
 mod error;
@@ -47,6 +48,7 @@ mod vault;
 
 pub use account::*;
 pub use accounts::*;
+pub use ai::*;
 pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
 pub use error::{Result, TermoakError};

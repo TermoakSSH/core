@@ -787,6 +787,11 @@ pub struct AccountHandle {
 }
 
 impl AccountHandle {
+    /// The core bound to this account (its calls work on this account).
+    pub(crate) fn core(&self) -> &Arc<TermoakCore> {
+        &self.core
+    }
+
     fn account(&self) -> Result<Arc<termoak_client::Account>> {
         Ok(self.core.ws.require_account(self.id)?)
     }
