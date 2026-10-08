@@ -61,6 +61,18 @@ impl QuickTarget {
     }
 }
 
+/// A language segment of the web app's URLs: `es`, `pt-BR`... (two
+/// lowercase letters, optionally a region).
+fn is_language_segment(s: &str) -> bool {
+    let (lang, region) = match s.split_once('-') {
+        Some((l, r)) => (l, Some(r)),
+        None => (s, None),
+    };
+    lang.len() == 2
+        && lang.bytes().all(|b| b.is_ascii_lowercase())
+        && region.is_none_or(|r| r.len() == 2 && r.bytes().all(|b| b.is_ascii_uppercase()))
+}
+
 /// A share or invitation token: base64url, at most 256 characters.
 pub fn valid_token(token: &str) -> bool {
     !token.is_empty()
@@ -126,6 +138,13 @@ pub fn parse_link(text: &str) -> Option<Link> {
             let mut prefix = &segments[..at];
             if !invite && prefix.ends_with(&["api", "v1"]) {
                 prefix = &prefix[..prefix.len() - 2];
+            }
+            // The web app's language prefix (`/es/join/...`) is not part of
+            // the server's address.
+            if let Some(last) = prefix.last()
+                && is_language_segment(last)
+            {
+                prefix = &prefix[..prefix.len() - 1];
             }
             let mut server = format!("{}://{}", url.scheme(), url.host_str()?);
             if let Some(port) = url.port() {
@@ -347,6 +366,20 @@ mod tests {
         assert_eq!(
             parse_link("http://10.0.0.5:8080/apps/termoak/invite/aks_inv_abc"),
             invite("http://10.0.0.5:8080/apps/termoak", "aks_inv_abc")
+        );
+        assert_eq!(
+            parse_link("https://termoak.com/es/join/tok"),
+            Some(Link::Join {
+                server: "https://termoak.com".into(),
+                token: "tok".into()
+            })
+        );
+        assert_eq!(
+            parse_link("https://example.com/termoak/pt-BR/invite/aks_inv_abc"),
+            Some(Link::Invite {
+                server: "https://example.com/termoak".into(),
+                code: "aks_inv_abc".into()
+            })
         );
         assert_eq!(parse_link("https://example.com/join/"), None);
         assert_eq!(parse_link("https://example.com/join/a/b"), None);
