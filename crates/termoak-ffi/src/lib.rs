@@ -12,7 +12,9 @@
 //! - [`ServerTerminalHandle`]: terminal that lives on the server (it stays
 //!   alive even if the phone disconnects).
 //! - [`TerminalScreen`]: terminal emulator (the desktop one) that turns the
-//!   output into a screen ready to draw.
+//!   output into a screen ready to draw, with colour themes
+//!   ([`terminal_themes`]), find in the scrollback, text of any range and
+//!   the program's modes.
 //! - Account: two-factor authentication, teams, invitations and user
 //!   administration; `ssh_config` import and command autocompletion.
 //! - Several accounts (servers) on one device ([`AccountHandle`],
@@ -56,8 +58,10 @@ pub use remote::{
     SharedTerminalListener, join_shared_session, join_shared_session_as, link_invite_info,
 };
 pub use screen::{
-    KeyModifiers, ScreenCursor, ScreenCursorShape, ScreenEvent, ScreenLine, ScreenRun,
-    ScreenSnapshot, TerminalKey, TerminalScreen,
+    FindStatus, KeyModifiers, MouseEncoding, MouseMode, ScreenCursor, ScreenCursorShape,
+    ScreenEvent, ScreenHighlight, ScreenLine, ScreenPoint, ScreenRange, ScreenRun, ScreenSnapshot,
+    TerminalColors, TerminalKey, TerminalModes, TerminalScreen, TerminalThemeInfo,
+    terminal_theme_for_host, terminal_themes,
 };
 pub use server::*;
 pub use ssh::{

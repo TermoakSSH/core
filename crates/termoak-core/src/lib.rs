@@ -8,6 +8,7 @@ pub mod model;
 pub mod qr;
 pub mod resolve;
 pub mod store;
+pub mod themes;
 pub mod time;
 pub mod totp;
 pub mod transfer;

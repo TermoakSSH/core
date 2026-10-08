@@ -12,12 +12,15 @@
 //!   those stores.
 //! - [`servers`]: the official server and canonical server URLs.
 //! - [`layout`]: the one-time migration of 0.3 data to one store per account.
+//! - Shared app logic without UI (moved from the desktop so every app
+//!   behaves the same): [`find`] in a terminal.
 
 pub mod accounts;
 pub mod api;
 pub mod complete;
 pub mod error;
 pub mod events;
+pub mod find;
 pub mod import;
 pub mod items;
 pub mod layout;
