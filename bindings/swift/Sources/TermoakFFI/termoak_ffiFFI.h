@@ -2502,6 +2502,11 @@ void uniffi_termoak_ffi_fn_method_termoakcore_delete_known_host(uint64_t ptr, Ru
 void uniffi_termoak_ffi_fn_method_termoakcore_delete_memory(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_DELETE_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_DELETE_NETWORK
+void uniffi_termoak_ffi_fn_method_termoakcore_delete_network(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_DELETE_SNIPPET
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_DELETE_SNIPPET
 void uniffi_termoak_ffi_fn_method_termoakcore_delete_snippet(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
@@ -2545,6 +2550,11 @@ RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_get_identity(uint64_t ptr, R
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_GET_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_GET_KEY
 RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_get_key(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_GET_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_GET_NETWORK
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_get_network(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_GET_SNIPPET
@@ -2607,9 +2617,19 @@ RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_list_known_hosts(uint64_t pt
 RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_list_memories(uint64_t ptr, RustBuffer filter, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_LIST_NETWORKS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_LIST_NETWORKS
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_list_networks(uint64_t ptr, RustBuffer filter, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_LIST_SNIPPETS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_LIST_SNIPPETS
 RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_list_snippets(uint64_t ptr, RustBuffer filter, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_NETWORK_SECRETS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_NETWORK_SECRETS
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_network_secrets(uint64_t ptr, RustBuffer id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_FORWARD
@@ -2640,6 +2660,11 @@ RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_save_key(uint64_t ptr, RustB
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_MEMORY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_MEMORY
 RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_save_memory(uint64_t ptr, RustBuffer memory, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_NETWORK
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_save_network(uint64_t ptr, RustBuffer network, RustBuffer secrets, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SAVE_SNIPPET
@@ -2681,6 +2706,11 @@ int8_t uniffi_termoak_ffi_fn_func_command_echoed(RustBuffer line, RustBuffer bef
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_QR_CODE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_QR_CODE
 RustBuffer uniffi_termoak_ffi_fn_func_qr_code(RustBuffer text, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_API_ERROR_INFO
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_API_ERROR_INFO
+RustBuffer uniffi_termoak_ffi_fn_func_api_error_info(RustBuffer error_message, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_DETECT_IMPORT_FORMAT
@@ -3164,6 +3194,12 @@ uint16_t uniffi_termoak_ffi_checksum_func_command_echoed(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_QR_CODE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_QR_CODE
 uint16_t uniffi_termoak_ffi_checksum_func_qr_code(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_API_ERROR_INFO
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_API_ERROR_INFO
+uint16_t uniffi_termoak_ffi_checksum_func_api_error_info(void
     
 );
 #endif
@@ -5585,6 +5621,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_DELETE_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_DELETE_NETWORK
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_delete_network(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_DELETE_SNIPPET
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_DELETE_SNIPPET
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet(void
@@ -5636,6 +5678,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_get_identity(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_GET_KEY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_GET_KEY
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_get_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_GET_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_GET_NETWORK
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_get_network(void
     
 );
 #endif
@@ -5711,9 +5759,21 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_list_memories(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_LIST_NETWORKS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_LIST_NETWORKS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_list_networks(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_LIST_SNIPPETS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_LIST_SNIPPETS
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_NETWORK_SECRETS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_NETWORK_SECRETS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_network_secrets(void
     
 );
 #endif
@@ -5750,6 +5810,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_save_key(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SAVE_MEMORY
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SAVE_MEMORY
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_save_memory(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SAVE_NETWORK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SAVE_NETWORK
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_save_network(void
     
 );
 #endif

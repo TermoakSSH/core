@@ -8801,6 +8801,8 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     
     func deleteMemory(id: String, accountId: String?) throws 
     
+    func deleteNetwork(id: String, accountId: String?) throws 
+    
     func deleteSnippet(id: String, accountId: String?) throws 
     
     /**
@@ -8836,6 +8838,8 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func getIdentity(id: String, accountId: String?) throws  -> SshIdentity
     
     func getKey(id: String, accountId: String?) throws  -> SshKey
+    
+    func getNetwork(id: String, accountId: String?) throws  -> PrivateNetwork
     
     func getSnippet(id: String, accountId: String?) throws  -> Snippet
     
@@ -8884,7 +8888,20 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     
     func listMemories(filter: ItemFilter?) throws  -> [AiMemory]
     
+    /**
+     * Private networks of `filter` (never on This device). Show them only
+     * for accounts whose server has the `networks` feature
+     * (`AccountInfo.features`); others keep them but cannot use them.
+     */
+    func listNetworks(filter: ItemFilter?) throws  -> [PrivateNetwork]
+    
     func listSnippets(filter: ItemFilter?) throws  -> [Snippet]
+    
+    /**
+     * The secrets of a network (Editors; Use-only fails with
+     * `SecretHidden`).
+     */
+    func networkSecrets(id: String, accountId: String?) throws  -> NetworkSecrets
     
     func saveForward(forward: PortForward) throws  -> PortForward
     
@@ -8906,6 +8923,16 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func saveKey(key: SshKey, passphrase: SecretChange) throws  -> SshKey
     
     func saveMemory(memory: AiMemory) throws  -> AiMemory
+    
+    /**
+     * Creates (with an empty `id`) or updates a network in an account
+     * vault. `secrets`: `nil` keeps the stored ones; otherwise they are
+     * replaced (its `nil` fields are cleared). Fails with `Invalid` for
+     * This device: only the server uses networks. The plan limit
+     * (`max_networks`, 10 on Free) is checked by the server when it syncs
+     * (the network comes back in `SyncReport.rejected` with `plan_limit`).
+     */
+    func saveNetwork(network: PrivateNetwork, secrets: NetworkSecrets?) throws  -> PrivateNetwork
     
     func saveSnippet(snippet: Snippet) throws  -> Snippet
     
@@ -11492,6 +11519,16 @@ open func deleteMemory(id: String, accountId: String? = nil)throws   {try rustCa
 }
 }
     
+open func deleteNetwork(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_delete_network(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
+    )
+}
+}
+    
 open func deleteSnippet(id: String, accountId: String? = nil)throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_delete_snippet(
@@ -11606,6 +11643,17 @@ open func getKey(id: String, accountId: String? = nil)throws  -> SshKey  {
     return try  FfiConverterTypeSshKey_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_get_key(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
+    )
+})
+}
+    
+open func getNetwork(id: String, accountId: String? = nil)throws  -> PrivateNetwork  {
+    return try  FfiConverterTypePrivateNetwork_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_get_network(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(id),
         FfiConverterOptionString.lower(accountId),uniffiCallStatus
@@ -11767,12 +11815,42 @@ open func listMemories(filter: ItemFilter? = nil)throws  -> [AiMemory]  {
 })
 }
     
+    /**
+     * Private networks of `filter` (never on This device). Show them only
+     * for accounts whose server has the `networks` feature
+     * (`AccountInfo.features`); others keep them but cannot use them.
+     */
+open func listNetworks(filter: ItemFilter? = nil)throws  -> [PrivateNetwork]  {
+    return try  FfiConverterSequenceTypePrivateNetwork.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_list_networks(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
+    )
+})
+}
+    
 open func listSnippets(filter: ItemFilter? = nil)throws  -> [Snippet]  {
     return try  FfiConverterSequenceTypeSnippet.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_method_termoakcore_list_snippets(
             self.uniffiCloneHandle(),
         FfiConverterOptionTypeItemFilter.lower(filter),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * The secrets of a network (Editors; Use-only fails with
+     * `SecretHidden`).
+     */
+open func networkSecrets(id: String, accountId: String? = nil)throws  -> NetworkSecrets  {
+    return try  FfiConverterTypeNetworkSecrets_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_network_secrets(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
     )
 })
 }
@@ -11845,6 +11923,25 @@ open func saveMemory(memory: AiMemory)throws  -> AiMemory  {
     uniffi_termoak_ffi_fn_method_termoakcore_save_memory(
             self.uniffiCloneHandle(),
         FfiConverterTypeAiMemory_lower(memory),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Creates (with an empty `id`) or updates a network in an account
+     * vault. `secrets`: `nil` keeps the stored ones; otherwise they are
+     * replaced (its `nil` fields are cleared). Fails with `Invalid` for
+     * This device: only the server uses networks. The plan limit
+     * (`max_networks`, 10 on Free) is checked by the server when it syncs
+     * (the network comes back in `SyncReport.rejected` with `plan_limit`).
+     */
+open func saveNetwork(network: PrivateNetwork, secrets: NetworkSecrets? = nil)throws  -> PrivateNetwork  {
+    return try  FfiConverterTypePrivateNetwork_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_save_network(
+            self.uniffiCloneHandle(),
+        FfiConverterTypePrivateNetwork_lower(network),
+        FfiConverterOptionTypeNetworkSecrets.lower(secrets),uniffiCallStatus
     )
 })
 }
@@ -14770,6 +14867,108 @@ public func FfiConverterTypeAiTaskStep_lower(_ value: AiTaskStep) -> RustBuffer 
 
 
 /**
+ * The structured part of an error: HTTP status, stable code and the
+ * error's extra fields. See [`api_error_info`].
+ */
+public struct ApiErrorInfo: Equatable, Hashable {
+    /**
+     * HTTP status of a server error; `0` for a rule checked on the device
+     * (a vault rule, a private network...).
+     */
+    public var status: UInt16
+    /**
+     * Stable snake_case code (`shared_vaults`, `plan_limit`,
+     * `network_unavailable`...).
+     */
+    public var code: String
+    /**
+     * The message alone (English), without the "the server responded"
+     * prefix.
+     */
+    public var message: String
+    /**
+     * JSON object with the error's other fields (`{}` when there are
+     * none): `vaults` of `shared_vaults`, `teams` of `last_team_owner`,
+     * `limit` and `max` of `plan_limit`, `field` of
+     * `cross_vault_reference`...
+     */
+    public var detailsJson: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * HTTP status of a server error; `0` for a rule checked on the device
+         * (a vault rule, a private network...).
+         */status: UInt16, 
+        /**
+         * Stable snake_case code (`shared_vaults`, `plan_limit`,
+         * `network_unavailable`...).
+         */code: String, 
+        /**
+         * The message alone (English), without the "the server responded"
+         * prefix.
+         */message: String, 
+        /**
+         * JSON object with the error's other fields (`{}` when there are
+         * none): `vaults` of `shared_vaults`, `teams` of `last_team_owner`,
+         * `limit` and `max` of `plan_limit`, `field` of
+         * `cross_vault_reference`...
+         */detailsJson: String) {
+        self.status = status
+        self.code = code
+        self.message = message
+        self.detailsJson = detailsJson
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ApiErrorInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeApiErrorInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ApiErrorInfo {
+        return
+            try ApiErrorInfo(
+                status: FfiConverterUInt16.read(from: &buf), 
+                code: FfiConverterString.read(from: &buf), 
+                message: FfiConverterString.read(from: &buf), 
+                detailsJson: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ApiErrorInfo, into buf: inout [UInt8]) {
+        FfiConverterUInt16.write(value.status, into: &buf)
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterString.write(value.message, into: &buf)
+        FfiConverterString.write(value.detailsJson, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiErrorInfo_lift(_ buf: RustBuffer) throws -> ApiErrorInfo {
+    return try FfiConverterTypeApiErrorInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeApiErrorInfo_lower(_ value: ApiErrorInfo) -> RustBuffer {
+    return FfiConverterTypeApiErrorInfo.lower(value)
+}
+
+
+/**
  * An audit log entry.
  */
 public struct AuditEvent: Equatable, Hashable {
@@ -16820,6 +17019,13 @@ public struct HostSettings: Equatable, Hashable {
      * chain). The password is set separately: `setHostProxyPassword`.
      */
     public var proxy: HostProxy?
+    /**
+     * Private network ([`PrivateNetwork`] of the same vault) the first
+     * connection goes through (0.7); `nil`: direct (or inherited). It
+     * takes precedence over `proxy`. Editors must start from the loaded
+     * settings (copy them) so it is kept when they do not show it.
+     */
+    public var networkId: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -16854,7 +17060,13 @@ public struct HostSettings: Equatable, Hashable {
         /**
          * Proxy for the first connection (to the first jump if there is a
          * chain). The password is set separately: `setHostProxyPassword`.
-         */proxy: HostProxy? = nil) {
+         */proxy: HostProxy? = nil, 
+        /**
+         * Private network ([`PrivateNetwork`] of the same vault) the first
+         * connection goes through (0.7); `nil`: direct (or inherited). It
+         * takes precedence over `proxy`. Editors must start from the loaded
+         * settings (copy them) so it is kept when they do not show it.
+         */networkId: String? = nil) {
         self.port = port
         self.username = username
         self.identityId = identityId
@@ -16868,6 +17080,7 @@ public struct HostSettings: Equatable, Hashable {
         self.theme = theme
         self.recordSessions = recordSessions
         self.proxy = proxy
+        self.networkId = networkId
     }
 
     
@@ -16898,7 +17111,8 @@ public struct FfiConverterTypeHostSettings: FfiConverterRustBuffer {
                 term: FfiConverterOptionString.read(from: &buf), 
                 theme: FfiConverterOptionString.read(from: &buf), 
                 recordSessions: FfiConverterOptionBool.read(from: &buf), 
-                proxy: FfiConverterOptionTypeHostProxy.read(from: &buf)
+                proxy: FfiConverterOptionTypeHostProxy.read(from: &buf), 
+                networkId: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -16916,6 +17130,7 @@ public struct FfiConverterTypeHostSettings: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.theme, into: &buf)
         FfiConverterOptionBool.write(value.recordSessions, into: &buf)
         FfiConverterOptionTypeHostProxy.write(value.proxy, into: &buf)
+        FfiConverterOptionString.write(value.networkId, into: &buf)
     }
 }
 
@@ -18049,6 +18264,96 @@ public func FfiConverterTypeLinkInvite_lower(_ value: LinkInvite) -> RustBuffer 
 
 
 /**
+ * Secrets of a network (stored encrypted, like passwords). `nil` fields
+ * are cleared on save.
+ */
+public struct NetworkSecrets: Equatable, Hashable {
+    /**
+     * WireGuard: the server's private key (base64).
+     */
+    public var privateKey: String?
+    /**
+     * WireGuard: preshared key (base64).
+     */
+    public var presharedKey: String?
+    /**
+     * Tailscale/Headscale: auth key.
+     */
+    public var authKey: String?
+    /**
+     * ZeroTier: Central API token.
+     */
+    public var apiToken: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * WireGuard: the server's private key (base64).
+         */privateKey: String? = nil, 
+        /**
+         * WireGuard: preshared key (base64).
+         */presharedKey: String? = nil, 
+        /**
+         * Tailscale/Headscale: auth key.
+         */authKey: String? = nil, 
+        /**
+         * ZeroTier: Central API token.
+         */apiToken: String? = nil) {
+        self.privateKey = privateKey
+        self.presharedKey = presharedKey
+        self.authKey = authKey
+        self.apiToken = apiToken
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension NetworkSecrets: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeNetworkSecrets: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> NetworkSecrets {
+        return
+            try NetworkSecrets(
+                privateKey: FfiConverterOptionString.read(from: &buf), 
+                presharedKey: FfiConverterOptionString.read(from: &buf), 
+                authKey: FfiConverterOptionString.read(from: &buf), 
+                apiToken: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: NetworkSecrets, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.privateKey, into: &buf)
+        FfiConverterOptionString.write(value.presharedKey, into: &buf)
+        FfiConverterOptionString.write(value.authKey, into: &buf)
+        FfiConverterOptionString.write(value.apiToken, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNetworkSecrets_lift(_ buf: RustBuffer) throws -> NetworkSecrets {
+    return try FfiConverterTypeNetworkSecrets.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeNetworkSecrets_lower(_ value: NetworkSecrets) -> RustBuffer {
+    return FfiConverterTypeNetworkSecrets.lower(value)
+}
+
+
+/**
  * A new vault.
  */
 public struct NewVault: Equatable, Hashable {
@@ -18469,6 +18774,165 @@ public func FfiConverterTypePortForward_lift(_ buf: RustBuffer) throws -> PortFo
 #endif
 public func FfiConverterTypePortForward_lower(_ value: PortForward) -> RustBuffer {
     return FfiConverterTypePortForward.lower(value)
+}
+
+
+/**
+ * A private network (WireGuard, Tailscale/Headscale or ZeroTier) of an
+ * account vault. Only the server joins it (when it has `termoak-netd`:
+ * account feature `networks`); hosts and groups pick it with
+ * `HostSettings.network_id`, and the app reaches them through the server
+ * relay. Only the section of its `kind` matters.
+ */
+public struct PrivateNetwork: Equatable, Hashable {
+    /**
+     * Empty when creating.
+     */
+    public var id: String
+    public var name: String
+    /**
+     * `wireguard`, `tailscale` (also Headscale) or `zerotier` (a later
+     * app's kind comes as it is and must be kept).
+     */
+    public var kind: String
+    public var description: String
+    public var wireguard: WireguardSettings?
+    public var tailscale: TailscaleSettings?
+    public var zerotier: ZerotierSettings?
+    /**
+     * Read-only: some secret is stored.
+     */
+    public var hasSecrets: Bool
+    /**
+     * Read-only: last modification (ms since 1970).
+     */
+    public var updatedAt: Int64
+    /**
+     * Account of the network (on save, the account for a new one;
+     * default: the current account). Networks never live on This device.
+     */
+    public var accountId: String?
+    /**
+     * Vault of the network (on save, the vault for a new one; default: the
+     * personal vault).
+     */
+    public var vaultId: String?
+    /**
+     * Read-only: what you can do with it.
+     */
+    public var access: ItemAccess?
+    /**
+     * Read-only: secrets exist but you cannot see them (Use-only vault).
+     */
+    public var secretHidden: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Empty when creating.
+         */id: String = "", name: String, 
+        /**
+         * `wireguard`, `tailscale` (also Headscale) or `zerotier` (a later
+         * app's kind comes as it is and must be kept).
+         */kind: String, description: String = "", wireguard: WireguardSettings? = nil, tailscale: TailscaleSettings? = nil, zerotier: ZerotierSettings? = nil, 
+        /**
+         * Read-only: some secret is stored.
+         */hasSecrets: Bool = false, 
+        /**
+         * Read-only: last modification (ms since 1970).
+         */updatedAt: Int64 = Int64(0), 
+        /**
+         * Account of the network (on save, the account for a new one;
+         * default: the current account). Networks never live on This device.
+         */accountId: String? = nil, 
+        /**
+         * Vault of the network (on save, the vault for a new one; default: the
+         * personal vault).
+         */vaultId: String? = nil, 
+        /**
+         * Read-only: what you can do with it.
+         */access: ItemAccess? = nil, 
+        /**
+         * Read-only: secrets exist but you cannot see them (Use-only vault).
+         */secretHidden: Bool = false) {
+        self.id = id
+        self.name = name
+        self.kind = kind
+        self.description = description
+        self.wireguard = wireguard
+        self.tailscale = tailscale
+        self.zerotier = zerotier
+        self.hasSecrets = hasSecrets
+        self.updatedAt = updatedAt
+        self.accountId = accountId
+        self.vaultId = vaultId
+        self.access = access
+        self.secretHidden = secretHidden
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PrivateNetwork: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePrivateNetwork: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PrivateNetwork {
+        return
+            try PrivateNetwork(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterString.read(from: &buf), 
+                description: FfiConverterString.read(from: &buf), 
+                wireguard: FfiConverterOptionTypeWireguardSettings.read(from: &buf), 
+                tailscale: FfiConverterOptionTypeTailscaleSettings.read(from: &buf), 
+                zerotier: FfiConverterOptionTypeZerotierSettings.read(from: &buf), 
+                hasSecrets: FfiConverterBool.read(from: &buf), 
+                updatedAt: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
+                secretHidden: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PrivateNetwork, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.description, into: &buf)
+        FfiConverterOptionTypeWireguardSettings.write(value.wireguard, into: &buf)
+        FfiConverterOptionTypeTailscaleSettings.write(value.tailscale, into: &buf)
+        FfiConverterOptionTypeZerotierSettings.write(value.zerotier, into: &buf)
+        FfiConverterBool.write(value.hasSecrets, into: &buf)
+        FfiConverterInt64.write(value.updatedAt, into: &buf)
+        FfiConverterOptionString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
+        FfiConverterBool.write(value.secretHidden, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrivateNetwork_lift(_ buf: RustBuffer) throws -> PrivateNetwork {
+    return try FfiConverterTypePrivateNetwork.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePrivateNetwork_lower(_ value: PrivateNetwork) -> RustBuffer {
+    return FfiConverterTypePrivateNetwork.lower(value)
 }
 
 
@@ -21808,6 +22272,85 @@ public func FfiConverterTypeSyncReport_lower(_ value: SyncReport) -> RustBuffer 
 
 
 /**
+ * Tailscale or Headscale settings (the auth key is [`NetworkSecrets`]).
+ */
+public struct TailscaleSettings: Equatable, Hashable {
+    /**
+     * `nil`: Tailscale; the Headscale URL otherwise.
+     */
+    public var controlUrl: String?
+    /**
+     * Name of the server's node (default `termoak-<id>`).
+     */
+    public var hostname: String?
+    /**
+     * ACL tags (default `tag:termoak`).
+     */
+    public var tags: [String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `nil`: Tailscale; the Headscale URL otherwise.
+         */controlUrl: String? = nil, 
+        /**
+         * Name of the server's node (default `termoak-<id>`).
+         */hostname: String? = nil, 
+        /**
+         * ACL tags (default `tag:termoak`).
+         */tags: [String] = []) {
+        self.controlUrl = controlUrl
+        self.hostname = hostname
+        self.tags = tags
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TailscaleSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTailscaleSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TailscaleSettings {
+        return
+            try TailscaleSettings(
+                controlUrl: FfiConverterOptionString.read(from: &buf), 
+                hostname: FfiConverterOptionString.read(from: &buf), 
+                tags: FfiConverterSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TailscaleSettings, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.controlUrl, into: &buf)
+        FfiConverterOptionString.write(value.hostname, into: &buf)
+        FfiConverterSequenceString.write(value.tags, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTailscaleSettings_lift(_ buf: RustBuffer) throws -> TailscaleSettings {
+    return try FfiConverterTypeTailscaleSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTailscaleSettings_lower(_ value: TailscaleSettings) -> RustBuffer {
+    return FfiConverterTypeTailscaleSettings.lower(value)
+}
+
+
+/**
  * A team you belong to.
  */
 public struct Team: Equatable, Hashable {
@@ -23097,6 +23640,246 @@ public func FfiConverterTypeVaultRef_lift(_ buf: RustBuffer) throws -> VaultRef 
 #endif
 public func FfiConverterTypeVaultRef_lower(_ value: VaultRef) -> RustBuffer {
     return FfiConverterTypeVaultRef.lower(value)
+}
+
+
+/**
+ * A WireGuard peer (the other end of the tunnel).
+ */
+public struct WireguardPeer: Equatable, Hashable {
+    /**
+     * The peer's public key (base64).
+     */
+    public var publicKey: String
+    /**
+     * `host:port` of the peer.
+     */
+    public var endpoint: String?
+    /**
+     * Networks reached through the peer (`10.0.0.0/24`...).
+     */
+    public var allowedIps: [String]
+    /**
+     * Seconds between keep-alives (`nil` or 0: off).
+     */
+    public var persistentKeepalive: UInt32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The peer's public key (base64).
+         */publicKey: String, 
+        /**
+         * `host:port` of the peer.
+         */endpoint: String? = nil, 
+        /**
+         * Networks reached through the peer (`10.0.0.0/24`...).
+         */allowedIps: [String] = [], 
+        /**
+         * Seconds between keep-alives (`nil` or 0: off).
+         */persistentKeepalive: UInt32? = nil) {
+        self.publicKey = publicKey
+        self.endpoint = endpoint
+        self.allowedIps = allowedIps
+        self.persistentKeepalive = persistentKeepalive
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension WireguardPeer: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWireguardPeer: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WireguardPeer {
+        return
+            try WireguardPeer(
+                publicKey: FfiConverterString.read(from: &buf), 
+                endpoint: FfiConverterOptionString.read(from: &buf), 
+                allowedIps: FfiConverterSequenceString.read(from: &buf), 
+                persistentKeepalive: FfiConverterOptionUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: WireguardPeer, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterOptionString.write(value.endpoint, into: &buf)
+        FfiConverterSequenceString.write(value.allowedIps, into: &buf)
+        FfiConverterOptionUInt32.write(value.persistentKeepalive, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWireguardPeer_lift(_ buf: RustBuffer) throws -> WireguardPeer {
+    return try FfiConverterTypeWireguardPeer.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWireguardPeer_lower(_ value: WireguardPeer) -> RustBuffer {
+    return FfiConverterTypeWireguardPeer.lower(value)
+}
+
+
+/**
+ * WireGuard settings (a `.conf` without its keys; the private and
+ * preshared keys are [`NetworkSecrets`]).
+ */
+public struct WireguardSettings: Equatable, Hashable {
+    /**
+     * Addresses of the server's end (`10.0.0.2/32`...).
+     */
+    public var addresses: [String]
+    public var dns: [String]
+    public var mtu: UInt32?
+    public var peers: [WireguardPeer]
+    /**
+     * The server's public key (to add it as a peer on the other side).
+     */
+    public var publicKey: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Addresses of the server's end (`10.0.0.2/32`...).
+         */addresses: [String] = [], dns: [String] = [], mtu: UInt32? = nil, peers: [WireguardPeer] = [], 
+        /**
+         * The server's public key (to add it as a peer on the other side).
+         */publicKey: String? = nil) {
+        self.addresses = addresses
+        self.dns = dns
+        self.mtu = mtu
+        self.peers = peers
+        self.publicKey = publicKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension WireguardSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWireguardSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WireguardSettings {
+        return
+            try WireguardSettings(
+                addresses: FfiConverterSequenceString.read(from: &buf), 
+                dns: FfiConverterSequenceString.read(from: &buf), 
+                mtu: FfiConverterOptionUInt32.read(from: &buf), 
+                peers: FfiConverterSequenceTypeWireguardPeer.read(from: &buf), 
+                publicKey: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: WireguardSettings, into buf: inout [UInt8]) {
+        FfiConverterSequenceString.write(value.addresses, into: &buf)
+        FfiConverterSequenceString.write(value.dns, into: &buf)
+        FfiConverterOptionUInt32.write(value.mtu, into: &buf)
+        FfiConverterSequenceTypeWireguardPeer.write(value.peers, into: &buf)
+        FfiConverterOptionString.write(value.publicKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWireguardSettings_lift(_ buf: RustBuffer) throws -> WireguardSettings {
+    return try FfiConverterTypeWireguardSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWireguardSettings_lower(_ value: WireguardSettings) -> RustBuffer {
+    return FfiConverterTypeWireguardSettings.lower(value)
+}
+
+
+/**
+ * ZeroTier settings (the Central API token is [`NetworkSecrets`]).
+ */
+public struct ZerotierSettings: Equatable, Hashable {
+    /**
+     * Network id (16 hex digits).
+     */
+    public var networkId: String
+    /**
+     * Self-hosted controller API (default ZeroTier Central).
+     */
+    public var centralUrl: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Network id (16 hex digits).
+         */networkId: String, 
+        /**
+         * Self-hosted controller API (default ZeroTier Central).
+         */centralUrl: String? = nil) {
+        self.networkId = networkId
+        self.centralUrl = centralUrl
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ZerotierSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeZerotierSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ZerotierSettings {
+        return
+            try ZerotierSettings(
+                networkId: FfiConverterString.read(from: &buf), 
+                centralUrl: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ZerotierSettings, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.networkId, into: &buf)
+        FfiConverterOptionString.write(value.centralUrl, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeZerotierSettings_lift(_ buf: RustBuffer) throws -> ZerotierSettings {
+    return try FfiConverterTypeZerotierSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeZerotierSettings_lower(_ value: ZerotierSettings) -> RustBuffer {
+    return FfiConverterTypeZerotierSettings.lower(value)
 }
 
 
@@ -25273,6 +26056,11 @@ public enum ProbeSkip: Equatable, Hashable {
      * Its proxy needs a password this (Use-only) user cannot read.
      */
     case useOnly
+    /**
+     * It is reached through a private network: only the server reaches
+     * it (0.7).
+     */
+    case network
 
 
 
@@ -25302,6 +26090,8 @@ public struct FfiConverterTypeProbeSkip: FfiConverterRustBuffer {
         
         case 4: return .useOnly
         
+        case 5: return .network
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -25324,6 +26114,10 @@ public struct FfiConverterTypeProbeSkip: FfiConverterRustBuffer {
         
         case .useOnly:
             writeInt(&buf, Int32(4))
+        
+        
+        case .network:
+            writeInt(&buf, Int32(5))
         
         }
     }
@@ -27271,7 +28065,11 @@ public func FfiConverterTypeTerminalStatus_lower(_ value: TerminalStatus) -> Rus
  *
  * It is a "flat" error: each variant only carries the message, in English
  * and ready to show; the variant tells the app what to do (e.g. ask for the
- * login again on `SessionExpired`).
+ * login again on `SessionExpired`). The HTTP status, the stable error code
+ * and the error's extra fields of a server error (and the code of a vault
+ * or network rule) are kept apart: [`api_error_info`] with the message
+ * returns them (`TermoakException.apiError` in Kotlin, `TermoakError.apiError`
+ * in Swift).
  */
 public 
 enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
@@ -27426,6 +28224,15 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case Cancelled(message: String)
     
+    /**
+     * The host is reached through a private network and that is not
+     * possible here: the account's server has no networks (`networks`
+     * feature), the account is signed out, or the host is on This device.
+     * Show it as is; a server session (`open_server_session`) may work
+     * when the server has networks.
+     */
+    case NetworkUnavailable(message: String)
+    
 
     
 
@@ -27563,6 +28370,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 28: return .NetworkUnavailable(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -27628,6 +28439,8 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(26))
         case .Cancelled(_ /* message is ignored*/):
             writeInt(&buf, Int32(27))
+        case .NetworkUnavailable(_ /* message is ignored*/):
+            writeInt(&buf, Int32(28))
 
         
         }
@@ -28467,6 +29280,30 @@ fileprivate struct FfiConverterOptionTypeAiTaskPlan: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeApiErrorInfo: FfiConverterRustBuffer {
+    typealias SwiftType = ApiErrorInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeApiErrorInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeApiErrorInfo.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeCommandEnded: FfiConverterRustBuffer {
     typealias SwiftType = CommandEnded?
 
@@ -28611,6 +29448,30 @@ fileprivate struct FfiConverterOptionTypeLastCommandInfo: FfiConverterRustBuffer
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeNetworkSecrets: FfiConverterRustBuffer {
+    typealias SwiftType = NetworkSecrets?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeNetworkSecrets.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeNetworkSecrets.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeQrCode: FfiConverterRustBuffer {
     typealias SwiftType = QrCode?
 
@@ -28723,6 +29584,78 @@ fileprivate struct FfiConverterOptionTypeSessionActivity: FfiConverterRustBuffer
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeSessionActivity.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeTailscaleSettings: FfiConverterRustBuffer {
+    typealias SwiftType = TailscaleSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTailscaleSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTailscaleSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeWireguardSettings: FfiConverterRustBuffer {
+    typealias SwiftType = WireguardSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeWireguardSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeWireguardSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeZerotierSettings: FfiConverterRustBuffer {
+    typealias SwiftType = ZerotierSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeZerotierSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeZerotierSettings.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -29820,6 +30753,31 @@ fileprivate struct FfiConverterSequenceTypePortForward: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypePrivateNetwork: FfiConverterRustBuffer {
+    typealias SwiftType = [PrivateNetwork]
+
+    public static func write(_ value: [PrivateNetwork], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypePrivateNetwork.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [PrivateNetwork] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [PrivateNetwork]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypePrivateNetwork.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypePromptField: FfiConverterRustBuffer {
     typealias SwiftType = [PromptField]
 
@@ -30445,6 +31403,31 @@ fileprivate struct FfiConverterSequenceTypeVaultRef: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeWireguardPeer: FfiConverterRustBuffer {
+    typealias SwiftType = [WireguardPeer]
+
+    public static func write(_ value: [WireguardPeer], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeWireguardPeer.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [WireguardPeer] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [WireguardPeer]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeWireguardPeer.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeScreenEvent: FfiConverterRustBuffer {
     typealias SwiftType = [ScreenEvent]
 
@@ -30649,6 +31632,23 @@ public func qrCode(text: String) -> QrCode?  {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_func_qr_code(
         FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * The status, code and details of an error, from its message (the
+ * `message` of `TermoakException` / `TermoakError`): an API error of the
+ * server, or a vault or network rule. `None` for other errors.
+ *
+ * The details of the last 64 such errors are kept in memory; an older
+ * server error still gives its status, code and message (parsed from the
+ * text) with `details_json` `{}`.
+ */
+public func apiErrorInfo(errorMessage: String) -> ApiErrorInfo?  {
+    return try!  FfiConverterOptionTypeApiErrorInfo.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_api_error_info(
+        FfiConverterString.lower(errorMessage),uniffiCallStatus
     )
 })
 }
@@ -31205,6 +32205,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_qr_code() != 59982) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_api_error_info() != 40019) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_detect_import_format() != 49613) {
@@ -32416,6 +33419,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory() != 38456) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_network() != 15039) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet() != 33037) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -32441,6 +33447,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_get_key() != 33591) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_get_network() != 43976) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_get_snippet() != 9177) {
@@ -32479,7 +33488,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_memories() != 39316) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_list_networks() != 55845) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets() != 45493) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_network_secrets() != 25857) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_save_forward() != 6122) {
@@ -32498,6 +33513,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_save_memory() != 3966) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_save_network() != 15676) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_save_snippet() != 21032) {

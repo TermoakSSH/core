@@ -22,6 +22,16 @@ public extension TermoakError {
     }
 }
 
+public extension TermoakError {
+    /// HTTP status, stable code and extra fields of a server error (or of
+    /// a vault or network rule checked on the device, with status 0):
+    /// `apiError?.code == "shared_vaults"`, `apiError?.detailsJson` with
+    /// its `vaults`... `nil` for other errors.
+    var apiError: ApiErrorInfo? {
+        apiErrorInfo(errorMessage: message)
+    }
+}
+
 /// Readable message of any error (Termoak errors use their own message).
 public func errorMessage(_ error: Error) -> String {
     (error as? TermoakError)?.message ?? error.localizedDescription

@@ -890,6 +890,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_qr_code(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_api_error_info(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_detect_import_format(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_join_app_link(
@@ -1696,6 +1698,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_network(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_effective_settings(
@@ -1713,6 +1717,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_get_identity(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_get_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_get_network(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_get_snippet(
     ): Int
@@ -1738,7 +1744,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_memories(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_networks(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_network_secrets(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_forward(
     ): Int
@@ -1751,6 +1761,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_key(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_memory(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_network(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_save_snippet(
     ): Int
@@ -2636,6 +2648,8 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_memory(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_network(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_snippet(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_effective_settings(`ptr`: Long,`hostId`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -2653,6 +2667,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_get_identity(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_get_key(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_get_network(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_get_snippet(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2678,7 +2694,11 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_memories(`ptr`: Long,`filter`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_list_networks(`ptr`: Long,`filter`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_snippets(`ptr`: Long,`filter`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_network_secrets(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_save_forward(`ptr`: Long,`forward`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2691,6 +2711,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_save_key(`ptr`: Long,`key`: RustBuffer.ByValue,`passphrase`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_save_memory(`ptr`: Long,`memory`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_save_network(`ptr`: Long,`network`: RustBuffer.ByValue,`secrets`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_save_snippet(`ptr`: Long,`snippet`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2707,6 +2729,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_func_command_echoed(`line`: RustBuffer.ByValue,`before`: RustBuffer.ByValue,`afterBlank`: Byte,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_qr_code(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_api_error_info(`errorMessage`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_detect_import_format(`data`: RustBuffer.ByValue,`fileName`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2917,6 +2941,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_qr_code() and 0xFFFF) != 59982) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_api_error_info() and 0xFFFF) != 40019) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_detect_import_format() and 0xFFFF) != 49613) {
@@ -4128,6 +4155,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_memory() and 0xFFFF) != 38456) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_network() and 0xFFFF) != 15039) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_snippet() and 0xFFFF) != 33037) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4153,6 +4183,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_get_key() and 0xFFFF) != 33591) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_get_network() and 0xFFFF) != 43976) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_get_snippet() and 0xFFFF) != 9177) {
@@ -4191,7 +4224,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_memories() and 0xFFFF) != 39316) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_networks() and 0xFFFF) != 55845) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_snippets() and 0xFFFF) != 45493) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_network_secrets() and 0xFFFF) != 25857) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_save_forward() and 0xFFFF) != 6122) {
@@ -4210,6 +4249,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_save_memory() and 0xFFFF) != 3966) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_save_network() and 0xFFFF) != 15676) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_save_snippet() and 0xFFFF) != 21032) {
@@ -16444,6 +16486,8 @@ public interface TermoakCoreInterface {
     
     fun `deleteMemory`(`id`: kotlin.String, `accountId`: kotlin.String? = null)
     
+    fun `deleteNetwork`(`id`: kotlin.String, `accountId`: kotlin.String? = null)
+    
     fun `deleteSnippet`(`id`: kotlin.String, `accountId`: kotlin.String? = null)
     
     /**
@@ -16479,6 +16523,8 @@ public interface TermoakCoreInterface {
     fun `getIdentity`(`id`: kotlin.String, `accountId`: kotlin.String? = null): SshIdentity
     
     fun `getKey`(`id`: kotlin.String, `accountId`: kotlin.String? = null): SshKey
+    
+    fun `getNetwork`(`id`: kotlin.String, `accountId`: kotlin.String? = null): PrivateNetwork
     
     fun `getSnippet`(`id`: kotlin.String, `accountId`: kotlin.String? = null): Snippet
     
@@ -16527,7 +16573,20 @@ public interface TermoakCoreInterface {
     
     fun `listMemories`(`filter`: ItemFilter? = null): List<AiMemory>
     
+    /**
+     * Private networks of `filter` (never on This device). Show them only
+     * for accounts whose server has the `networks` feature
+     * (`AccountInfo.features`); others keep them but cannot use them.
+     */
+    fun `listNetworks`(`filter`: ItemFilter? = null): List<PrivateNetwork>
+    
     fun `listSnippets`(`filter`: ItemFilter? = null): List<Snippet>
+    
+    /**
+     * The secrets of a network (Editors; Use-only fails with
+     * `SecretHidden`).
+     */
+    fun `networkSecrets`(`id`: kotlin.String, `accountId`: kotlin.String? = null): NetworkSecrets
     
     fun `saveForward`(`forward`: PortForward): PortForward
     
@@ -16549,6 +16608,16 @@ public interface TermoakCoreInterface {
     fun `saveKey`(`key`: SshKey, `passphrase`: SecretChange): SshKey
     
     fun `saveMemory`(`memory`: AiMemory): AiMemory
+    
+    /**
+     * Creates (with an empty `id`) or updates a network in an account
+     * vault. `secrets`: `nil` keeps the stored ones; otherwise they are
+     * replaced (its `nil` fields are cleared). Fails with `Invalid` for
+     * This device: only the server uses networks. The plan limit
+     * (`max_networks`, 10 on Free) is checked by the server when it syncs
+     * (the network comes back in `SyncReport.rejected` with `plan_limit`).
+     */
+    fun `saveNetwork`(`network`: PrivateNetwork, `secrets`: NetworkSecrets? = null): PrivateNetwork
     
     fun `saveSnippet`(`snippet`: Snippet): Snippet
     
@@ -20107,6 +20176,21 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     
 
     
+    @Throws(TermoakException::class)override fun `deleteNetwork`(`id`: kotlin.String, `accountId`: kotlin.String?)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_delete_network(
+        it,
+        
+        FfiConverterString.lower(`id`),
+        FfiConverterOptionalString.lower(`accountId`),_status)
+}
+    }
+    
+    
+
+    
     @Throws(TermoakException::class)override fun `deleteSnippet`(`id`: kotlin.String, `accountId`: kotlin.String?)
         = 
     callWithHandle {
@@ -20270,6 +20354,22 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     callWithHandle {
     uniffiRustCallWithError(TermoakException) { _status ->
     UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_get_key(
+        it,
+        
+        FfiConverterString.lower(`id`),
+        FfiConverterOptionalString.lower(`accountId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(TermoakException::class)override fun `getNetwork`(`id`: kotlin.String, `accountId`: kotlin.String?): PrivateNetwork {
+            return FfiConverterTypePrivateNetwork.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_get_network(
         it,
         
         FfiConverterString.lower(`id`),
@@ -20502,6 +20602,26 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     
 
     
+    /**
+     * Private networks of `filter` (never on This device). Show them only
+     * for accounts whose server has the `networks` feature
+     * (`AccountInfo.features`); others keep them but cannot use them.
+     */
+    @Throws(TermoakException::class)override fun `listNetworks`(`filter`: ItemFilter?): List<PrivateNetwork> {
+            return FfiConverterSequenceTypePrivateNetwork.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_list_networks(
+        it,
+        
+        FfiConverterOptionalTypeItemFilter.lower(`filter`),_status)
+}
+    }
+    )
+    }
+    
+
+    
     @Throws(TermoakException::class)override fun `listSnippets`(`filter`: ItemFilter?): List<Snippet> {
             return FfiConverterSequenceTypeSnippet.lift(
     callWithHandle {
@@ -20510,6 +20630,26 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         it,
         
         FfiConverterOptionalTypeItemFilter.lower(`filter`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * The secrets of a network (Editors; Use-only fails with
+     * `SecretHidden`).
+     */
+    @Throws(TermoakException::class)override fun `networkSecrets`(`id`: kotlin.String, `accountId`: kotlin.String?): NetworkSecrets {
+            return FfiConverterTypeNetworkSecrets.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_network_secrets(
+        it,
+        
+        FfiConverterString.lower(`id`),
+        FfiConverterOptionalString.lower(`accountId`),_status)
 }
     }
     )
@@ -20612,6 +20752,30 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         it,
         
         FfiConverterTypeAiMemory.lower(`memory`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Creates (with an empty `id`) or updates a network in an account
+     * vault. `secrets`: `nil` keeps the stored ones; otherwise they are
+     * replaced (its `nil` fields are cleared). Fails with `Invalid` for
+     * This device: only the server uses networks. The plan limit
+     * (`max_networks`, 10 on Free) is checked by the server when it syncs
+     * (the network comes back in `SyncReport.rejected` with `plan_limit`).
+     */
+    @Throws(TermoakException::class)override fun `saveNetwork`(`network`: PrivateNetwork, `secrets`: NetworkSecrets?): PrivateNetwork {
+            return FfiConverterTypePrivateNetwork.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_save_network(
+        it,
+        
+        FfiConverterTypePrivateNetwork.lower(`network`),
+        FfiConverterOptionalTypeNetworkSecrets.lower(`secrets`),_status)
 }
     }
     )
@@ -23210,6 +23374,76 @@ public object FfiConverterTypeAiTaskStep: FfiConverterRustBuffer<AiTaskStep> {
 
 
 /**
+ * The structured part of an error: HTTP status, stable code and the
+ * error's extra fields. See [`api_error_info`].
+ */
+data class ApiErrorInfo (
+    /**
+     * HTTP status of a server error; `0` for a rule checked on the device
+     * (a vault rule, a private network...).
+     */
+    var `status`: kotlin.UShort
+    , 
+    /**
+     * Stable snake_case code (`shared_vaults`, `plan_limit`,
+     * `network_unavailable`...).
+     */
+    var `code`: kotlin.String
+    , 
+    /**
+     * The message alone (English), without the "the server responded"
+     * prefix.
+     */
+    var `message`: kotlin.String
+    , 
+    /**
+     * JSON object with the error's other fields (`{}` when there are
+     * none): `vaults` of `shared_vaults`, `teams` of `last_team_owner`,
+     * `limit` and `max` of `plan_limit`, `field` of
+     * `cross_vault_reference`...
+     */
+    var `detailsJson`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeApiErrorInfo: FfiConverterRustBuffer<ApiErrorInfo> {
+    override fun read(buf: ByteBuffer): ApiErrorInfo {
+        return ApiErrorInfo(
+            FfiConverterUShort.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ApiErrorInfo) = (
+            FfiConverterUShort.allocationSize(value.`status`) +
+            FfiConverterString.allocationSize(value.`code`) +
+            FfiConverterString.allocationSize(value.`message`) +
+            FfiConverterString.allocationSize(value.`detailsJson`)
+    )
+
+    override fun write(value: ApiErrorInfo, buf: ByteBuffer) {
+            FfiConverterUShort.write(value.`status`, buf)
+            FfiConverterString.write(value.`code`, buf)
+            FfiConverterString.write(value.`message`, buf)
+            FfiConverterString.write(value.`detailsJson`, buf)
+    }
+}
+
+
+
+/**
  * An audit log entry.
  */
 data class AuditEvent (
@@ -24773,6 +25007,14 @@ data class HostSettings (
      * chain). The password is set separately: `setHostProxyPassword`.
      */
     var `proxy`: HostProxy? = null 
+    , 
+    /**
+     * Private network ([`PrivateNetwork`] of the same vault) the first
+     * connection goes through (0.7); `nil`: direct (or inherited). It
+     * takes precedence over `proxy`. Editors must start from the loaded
+     * settings (copy them) so it is kept when they do not show it.
+     */
+    var `networkId`: kotlin.String? = null 
     
 ){
     
@@ -24802,6 +25044,7 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalBoolean.read(buf),
             FfiConverterOptionalTypeHostProxy.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -24818,7 +25061,8 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalString.allocationSize(value.`term`) +
             FfiConverterOptionalString.allocationSize(value.`theme`) +
             FfiConverterOptionalBoolean.allocationSize(value.`recordSessions`) +
-            FfiConverterOptionalTypeHostProxy.allocationSize(value.`proxy`)
+            FfiConverterOptionalTypeHostProxy.allocationSize(value.`proxy`) +
+            FfiConverterOptionalString.allocationSize(value.`networkId`)
     )
 
     override fun write(value: HostSettings, buf: ByteBuffer) {
@@ -24835,6 +25079,7 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalString.write(value.`theme`, buf)
             FfiConverterOptionalBoolean.write(value.`recordSessions`, buf)
             FfiConverterOptionalTypeHostProxy.write(value.`proxy`, buf)
+            FfiConverterOptionalString.write(value.`networkId`, buf)
     }
 }
 
@@ -25684,6 +25929,70 @@ public object FfiConverterTypeLinkInvite: FfiConverterRustBuffer<LinkInvite> {
 
 
 /**
+ * Secrets of a network (stored encrypted, like passwords). `nil` fields
+ * are cleared on save.
+ */
+data class NetworkSecrets (
+    /**
+     * WireGuard: the server's private key (base64).
+     */
+    var `privateKey`: kotlin.String? = null 
+    , 
+    /**
+     * WireGuard: preshared key (base64).
+     */
+    var `presharedKey`: kotlin.String? = null 
+    , 
+    /**
+     * Tailscale/Headscale: auth key.
+     */
+    var `authKey`: kotlin.String? = null 
+    , 
+    /**
+     * ZeroTier: Central API token.
+     */
+    var `apiToken`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNetworkSecrets: FfiConverterRustBuffer<NetworkSecrets> {
+    override fun read(buf: ByteBuffer): NetworkSecrets {
+        return NetworkSecrets(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NetworkSecrets) = (
+            FfiConverterOptionalString.allocationSize(value.`privateKey`) +
+            FfiConverterOptionalString.allocationSize(value.`presharedKey`) +
+            FfiConverterOptionalString.allocationSize(value.`authKey`) +
+            FfiConverterOptionalString.allocationSize(value.`apiToken`)
+    )
+
+    override fun write(value: NetworkSecrets, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`privateKey`, buf)
+            FfiConverterOptionalString.write(value.`presharedKey`, buf)
+            FfiConverterOptionalString.write(value.`authKey`, buf)
+            FfiConverterOptionalString.write(value.`apiToken`, buf)
+    }
+}
+
+
+
+/**
  * A new vault.
  */
 data class NewVault (
@@ -26001,6 +26310,133 @@ public object FfiConverterTypePortForward: FfiConverterRustBuffer<PortForward> {
             FfiConverterOptionalUInt.write(value.`destPort`, buf)
             FfiConverterBoolean.write(value.`autoStart`, buf)
             FfiConverterOptionalTypeSyncMode.write(value.`syncMode`, buf)
+            FfiConverterLong.write(value.`updatedAt`, buf)
+            FfiConverterOptionalString.write(value.`accountId`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
+            FfiConverterBoolean.write(value.`secretHidden`, buf)
+    }
+}
+
+
+
+/**
+ * A private network (WireGuard, Tailscale/Headscale or ZeroTier) of an
+ * account vault. Only the server joins it (when it has `termoak-netd`:
+ * account feature `networks`); hosts and groups pick it with
+ * `HostSettings.network_id`, and the app reaches them through the server
+ * relay. Only the section of its `kind` matters.
+ */
+data class PrivateNetwork (
+    /**
+     * Empty when creating.
+     */
+    var `id`: kotlin.String = "" 
+    , 
+    var `name`: kotlin.String
+    , 
+    /**
+     * `wireguard`, `tailscale` (also Headscale) or `zerotier` (a later
+     * app's kind comes as it is and must be kept).
+     */
+    var `kind`: kotlin.String
+    , 
+    var `description`: kotlin.String = "" 
+    , 
+    var `wireguard`: WireguardSettings? = null 
+    , 
+    var `tailscale`: TailscaleSettings? = null 
+    , 
+    var `zerotier`: ZerotierSettings? = null 
+    , 
+    /**
+     * Read-only: some secret is stored.
+     */
+    var `hasSecrets`: kotlin.Boolean = false 
+    , 
+    /**
+     * Read-only: last modification (ms since 1970).
+     */
+    var `updatedAt`: kotlin.Long = 0L 
+    , 
+    /**
+     * Account of the network (on save, the account for a new one;
+     * default: the current account). Networks never live on This device.
+     */
+    var `accountId`: kotlin.String? = null 
+    , 
+    /**
+     * Vault of the network (on save, the vault for a new one; default: the
+     * personal vault).
+     */
+    var `vaultId`: kotlin.String? = null 
+    , 
+    /**
+     * Read-only: what you can do with it.
+     */
+    var `access`: ItemAccess? = null 
+    , 
+    /**
+     * Read-only: secrets exist but you cannot see them (Use-only vault).
+     */
+    var `secretHidden`: kotlin.Boolean = false 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePrivateNetwork: FfiConverterRustBuffer<PrivateNetwork> {
+    override fun read(buf: ByteBuffer): PrivateNetwork {
+        return PrivateNetwork(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalTypeWireguardSettings.read(buf),
+            FfiConverterOptionalTypeTailscaleSettings.read(buf),
+            FfiConverterOptionalTypeZerotierSettings.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalTypeItemAccess.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PrivateNetwork) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`description`) +
+            FfiConverterOptionalTypeWireguardSettings.allocationSize(value.`wireguard`) +
+            FfiConverterOptionalTypeTailscaleSettings.allocationSize(value.`tailscale`) +
+            FfiConverterOptionalTypeZerotierSettings.allocationSize(value.`zerotier`) +
+            FfiConverterBoolean.allocationSize(value.`hasSecrets`) +
+            FfiConverterLong.allocationSize(value.`updatedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`accountId`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterOptionalTypeItemAccess.allocationSize(value.`access`) +
+            FfiConverterBoolean.allocationSize(value.`secretHidden`)
+    )
+
+    override fun write(value: PrivateNetwork, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterString.write(value.`description`, buf)
+            FfiConverterOptionalTypeWireguardSettings.write(value.`wireguard`, buf)
+            FfiConverterOptionalTypeTailscaleSettings.write(value.`tailscale`, buf)
+            FfiConverterOptionalTypeZerotierSettings.write(value.`zerotier`, buf)
+            FfiConverterBoolean.write(value.`hasSecrets`, buf)
             FfiConverterLong.write(value.`updatedAt`, buf)
             FfiConverterOptionalString.write(value.`accountId`, buf)
             FfiConverterOptionalString.write(value.`vaultId`, buf)
@@ -28591,6 +29027,61 @@ public object FfiConverterTypeSyncReport: FfiConverterRustBuffer<SyncReport> {
 
 
 /**
+ * Tailscale or Headscale settings (the auth key is [`NetworkSecrets`]).
+ */
+data class TailscaleSettings (
+    /**
+     * `nil`: Tailscale; the Headscale URL otherwise.
+     */
+    var `controlUrl`: kotlin.String? = null 
+    , 
+    /**
+     * Name of the server's node (default `termoak-<id>`).
+     */
+    var `hostname`: kotlin.String? = null 
+    , 
+    /**
+     * ACL tags (default `tag:termoak`).
+     */
+    var `tags`: List<kotlin.String> = listOf() 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTailscaleSettings: FfiConverterRustBuffer<TailscaleSettings> {
+    override fun read(buf: ByteBuffer): TailscaleSettings {
+        return TailscaleSettings(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TailscaleSettings) = (
+            FfiConverterOptionalString.allocationSize(value.`controlUrl`) +
+            FfiConverterOptionalString.allocationSize(value.`hostname`) +
+            FfiConverterSequenceString.allocationSize(value.`tags`)
+    )
+
+    override fun write(value: TailscaleSettings, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`controlUrl`, buf)
+            FfiConverterOptionalString.write(value.`hostname`, buf)
+            FfiConverterSequenceString.write(value.`tags`, buf)
+    }
+}
+
+
+
+/**
  * A team you belong to.
  */
 data class Team (
@@ -29590,6 +30081,179 @@ public object FfiConverterTypeVaultRef: FfiConverterRustBuffer<VaultRef> {
     override fun write(value: VaultRef, buf: ByteBuffer) {
             FfiConverterString.write(value.`id`, buf)
             FfiConverterString.write(value.`name`, buf)
+    }
+}
+
+
+
+/**
+ * A WireGuard peer (the other end of the tunnel).
+ */
+data class WireguardPeer (
+    /**
+     * The peer's public key (base64).
+     */
+    var `publicKey`: kotlin.String
+    , 
+    /**
+     * `host:port` of the peer.
+     */
+    var `endpoint`: kotlin.String? = null 
+    , 
+    /**
+     * Networks reached through the peer (`10.0.0.0/24`...).
+     */
+    var `allowedIps`: List<kotlin.String> = listOf() 
+    , 
+    /**
+     * Seconds between keep-alives (`nil` or 0: off).
+     */
+    var `persistentKeepalive`: kotlin.UInt? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeWireguardPeer: FfiConverterRustBuffer<WireguardPeer> {
+    override fun read(buf: ByteBuffer): WireguardPeer {
+        return WireguardPeer(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: WireguardPeer) = (
+            FfiConverterString.allocationSize(value.`publicKey`) +
+            FfiConverterOptionalString.allocationSize(value.`endpoint`) +
+            FfiConverterSequenceString.allocationSize(value.`allowedIps`) +
+            FfiConverterOptionalUInt.allocationSize(value.`persistentKeepalive`)
+    )
+
+    override fun write(value: WireguardPeer, buf: ByteBuffer) {
+            FfiConverterString.write(value.`publicKey`, buf)
+            FfiConverterOptionalString.write(value.`endpoint`, buf)
+            FfiConverterSequenceString.write(value.`allowedIps`, buf)
+            FfiConverterOptionalUInt.write(value.`persistentKeepalive`, buf)
+    }
+}
+
+
+
+/**
+ * WireGuard settings (a `.conf` without its keys; the private and
+ * preshared keys are [`NetworkSecrets`]).
+ */
+data class WireguardSettings (
+    /**
+     * Addresses of the server's end (`10.0.0.2/32`...).
+     */
+    var `addresses`: List<kotlin.String> = listOf() 
+    , 
+    var `dns`: List<kotlin.String> = listOf() 
+    , 
+    var `mtu`: kotlin.UInt? = null 
+    , 
+    var `peers`: List<WireguardPeer> = listOf() 
+    , 
+    /**
+     * The server's public key (to add it as a peer on the other side).
+     */
+    var `publicKey`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeWireguardSettings: FfiConverterRustBuffer<WireguardSettings> {
+    override fun read(buf: ByteBuffer): WireguardSettings {
+        return WireguardSettings(
+            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterSequenceTypeWireguardPeer.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: WireguardSettings) = (
+            FfiConverterSequenceString.allocationSize(value.`addresses`) +
+            FfiConverterSequenceString.allocationSize(value.`dns`) +
+            FfiConverterOptionalUInt.allocationSize(value.`mtu`) +
+            FfiConverterSequenceTypeWireguardPeer.allocationSize(value.`peers`) +
+            FfiConverterOptionalString.allocationSize(value.`publicKey`)
+    )
+
+    override fun write(value: WireguardSettings, buf: ByteBuffer) {
+            FfiConverterSequenceString.write(value.`addresses`, buf)
+            FfiConverterSequenceString.write(value.`dns`, buf)
+            FfiConverterOptionalUInt.write(value.`mtu`, buf)
+            FfiConverterSequenceTypeWireguardPeer.write(value.`peers`, buf)
+            FfiConverterOptionalString.write(value.`publicKey`, buf)
+    }
+}
+
+
+
+/**
+ * ZeroTier settings (the Central API token is [`NetworkSecrets`]).
+ */
+data class ZerotierSettings (
+    /**
+     * Network id (16 hex digits).
+     */
+    var `networkId`: kotlin.String
+    , 
+    /**
+     * Self-hosted controller API (default ZeroTier Central).
+     */
+    var `centralUrl`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeZerotierSettings: FfiConverterRustBuffer<ZerotierSettings> {
+    override fun read(buf: ByteBuffer): ZerotierSettings {
+        return ZerotierSettings(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ZerotierSettings) = (
+            FfiConverterString.allocationSize(value.`networkId`) +
+            FfiConverterOptionalString.allocationSize(value.`centralUrl`)
+    )
+
+    override fun write(value: ZerotierSettings, buf: ByteBuffer) {
+            FfiConverterString.write(value.`networkId`, buf)
+            FfiConverterOptionalString.write(value.`centralUrl`, buf)
     }
 }
 
@@ -30919,7 +31583,12 @@ enum class ProbeSkip {
     /**
      * Its proxy needs a password this (Use-only) user cannot read.
      */
-    USE_ONLY;
+    USE_ONLY,
+    /**
+     * It is reached through a private network: only the server reaches
+     * it (0.7).
+     */
+    NETWORK;
 
     
 
@@ -33129,7 +33798,11 @@ public object FfiConverterTypeTerminalStatus : FfiConverterRustBuffer<TerminalSt
  *
  * It is a "flat" error: each variant only carries the message, in English
  * and ready to show; the variant tells the app what to do (e.g. ask for the
- * login again on `SessionExpired`).
+ * login again on `SessionExpired`). The HTTP status, the stable error code
+ * and the error's extra fields of a server error (and the code of a vault
+ * or network rule) are kept apart: [`api_error_info`] with the message
+ * returns them (`TermoakException.apiError` in Kotlin, `TermoakError.apiError`
+ * in Swift).
  */
 sealed class TermoakException(message: String): kotlin.Exception(message) {
         
@@ -33281,6 +33954,15 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class Cancelled(message: String) : TermoakException(message)
         
+    /**
+     * The host is reached through a private network and that is not
+     * possible here: the account's server has no networks (`networks`
+     * feature), the account is signed out, or the host is on This device.
+     * Show it as is; a server session (`open_server_session`) may work
+     * when the server has networks.
+     */
+        class NetworkUnavailable(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -33321,6 +34003,7 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             25 -> TermoakException.UseOnlyNeedsServer(FfiConverterString.read(buf))
             26 -> TermoakException.NotSupportedForTelnet(FfiConverterString.read(buf))
             27 -> TermoakException.Cancelled(FfiConverterString.read(buf))
+            28 -> TermoakException.NetworkUnavailable(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -33438,6 +34121,10 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.Cancelled -> {
                 buf.putInt(27)
+                Unit
+            }
+            is TermoakException.NetworkUnavailable -> {
+                buf.putInt(28)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -34263,6 +34950,38 @@ public object FfiConverterOptionalTypeAiTaskPlan: FfiConverterRustBuffer<AiTaskP
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeApiErrorInfo: FfiConverterRustBuffer<ApiErrorInfo?> {
+    override fun read(buf: ByteBuffer): ApiErrorInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeApiErrorInfo.read(buf)
+    }
+
+    override fun allocationSize(value: ApiErrorInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeApiErrorInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ApiErrorInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeApiErrorInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeCommandEnded: FfiConverterRustBuffer<CommandEnded?> {
     override fun read(buf: ByteBuffer): CommandEnded? {
         if (buf.get().toInt() == 0) {
@@ -34455,6 +35174,38 @@ public object FfiConverterOptionalTypeLastCommandInfo: FfiConverterRustBuffer<La
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeNetworkSecrets: FfiConverterRustBuffer<NetworkSecrets?> {
+    override fun read(buf: ByteBuffer): NetworkSecrets? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeNetworkSecrets.read(buf)
+    }
+
+    override fun allocationSize(value: NetworkSecrets?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeNetworkSecrets.allocationSize(value)
+        }
+    }
+
+    override fun write(value: NetworkSecrets?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeNetworkSecrets.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeQrCode: FfiConverterRustBuffer<QrCode?> {
     override fun read(buf: ByteBuffer): QrCode? {
         if (buf.get().toInt() == 0) {
@@ -34605,6 +35356,102 @@ public object FfiConverterOptionalTypeSessionActivity: FfiConverterRustBuffer<Se
         } else {
             buf.put(1)
             FfiConverterTypeSessionActivity.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeTailscaleSettings: FfiConverterRustBuffer<TailscaleSettings?> {
+    override fun read(buf: ByteBuffer): TailscaleSettings? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTailscaleSettings.read(buf)
+    }
+
+    override fun allocationSize(value: TailscaleSettings?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTailscaleSettings.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TailscaleSettings?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTailscaleSettings.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeWireguardSettings: FfiConverterRustBuffer<WireguardSettings?> {
+    override fun read(buf: ByteBuffer): WireguardSettings? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeWireguardSettings.read(buf)
+    }
+
+    override fun allocationSize(value: WireguardSettings?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeWireguardSettings.allocationSize(value)
+        }
+    }
+
+    override fun write(value: WireguardSettings?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeWireguardSettings.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeZerotierSettings: FfiConverterRustBuffer<ZerotierSettings?> {
+    override fun read(buf: ByteBuffer): ZerotierSettings? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeZerotierSettings.read(buf)
+    }
+
+    override fun allocationSize(value: ZerotierSettings?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeZerotierSettings.allocationSize(value)
+        }
+    }
+
+    override fun write(value: ZerotierSettings?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeZerotierSettings.write(value, buf)
         }
     }
 }
@@ -35891,6 +36738,34 @@ public object FfiConverterSequenceTypePortForward: FfiConverterRustBuffer<List<P
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypePrivateNetwork: FfiConverterRustBuffer<List<PrivateNetwork>> {
+    override fun read(buf: ByteBuffer): List<PrivateNetwork> {
+        val len = buf.getInt()
+        return List<PrivateNetwork>(len) {
+            FfiConverterTypePrivateNetwork.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<PrivateNetwork>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypePrivateNetwork.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<PrivateNetwork>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypePrivateNetwork.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypePromptField: FfiConverterRustBuffer<List<PromptField>> {
     override fun read(buf: ByteBuffer): List<PromptField> {
         val len = buf.getInt()
@@ -36591,6 +37466,34 @@ public object FfiConverterSequenceTypeVaultRef: FfiConverterRustBuffer<List<Vaul
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeWireguardPeer: FfiConverterRustBuffer<List<WireguardPeer>> {
+    override fun read(buf: ByteBuffer): List<WireguardPeer> {
+        val len = buf.getInt()
+        return List<WireguardPeer>(len) {
+            FfiConverterTypeWireguardPeer.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<WireguardPeer>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeWireguardPeer.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<WireguardPeer>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeWireguardPeer.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeScreenEvent: FfiConverterRustBuffer<List<ScreenEvent>> {
     override fun read(buf: ByteBuffer): List<ScreenEvent> {
         val len = buf.getInt()
@@ -36787,6 +37690,26 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
         
         FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The status, code and details of an error, from its message (the
+         * `message` of `TermoakException` / `TermoakError`): an API error of the
+         * server, or a vault or network rule. `None` for other errors.
+         *
+         * The details of the last 64 such errors are kept in memory; an older
+         * server error still gives its status, code and message (parsed from the
+         * text) with `details_json` `{}`.
+         */ fun `apiErrorInfo`(`errorMessage`: kotlin.String): ApiErrorInfo? {
+            return FfiConverterOptionalTypeApiErrorInfo.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_api_error_info(
+    
+        
+        FfiConverterString.lower(`errorMessage`),_status)
 }
     )
     }
