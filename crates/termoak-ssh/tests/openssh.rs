@@ -166,6 +166,7 @@ fn resolved(sshd: &Sshd, jumps: Vec<ResolvedHost>) -> ResolvedHost {
         jumps,
         proxy: None,
         startup_script: None,
+        network: None,
     }
 }
 
@@ -516,4 +517,67 @@ async fn session_through_http_proxy() {
         1,
         "the connection went through the proxy"
     );
+}
+
+/// Dials directly, as `termoak-netd` would inside the network, and counts.
+struct DirectDialer(Arc<std::sync::atomic::AtomicUsize>);
+
+#[async_trait::async_trait]
+impl termoak_ssh::NetworkDialer for DirectDialer {
+    async fn dial(
+        &self,
+        req: termoak_ssh::DialRequest<'_>,
+    ) -> termoak_ssh::Result<termoak_ssh::BoxedStream> {
+        self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let s = tokio::net::TcpStream::connect((req.address, req.port))
+            .await
+            .map_err(|e| termoak_ssh::net::dial_failed(e.to_string()))?;
+        Ok(Box::new(s))
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn session_through_a_network_dialer() {
+    let Some(sshd) = start_sshd() else {
+        eprintln!("sshd not available: test skipped");
+        return;
+    };
+    let store = Store::open_in_memory(MasterKey::generate()).unwrap();
+    let owner = new_id();
+    let used = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let mut target = resolved(&sshd, vec![]);
+    target.settings.network_id = Some(new_id());
+    // A proxy is ignored when the host has a network.
+    target.proxy = Some(termoak_core::resolve::ResolvedProxy {
+        settings: termoak_core::model::ProxySettings {
+            kind: termoak_core::model::ProxyKind::Http,
+            host: "127.0.0.1".into(),
+            port: 1,
+            username: None,
+        },
+        password: None,
+    });
+    // Without a dialer it never connects directly.
+    let err = Connection::connect(&target, &options(&store, owner))
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(
+            err,
+            termoak_ssh::SshError::Network {
+                code: "network_unavailable",
+                ..
+            }
+        ),
+        "{err}"
+    );
+    let opts = options(&store, owner)
+        .with_dialer(Some(termoak_ssh::Dialer::new(DirectDialer(used.clone()))));
+    let conn = Connection::connect(&target, &opts).await.unwrap();
+    let out = conn
+        .exec("echo via-network", &ExecOptions::default())
+        .await
+        .unwrap();
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "via-network");
+    assert_eq!(used.load(std::sync::atomic::Ordering::SeqCst), 1);
 }

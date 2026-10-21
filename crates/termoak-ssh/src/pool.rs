@@ -30,6 +30,8 @@ pub struct ConnectionPool {
     policy: HostKeyPolicy,
     idle: Duration,
     slots: Mutex<SlotMap>,
+    /// Dialer for hosts with a private network (server: `termoak-netd`).
+    dialer: Mutex<Option<crate::net::Dialer>>,
 }
 
 impl ConnectionPool {
@@ -40,6 +42,7 @@ impl ConnectionPool {
             policy,
             idle,
             slots: Mutex::new(HashMap::new()),
+            dialer: Mutex::new(None),
         });
         let weak = Arc::downgrade(&pool);
         tokio::spawn(async move {
@@ -51,6 +54,11 @@ impl ConnectionPool {
             }
         });
         pool
+    }
+
+    /// Sets the dialer for hosts with a private network.
+    pub fn set_dialer(&self, dialer: Option<crate::net::Dialer>) {
+        *self.dialer.lock() = dialer;
     }
 
     /// Live connection of `user` to `host_id` (reused or opened). Checks the
@@ -92,7 +100,8 @@ impl ConnectionPool {
             vault,
             self.policy,
             None,
-        )));
+        )))
+        .with_dialer(self.dialer.lock().clone());
         let conn = Connection::connect(&resolved, &opts).await?;
         slot.conn = Some(conn.clone());
         slot.vault = Some(vault);

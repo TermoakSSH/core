@@ -620,3 +620,141 @@ fn server_sftp_parity_and_cancel() {
     assert!(!slow.exists());
     assert!(!dir.path().join("slow.bin.part").exists());
 }
+
+#[test]
+fn private_networks_live_in_accounts_and_hosts_keep_their_network() {
+    let fake = fake_server(|r| {
+        Some(match (r.method.as_str(), r.path.as_str()) {
+            ("GET", "/api/v1/me") => Resp::Json(200, json!({"user": user("en")})),
+            ("DELETE", "/api/v1/me") => Resp::Json(
+                409,
+                json!({"error": {"code": "shared_vaults", "message": "you own shared vaults",
+                                 "vaults": [{"id": GROUP, "name": "Ops", "members": 2}]}}),
+            ),
+            _ => return None,
+        })
+    });
+    // Not signed in: networks cannot be saved on This device.
+    let dir = tempfile::tempdir().unwrap();
+    let alone = TermoakCore::new(
+        dir.path().to_string_lossy().into_owned(),
+        generate_vault_key(),
+    )
+    .unwrap();
+    let net = PrivateNetwork {
+        name: "Office".into(),
+        kind: "wireguard".into(),
+        wireguard: Some(WireguardSettings {
+            addresses: vec![" 10.9.0.2/32 ".into()],
+            peers: vec![WireguardPeer {
+                public_key: "cGVlcg==".into(),
+                endpoint: Some("vpn.example.com:51820".into()),
+                allowed_ips: vec!["10.9.0.0/24".into()],
+                persistent_keepalive: Some(25),
+            }],
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    assert!(matches!(
+        alone.save_network(net.clone(), None),
+        Err(TermoakError::Invalid(_))
+    ));
+
+    let (_dir, core) = signed_in(&fake);
+    let saved = core
+        .save_network(
+            net,
+            Some(NetworkSecrets {
+                private_key: Some("cHJpdmF0ZQ==".into()),
+                ..Default::default()
+            }),
+        )
+        .unwrap();
+    assert!(saved.has_secrets);
+    assert!(saved.account_id.is_some());
+    assert_eq!(
+        saved.wireguard.as_ref().unwrap().addresses,
+        vec!["10.9.0.2/32".to_string()]
+    );
+    assert_eq!(core.list_networks(None).unwrap().len(), 1);
+    let secrets = core.network_secrets(saved.id.clone(), None).unwrap();
+    assert_eq!(secrets.private_key.as_deref(), Some("cHJpdmF0ZQ=="));
+    // Keep the secrets on a plain edit.
+    let mut renamed = saved.clone();
+    renamed.name = "Office VPN".into();
+    let renamed = core.save_network(renamed, None).unwrap();
+    assert!(renamed.has_secrets);
+
+    // A host in the same account with the network.
+    let host = core
+        .save_host(
+            SshHost {
+                id: String::new(),
+                label: "nas".into(),
+                address: "10.9.0.5".into(),
+                group_id: None,
+                tags: vec![],
+                settings: HostSettings {
+                    username: Some("root".into()),
+                    network_id: Some(saved.id.clone()),
+                    ..Default::default()
+                },
+                notes: String::new(),
+                color: None,
+                os: None,
+                os_version: None,
+                favorite: false,
+                protocol: "ssh".into(),
+                icon: None,
+                sync_mode: None,
+                has_password: false,
+                updated_at: 0,
+                account_id: saved.account_id.clone(),
+                vault_id: None,
+                access: None,
+                secret_hidden: false,
+            },
+            SecretChange::Keep,
+        )
+        .unwrap();
+    assert_eq!(host.settings.network_id.as_deref(), Some(saved.id.as_str()));
+    // The fake server has no `networks` feature: never a direct connection.
+    let auth: Arc<dyn AuthHandler> = Arc::new(NoAuth);
+    let err = block_on(core.connect(host.id.clone(), auth, None, None))
+        .err()
+        .unwrap();
+    assert!(
+        matches!(err, TermoakError::NetworkUnavailable(_)),
+        "{err:?}"
+    );
+    assert_eq!(
+        api_error_info(err.to_string()).unwrap().code,
+        "network_unavailable"
+    );
+
+    core.delete_network(saved.id.clone(), None).unwrap();
+    assert!(core.list_networks(None).unwrap().is_empty());
+
+    // API errors carry status, code and details.
+    let acc = core.account(core.current_account().unwrap().id).unwrap();
+    let err = block_on(acc.api_delete("/api/v1/me".into())).err().unwrap();
+    assert!(matches!(err, TermoakError::Conflict(_)), "{err:?}");
+    let info = api_error_info(err.to_string()).unwrap();
+    assert_eq!((info.status, info.code.as_str()), (409, "shared_vaults"));
+    let details: Value = serde_json::from_str(&info.details_json).unwrap();
+    assert_eq!(details["vaults"][0]["name"], "Ops");
+}
+
+/// Refuses every prompt.
+struct NoAuth;
+
+impl AuthHandler for NoAuth {
+    fn on_host_key(&self, _: String, _: u32, _: String, _: String) -> bool {
+        false
+    }
+
+    fn on_prompt(&self, _request: AuthRequest) -> Option<Vec<String>> {
+        None
+    }
+}

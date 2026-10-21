@@ -2,7 +2,7 @@
 //!
 //! There are two families:
 //! - **Syncable entities** (hosts, groups, identities, keys, snippets,
-//!   forwards, known hosts, AI memories). They are stored generically in the
+//!   forwards, known hosts, AI memories, private networks). They are stored generically in the
 //!   `entities` table and synced across devices. Each entity keeps its public
 //!   part (`data`) apart from its secret part (`Secret`), which is always
 //!   stored encrypted.
@@ -35,10 +35,30 @@ pub enum EntityKind {
     Forward,
     KnownHost,
     Memory,
+    /// Private network (WireGuard, Tailscale/Headscale, ZeroTier) the
+    /// server reaches hosts through (0.7). Not in [`EntityKind::LEGACY`]:
+    /// cores before 0.7 cannot read it, so servers only send it to clients
+    /// that declare it (`kinds` of sync v2).
+    Network,
 }
 
 impl EntityKind {
-    pub const ALL: [EntityKind; 8] = [
+    pub const ALL: [EntityKind; 9] = [
+        EntityKind::Group,
+        EntityKind::Host,
+        EntityKind::Identity,
+        EntityKind::Key,
+        EntityKind::Snippet,
+        EntityKind::Forward,
+        EntityKind::KnownHost,
+        EntityKind::Memory,
+        EntityKind::Network,
+    ];
+
+    /// The kinds every core since 0.2 knows. Older cores fail to read a
+    /// sync response with any other kind, so a server only sends the others
+    /// to clients that ask for them.
+    pub const LEGACY: [EntityKind; 8] = [
         EntityKind::Group,
         EntityKind::Host,
         EntityKind::Identity,
@@ -48,6 +68,11 @@ impl EntityKind {
         EntityKind::KnownHost,
         EntityKind::Memory,
     ];
+
+    /// Whether every core (0.2 and later) knows this kind.
+    pub fn is_legacy(self) -> bool {
+        Self::LEGACY.contains(&self)
+    }
 
     pub fn as_str(self) -> &'static str {
         match self {
@@ -59,6 +84,7 @@ impl EntityKind {
             EntityKind::Forward => "forward",
             EntityKind::KnownHost => "known_host",
             EntityKind::Memory => "memory",
+            EntityKind::Network => "network",
         }
     }
 
@@ -192,6 +218,15 @@ pub struct HostSettings {
     pub record_sessions: Option<bool>,
     /// Proxy for the first TCP connection (to the first jump if there is a chain).
     pub proxy: Option<ProxySettings>,
+    /// Private network ([`Network`], same vault) the first connection goes
+    /// through (to the first jump if there is a chain); `None`: direct (or
+    /// inherited). It takes precedence over `proxy`.
+    ///
+    /// Always serialized, also as `null`: a host or group JSON without the
+    /// key comes from a core before 0.7, which drops fields it does not
+    /// know, and the server keeps the stored value
+    /// ([`keep_omitted_fields`](crate::store::keep_omitted_fields)).
+    pub network_id: Option<Uuid>,
 }
 
 /// Proxy type.
@@ -242,6 +277,7 @@ impl HostSettings {
             theme: over.theme.clone().or_else(|| self.theme.clone()),
             record_sessions: over.record_sessions.or(self.record_sessions),
             proxy: over.proxy.clone().or_else(|| self.proxy.clone()),
+            network_id: over.network_id.or(self.network_id),
         }
     }
 }
@@ -742,6 +778,251 @@ impl Entity for Memory {
             return Err(CoreError::Invalid(
                 "a memory cannot exceed 1000 characters".into(),
             ));
+        }
+        Ok(())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Private networks
+// ---------------------------------------------------------------------------
+
+/// Kind of private network.
+///
+/// Serialized as a lowercase string. A kind this version does not know (a
+/// later app's) is kept as is in [`NetworkKind::Other`], so reading and
+/// saving the network again does not lose it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+pub enum NetworkKind {
+    /// WireGuard tunnel (any WireGuard peer: a router, NetBird, Firezone...).
+    #[default]
+    Wireguard,
+    /// Tailscale tailnet or a Headscale server (`control_url`).
+    Tailscale,
+    /// ZeroTier network.
+    Zerotier,
+    /// Unknown kind (from a later version), lowercase.
+    Other(String),
+}
+
+impl NetworkKind {
+    pub fn as_str(&self) -> &str {
+        match self {
+            NetworkKind::Wireguard => "wireguard",
+            NetworkKind::Tailscale => "tailscale",
+            NetworkKind::Zerotier => "zerotier",
+            NetworkKind::Other(s) => s,
+        }
+    }
+
+    /// `wireguard`, `tailscale` (also `headscale`) and `zerotier`, any case.
+    pub fn parse(s: &str) -> Self {
+        let s = s.trim().to_ascii_lowercase();
+        match s.as_str() {
+            "" | "wireguard" | "wg" => NetworkKind::Wireguard,
+            "tailscale" | "headscale" => NetworkKind::Tailscale,
+            "zerotier" => NetworkKind::Zerotier,
+            _ => NetworkKind::Other(s),
+        }
+    }
+}
+
+impl std::fmt::Display for NetworkKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl Serialize for NetworkKind {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        s.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for NetworkKind {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Self, D::Error> {
+        let s = Option::<String>::deserialize(d)?;
+        Ok(NetworkKind::parse(s.as_deref().unwrap_or("")))
+    }
+}
+
+/// A WireGuard peer (the other end of the tunnel).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(default)]
+pub struct WireguardPeer {
+    /// The peer's public key (base64).
+    pub public_key: String,
+    /// `host:port` of the peer (optional when the peer connects to us).
+    pub endpoint: Option<String>,
+    /// Networks reached through this peer (`10.0.0.0/24`...).
+    pub allowed_ips: Vec<String>,
+    /// Seconds between keep-alives (0 or none: off).
+    pub persistent_keepalive: Option<u16>,
+}
+
+/// Non-secret part of a WireGuard network (what a `.conf` has, except the
+/// keys). The private key and preshared key are in [`NetworkSecret`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(default)]
+pub struct WireguardConfig {
+    /// Addresses of the server's end of the tunnel (`10.0.0.2/32`...).
+    pub addresses: Vec<String>,
+    /// DNS servers inside the tunnel.
+    pub dns: Vec<String>,
+    pub mtu: Option<u16>,
+    pub peers: Vec<WireguardPeer>,
+    /// Public key of the server's end (derived from the private key; shown
+    /// so it can be added as a peer on the other side).
+    pub public_key: Option<String>,
+}
+
+/// Non-secret part of a Tailscale or Headscale network. The auth key is in
+/// [`NetworkSecret`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(default)]
+pub struct TailscaleConfig {
+    /// Control server: `None` for Tailscale, the Headscale URL otherwise.
+    pub control_url: Option<String>,
+    /// Name of the server's node in the tailnet (default: `termoak-<id>`).
+    pub hostname: Option<String>,
+    /// ACL tags the node asks for (default: `tag:termoak`).
+    pub tags: Vec<String>,
+}
+
+/// Non-secret part of a ZeroTier network. The Central API token, if any, is
+/// in [`NetworkSecret`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+#[serde(default)]
+pub struct ZerotierConfig {
+    /// Network id (16 hex digits).
+    pub network_id: String,
+    /// ZeroTier Central API URL for a self-hosted controller (default:
+    /// `https://api.zerotier.com`). Only used with an API token.
+    pub central_url: Option<String>,
+}
+
+/// Private network (WireGuard, Tailscale/Headscale or ZeroTier) the server
+/// joins to reach hosts (`HostSettings::network_id`). Only the server uses
+/// it (through `termoak-netd`); the apps manage networks and connect over
+/// the server relay. Only the section of its `kind` matters.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct Network {
+    #[serde(default)]
+    pub id: Uuid,
+    pub name: String,
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    pub kind: NetworkKind,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wireguard: Option<WireguardConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tailscale: Option<TailscaleConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub zerotier: Option<ZerotierConfig>,
+}
+
+/// Secret part of a network (stored encrypted, like passwords).
+#[derive(Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct NetworkSecret {
+    /// WireGuard: the server's private key (base64).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub private_key: Option<String>,
+    /// WireGuard: preshared key (base64), if the peer uses one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub preshared_key: Option<String>,
+    /// Tailscale/Headscale: auth key (reusable and ephemeral, ideally
+    /// tagged) or OAuth client secret.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auth_key: Option<String>,
+    /// ZeroTier: Central API token (to authorize the server's node by
+    /// itself).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub api_token: Option<String>,
+}
+
+impl std::fmt::Debug for NetworkSecret {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NetworkSecret")
+            .field("private_key", &self.private_key.is_some())
+            .field("preshared_key", &self.preshared_key.is_some())
+            .field("auth_key", &self.auth_key.is_some())
+            .field("api_token", &self.api_token.is_some())
+            .finish()
+    }
+}
+
+impl NetworkSecret {
+    /// Wipes the secrets from memory.
+    pub fn zeroize(&mut self) {
+        use zeroize::Zeroize;
+        for s in [
+            &mut self.private_key,
+            &mut self.preshared_key,
+            &mut self.auth_key,
+            &mut self.api_token,
+        ] {
+            if let Some(v) = s.as_mut() {
+                v.zeroize();
+            }
+            *s = None;
+        }
+    }
+}
+
+impl Entity for Network {
+    const KIND: EntityKind = EntityKind::Network;
+    type Secret = NetworkSecret;
+    fn id(&self) -> Id {
+        self.id
+    }
+    fn set_id(&mut self, id: Id) {
+        self.id = id;
+    }
+    fn validate(&self) -> Result<()> {
+        non_empty("name", &self.name)?;
+        if self.name.chars().count() > 100 {
+            return Err(CoreError::Invalid(
+                "a network name cannot exceed 100 characters".into(),
+            ));
+        }
+        match &self.kind {
+            NetworkKind::Wireguard => {
+                if let Some(wg) = &self.wireguard {
+                    for p in &wg.peers {
+                        non_empty("wireguard.peers.public_key", &p.public_key)?;
+                    }
+                }
+            }
+            NetworkKind::Tailscale => {
+                if let Some(url) = self.tailscale.as_ref().and_then(|t| t.control_url.as_ref())
+                    && !url.trim().is_empty()
+                    && !(url.starts_with("https://") || url.starts_with("http://"))
+                {
+                    return Err(CoreError::Invalid(
+                        "the control URL must start with https:// or http://".into(),
+                    ));
+                }
+            }
+            NetworkKind::Zerotier => {
+                let id = self
+                    .zerotier
+                    .as_ref()
+                    .map(|z| z.network_id.trim())
+                    .unwrap_or("");
+                if id.len() != 16 || !id.chars().all(|c| c.is_ascii_hexdigit()) {
+                    return Err(CoreError::Invalid(
+                        "a ZeroTier network id has 16 hexadecimal digits".into(),
+                    ));
+                }
+            }
+            NetworkKind::Other(_) => {}
         }
         Ok(())
     }

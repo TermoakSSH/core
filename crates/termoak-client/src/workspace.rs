@@ -785,10 +785,55 @@ impl Workspace {
             HostKeyPolicy::Ask,
         )?)
         .with_prompter(prompter)
-        .with_agent(use_agent);
+        .with_agent(use_agent)
+        .with_dialer(self.network_dialer(item.scope, &resolved).await?);
         let conn = Connection::connect(&resolved, &opts).await;
         resolved.zeroize_secrets();
         Ok(conn?)
+    }
+
+    /// The dialer for a host whose first connection goes through a private
+    /// network: the server relay of the host's account
+    /// ([`crate::net_relay`]). `None` for other hosts. Fails with
+    /// `network_unavailable` when the host is not in an account, the
+    /// account is signed out, or its server does not support networks.
+    pub async fn network_dialer(
+        &self,
+        scope: Scope,
+        resolved: &ResolvedHost,
+    ) -> Result<Option<termoak_ssh::Dialer>> {
+        if resolved.first_hop_network_id().is_none() {
+            return Ok(None);
+        }
+        let unavailable = |m: &str| {
+            ClientError::Ssh(termoak_ssh::net::unavailable(format!(
+                "{}: {m}",
+                resolved.first_hop().host.label
+            )))
+        };
+        let Some(account) = scope.account().and_then(|a| self.account(a)) else {
+            return Err(unavailable(
+                "private networks are only reached through an account's server",
+            ));
+        };
+        if !account.is_signed_in() {
+            return Err(unavailable(
+                "sign in to the account to reach hosts in its private networks",
+            ));
+        }
+        let supported = |a: &Account| a.info().features[crate::net_relay::FEATURE] == true;
+        // The cached features may predate the server's networks.
+        if !supported(&account) {
+            let _ = account.refresh_info().await;
+        }
+        if !supported(&account) {
+            return Err(unavailable(
+                "the account's server does not support private networks",
+            ));
+        }
+        Ok(Some(termoak_ssh::Dialer::new(
+            crate::net_relay::RelayDialer::new(account.api.clone()),
+        )))
     }
 
     /// Opens a local terminal over a connection.
@@ -898,6 +943,7 @@ impl Workspace {
             cols,
             rows,
             auto_login,
+            dialer: self.network_dialer(item.scope, &resolved).await?,
             ..Default::default()
         };
         let session = TelnetSession::open(&resolved, opts, 4 * 1024 * 1024, recorder).await;
@@ -1010,5 +1056,72 @@ mod tests {
             .await
             .unwrap_err();
         assert!(e.to_string().contains("Telnet"), "{e}");
+    }
+
+    #[tokio::test]
+    async fn network_hosts_never_connect_directly_from_the_device() {
+        use termoak_core::model::Network;
+        let dir = tempfile::tempdir().unwrap();
+        let ws = Workspace::open(dir.path(), MasterKey::generate()).unwrap();
+        // Something listening where the host points: it must never be dialed.
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let net = ws
+            .store
+            .save(
+                LOCAL_OWNER,
+                Network {
+                    name: "office".into(),
+                    ..Default::default()
+                },
+                SecretUpdate::Keep,
+                None,
+            )
+            .await
+            .unwrap();
+        let host = ws
+            .store
+            .save(
+                LOCAL_OWNER,
+                Host {
+                    id: Id::nil(),
+                    label: "nas".into(),
+                    address: "127.0.0.1".into(),
+                    group_id: None,
+                    tags: vec![],
+                    settings: HostSettings {
+                        port: Some(port),
+                        username: Some("u".into()),
+                        network_id: Some(net.data.id),
+                        ..Default::default()
+                    },
+                    notes: String::new(),
+                    color: None,
+                    os: None,
+                    os_version: None,
+                    favorite: false,
+                    protocol: Default::default(),
+                    icon: None,
+                },
+                SecretUpdate::Keep,
+                None,
+            )
+            .await
+            .unwrap();
+        let err = ws
+            .connect(host.data.id, Arc::new(termoak_ssh::NoPrompter), false)
+            .await
+            .unwrap_err();
+        assert!(
+            matches!(
+                &err,
+                ClientError::Ssh(termoak_ssh::SshError::Network { code, .. })
+                    if *code == termoak_core::error::codes::NETWORK_UNAVAILABLE
+            ),
+            "{err:?}"
+        );
+        let accepted =
+            tokio::time::timeout(std::time::Duration::from_millis(200), listener.accept()).await;
+        assert!(accepted.is_err(), "the host was dialed directly");
     }
 }

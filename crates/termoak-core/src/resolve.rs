@@ -7,7 +7,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::Id;
 use crate::error::{CoreError, Result};
-use crate::model::{Entity, Group, Host, HostSettings, Identity, ProxySettings, Snippet, SshKey};
+use crate::model::{
+    Entity, Group, Host, HostSettings, Identity, Network, NetworkSecret, ProxySettings, Snippet,
+    SshKey,
+};
 use crate::store::{SecretUse, Store, VaultAccess};
 
 /// Private key ready to use.
@@ -45,6 +48,55 @@ pub struct ResolvedHost {
     pub startup_script: Option<String>,
     /// Effective proxy (from the host or its groups), with its password.
     pub proxy: Option<ResolvedProxy>,
+    /// Effective private network (`settings.network_id`, same vault), with
+    /// its secret (empty for a Use-only member's local copy). Absent in
+    /// data from cores before 0.7.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub network: Option<ResolvedNetwork>,
+}
+
+/// Private network ready to use (by the server's `termoak-netd`).
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ResolvedNetwork {
+    pub network: Network,
+    #[serde(default)]
+    pub secret: NetworkSecret,
+}
+
+impl std::fmt::Debug for ResolvedNetwork {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ResolvedNetwork")
+            .field("id", &self.network.id)
+            .field("name", &self.network.name)
+            .field("kind", &self.network.kind)
+            .field("secret", &self.secret)
+            .finish()
+    }
+}
+
+impl ResolvedHost {
+    /// The network of the first connection to this host: the first jump's
+    /// or, if it has none, the host's own (like the proxy). `None`: direct.
+    pub fn first_hop_network_id(&self) -> Option<Id> {
+        self.jumps
+            .first()
+            .and_then(|j| j.settings.network_id)
+            .or(self.settings.network_id)
+    }
+
+    /// The resolved network of the first connection (see
+    /// [`first_hop_network_id`](Self::first_hop_network_id)).
+    pub fn first_hop_network(&self) -> Option<&ResolvedNetwork> {
+        match self.jumps.first() {
+            Some(j) if j.settings.network_id.is_some() => j.network.as_ref(),
+            _ => self.network.as_ref(),
+        }
+    }
+
+    /// The first host connected to: the first jump, or this host.
+    pub fn first_hop(&self) -> &ResolvedHost {
+        self.jumps.first().unwrap_or(self)
+    }
 }
 
 /// Proxy ready to use.
@@ -74,6 +126,7 @@ impl std::fmt::Debug for ResolvedHost {
             .field("key", &self.key)
             .field("jumps", &self.jumps)
             .field("proxy", &self.proxy)
+            .field("network", &self.network)
             .finish()
     }
 }
@@ -101,6 +154,9 @@ impl ResolvedHost {
         }
         if let Some(p) = self.proxy.as_mut() {
             p.password = None;
+        }
+        if let Some(n) = self.network.as_mut() {
+            n.secret.zeroize();
         }
         for j in &mut self.jumps {
             j.zeroize_secrets();
@@ -359,9 +415,33 @@ impl Store {
                 password: host_secret.proxy_password.clone(),
             });
 
+        // A host with a network never falls back to a direct connection:
+        // a network missing from the vault is an error.
+        let network = match settings.network_id {
+            Some(nid) => {
+                let (network, fb) =
+                    self.scoped_get::<Network>(scope, nid)
+                        .await?
+                        .ok_or_else(|| {
+                            CoreError::vault_detail(
+                                crate::error::codes::NETWORK_NOT_FOUND,
+                                format!(
+                                    "host \"{}\" uses a private network that is not in its vault",
+                                    host.label
+                                ),
+                                serde_json::json!({ "network_id": nid }),
+                            )
+                        })?;
+                let secret = self.scoped_secret::<Network>(scope, nid, fb).await?;
+                Some(ResolvedNetwork { network, secret })
+            }
+            None => None,
+        };
+
         Ok(ResolvedHost {
             port: settings.port.unwrap_or(host.protocol.default_port()),
             proxy,
+            network,
             host,
             settings,
             username,

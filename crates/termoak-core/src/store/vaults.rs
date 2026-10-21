@@ -1306,6 +1306,59 @@ impl Store {
         .await
     }
 
+    /// Who a vault's items are billed to (plan limits such as
+    /// `max_networks`): the owner of a personal or shared vault; for a team
+    /// vault, the team's first owner (by date). `None`: unknown vault or a
+    /// team without owners.
+    pub async fn vault_billing_user(&self, vault: Id) -> Result<Option<Id>> {
+        self.call(move |c, _| {
+            let row: Option<(Option<String>, Option<String>)> = c
+                .query_row(
+                    "SELECT owner_user_id, owner_team_id FROM vaults WHERE id = ?1",
+                    [vault.to_string()],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .optional()?;
+            let user = match row {
+                Some((Some(user), _)) => Some(user),
+                Some((None, Some(team))) => c
+                    .query_row(
+                        "SELECT user_id FROM team_members WHERE team_id = ?1 AND role = 'owner'
+                         ORDER BY added_at, user_id LIMIT 1",
+                        [team],
+                        |r| r.get::<_, String>(0),
+                    )
+                    .optional()?,
+                _ => None,
+            };
+            user.map(|u| parse_id(&u).map_err(Into::into)).transpose()
+        })
+        .await
+    }
+
+    /// Live private networks billed to `user` ([`Store::vault_billing_user`]):
+    /// those of the vaults they own and of the team vaults of the teams
+    /// whose first owner they are.
+    pub async fn networks_billed_to(&self, user: Id) -> Result<i64> {
+        self.call(move |c, _| {
+            Ok(c.query_row(
+                "SELECT COUNT(*) FROM entities e JOIN vaults v ON v.id = e.vault_id
+                 WHERE e.kind = 'network' AND e.deleted = 0 AND (
+                    v.owner_user_id = ?1
+                    OR v.owner_team_id IN (
+                        SELECT t.team_id FROM team_members t
+                        WHERE t.role = 'owner' AND t.user_id = (
+                            SELECT f.user_id FROM team_members f
+                            WHERE f.team_id = t.team_id AND f.role = 'owner'
+                            ORDER BY f.added_at, f.user_id LIMIT 1)
+                          AND t.user_id = ?1))",
+                [user.to_string()],
+                |r| r.get(0),
+            )?)
+        })
+        .await
+    }
+
     /// Random id of this database (created once), for clients to tell
     /// servers apart.
     pub async fn instance_id(&self) -> Result<String> {

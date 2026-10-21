@@ -71,7 +71,7 @@ pub use accounts::*;
 pub use ai::*;
 pub use assist::*;
 pub use auth::{AuthHandler, AuthPromptKind, AuthRequest, PromptField};
-pub use error::{Result, TermoakError};
+pub use error::{ApiErrorInfo, Result, TermoakError, api_error_info};
 pub use hostkey::{HostKeyChange, HostKeyChangeHandler};
 pub use import_export::*;
 pub use links::{LinkTarget, join_app_link, parse_link, parse_quick_connect};

@@ -45,6 +45,11 @@ pub enum SshError {
     /// with Telnet).
     #[error("{0}")]
     Unsupported(String),
+    /// Private network: `code` is `network_unavailable` (no dialer, the
+    /// server has no `termoak-netd` or does not support networks),
+    /// `network_dial_failed` or `network_not_found`.
+    #[error("{message}")]
+    Network { code: &'static str, message: String },
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
     #[error("SSH: {0}")]

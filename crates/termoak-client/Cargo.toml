@@ -18,6 +18,7 @@ termoak-core.workspace = true
 termoak-ssh.workspace = true
 tokio.workspace = true
 futures.workspace = true
+async-trait.workspace = true
 tokio-util.workspace = true
 bytes.workspace = true
 serde.workspace = true

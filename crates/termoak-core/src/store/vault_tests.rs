@@ -808,3 +808,290 @@ async fn migration_v9_attaches_entities_to_personal_vaults() {
     assert_eq!(store.list_in::<Host>(&access, None).await.unwrap().len(), 2);
     assert_eq!(VaultAccess::default().role(ana), None);
 }
+
+fn wireguard(name: &str) -> Network {
+    Network {
+        id: Id::nil(),
+        name: name.into(),
+        kind: NetworkKind::Wireguard,
+        description: String::new(),
+        wireguard: Some(WireguardConfig {
+            addresses: vec!["10.9.0.2/32".into()],
+            peers: vec![WireguardPeer {
+                public_key: "cGVlcg==".into(),
+                endpoint: Some("vpn.example.com:51820".into()),
+                allowed_ips: vec!["10.9.0.0/24".into()],
+                persistent_keepalive: Some(25),
+            }],
+            ..Default::default()
+        }),
+        tailscale: None,
+        zerotier: None,
+    }
+}
+
+fn wg_secret() -> SecretUpdate<NetworkSecret> {
+    SecretUpdate::Set(NetworkSecret {
+        private_key: Some("cHJpdmF0ZQ==".into()),
+        ..Default::default()
+    })
+}
+
+#[tokio::test]
+async fn networks_resolve_through_groups_in_the_same_vault_only() {
+    let store = test_store();
+    store.enable_vault_keys();
+    let ana = user(&store, "ana@example.com").await;
+    let ops = shared(&store, ana, "Ops").await;
+    let a = store.vault_access(ana).await.unwrap();
+    let net = store
+        .save_in(&a, ops, wireguard("office"), wg_secret(), None)
+        .await
+        .unwrap();
+    // Inherited from the group.
+    let group = store
+        .save_in(
+            &a,
+            ops,
+            Group {
+                id: Id::nil(),
+                name: "lan".into(),
+                parent_id: None,
+                color: None,
+                settings: HostSettings {
+                    network_id: Some(net.data.id),
+                    ..Default::default()
+                },
+            },
+            SecretUpdate::Keep,
+            None,
+        )
+        .await
+        .unwrap();
+    let mut h = host("nas");
+    h.group_id = Some(group.data.id);
+    let h = store
+        .save_in(&a, ops, h, SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let r = store
+        .resolve_in(&a, h.data.id, SecretUse::Server)
+        .await
+        .unwrap();
+    assert_eq!(r.settings.network_id, Some(net.data.id));
+    assert_eq!(r.first_hop_network_id(), Some(net.data.id));
+    let n = r.first_hop_network().unwrap();
+    assert_eq!(n.network.name, "office");
+    assert_eq!(n.secret.private_key.as_deref(), Some("cHJpdmF0ZQ=="));
+    // The secret never shows in Debug output.
+    assert!(!format!("{r:?}").contains("cHJpdmF0ZQ=="));
+    let mut wiped = r.clone();
+    wiped.zeroize_secrets();
+    assert!(wiped.network.unwrap().secret.private_key.is_none());
+
+    // A network of another vault cannot be referenced...
+    let other = store
+        .save_in(&a, ana, wireguard("home"), SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let mut cross = host("cross");
+    cross.settings.network_id = Some(other.data.id);
+    let err = store
+        .save_in(&a, ops, cross, SecretUpdate::Keep, None)
+        .await
+        .unwrap_err();
+    assert_eq!(err.vault_code(), Some(codes::CROSS_VAULT_REFERENCE));
+
+    // ...and a host whose network is gone never resolves as direct.
+    store.delete_in::<Network>(&a, net.data.id).await.unwrap();
+    let err = store
+        .resolve_in(&a, h.data.id, SecretUse::Server)
+        .await
+        .unwrap_err();
+    assert_eq!(err.vault_code(), Some(codes::NETWORK_NOT_FOUND));
+}
+
+#[tokio::test]
+async fn first_hop_network_is_the_first_jumps_or_the_hosts() {
+    let store = test_store();
+    let ana = user(&store, "ana@example.com").await;
+    let a = store.vault_access(ana).await.unwrap();
+    let net = store
+        .save_in(&a, ana, wireguard("office"), SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let bastion = store
+        .save_in(&a, ana, host("bastion"), SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let mut inner = host("inner");
+    inner.settings.network_id = Some(net.data.id);
+    inner.settings.jump_host_ids = Some(vec![bastion.data.id]);
+    let inner = store
+        .save_in(&a, ana, inner, SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let r = store
+        .resolve_in(&a, inner.data.id, SecretUse::Server)
+        .await
+        .unwrap();
+    // The bastion has no network: the host's applies to the first hop.
+    assert_eq!(r.first_hop().host.label, "bastion");
+    assert_eq!(r.first_hop_network_id(), Some(net.data.id));
+    assert!(r.first_hop_network().is_some());
+    let direct = store
+        .resolve_in(&a, bastion.data.id, SecretUse::Server)
+        .await
+        .unwrap();
+    assert_eq!(direct.first_hop_network_id(), None);
+}
+
+#[tokio::test]
+async fn old_cores_editing_a_host_keep_its_network() {
+    let store = test_store();
+    let ana = user(&store, "ana@example.com").await;
+    let a = store.vault_access(ana).await.unwrap();
+    let net = store
+        .save_in(&a, ana, wireguard("office"), SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    let mut h = host("db");
+    h.settings.network_id = Some(net.data.id);
+    let h = store
+        .save_in(&a, ana, h, SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    // New cores always write the key.
+    let data = serde_json::to_value(&h.data).unwrap();
+    assert_eq!(data["settings"]["network_id"], json!(net.data.id));
+    let unset = serde_json::to_value(host("x")).unwrap();
+    assert!(
+        unset["settings"]
+            .as_object()
+            .unwrap()
+            .contains_key("network_id")
+    );
+
+    let push = |data: serde_json::Value, at: i64| SyncRecord {
+        id: h.data.id,
+        kind: EntityKind::Host,
+        data,
+        secret: None,
+        sync_mode: SyncMode::Synced,
+        updated_at: at,
+        deleted: false,
+        rev: 0,
+        vault_id: None,
+        has_secret: None,
+        sealed: None,
+        base_rev: None,
+    };
+    // A core before 0.7 drops the unknown key when it edits the host.
+    let mut old = data.clone();
+    old["settings"]
+        .as_object_mut()
+        .unwrap()
+        .remove("network_id");
+    old["label"] = json!("db (renamed by an old app)");
+    store
+        .apply_remote_v2(&a, vec![push(old, now_plus())])
+        .await
+        .unwrap();
+    let got = store.get_in::<Host>(&a, h.data.id).await.unwrap();
+    assert_eq!(got.data.label, "db (renamed by an old app)");
+    assert_eq!(got.data.settings.network_id, Some(net.data.id));
+    // Without settings at all, too.
+    let mut bare = data.clone();
+    bare.as_object_mut().unwrap().remove("settings");
+    store
+        .apply_remote_v2(&a, vec![push(bare, now_plus() + 1)])
+        .await
+        .unwrap();
+    let got = store.get_in::<Host>(&a, h.data.id).await.unwrap();
+    assert_eq!(got.data.settings.network_id, Some(net.data.id));
+    // A new core clears it with an explicit null.
+    let mut cleared = data.clone();
+    cleared["settings"]["network_id"] = json!(null);
+    store
+        .apply_remote_v2(&a, vec![push(cleared, now_plus() + 2)])
+        .await
+        .unwrap();
+    let got = store.get_in::<Host>(&a, h.data.id).await.unwrap();
+    assert_eq!(got.data.settings.network_id, None);
+}
+
+#[tokio::test]
+async fn networks_are_billed_to_the_vault_owner_or_the_team_owner() {
+    let store = test_store();
+    let ana = user(&store, "ana@example.com").await;
+    let bea = user(&store, "bea@example.com").await;
+    let team = store.create_team(bea, "Infra").await.unwrap();
+    store
+        .set_team_member(team.id, ana, TeamRole::Admin)
+        .await
+        .unwrap();
+    let tv = store
+        .create_vault(
+            ana,
+            NewVault {
+                name: "Team".into(),
+                team_id: Some(team.id),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap()
+        .id;
+    let ops = shared(&store, ana, "Ops").await;
+    let a = store.vault_access(ana).await.unwrap();
+    for vault in [ana, ops, tv, tv] {
+        store
+            .save_in(&a, vault, wireguard("n"), SecretUpdate::Keep, None)
+            .await
+            .unwrap();
+    }
+    assert_eq!(store.vault_billing_user(ops).await.unwrap(), Some(ana));
+    assert_eq!(store.vault_billing_user(tv).await.unwrap(), Some(bea));
+    assert_eq!(store.networks_billed_to(ana).await.unwrap(), 2);
+    assert_eq!(store.networks_billed_to(bea).await.unwrap(), 2);
+    // Deleted networks do not count.
+    let gone = store
+        .save_in(&a, ana, wireguard("gone"), SecretUpdate::Keep, None)
+        .await
+        .unwrap();
+    store.delete_in::<Network>(&a, gone.data.id).await.unwrap();
+    assert_eq!(store.networks_billed_to(ana).await.unwrap(), 2);
+}
+
+#[test]
+fn network_validation_and_unknown_kinds() {
+    let mut zt = Network {
+        name: "zt".into(),
+        kind: NetworkKind::Zerotier,
+        zerotier: Some(ZerotierConfig {
+            network_id: "8056c2e21c000001".into(),
+            central_url: None,
+        }),
+        ..Default::default()
+    };
+    zt.validate().unwrap();
+    zt.zerotier.as_mut().unwrap().network_id = "nope".into();
+    assert!(zt.validate().is_err());
+    let ts: Network = serde_json::from_value(json!({
+        "name": "tail", "kind": "Headscale",
+        "tailscale": {"control_url": "ftp://x"}
+    }))
+    .unwrap();
+    assert_eq!(ts.kind, NetworkKind::Tailscale);
+    assert!(ts.validate().is_err());
+    // A later version's kind is kept as it is.
+    let later: Network = serde_json::from_value(json!({"name": "x", "kind": "Nebula"})).unwrap();
+    assert_eq!(later.kind, NetworkKind::Other("nebula".into()));
+    assert_eq!(
+        serde_json::to_value(&later).unwrap()["kind"],
+        json!("nebula")
+    );
+    later.validate().unwrap();
+    assert!(EntityKind::Host.is_legacy() && !EntityKind::Network.is_legacy());
+    assert_eq!(EntityKind::parse("network"), Some(EntityKind::Network));
+}

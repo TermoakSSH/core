@@ -25,7 +25,8 @@ use rusqlite::{Connection, OptionalExtension};
 
 pub use ai::{AiApprovalRow, AiEventRow, AiTaskRow, AiUsageRow};
 pub use entities::{
-    ApplyReport, SyncRejection, SyncWarning, VaultChange, VaultChanges, references,
+    ApplyReport, SyncRejection, SyncWarning, VaultChange, VaultChanges, keep_omitted_fields,
+    references,
 };
 pub use local::{DirtySummary, LocalItem, LocalVault, SyncV2Applied, SyncV2Apply};
 pub use vaults::{

@@ -43,6 +43,9 @@ pub struct TelnetOptions {
     /// host's username and password (see the `login` module: only during
     /// the first 30 seconds, each once).
     pub auto_login: bool,
+    /// Opens the connection of hosts with a private network (see
+    /// [`crate::net`]).
+    pub dialer: Option<crate::net::Dialer>,
 }
 
 impl Default for TelnetOptions {
@@ -53,6 +56,7 @@ impl Default for TelnetOptions {
             rows: 24,
             connect_timeout: Duration::from_secs(15),
             auto_login: true,
+            dialer: None,
         }
     }
 }
@@ -124,10 +128,8 @@ impl TelnetSession {
     ) -> Result<Arc<Self>> {
         check_target(target)?;
         let address = target.host.address.as_str();
-        let stream = match &target.proxy {
-            Some(p) => crate::proxy::connect(p, address, target.port, opts.connect_timeout).await?,
-            None => crate::client::tcp_connect(address, target.port, opts.connect_timeout).await?,
-        };
+        let stream =
+            crate::net::open_first_hop(target, opts.dialer.as_ref(), opts.connect_timeout).await?;
         let info = TelnetInfo {
             label: target.host.label.clone(),
             address: address.to_string(),
@@ -135,6 +137,7 @@ impl TelnetSession {
             proxy: target
                 .proxy
                 .as_ref()
+                .filter(|_| target.settings.network_id.is_none())
                 .map(|p| format!("{}:{}", p.settings.host, p.settings.port)),
         };
         let login = if opts.auto_login {
@@ -431,6 +434,7 @@ mod tests {
             jumps: vec![],
             startup_script: None,
             proxy: None,
+            network: None,
         }
     }
 

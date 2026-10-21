@@ -6,6 +6,8 @@
 //!   database and the server.
 //! - [`remote`]: terminals that live on the server (WebSocket).
 //! - [`relay`]: sharing a local terminal through the server.
+//! - [`net_relay`]: hosts in private networks, reached through the server
+//!   relay (0.7).
 //! - [`vault`]: the local vault key (system keyring or file).
 //! - [`workspace::Workspace`]: the device store, one store per signed-in
 //!   account ([`accounts`]), the local SSH engine; [`items`] work across
@@ -37,6 +39,7 @@ pub mod items;
 pub mod layout;
 pub mod line;
 pub mod links;
+pub mod net_relay;
 pub mod palette;
 pub mod qr;
 pub mod relay;

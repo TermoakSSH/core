@@ -299,6 +299,7 @@ impl ApiClient {
                 .as_str()
                 .map(str::to_string)
                 .unwrap_or_else(|| text.chars().take(300).collect()),
+            details: crate::error::error_details(&v),
         })
     }
 

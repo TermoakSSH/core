@@ -161,7 +161,8 @@ fn default_vault(conn: &Connection, owner: Id) -> Result<Option<Id>> {
 
 /// Ids an entity references (field, id): `group_id`, `parent_id`,
 /// `settings.identity_id`, `settings.key_id`, `settings.jump_host_ids`,
-/// `settings.startup_snippet_id`, an identity's `key_id`, and the
+/// `settings.startup_snippet_id`, `settings.network_id`, an identity's
+/// `key_id`, and the
 /// `host_id` of forwards and memories. They must stay inside the vault.
 pub fn references(kind: EntityKind, data: &Value) -> Vec<(&'static str, Id)> {
     let id = |v: Option<&Value>| v.and_then(Value::as_str).and_then(|s| s.parse::<Id>().ok());
@@ -183,6 +184,9 @@ pub fn references(kind: EntityKind, data: &Value) -> Vec<(&'static str, Id)> {
         }
         if let Some(i) = id(s.get("startup_snippet_id")) {
             out.push(("settings.startup_snippet_id", i));
+        }
+        if let Some(i) = id(s.get("network_id")) {
+            out.push(("settings.network_id", i));
         }
     };
     match kind {
@@ -208,9 +212,54 @@ pub fn references(kind: EntityKind, data: &Value) -> Vec<(&'static str, Id)> {
                 out.push(("host_id", i));
             }
         }
-        EntityKind::Key | EntityKind::Snippet | EntityKind::KnownHost => {}
+        EntityKind::Key | EntityKind::Snippet | EntityKind::KnownHost | EntityKind::Network => {}
     }
     out
+}
+
+/// Fields of an entity's JSON that cores before 0.7 drop when they edit it
+/// (they do not know them), as (object path, key): `settings.network_id` of
+/// hosts and groups. Newer cores always write them (`null` when empty).
+const OMITTABLE: &[(EntityKind, &str, &str)] = &[
+    (EntityKind::Host, "settings", "network_id"),
+    (EntityKind::Group, "settings", "network_id"),
+];
+
+/// Compatibility with apps on cores before 0.7: when `incoming` (a pushed
+/// or REST-updated host or group) lacks a field such a core does not know,
+/// the value of `stored` (the current data) is kept, so editing a host on
+/// an old app does not take it out of its private network. A field that is
+/// present (also as `null`) is taken as it comes. Returns whether something
+/// was kept.
+pub fn keep_omitted_fields(kind: EntityKind, incoming: &mut Value, stored: &Value) -> bool {
+    let mut kept = false;
+    for (k, parent, field) in OMITTABLE {
+        if *k != kind {
+            continue;
+        }
+        let Some(old) = stored.get(*parent).and_then(|p| p.get(*field)) else {
+            continue;
+        };
+        if old.is_null() {
+            continue;
+        }
+        let Some(obj) = incoming.as_object_mut() else {
+            continue;
+        };
+        let parent_obj = obj
+            .entry(parent.to_string())
+            .or_insert_with(|| Value::Object(Default::default()));
+        if parent_obj.is_null() {
+            *parent_obj = Value::Object(Default::default());
+        }
+        if let Some(p) = parent_obj.as_object_mut()
+            && !p.contains_key(*field)
+        {
+            p.insert(field.to_string(), old.clone());
+            kept = true;
+        }
+    }
+    kept
 }
 
 /// Fields of `data` that reference a live item of another vault.
@@ -1087,6 +1136,15 @@ impl Store {
                             tracing::info!(id = %rec.id, base, rev = row.rev, "sync: the client overwrote a newer revision");
                         }
                     }
+                    // A host or group edited by an app on a core before
+                    // 0.7 lacks `settings.network_id`: keep the stored one.
+                    if !rec.deleted
+                        && let Some(row) = &existing
+                        && !row.deleted
+                        && let Ok(stored) = serde_json::from_str::<Value>(&row.data)
+                    {
+                        keep_omitted_fields(rec.kind, &mut rec.data, &stored);
+                    }
                     if !rec.deleted {
                         if let Err(e) = validate_record(&rec) {
                             reject(&mut report, rec.id, "invalid", e.to_string());
@@ -1510,6 +1568,7 @@ pub(super) fn validate_record(rec: &SyncRecord) -> Result<()> {
         EntityKind::Forward => check::<PortForward>(rec),
         EntityKind::KnownHost => check::<KnownHost>(rec),
         EntityKind::Memory => check::<Memory>(rec),
+        EntityKind::Network => check::<Network>(rec),
     }
 }
 

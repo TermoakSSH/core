@@ -246,6 +246,19 @@ Conventions:
   `Cancelled` (a `TransferHandle` was cancelled) needs no message. In
   Swift, `TermoakKit` adds a helper that returns the message of any error;
   in Kotlin, use `e.message`.
+- Error details (0.7): the HTTP status, the stable code and the extra fields
+  of a server error (`vaults` of `shared_vaults`, `limit`/`max` of
+  `plan_limit`...) come from `apiErrorInfo(errorMessage:)` /
+  `apiErrorInfo(message)`: in Swift `error.apiError` (TermoakKit), in Kotlin
+  `e.apiError` (`import com.termoak.kit.apiError`). `detailsJson` is a JSON
+  object. No need to parse "the server responded …" any more.
+- Private networks (0.7): `listNetworks`, `saveNetwork(network, secrets)`,
+  `networkSecrets`, `deleteNetwork` (`PrivateNetwork`, account vaults only)
+  and `HostSettings.networkId` (inherited from groups). Show them only when
+  the account's `features.networks` is true. `connect` reaches those hosts
+  through the server relay; without it: `NetworkUnavailable`. Editors must
+  copy the loaded `HostSettings` so `networkId` is kept. See
+  `docs-next/NETWORKS.md` (server repo: `docs/NETWORKS.md`).
 
 ## Swift
 

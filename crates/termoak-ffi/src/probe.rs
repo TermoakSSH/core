@@ -39,6 +39,9 @@ pub enum ProbeSkip {
     Strict,
     /// Its proxy needs a password this (Use-only) user cannot read.
     UseOnly,
+    /// It is reached through a private network: only the server reaches
+    /// it (0.7).
+    Network,
 }
 
 impl From<Skip> for ProbeSkip {
@@ -48,6 +51,7 @@ impl From<Skip> for ProbeSkip {
             Skip::Jump => ProbeSkip::JumpHosts,
             Skip::Strict => ProbeSkip::Strict,
             Skip::UseOnly => ProbeSkip::UseOnly,
+            Skip::Network => ProbeSkip::Network,
         }
     }
 }

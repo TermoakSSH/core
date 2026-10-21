@@ -67,6 +67,9 @@ pub enum Skip {
     Strict,
     /// Its proxy needs a password this user cannot read (Use-only).
     UseOnly,
+    /// Reached through a private network (only the server can reach it;
+    /// its status comes from the server).
+    Network,
 }
 
 /// A host to check.
@@ -147,6 +150,9 @@ pub fn target_of(
     }
     if strict {
         return Err(Skip::Strict);
+    }
+    if settings.network_id.is_some() {
+        return Err(Skip::Network);
     }
     if settings
         .jump_host_ids

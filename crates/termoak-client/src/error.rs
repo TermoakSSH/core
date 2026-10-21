@@ -11,6 +11,10 @@ pub enum ClientError {
         status: u16,
         code: String,
         message: String,
+        /// The other fields of the error object (`{"error": {...}}`), e.g.
+        /// `vaults` of `shared_vaults` or `limit`/`max` of `plan_limit`;
+        /// `{}` when there are none.
+        details: serde_json::Value,
     },
     #[error("network: {0}")]
     Network(String),
@@ -57,6 +61,7 @@ impl From<tokio_tungstenite::tungstenite::Error> for ClientError {
                         .as_str()
                         .map(String::from)
                         .unwrap_or_else(|| resp.status().to_string()),
+                    details: error_details(&v),
                 }
             }
             other => ClientError::WebSocket(other.to_string()),
@@ -64,7 +69,42 @@ impl From<tokio_tungstenite::tungstenite::Error> for ClientError {
     }
 }
 
+/// The fields of an API error object other than `code` and `message`
+/// (`{}` when there are none).
+pub fn error_details(body: &serde_json::Value) -> serde_json::Value {
+    let mut map = body["error"].as_object().cloned().unwrap_or_default();
+    map.remove("code");
+    map.remove("message");
+    serde_json::Value::Object(map)
+}
+
 impl ClientError {
+    /// An API error without details.
+    pub fn api(status: u16, code: impl Into<String>, message: impl Into<String>) -> Self {
+        ClientError::Api {
+            status,
+            code: code.into(),
+            message: message.into(),
+            details: serde_json::json!({}),
+        }
+    }
+
+    /// HTTP status of an API error.
+    pub fn api_status(&self) -> Option<u16> {
+        match self {
+            ClientError::Api { status, .. } => Some(*status),
+            _ => None,
+        }
+    }
+
+    /// Extra fields of an API error (see [`ClientError::Api`]).
+    pub fn api_details(&self) -> Option<&serde_json::Value> {
+        match self {
+            ClientError::Api { details, .. } => Some(details),
+            _ => None,
+        }
+    }
+
     /// The server's error code, if any.
     pub fn api_code(&self) -> Option<&str> {
         match self {

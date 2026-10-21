@@ -27,6 +27,10 @@ pub struct ConnectOptions {
     pub connect_timeout: Duration,
     /// Try the keys of the local SSH agent (`SSH_AUTH_SOCK`, Pageant...).
     pub use_agent: bool,
+    /// Opens the first connection of hosts with a private network
+    /// (`settings.network_id`); without it they fail with
+    /// `network_unavailable` (see [`crate::net`]).
+    pub dialer: Option<crate::net::Dialer>,
 }
 
 impl ConnectOptions {
@@ -36,7 +40,14 @@ impl ConnectOptions {
             prompter: Arc::new(NoPrompter),
             connect_timeout: Duration::from_secs(15),
             use_agent: false,
+            dialer: None,
         }
+    }
+
+    /// Dialer for hosts with a private network.
+    pub fn with_dialer(mut self, dialer: Option<crate::net::Dialer>) -> Self {
+        self.dialer = dialer;
+        self
     }
 
     pub fn with_prompter(mut self, prompter: Arc<dyn AuthPrompter>) -> Self {
@@ -208,29 +219,20 @@ impl Connection {
                 )
             }));
         }
-        // Proxy for the first connection: the first jump host's or, if it has
-        // none, the final host's.
-        let proxy = hops[0].proxy.as_ref().or(target.proxy.as_ref());
+        // The first connection: through the network of the first jump host
+        // (or the host's), else its proxy, else TCP.
         let mut jumps: Vec<Arc<Connection>> = Vec::new();
         let last = hops.len() - 1;
         for (i, hop) in hops.into_iter().enumerate() {
             let mut conn = match jumps.last() {
                 None => {
-                    let tcp = match proxy {
-                        Some(p) => {
-                            crate::proxy::connect(
-                                p,
-                                &hop.host.address,
-                                hop.port,
-                                opts.connect_timeout,
-                            )
-                            .await?
-                        }
-                        None => {
-                            tcp_connect(&hop.host.address, hop.port, opts.connect_timeout).await?
-                        }
-                    };
-                    connect_stream(hop, opts, tcp).await?
+                    let stream = crate::net::open_first_hop(
+                        target,
+                        opts.dialer.as_ref(),
+                        opts.connect_timeout,
+                    )
+                    .await?;
+                    connect_stream(hop, opts, stream).await?
                 }
                 Some(prev) => {
                     let stream = prev

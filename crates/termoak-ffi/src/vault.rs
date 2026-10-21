@@ -529,6 +529,85 @@ impl TermoakCore {
     pub fn delete_memory(&self, id: String, account_id: Option<String>) -> Result<()> {
         self.delete::<cm::Memory>(&id, &account_id)
     }
+
+    // ----- Private networks (0.7) -----
+
+    /// Private networks of `filter` (never on This device). Show them only
+    /// for accounts whose server has the `networks` feature
+    /// (`AccountInfo.features`); others keep them but cannot use them.
+    #[uniffi::method(default(filter))]
+    pub fn list_networks(&self, filter: Option<ItemFilter>) -> Result<Vec<PrivateNetwork>> {
+        self.list_into::<cm::Network, PrivateNetwork>(filter)
+    }
+
+    #[uniffi::method(default(account_id))]
+    pub fn get_network(&self, id: String, account_id: Option<String>) -> Result<PrivateNetwork> {
+        Ok(self.get::<cm::Network>(&id, &account_id)?.into())
+    }
+
+    /// Creates (with an empty `id`) or updates a network in an account
+    /// vault. `secrets`: `nil` keeps the stored ones; otherwise they are
+    /// replaced (its `nil` fields are cleared). Fails with `Invalid` for
+    /// This device: only the server uses networks. The plan limit
+    /// (`max_networks`, 10 on Free) is checked by the server when it syncs
+    /// (the network comes back in `SyncReport.rejected` with `plan_limit`).
+    #[uniffi::method(default(secrets))]
+    pub fn save_network(
+        &self,
+        network: PrivateNetwork,
+        secrets: Option<NetworkSecrets>,
+    ) -> Result<PrivateNetwork> {
+        let target = self.target_of(&network.id, &network.account_id, &network.vault_id)?;
+        let id = parse_id_or_nil(&network.id)?;
+        let on_device = match target {
+            SaveTarget::Device => true,
+            SaveTarget::Account { .. } => false,
+            SaveTarget::Auto if id.is_nil() => self.ws.current().is_none(),
+            SaveTarget::Auto => block_on(self.ws.locate(id))
+                .map(|i| i.scope == Scope::Device)
+                .unwrap_or(false),
+        };
+        if on_device {
+            return Err(TermoakError::Invalid(
+                "private networks live in an account vault (sign in to an account)".into(),
+            ));
+        }
+        let data = network.into_core()?;
+        let secret = match secrets {
+            None => SecretUpdate::Keep,
+            Some(s) => {
+                let s: cm::NetworkSecret = s.into();
+                if s.private_key.is_none()
+                    && s.preshared_key.is_none()
+                    && s.auth_key.is_none()
+                    && s.api_token.is_none()
+                {
+                    SecretUpdate::Clear
+                } else {
+                    SecretUpdate::Set(s)
+                }
+            }
+        };
+        Ok(self
+            .save(target, data, secret, Some(cm::SyncMode::Synced))?
+            .into())
+    }
+
+    /// The secrets of a network (Editors; Use-only fails with
+    /// `SecretHidden`).
+    #[uniffi::method(default(account_id))]
+    pub fn network_secrets(
+        &self,
+        id: String,
+        account_id: Option<String>,
+    ) -> Result<NetworkSecrets> {
+        Ok(self.secret::<cm::Network>(&id, &account_id)?.into())
+    }
+
+    #[uniffi::method(default(account_id))]
+    pub fn delete_network(&self, id: String, account_id: Option<String>) -> Result<()> {
+        self.delete::<cm::Network>(&id, &account_id)
+    }
 }
 
 async fn save_key_material(

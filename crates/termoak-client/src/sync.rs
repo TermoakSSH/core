@@ -23,6 +23,31 @@ use crate::error::Result;
 
 const REV_KEY: &str = "sync.rev";
 
+/// Entity kinds the vault cursors of this store cover (beyond the legacy
+/// ones every server sends). Servers only send newer kinds (networks) to
+/// clients that declare them; a store whose cursors were advanced without
+/// a kind downloads everything again once, to get the items it was not
+/// sent.
+const KINDS_KEY: &str = "sync.kinds";
+
+/// The kinds this core declares in sync v2 (`kinds`).
+pub fn known_kinds() -> Vec<String> {
+    EntityKind::ALL
+        .iter()
+        .map(|k| k.as_str().to_string())
+        .collect()
+}
+
+/// The non-legacy kinds, as stored in [`KINDS_KEY`].
+fn extra_kinds() -> String {
+    EntityKind::ALL
+        .iter()
+        .filter(|k| !k.is_legacy())
+        .map(|k| k.as_str())
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
 /// Most rounds of a single sync (paging with `more`).
 const MAX_ROUNDS: usize = 1000;
 
@@ -45,6 +70,10 @@ pub struct SyncV2Request {
     pub changes: Vec<SyncRecord>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
+    /// The entity kinds this client understands ([`known_kinds`]). Servers
+    /// leave out the others; without it they send only the legacy kinds.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<String>,
 }
 
 /// An item left a vault (moved, or the vault lost it).
@@ -251,6 +280,19 @@ impl SyncEngine {
         self.store
             .adopt_personal_vault(personal, legacy_cursor)
             .await?;
+        // Cursors advanced while this store did not ask for the newer kinds
+        // (an older core, or a legacy server): start over once.
+        let kinds = extra_kinds();
+        if self.store.meta_get(KINDS_KEY).await?.as_deref() != Some(kinds.as_str()) {
+            if !fresh {
+                tracing::info!(
+                    kinds,
+                    "sync: new entity kinds, downloading everything again"
+                );
+                self.reset_cursors().await?;
+            }
+            self.store.meta_set(KINDS_KEY, &kinds).await?;
+        }
         let mut report = SyncReport {
             protocol: "v2",
             ..Default::default()
@@ -282,6 +324,7 @@ impl SyncEngine {
                     vaults,
                     changes,
                     limit: None,
+                    kinds: known_kinds(),
                 })
                 .await?;
             report.pushed += pushed.len();
@@ -347,6 +390,10 @@ impl SyncEngine {
     /// everything is downloaded again.
     pub async fn reset(&self) -> Result<()> {
         self.store.meta_set(REV_KEY, "0").await?;
+        self.reset_cursors().await
+    }
+
+    async fn reset_cursors(&self) -> Result<()> {
         self.store
             .call(|c, _| {
                 c.execute("UPDATE vault_sync SET cursor = 0", [])?;

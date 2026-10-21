@@ -152,6 +152,12 @@ pub struct HostSettings {
     /// chain). The password is set separately: `setHostProxyPassword`.
     #[uniffi(default)]
     pub proxy: Option<HostProxy>,
+    /// Private network ([`PrivateNetwork`] of the same vault) the first
+    /// connection goes through (0.7); `nil`: direct (or inherited). It
+    /// takes precedence over `proxy`. Editors must start from the loaded
+    /// settings (copy them) so it is kept when they do not show it.
+    #[uniffi(default)]
+    pub network_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, uniffi::Enum)]
@@ -221,6 +227,7 @@ impl From<cm::HostSettings> for HostSettings {
             theme: s.theme,
             record_sessions: s.record_sessions,
             proxy: s.proxy.map(Into::into),
+            network_id: s.network_id.map(|i| i.to_string()),
         }
     }
 }
@@ -249,6 +256,7 @@ impl TryFrom<HostSettings> for cm::HostSettings {
                 .filter(|p| !p.host.trim().is_empty())
                 .map(TryInto::try_into)
                 .transpose()?,
+            network_id: parse_opt_id(&s.network_id)?,
         })
     }
 }
@@ -957,6 +965,259 @@ impl AiMemory {
 // Secrets
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Private networks (0.7)
+// ---------------------------------------------------------------------------
+
+/// A WireGuard peer (the other end of the tunnel).
+#[derive(Debug, Clone, Default, PartialEq, uniffi::Record)]
+pub struct WireguardPeer {
+    /// The peer's public key (base64).
+    pub public_key: String,
+    /// `host:port` of the peer.
+    #[uniffi(default)]
+    pub endpoint: Option<String>,
+    /// Networks reached through the peer (`10.0.0.0/24`...).
+    #[uniffi(default)]
+    pub allowed_ips: Vec<String>,
+    /// Seconds between keep-alives (`nil` or 0: off).
+    #[uniffi(default)]
+    pub persistent_keepalive: Option<u32>,
+}
+
+/// WireGuard settings (a `.conf` without its keys; the private and
+/// preshared keys are [`NetworkSecrets`]).
+#[derive(Debug, Clone, Default, PartialEq, uniffi::Record)]
+pub struct WireguardSettings {
+    /// Addresses of the server's end (`10.0.0.2/32`...).
+    #[uniffi(default)]
+    pub addresses: Vec<String>,
+    #[uniffi(default)]
+    pub dns: Vec<String>,
+    #[uniffi(default)]
+    pub mtu: Option<u32>,
+    #[uniffi(default)]
+    pub peers: Vec<WireguardPeer>,
+    /// The server's public key (to add it as a peer on the other side).
+    #[uniffi(default)]
+    pub public_key: Option<String>,
+}
+
+/// Tailscale or Headscale settings (the auth key is [`NetworkSecrets`]).
+#[derive(Debug, Clone, Default, PartialEq, uniffi::Record)]
+pub struct TailscaleSettings {
+    /// `nil`: Tailscale; the Headscale URL otherwise.
+    #[uniffi(default)]
+    pub control_url: Option<String>,
+    /// Name of the server's node (default `termoak-<id>`).
+    #[uniffi(default)]
+    pub hostname: Option<String>,
+    /// ACL tags (default `tag:termoak`).
+    #[uniffi(default)]
+    pub tags: Vec<String>,
+}
+
+/// ZeroTier settings (the Central API token is [`NetworkSecrets`]).
+#[derive(Debug, Clone, Default, PartialEq, uniffi::Record)]
+pub struct ZerotierSettings {
+    /// Network id (16 hex digits).
+    pub network_id: String,
+    /// Self-hosted controller API (default ZeroTier Central).
+    #[uniffi(default)]
+    pub central_url: Option<String>,
+}
+
+/// Secrets of a network (stored encrypted, like passwords). `nil` fields
+/// are cleared on save.
+#[derive(Clone, Default, PartialEq, uniffi::Record)]
+pub struct NetworkSecrets {
+    /// WireGuard: the server's private key (base64).
+    #[uniffi(default)]
+    pub private_key: Option<String>,
+    /// WireGuard: preshared key (base64).
+    #[uniffi(default)]
+    pub preshared_key: Option<String>,
+    /// Tailscale/Headscale: auth key.
+    #[uniffi(default)]
+    pub auth_key: Option<String>,
+    /// ZeroTier: Central API token.
+    #[uniffi(default)]
+    pub api_token: Option<String>,
+}
+
+impl std::fmt::Debug for NetworkSecrets {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NetworkSecrets(..)")
+    }
+}
+
+impl From<cm::NetworkSecret> for NetworkSecrets {
+    fn from(s: cm::NetworkSecret) -> Self {
+        Self {
+            private_key: s.private_key.clone(),
+            preshared_key: s.preshared_key.clone(),
+            auth_key: s.auth_key.clone(),
+            api_token: s.api_token.clone(),
+        }
+    }
+}
+
+impl From<NetworkSecrets> for cm::NetworkSecret {
+    fn from(s: NetworkSecrets) -> Self {
+        let keep = |v: Option<String>| v.filter(|v| !v.trim().is_empty());
+        Self {
+            private_key: keep(s.private_key),
+            preshared_key: keep(s.preshared_key),
+            auth_key: keep(s.auth_key),
+            api_token: keep(s.api_token),
+        }
+    }
+}
+
+/// A private network (WireGuard, Tailscale/Headscale or ZeroTier) of an
+/// account vault. Only the server joins it (when it has `termoak-netd`:
+/// account feature `networks`); hosts and groups pick it with
+/// `HostSettings.network_id`, and the app reaches them through the server
+/// relay. Only the section of its `kind` matters.
+#[derive(Debug, Clone, Default, PartialEq, uniffi::Record)]
+pub struct PrivateNetwork {
+    /// Empty when creating.
+    #[uniffi(default)]
+    pub id: String,
+    pub name: String,
+    /// `wireguard`, `tailscale` (also Headscale) or `zerotier` (a later
+    /// app's kind comes as it is and must be kept).
+    pub kind: String,
+    #[uniffi(default)]
+    pub description: String,
+    #[uniffi(default)]
+    pub wireguard: Option<WireguardSettings>,
+    #[uniffi(default)]
+    pub tailscale: Option<TailscaleSettings>,
+    #[uniffi(default)]
+    pub zerotier: Option<ZerotierSettings>,
+    /// Read-only: some secret is stored.
+    #[uniffi(default)]
+    pub has_secrets: bool,
+    /// Read-only: last modification (ms since 1970).
+    #[uniffi(default)]
+    pub updated_at: i64,
+    /// Account of the network (on save, the account for a new one;
+    /// default: the current account). Networks never live on This device.
+    #[uniffi(default)]
+    pub account_id: Option<String>,
+    /// Vault of the network (on save, the vault for a new one; default: the
+    /// personal vault).
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Read-only: what you can do with it.
+    #[uniffi(default)]
+    pub access: Option<ItemAccess>,
+    /// Read-only: secrets exist but you cannot see them (Use-only vault).
+    #[uniffi(default)]
+    pub secret_hidden: bool,
+}
+
+impl From<Record<cm::Network>> for PrivateNetwork {
+    fn from(r: Record<cm::Network>) -> Self {
+        let n = r.data;
+        Self {
+            id: n.id.to_string(),
+            name: n.name,
+            kind: n.kind.as_str().to_string(),
+            description: n.description,
+            wireguard: n.wireguard.map(|w| WireguardSettings {
+                addresses: w.addresses,
+                dns: w.dns,
+                mtu: w.mtu.map(u32::from),
+                peers: w
+                    .peers
+                    .into_iter()
+                    .map(|p| WireguardPeer {
+                        public_key: p.public_key,
+                        endpoint: p.endpoint,
+                        allowed_ips: p.allowed_ips,
+                        persistent_keepalive: p.persistent_keepalive.map(u32::from),
+                    })
+                    .collect(),
+                public_key: w.public_key,
+            }),
+            tailscale: n.tailscale.map(|t| TailscaleSettings {
+                control_url: t.control_url,
+                hostname: t.hostname,
+                tags: t.tags,
+            }),
+            zerotier: n.zerotier.map(|z| ZerotierSettings {
+                network_id: z.network_id,
+                central_url: z.central_url,
+            }),
+            has_secrets: r.meta.has_secret,
+            updated_at: r.meta.updated_at,
+            account_id: None,
+            vault_id: r.meta.vault_id.map(|v| v.to_string()),
+            access: None,
+            secret_hidden: r.meta.secret_hidden,
+        }
+    }
+}
+
+impl PrivateNetwork {
+    pub(crate) fn into_core(self) -> Result<cm::Network> {
+        let small = |v: Option<u32>, field: &str| -> Result<Option<u16>> {
+            v.map(|v| {
+                u16::try_from(v).map_err(|_| TermoakError::Invalid(format!("invalid {field}")))
+            })
+            .transpose()
+        };
+        let trim = |v: Vec<String>| -> Vec<String> {
+            v.into_iter()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        };
+        let opt = |v: Option<String>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+        Ok(cm::Network {
+            id: parse_id_or_nil(&self.id)?,
+            name: self.name.trim().to_string(),
+            kind: cm::NetworkKind::parse(&self.kind),
+            description: self.description,
+            wireguard: match self.wireguard {
+                Some(w) => Some(cm::WireguardConfig {
+                    addresses: trim(w.addresses),
+                    dns: trim(w.dns),
+                    mtu: small(w.mtu, "MTU")?,
+                    peers: w
+                        .peers
+                        .into_iter()
+                        .map(|p| {
+                            Ok(cm::WireguardPeer {
+                                public_key: p.public_key.trim().to_string(),
+                                endpoint: opt(p.endpoint),
+                                allowed_ips: trim(p.allowed_ips),
+                                persistent_keepalive: small(
+                                    p.persistent_keepalive,
+                                    "persistent keep-alive",
+                                )?,
+                            })
+                        })
+                        .collect::<Result<Vec<_>>>()?,
+                    public_key: opt(w.public_key),
+                }),
+                None => None,
+            },
+            tailscale: self.tailscale.map(|t| cm::TailscaleConfig {
+                control_url: opt(t.control_url),
+                hostname: opt(t.hostname),
+                tags: trim(t.tags),
+            }),
+            zerotier: self.zerotier.map(|z| cm::ZerotierConfig {
+                network_id: z.network_id.trim().to_ascii_lowercase(),
+                central_url: opt(z.central_url),
+            }),
+        })
+    }
+}
+
 /// Translates a password [`SecretChange`] into the core's `SecretUpdate`.
 pub(crate) fn password_update<S, F>(change: SecretChange, make: F) -> SecretUpdate<S>
 where
@@ -1024,4 +1285,5 @@ scoped_record!(
     cm::PortForward => PortForward,
     cm::KnownHost => KnownHost,
     cm::Memory => AiMemory,
+    cm::Network => PrivateNetwork,
 );

@@ -96,6 +96,15 @@ pub mod codes {
     pub const NOT_TEAM_MEMBER: &str = "not_team_member";
     /// Managing the vault needs the manager role.
     pub const VAULT_MANAGER_ONLY: &str = "vault_manager_only";
+    /// A host (or its group) uses a private network that is not in its
+    /// vault (deleted, or never synced).
+    pub const NETWORK_NOT_FOUND: &str = "network_not_found";
+    /// Private networks are not available here: the server has no
+    /// `termoak-netd` (or it is down), the account's server does not
+    /// support them, or the host is not in an account vault.
+    pub const NETWORK_UNAVAILABLE: &str = "network_unavailable";
+    /// The network could not reach the host (`termoak-netd` dial failed).
+    pub const NETWORK_DIAL_FAILED: &str = "network_dial_failed";
 }
 
 pub type Result<T, E = CoreError> = std::result::Result<T, E>;
