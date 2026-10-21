@@ -622,6 +622,12 @@ impl Workspace {
             dry_run: req.dry_run,
             force: req.force,
         };
+        // Private networks live in account vaults only.
+        if req.to == Scope::Device && treq.items.iter().any(|i| i.kind == EntityKind::Network) {
+            return Err(ClientError::Invalid(
+                "private networks live in your account: they cannot be moved to this device".into(),
+            ));
+        }
         match (from, req.to) {
             (Scope::Device, Scope::Device) => Err(ClientError::Invalid(
                 "the items are already on this device".into(),
@@ -709,13 +715,18 @@ impl Workspace {
             },
             ..treq.clone()
         };
-        let plan = transfer::plan(
+        let mut plan = transfer::plan(
             &plan_req,
             plan_target,
             &universe,
             &target_items,
             &mut new_id,
         )?;
+        // This device cannot hold networks: they stay in the account and
+        // the hosts and groups that go there lose `network_id`.
+        if req.to == Scope::Device {
+            plan.without_networks();
+        }
         let removed: Vec<Id> = if cross_account && treq.mode == TransferMode::Move {
             transfer::plan(&treq, plan_target, &universe, &target_items, &mut new_id)?
                 .moves

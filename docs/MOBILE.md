@@ -257,7 +257,10 @@ Conventions:
   and `HostSettings.networkId` (inherited from groups). Show them only when
   the account's `features.networks` is true. `connect` reaches those hosts
   through the server relay; without it: `NetworkUnavailable`. Editors must
-  copy the loaded `HostSettings` so `networkId` is kept. See
+  copy the loaded `HostSettings` so `networkId` is kept. Moving or copying
+  a host or group to This device clears its `networkId` (reported in
+  `detached`; the network stays in the account) and a network cannot be
+  moved there (`Invalid`). See
   `docs-next/NETWORKS.md` (server repo: `docs/NETWORKS.md`).
 
 ## Swift

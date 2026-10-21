@@ -19,6 +19,10 @@
 //! 4. Explicitly moving a key or identity that remaining items still use
 //!    fails with `still_referenced`, unless `force`, which detaches those
 //!    references.
+//! 5. **Private networks** are a dependency (`settings.network_id`) between
+//!    vaults. A client's This device cannot hold them: there
+//!    [`Plan::without_networks`] leaves them in the account and clears
+//!    `network_id` (`detached`).
 
 use std::collections::{HashMap, HashSet};
 
@@ -182,6 +186,33 @@ impl Plan {
             warnings: self.warnings.clone(),
             rev: 0,
             dry_run,
+        }
+    }
+
+    /// For a target that cannot hold private networks (a client's This
+    /// device): the networks the plan would move or copy as dependencies
+    /// stay where they are, and the items that move or copy lose their
+    /// `settings.network_id` (reported in `detached`).
+    pub fn without_networks(&mut self) {
+        self.moves.retain(|m| m.kind != EntityKind::Network);
+        self.copies.retain(|c| c.kind != EntityKind::Network);
+        let detached = &mut self.detached;
+        let mut detach = |kind: EntityKind, id: Id, data: &mut Value| {
+            for (field, rid) in references(kind, data) {
+                if field == "settings.network_id" && detach_ref(data, field, rid) {
+                    detached.push(DetachedRef {
+                        kind,
+                        id,
+                        field: field.into(),
+                    });
+                }
+            }
+        };
+        for m in &mut self.moves {
+            detach(m.kind, m.id, &mut m.data);
+        }
+        for c in &mut self.copies {
+            detach(c.kind, c.from, &mut c.data);
         }
     }
 }
@@ -838,6 +869,64 @@ mod tests {
             .find(|(_, id, _)| *id == f.other)
             .unwrap();
         assert!(other["settings"]["key_id"].is_null());
+    }
+
+    #[test]
+    fn without_networks_keeps_networks_and_detaches_hosts() {
+        let vault = new_id();
+        let net = new_id();
+        let group = new_id();
+        let host = new_id();
+        let universe = vec![
+            item(
+                EntityKind::Network,
+                vault,
+                json!({"id": net, "name": "Office", "kind": "wireguard"}),
+            ),
+            item(
+                EntityKind::Group,
+                vault,
+                json!({"id": group, "name": "lan", "settings": {"network_id": net}}),
+            ),
+            item(
+                EntityKind::Host,
+                vault,
+                json!({"id": host, "label": "nas", "address": "10.9.0.5", "group_id": group}),
+            ),
+        ];
+        let target = new_id();
+        for mode in [TransferMode::Move, TransferMode::Copy] {
+            let mut p = plan(
+                &req(mode, &[(EntityKind::Host, host)]),
+                target,
+                &universe,
+                &[],
+                &mut new_id,
+            )
+            .unwrap();
+            // The planner takes the network along (inherited from the group).
+            let all: Vec<EntityKind> = p
+                .moves
+                .iter()
+                .map(|m| m.kind)
+                .chain(p.copies.iter().map(|c| c.kind))
+                .collect();
+            assert!(all.contains(&EntityKind::Network), "{mode:?}");
+            p.without_networks();
+            assert!(p.moves.iter().all(|m| m.kind != EntityKind::Network));
+            assert!(p.copies.iter().all(|c| c.kind != EntityKind::Network));
+            let data = p
+                .moves
+                .iter()
+                .map(|m| &m.data)
+                .chain(p.copies.iter().map(|c| &c.data))
+                .find(|d| d["label"] == "nas")
+                .unwrap();
+            assert!(data["settings"]["network_id"].is_null(), "{mode:?}");
+            assert_eq!(p.detached.len(), 1);
+            assert_eq!(p.detached[0].field, "settings.network_id");
+            assert_eq!(p.detached[0].id, host);
+        }
     }
 
     #[test]

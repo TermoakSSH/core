@@ -733,6 +733,46 @@ fn private_networks_live_in_accounts_and_hosts_keep_their_network() {
         "network_unavailable"
     );
 
+    // This device cannot hold networks: a host moved there loses its
+    // network (the network stays in the account), and a network cannot be
+    // moved there.
+    let moved = block_on(core.transfer(
+        vec![ItemRef {
+            account_id: host.account_id.clone(),
+            id: host.id.clone(),
+        }],
+        None,
+        None,
+        TransferMode::Move,
+        false,
+    ))
+    .unwrap();
+    assert!(moved.moved.iter().all(|m| m.kind != "network"), "{moved:?}");
+    assert!(
+        moved
+            .detached
+            .iter()
+            .any(|d| d.field == "settings.network_id"),
+        "{moved:?}"
+    );
+    let local = core.get_host(host.id.clone(), None).unwrap();
+    assert!(local.account_id.is_none());
+    assert_eq!(local.settings.network_id, None);
+    assert_eq!(core.list_networks(None).unwrap().len(), 1);
+    assert!(matches!(
+        block_on(core.transfer(
+            vec![ItemRef {
+                account_id: saved.account_id.clone(),
+                id: saved.id.clone(),
+            }],
+            None,
+            None,
+            TransferMode::Move,
+            false,
+        )),
+        Err(TermoakError::Invalid(_))
+    ));
+
     core.delete_network(saved.id.clone(), None).unwrap();
     assert!(core.list_networks(None).unwrap().is_empty());
 
