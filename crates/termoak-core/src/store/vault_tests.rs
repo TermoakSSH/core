@@ -1095,3 +1095,139 @@ fn network_validation_and_unknown_kinds() {
     assert!(EntityKind::Host.is_legacy() && !EntityKind::Network.is_legacy());
     assert_eq!(EntityKind::parse("network"), Some(EntityKind::Network));
 }
+
+#[test]
+fn tailscale_settings_are_validated() {
+    let net = |cfg: serde_json::Value| -> Network {
+        serde_json::from_value(json!({"name": "tail", "kind": "tailscale", "tailscale": cfg})).unwrap()
+    };
+    net(json!({})).validate().unwrap();
+    net(json!({"control_url": "https://hs.example.com:8443/", "hostname": "termoak-Office",
+               "tags": ["tag:termoak", "tag:prod_1"], "ephemeral": false}))
+    .validate()
+    .unwrap();
+    net(json!({"control_url": "", "hostname": " ", "tags": []})).validate().unwrap();
+    for bad in [
+        json!({"control_url": "ftp://x"}),
+        json!({"control_url": "https://"}),
+        json!({"control_url": "https://u:p@hs.example.com"}),
+        json!({"control_url": "https://hs.example.com/?x=1"}),
+        json!({"control_url": "https://hs example.com"}),
+        json!({"hostname": "-office"}),
+        json!({"hostname": "my office"}),
+        json!({"hostname": "a".repeat(64)}),
+        json!({"tags": ["termoak"]}),
+        json!({"tags": ["tag:"]}),
+        json!({"tags": ["tag:-x"]}),
+        json!({"tags": ["tag:a b"]}),
+        json!({"tags": (0..21).map(|i| format!("tag:t{i}")).collect::<Vec<_>>()}),
+    ] {
+        assert!(net(bad.clone()).validate().is_err(), "{bad}");
+    }
+    // `ephemeral` is always written (null when unset): its absence means an
+    // older core.
+    let v = serde_json::to_value(net(json!({}))).unwrap();
+    assert!(v["tailscale"].as_object().unwrap().contains_key("ephemeral"));
+
+    // The auth key: printable ASCII, never echoed in the error.
+    let n = net(json!({}));
+    let secret = |k: &str| NetworkSecret {
+        auth_key: Some(k.into()),
+        ..Default::default()
+    };
+    n.validate_secret(&secret("hskey-auth-abc_DEF-123")).unwrap();
+    n.validate_secret(&secret("tskey-client-k123-SECRET?ephemeral=true&preauthorized=true")).unwrap();
+    n.validate_secret(&NetworkSecret::default()).unwrap();
+    for bad in ["tskey-auth SECRET", "tskey-auth-\u{e9}SECRET", &"k".repeat(1025)] {
+        let err = n.validate_secret(&secret(bad)).unwrap_err().to_string();
+        assert!(!err.contains("SECRET"), "{err}");
+    }
+    // Other kinds do not look at it.
+    let wg = Network {
+        name: "wg".into(),
+        ..Default::default()
+    };
+    wg.validate_secret(&secret("not checked here")).unwrap();
+}
+
+#[tokio::test]
+async fn tailscale_networks_are_checked_on_save_and_push_and_old_cores_keep_ephemeral() {
+    let store = test_store();
+    let ana = user(&store, "ana@example.com").await;
+    let a = store.vault_access(ana).await.unwrap();
+    let mut net: Network = serde_json::from_value(json!({
+        "name": "tail", "kind": "tailscale",
+        "tailscale": {"control_url": "https://hs.example.com", "ephemeral": false}
+    }))
+    .unwrap();
+    let bad = NetworkSecret {
+        auth_key: Some("has space".into()),
+        ..Default::default()
+    };
+    assert!(matches!(
+        store
+            .save_in(&a, ana, net.clone(), SecretUpdate::Set(bad.clone()), None)
+            .await,
+        Err(CoreError::Invalid(_))
+    ));
+    let good = NetworkSecret {
+        auth_key: Some("hskey-auth-ok".into()),
+        ..Default::default()
+    };
+    let saved = store
+        .save_in(&a, ana, net.clone(), SecretUpdate::Set(good), None)
+        .await
+        .unwrap();
+    net.id = saved.data.id;
+    let push = |data: serde_json::Value, secret: Option<serde_json::Value>, at: i64| SyncRecord {
+        id: net.id,
+        kind: EntityKind::Network,
+        data,
+        secret,
+        sync_mode: SyncMode::Synced,
+        updated_at: at,
+        deleted: false,
+        rev: 0,
+        vault_id: None,
+        has_secret: None,
+        sealed: None,
+        base_rev: None,
+    };
+    // A pushed bad key or bad tags are rejected as invalid.
+    let data = serde_json::to_value(&net).unwrap();
+    let rep = store
+        .apply_remote_v2(&a, vec![push(data.clone(), Some(json!({"auth_key": "a b"})), now_plus())])
+        .await
+        .unwrap();
+    assert_eq!(rep.rejected.len(), 1);
+    assert_eq!(rep.rejected[0].code, "invalid");
+    let mut tagged = data.clone();
+    tagged["tailscale"]["tags"] = json!(["prod"]);
+    let rep = store
+        .apply_remote_v2(&a, vec![push(tagged, None, now_plus())])
+        .await
+        .unwrap();
+    assert_eq!(rep.rejected[0].code, "invalid");
+    // A core before 0.7.0-next.3 drops `ephemeral` when it renames the
+    // network: the stored value is kept.
+    let mut old = data.clone();
+    old["tailscale"].as_object_mut().unwrap().remove("ephemeral");
+    old["name"] = json!("tail (renamed)");
+    let rep = store
+        .apply_remote_v2(&a, vec![push(old, None, now_plus() + 1)])
+        .await
+        .unwrap();
+    assert!(rep.rejected.is_empty(), "{:?}", rep.rejected);
+    let got = store.get_in::<Network>(&a, net.id).await.unwrap();
+    assert_eq!(got.data.name, "tail (renamed)");
+    assert_eq!(got.data.tailscale.unwrap().ephemeral, Some(false));
+    // null clears it.
+    let mut cleared = data.clone();
+    cleared["tailscale"]["ephemeral"] = json!(null);
+    store
+        .apply_remote_v2(&a, vec![push(cleared, None, now_plus() + 2)])
+        .await
+        .unwrap();
+    let got = store.get_in::<Network>(&a, net.id).await.unwrap();
+    assert_eq!(got.data.tailscale.unwrap().ephemeral, None);
+}

@@ -217,12 +217,15 @@ pub fn references(kind: EntityKind, data: &Value) -> Vec<(&'static str, Id)> {
     out
 }
 
-/// Fields of an entity's JSON that cores before 0.7 drop when they edit it
+/// Fields of an entity's JSON that older cores drop when they edit it
 /// (they do not know them), as (object path, key): `settings.network_id` of
-/// hosts and groups. Newer cores always write them (`null` when empty).
+/// hosts and groups (cores before 0.7) and `tailscale.ephemeral` of
+/// networks (before 0.7.0-next.3). Newer cores always write them (`null`
+/// when empty).
 const OMITTABLE: &[(EntityKind, &str, &str)] = &[
     (EntityKind::Host, "settings", "network_id"),
     (EntityKind::Group, "settings", "network_id"),
+    (EntityKind::Network, "tailscale", "ephemeral"),
 ];
 
 /// Compatibility with apps on cores before 0.7: when `incoming` (a pushed
@@ -450,6 +453,9 @@ impl Store {
             data.set_id(new_id());
         }
         data.validate()?;
+        if let SecretUpdate::Set(sec) = &secret {
+            data.validate_secret(sec)?;
+        }
         let (rec, vault) = self
             .call_keys(move |c, keys| {
                 let tx = c.transaction()?;
@@ -825,6 +831,9 @@ impl Store {
             data.set_id(new_id());
         }
         data.validate()?;
+        if let SecretUpdate::Set(sec) = &secret {
+            data.validate_secret(sec)?;
+        }
         let access = access.clone();
         let actor = access.user;
         let rec = self
@@ -1554,8 +1563,9 @@ pub(super) fn validate_record(rec: &SyncRecord) -> Result<()> {
         if let Some(secret) = &rec.secret
             && !secret.is_null()
         {
-            serde_json::from_value::<T::Secret>(secret.clone())
+            let secret = serde_json::from_value::<T::Secret>(secret.clone())
                 .map_err(|e| CoreError::Invalid(format!("{} secret: {e}", T::KIND.as_str())))?;
+            data.validate_secret(&secret)?;
         }
         Ok(())
     }

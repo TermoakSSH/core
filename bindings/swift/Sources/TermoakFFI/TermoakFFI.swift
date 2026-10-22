@@ -22280,13 +22280,21 @@ public struct TailscaleSettings: Equatable, Hashable {
      */
     public var controlUrl: String?
     /**
-     * Name of the server's node (default `termoak-<id>`).
+     * Name of the server's node, a DNS label (default
+     * `termoak-<last 8 hex digits of the id>`).
      */
     public var hostname: String?
     /**
-     * ACL tags (default `tag:termoak`).
+     * ACL tags the node asks for (`tag:name`). Empty (recommended): the
+     * tags of its auth key (Headscale only takes those); `tag:termoak`
+     * with a Tailscale OAuth client secret.
      */
     public var tags: [String]
+    /**
+     * The node leaves the tailnet when it stops. `nil`: yes with an auth
+     * key, no without one.
+     */
+    public var ephemeral: Bool?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -22295,14 +22303,22 @@ public struct TailscaleSettings: Equatable, Hashable {
          * `nil`: Tailscale; the Headscale URL otherwise.
          */controlUrl: String? = nil, 
         /**
-         * Name of the server's node (default `termoak-<id>`).
+         * Name of the server's node, a DNS label (default
+         * `termoak-<last 8 hex digits of the id>`).
          */hostname: String? = nil, 
         /**
-         * ACL tags (default `tag:termoak`).
-         */tags: [String] = []) {
+         * ACL tags the node asks for (`tag:name`). Empty (recommended): the
+         * tags of its auth key (Headscale only takes those); `tag:termoak`
+         * with a Tailscale OAuth client secret.
+         */tags: [String] = [], 
+        /**
+         * The node leaves the tailnet when it stops. `nil`: yes with an auth
+         * key, no without one.
+         */ephemeral: Bool? = nil) {
         self.controlUrl = controlUrl
         self.hostname = hostname
         self.tags = tags
+        self.ephemeral = ephemeral
     }
 
     
@@ -22323,7 +22339,8 @@ public struct FfiConverterTypeTailscaleSettings: FfiConverterRustBuffer {
             try TailscaleSettings(
                 controlUrl: FfiConverterOptionString.read(from: &buf), 
                 hostname: FfiConverterOptionString.read(from: &buf), 
-                tags: FfiConverterSequenceString.read(from: &buf)
+                tags: FfiConverterSequenceString.read(from: &buf), 
+                ephemeral: FfiConverterOptionBool.read(from: &buf)
         )
     }
 
@@ -22331,6 +22348,7 @@ public struct FfiConverterTypeTailscaleSettings: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.controlUrl, into: &buf)
         FfiConverterOptionString.write(value.hostname, into: &buf)
         FfiConverterSequenceString.write(value.tags, into: &buf)
+        FfiConverterOptionBool.write(value.ephemeral, into: &buf)
     }
 }
 

@@ -29036,14 +29036,23 @@ data class TailscaleSettings (
     var `controlUrl`: kotlin.String? = null 
     , 
     /**
-     * Name of the server's node (default `termoak-<id>`).
+     * Name of the server's node, a DNS label (default
+     * `termoak-<last 8 hex digits of the id>`).
      */
     var `hostname`: kotlin.String? = null 
     , 
     /**
-     * ACL tags (default `tag:termoak`).
+     * ACL tags the node asks for (`tag:name`). Empty (recommended): the
+     * tags of its auth key (Headscale only takes those); `tag:termoak`
+     * with a Tailscale OAuth client secret.
      */
     var `tags`: List<kotlin.String> = listOf() 
+    , 
+    /**
+     * The node leaves the tailnet when it stops. `nil`: yes with an auth
+     * key, no without one.
+     */
+    var `ephemeral`: kotlin.Boolean? = null 
     
 ){
     
@@ -29063,19 +29072,22 @@ public object FfiConverterTypeTailscaleSettings: FfiConverterRustBuffer<Tailscal
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalBoolean.read(buf),
         )
     }
 
     override fun allocationSize(value: TailscaleSettings) = (
             FfiConverterOptionalString.allocationSize(value.`controlUrl`) +
             FfiConverterOptionalString.allocationSize(value.`hostname`) +
-            FfiConverterSequenceString.allocationSize(value.`tags`)
+            FfiConverterSequenceString.allocationSize(value.`tags`) +
+            FfiConverterOptionalBoolean.allocationSize(value.`ephemeral`)
     )
 
     override fun write(value: TailscaleSettings, buf: ByteBuffer) {
             FfiConverterOptionalString.write(value.`controlUrl`, buf)
             FfiConverterOptionalString.write(value.`hostname`, buf)
             FfiConverterSequenceString.write(value.`tags`, buf)
+            FfiConverterOptionalBoolean.write(value.`ephemeral`, buf)
     }
 }
 

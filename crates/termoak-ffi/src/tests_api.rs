@@ -686,6 +686,49 @@ fn private_networks_live_in_accounts_and_hosts_keep_their_network() {
     let renamed = core.save_network(renamed, None).unwrap();
     assert!(renamed.has_secrets);
 
+    // Tailscale/Headscale: settings round trip (ephemeral included), bad
+    // tags and bad auth keys are refused without echoing the key.
+    let tail = PrivateNetwork {
+        name: "Tailnet".into(),
+        kind: "tailscale".into(),
+        tailscale: Some(TailscaleSettings {
+            control_url: Some("https://hs.example.com".into()),
+            hostname: Some("termoak-office".into()),
+            tags: vec![" tag:termoak ".into()],
+            ephemeral: Some(false),
+        }),
+        ..Default::default()
+    };
+    let saved_tail = core
+        .save_network(
+            tail.clone(),
+            Some(NetworkSecrets {
+                auth_key: Some("hskey-auth-ok".into()),
+                ..Default::default()
+            }),
+        )
+        .unwrap();
+    let ts = saved_tail.tailscale.clone().unwrap();
+    assert_eq!(ts.ephemeral, Some(false));
+    assert_eq!(ts.tags, vec!["tag:termoak".to_string()]);
+    let mut bad_tags = tail.clone();
+    bad_tags.tailscale.as_mut().unwrap().tags = vec!["termoak".into()];
+    assert!(matches!(
+        core.save_network(bad_tags, None),
+        Err(TermoakError::Invalid(_))
+    ));
+    match core.save_network(
+        tail,
+        Some(NetworkSecrets {
+            auth_key: Some("hskey SECRET".into()),
+            ..Default::default()
+        }),
+    ) {
+        Err(TermoakError::Invalid(m)) => assert!(!m.contains("SECRET"), "{m}"),
+        other => panic!("{other:?}"),
+    }
+    core.delete_network(saved_tail.id.clone(), None).unwrap();
+
     // A host in the same account with the network.
     let host = core
         .save_host(

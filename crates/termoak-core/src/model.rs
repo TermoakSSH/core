@@ -136,6 +136,12 @@ pub trait Entity: Serialize + DeserializeOwned + Clone + Send + Sync + 'static {
     fn validate(&self) -> Result<()> {
         Ok(())
     }
+
+    /// Validation of a secret saved with the entity (its shape, never
+    /// echoing it). Checked on saves and on pushed sync records.
+    fn validate_secret(&self, _secret: &Self::Secret) -> Result<()> {
+        Ok(())
+    }
 }
 
 /// Empty secret for entities that have none.
@@ -886,10 +892,106 @@ pub struct WireguardConfig {
 pub struct TailscaleConfig {
     /// Control server: `None` for Tailscale, the Headscale URL otherwise.
     pub control_url: Option<String>,
-    /// Name of the server's node in the tailnet (default: `termoak-<id>`).
+    /// Name of the server's node in the tailnet (a DNS label; default:
+    /// `termoak-<last 8 hex digits of the id>`).
     pub hostname: Option<String>,
-    /// ACL tags the node asks for (default: `tag:termoak`).
+    /// ACL tags the node asks for (`tag:name`). Empty (recommended): the
+    /// node gets the tags of its auth key (create it tagged, e.g.
+    /// `tag:termoak`); Headscale only takes the key's tags. With a
+    /// Tailscale OAuth client secret: `tag:termoak` when empty.
     pub tags: Vec<String>,
+    /// The node leaves the tailnet when it stops (idle, restart). `None`:
+    /// yes with an auth key, no without one (a login by hand is kept).
+    /// Always written (`null` when unset), so its absence means an older
+    /// core edited the network (the stored value is kept).
+    pub ephemeral: Option<bool>,
+}
+
+impl TailscaleConfig {
+    /// Most tags a node may ask for.
+    pub const MAX_TAGS: usize = 20;
+
+    /// Checks the control URL, the hostname and the tags.
+    pub fn validate(&self) -> Result<()> {
+        if let Some(url) = self.control_url.as_deref().map(str::trim)
+            && !url.is_empty()
+        {
+            valid_control_url(url)?;
+        }
+        if let Some(h) = self.hostname.as_deref().map(str::trim)
+            && !h.is_empty()
+        {
+            let ok = h.len() <= 63
+                && h.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+                && !h.starts_with('-')
+                && !h.ends_with('-');
+            if !ok {
+                return Err(CoreError::Invalid(
+                    "the Tailscale hostname is a DNS label: letters, digits and dashes, up to 63 (like termoak-office)".into(),
+                ));
+            }
+        }
+        if self.tags.len() > Self::MAX_TAGS {
+            return Err(CoreError::Invalid(format!(
+                "a node can ask for at most {} tags",
+                Self::MAX_TAGS
+            )));
+        }
+        for t in &self.tags {
+            let name = t.trim().strip_prefix("tag:").unwrap_or("");
+            let ok = !name.is_empty()
+                && name.len() <= 63
+                && name.chars().next().is_some_and(|c| c.is_ascii_alphanumeric())
+                && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+            if !ok {
+                return Err(CoreError::Invalid(format!(
+                    "invalid tag \"{}\": tags look like tag:termoak (letters, digits, - and _)",
+                    t.trim()
+                )));
+            }
+        }
+        Ok(())
+    }
+}
+
+/// A control server URL: http(s)://host[:port][/path], no user, query or
+/// fragment.
+fn valid_control_url(url: &str) -> Result<()> {
+    let bad = || {
+        CoreError::Invalid(
+            "the control URL must be like https://headscale.example.com (http or https, no user, query or fragment)".into(),
+        )
+    };
+    let rest = url
+        .strip_prefix("https://")
+        .or_else(|| url.strip_prefix("http://"))
+        .ok_or_else(bad)?;
+    let authority = rest.split('/').next().unwrap_or("");
+    if authority.is_empty()
+        || authority.contains('@')
+        || url.contains('?')
+        || url.contains('#')
+        || url.chars().any(|c| c.is_whitespace() || c.is_control())
+    {
+        return Err(bad());
+    }
+    Ok(())
+}
+
+/// Checks the shape of a Tailscale/Headscale auth key (pre-auth key or
+/// OAuth client secret): printable ASCII without spaces, at most 1024
+/// characters. The key is never part of the error.
+pub fn validate_tailscale_auth_key(key: &str) -> Result<()> {
+    let key = key.trim();
+    if key.len() > 1024 {
+        return Err(CoreError::Invalid("the Tailscale auth key is too long".into()));
+    }
+    if key.chars().any(|c| !c.is_ascii_graphic()) {
+        return Err(CoreError::Invalid(
+            "the Tailscale auth key has spaces or characters that are not printable ASCII".into(),
+        ));
+    }
+    Ok(())
 }
 
 /// Non-secret part of a ZeroTier network. The Central API token, if any, is
@@ -1001,13 +1103,8 @@ impl Entity for Network {
                 }
             }
             NetworkKind::Tailscale => {
-                if let Some(url) = self.tailscale.as_ref().and_then(|t| t.control_url.as_ref())
-                    && !url.trim().is_empty()
-                    && !(url.starts_with("https://") || url.starts_with("http://"))
-                {
-                    return Err(CoreError::Invalid(
-                        "the control URL must start with https:// or http://".into(),
-                    ));
+                if let Some(ts) = &self.tailscale {
+                    ts.validate()?;
                 }
             }
             NetworkKind::Zerotier => {
@@ -1023,6 +1120,15 @@ impl Entity for Network {
                 }
             }
             NetworkKind::Other(_) => {}
+        }
+        Ok(())
+    }
+
+    fn validate_secret(&self, secret: &NetworkSecret) -> Result<()> {
+        if self.kind == NetworkKind::Tailscale
+            && let Some(key) = secret.auth_key.as_deref()
+        {
+            validate_tailscale_auth_key(key)?;
         }
         Ok(())
     }

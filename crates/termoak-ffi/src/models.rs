@@ -1009,12 +1009,19 @@ pub struct TailscaleSettings {
     /// `nil`: Tailscale; the Headscale URL otherwise.
     #[uniffi(default)]
     pub control_url: Option<String>,
-    /// Name of the server's node (default `termoak-<id>`).
+    /// Name of the server's node, a DNS label (default
+    /// `termoak-<last 8 hex digits of the id>`).
     #[uniffi(default)]
     pub hostname: Option<String>,
-    /// ACL tags (default `tag:termoak`).
+    /// ACL tags the node asks for (`tag:name`). Empty (recommended): the
+    /// tags of its auth key (Headscale only takes those); `tag:termoak`
+    /// with a Tailscale OAuth client secret.
     #[uniffi(default)]
     pub tags: Vec<String>,
+    /// The node leaves the tailnet when it stops. `nil`: yes with an auth
+    /// key, no without one.
+    #[uniffi(default)]
+    pub ephemeral: Option<bool>,
 }
 
 /// ZeroTier settings (the Central API token is [`NetworkSecrets`]).
@@ -1146,6 +1153,7 @@ impl From<Record<cm::Network>> for PrivateNetwork {
                 control_url: t.control_url,
                 hostname: t.hostname,
                 tags: t.tags,
+                ephemeral: t.ephemeral,
             }),
             zerotier: n.zerotier.map(|z| ZerotierSettings {
                 network_id: z.network_id,
@@ -1209,6 +1217,7 @@ impl PrivateNetwork {
                 control_url: opt(t.control_url),
                 hostname: opt(t.hostname),
                 tags: trim(t.tags),
+                ephemeral: t.ephemeral,
             }),
             zerotier: self.zerotier.map(|z| cm::ZerotierConfig {
                 network_id: z.network_id.trim().to_ascii_lowercase(),
