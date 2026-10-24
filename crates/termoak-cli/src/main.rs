@@ -1113,6 +1113,7 @@ async fn save_key(
             comment: m.comment.clone(),
             has_passphrase: m.encrypted,
             certificate: None,
+            security_key: None,
         },
         SecretUpdate::Set(SshKeySecret {
             private_key: Some(m.private_openssh.clone()),
@@ -1181,18 +1182,39 @@ async fn snippets(ws: &Workspace, cmd: SnippetsCmd, json: bool) -> Result<()> {
                 let (k, val) = v.split_once('=').context("use --var name=value")?;
                 values.insert(k.to_string(), val.to_string());
             }
-            for var in s.variables() {
-                if !values.contains_key(&var) {
-                    values.insert(var.clone(), prompt::ask_line(&format!("{var}: "))?);
+            // Prompts are asked once; each host gets its own built-ins
+            // ({{host}}, {{user}}...).
+            let template = s.template();
+            template.check()?;
+            let with_host = termoak_core::template::TemplateContext {
+                host: Some(String::new()),
+                ..Default::default()
+            };
+            for var in template.prompts(&with_host) {
+                if !values.contains_key(&var.key) {
+                    let shown = match &var.default {
+                        Some(d) => format!("{} [{d}]: ", var.label),
+                        None => format!("{}: ", var.label),
+                    };
+                    let answer = if var.kind == termoak_core::template::VarKind::Secret {
+                        rpassword::prompt_password(&shown)?
+                    } else {
+                        prompt::ask_line(&shown)?
+                    };
+                    if !answer.is_empty() || var.default.is_none() {
+                        values.insert(var.key.clone(), answer);
+                    }
                 }
             }
-            let script = s.render(&values)?;
             let targets = data::find_hosts(ws, &hosts).await?;
             let results = futures::future::join_all(targets.into_iter().map(|h| {
                 let ws = ws.clone();
-                let script = script.clone();
+                let template = template.clone();
+                let values = values.clone();
                 async move {
                     let r = async {
+                        let ctx = ws.snippet_context(h.id).await?;
+                        let script = template.render(&values, &ctx)?;
                         let conn = ws
                             .connect(h.id, Arc::new(prompt::NoInteractive), false)
                             .await?;

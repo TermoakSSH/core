@@ -31,6 +31,14 @@ pub struct ConnectOptions {
     /// (`settings.network_id`); without it they fail with
     /// `network_unavailable` (see [`crate::net`]).
     pub dialer: Option<crate::net::Dialer>,
+    /// Signs with FIDO2 security keys (sk keys). Without it, a host whose
+    /// key is a security key fails with `security_key_required`.
+    pub security_key: Option<Arc<dyn crate::sk::SecurityKeySigner>>,
+    /// What the connection is for (shown with security key requests:
+    /// `connect`, `server_session`, `test`, `exec`, `sftp`, `ai`...).
+    pub purpose: String,
+    /// Server session id (shown with security key requests).
+    pub session_id: Option<String>,
 }
 
 impl ConnectOptions {
@@ -41,7 +49,26 @@ impl ConnectOptions {
             connect_timeout: Duration::from_secs(15),
             use_agent: false,
             dialer: None,
+            security_key: None,
+            purpose: "connect".into(),
+            session_id: None,
         }
+    }
+
+    /// Signer for security keys (sk keys).
+    pub fn with_security_key(
+        mut self,
+        signer: Option<Arc<dyn crate::sk::SecurityKeySigner>>,
+    ) -> Self {
+        self.security_key = signer;
+        self
+    }
+
+    /// What the connection is for (and its server session, if any).
+    pub fn with_purpose(mut self, purpose: &str, session_id: Option<String>) -> Self {
+        self.purpose = purpose.to_string();
+        self.session_id = session_id;
+        self
     }
 
     /// Dialer for hosts with a private network.
@@ -419,7 +446,27 @@ async fn authenticate(
     let host = hop.host.address.clone();
     let mut reasons: Vec<String> = Vec::new();
 
-    if let Some(key) = &hop.key {
+    let mut sk_error: Option<crate::sk::SkError> = None;
+    if let Some(key) = &hop.key
+        && crate::sk::is_security_key(&key.private_key)
+    {
+        match security_key_auth(handle, hop, key, opts).await? {
+            SkOutcome::Success => return Ok(()),
+            SkOutcome::Rejected => reasons.push(format!("security key \"{}\" rejected", key.label)),
+            // Cancelled, or nothing else saved to try: stop here (asking
+            // for a password after the security key failed would only
+            // confuse; a server session would wait for an answer).
+            SkOutcome::Failed(e)
+                if e.code == crate::sk::SkErrorCode::Cancelled || hop.password.is_none() =>
+            {
+                return Err(e.into());
+            }
+            SkOutcome::Failed(e) => {
+                reasons.push(format!("security key \"{}\": {}", key.label, e.message));
+                sk_error = Some(e);
+            }
+        }
+    } else if let Some(key) = &hop.key {
         let mut passphrase = key.passphrase.clone();
         if passphrase.is_none() && keys::is_encrypted(&key.private_key) {
             passphrase = opts.prompter.passphrase(&host, &key.label).await;
@@ -504,6 +551,9 @@ async fn authenticate(
         reasons.push("entered password rejected".into());
     }
 
+    if let Some(e) = sk_error {
+        return Err(e.into());
+    }
     if reasons.is_empty() {
         reasons.push("no credentials configured (key or password)".into());
     }
@@ -512,6 +562,97 @@ async fn authenticate(
         host,
         reason: reasons.join("; "),
     })
+}
+
+enum SkOutcome {
+    Success,
+    /// The server did not accept the key (or the signature).
+    Rejected,
+    /// The device (or its absence) failed.
+    Failed(crate::sk::SkError),
+}
+
+/// Public key authentication with a FIDO2 security key: russh asks
+/// [`crate::sk::SkAuthSigner`] for the signature (docs/SSH-PRO.md §2.1).
+async fn security_key_auth(
+    handle: &mut Handle<ClientHandler>,
+    hop: &ResolvedHost,
+    key: &termoak_core::resolve::ResolvedKey,
+    opts: &ConnectOptions,
+) -> Result<SkOutcome> {
+    use crate::sk::{SkAuthError, SkAuthSigner, SkContext, SkError, SkErrorCode};
+    let mut passphrase = key.passphrase.clone();
+    if passphrase.is_none() && keys::is_encrypted(&key.private_key) {
+        passphrase = opts
+            .prompter
+            .passphrase(&hop.host.address, &key.label)
+            .await;
+    }
+    let sk = match crate::sk::parse_private(&key.private_key, passphrase.as_deref()) {
+        Ok(Some(sk)) => sk,
+        Ok(None) => return Ok(SkOutcome::Failed(SkError::invalid("not a security key"))),
+        Err(e) => return Ok(SkOutcome::Failed(SkError::invalid(e.to_string()))),
+    };
+    let Some(signer) = opts.security_key.clone() else {
+        return Ok(SkOutcome::Failed(SkError::new(
+            SkErrorCode::Required,
+            format!(
+                "\"{}\" is a security key and none can be used here",
+                key.label
+            ),
+        )));
+    };
+    let context = SkContext {
+        host: hop.host.label.clone(),
+        address: hop.host.address.clone(),
+        username: hop.username.clone(),
+        key_label: key.label.clone(),
+        key_id: Some(key.id.to_string()),
+        device: key.security_key.as_ref().and_then(|i| i.device.clone()),
+        purpose: opts.purpose.clone(),
+        session_id: opts.session_id.clone(),
+    };
+    let mut auth_signer = SkAuthSigner {
+        key: sk.clone(),
+        signer,
+        context,
+        error: None,
+    };
+    let cert = key
+        .certificate
+        .as_deref()
+        .map(str::trim)
+        .filter(|c| !c.is_empty())
+        .and_then(|c| russh::keys::Certificate::from_openssh(c).ok());
+    let result = match cert {
+        Some(cert) => {
+            handle
+                .authenticate_certificate_with(hop.username.clone(), cert, None, &mut auth_signer)
+                .await
+        }
+        None => {
+            handle
+                .authenticate_publickey_with(
+                    hop.username.clone(),
+                    sk.public.clone(),
+                    None,
+                    &mut auth_signer,
+                )
+                .await
+        }
+    };
+    match result {
+        Ok(r) if r.success() => Ok(SkOutcome::Success),
+        Ok(_) => Ok(match auth_signer.error {
+            Some(e) => SkOutcome::Failed(e),
+            None => SkOutcome::Rejected,
+        }),
+        Err(SkAuthError::Key(e)) => Ok(SkOutcome::Failed(e)),
+        Err(SkAuthError::Send(_)) => Err(match auth_signer.error {
+            Some(e) => e.into(),
+            None => SshError::Closed,
+        }),
+    }
 }
 
 async fn keyboard_interactive(

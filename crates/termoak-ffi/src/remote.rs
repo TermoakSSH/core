@@ -625,19 +625,30 @@ impl TermoakCore {
     ) -> Result<Arc<EventSubscription>> {
         let account = self.account_now()?;
         let api = self.api().await?;
-        let ws = run(async move { Ok(api.websocket("/api/v1/events/ws").await?) }).await?;
+        // With a security key handler, this device answers the server's
+        // signature requests (server sessions with FIDO2 keys).
+        let signer = self.ws.security_key_signer();
+        let path = termoak_client::events::events_path(signer.is_some());
+        let ws = run(async move { Ok(api.websocket(&path).await?) }).await?;
         let weak = Arc::downgrade(&account);
         let account_id = account.id;
         drop(account);
         let stop = Arc::new(Notify::new());
         let thread_stop = stop.clone();
         spawn_callback_thread("termoak-events", move |rt| {
-            let (_sink, mut stream) = ws.split();
+            let (mut sink, mut stream) = ws.split();
+            let (tx, mut replies) = tokio::sync::mpsc::unbounded_channel::<Value>();
             let reason = loop {
                 let msg = rt.block_on(async {
-                    tokio::select! {
-                        m = stream.next() => Some(m),
-                        _ = thread_stop.notified() => None,
+                    loop {
+                        tokio::select! {
+                            m = stream.next() => return Some(m),
+                            _ = thread_stop.notified() => return None,
+                            Some(reply) = replies.recv() => {
+                                use futures::SinkExt;
+                                let _ = sink.send(Message::Text(reply.to_string().into())).await;
+                            }
+                        }
                     }
                 });
                 match msg {
@@ -650,6 +661,25 @@ impl TermoakCore {
                                     && let Some(acc) = weak.upgrade()
                                 {
                                     acc.sync_soon();
+                                }
+                                // Sign on a worker (the handler blocks while
+                                // the user touches the key); the listener
+                                // still gets the request to show it.
+                                if v["type"] == termoak_ssh::sk::wire::REQUEST
+                                    && let Some(s) = signer.clone()
+                                {
+                                    let (tx, req) = (tx.clone(), v.clone());
+                                    rt.spawn(async move {
+                                        if let Some(reply) =
+                                            termoak_client::events::answer_security_key(
+                                                s.as_ref(),
+                                                &req,
+                                            )
+                                            .await
+                                        {
+                                            let _ = tx.send(reply);
+                                        }
+                                    });
                                 }
                                 let v = termoak_client::events::tag_event(v, account_id);
                                 listener.on_event(v.to_string())

@@ -472,6 +472,7 @@ impl Workspace {
             comment: m.comment.clone(),
             has_passphrase: m.encrypted,
             certificate,
+            security_key: None,
         };
         let id = if opts.dry_run {
             key.id

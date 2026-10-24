@@ -683,6 +683,15 @@ internal interface UniffiCallbackInterfaceServerTerminalListenerMethod0 : com.su
 internal interface UniffiCallbackInterfaceSharedTerminalListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`event`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceSecurityKeyHandlerMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceSecurityKeyHandlerMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceSecurityKeyHandlerMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceTerminalListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`data`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
@@ -812,6 +821,31 @@ internal open class UniffiVTableCallbackInterfaceSharedTerminalListener(
     }
 
 }
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "sign", "makeCredential", "listResident")
+internal open class UniffiVTableCallbackInterfaceSecurityKeyHandler(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `sign`: UniffiCallbackInterfaceSecurityKeyHandlerMethod0? = null,
+    @JvmField internal var `makeCredential`: UniffiCallbackInterfaceSecurityKeyHandlerMethod1? = null,
+    @JvmField internal var `listResident`: UniffiCallbackInterfaceSecurityKeyHandlerMethod2? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `sign`: UniffiCallbackInterfaceSecurityKeyHandlerMethod0? = null,
+        `makeCredential`: UniffiCallbackInterfaceSecurityKeyHandlerMethod1? = null,
+        `listResident`: UniffiCallbackInterfaceSecurityKeyHandlerMethod2? = null,
+    ): UniffiVTableCallbackInterfaceSecurityKeyHandler(`uniffiFree`,`uniffiClone`,`sign`,`makeCredential`,`listResident`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceSecurityKeyHandler) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `sign` = other.`sign`
+        `makeCredential` = other.`makeCredential`
+        `listResident` = other.`listResident`
+    }
+
+}
 @Structure.FieldOrder("uniffiFree", "uniffiClone", "onOutput", "onStatus")
 internal open class UniffiVTableCallbackInterfaceTerminalListener(
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
@@ -932,7 +966,21 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_terminal_themes(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_security_key_authorized_keys_line(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_security_key_from_credential(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_security_key_request(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_server_info(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_parse_snippet(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_render_snippet_for_hosts(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_render_snippet_with(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_snippet_prompts(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_clean_terminal_output(
     ): Int
@@ -1324,6 +1372,12 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_terminalscreen_word_at(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_securitykeyhandler_sign(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_securitykeyhandler_make_credential(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_securitykeyhandler_list_resident(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_activeforward_bound_port(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_activeforward_is_running(
@@ -1604,6 +1658,14 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_create_security_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_has_security_key_handler(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_import_resident_security_keys(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_security_key_handler(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_ai_access(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_api_delete(
@@ -1677,6 +1739,12 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_verification_required(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_verify_code(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_remember_snippet_values(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_snippet_context(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_snippet_values(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_connect(
     ): Int
@@ -1797,6 +1865,7 @@ internal object UniffiLib {
         uniffiCallbackInterfaceAuthHandler.register(this)
         uniffiCallbackInterfaceHostKeyChangeHandler.register(this)
         uniffiCallbackInterfaceLogListener.register(this)
+        uniffiCallbackInterfaceSecurityKeyHandler.register(this)
         uniffiCallbackInterfaceServerEventListener.register(this)
         uniffiCallbackInterfaceServerTerminalListener.register(this)
         uniffiCallbackInterfaceSharedTerminalListener.register(this)
@@ -2232,6 +2301,18 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_terminalscreen_word_at(`ptr`: Long,`point`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_clone_securitykeyhandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_securitykeyhandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_init_callback_vtable_securitykeyhandler(`vtable`: UniffiVTableCallbackInterfaceSecurityKeyHandler,
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_securitykeyhandler_sign(`ptr`: Long,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_securitykeyhandler_make_credential(`ptr`: Long,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_securitykeyhandler_list_resident(`ptr`: Long,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_clone_activeforward(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_activeforward(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -2554,6 +2635,14 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_subscribe_events(`ptr`: Long,`listener`: Long,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_create_security_key(`ptr`: Long,`label`: RustBuffer.ByValue,`options`: RustBuffer.ByValue,`comment`: RustBuffer.ByValue,`syncMode`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`handler`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_has_security_key_handler(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_import_resident_security_keys(`ptr`: Long,`applicationPrefix`: RustBuffer.ByValue,`verifyRequired`: Byte,`device`: RustBuffer.ByValue,`syncMode`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`handler`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_security_key_handler(`ptr`: Long,`handler`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_ai_access(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_api_delete(`ptr`: Long,`path`: RustBuffer.ByValue,
@@ -2628,6 +2717,12 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_verify_code(`ptr`: Long,`url`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`code`: RustBuffer.ByValue,`totpCode`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_remember_snippet_values(`ptr`: Long,`snippetId`: RustBuffer.ByValue,`hostId`: RustBuffer.ByValue,`script`: RustBuffer.ByValue,`values`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_snippet_context(`ptr`: Long,`hostId`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_snippet_values(`ptr`: Long,`snippetId`: RustBuffer.ByValue,`hostId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_connect(`ptr`: Long,`hostId`: RustBuffer.ByValue,`auth`: Long,`accountId`: RustBuffer.ByValue,`keyChanged`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,`telnetAutoLogin`: Byte,`record`: Byte,`keyChanged`: RustBuffer.ByValue,
@@ -2772,8 +2867,22 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_terminal_themes(uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_security_key_authorized_keys_line(`publicKey`: RustBuffer.ByValue,`info`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_security_key_from_credential(`request`: RustBuffer.ByValue,`credential`: RustBuffer.ByValue,`comment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_security_key_request(`options`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_server_info(`url`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_func_parse_snippet(`script`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_render_snippet_for_hosts(`script`: RustBuffer.ByValue,`values`: RustBuffer.ByValue,`contexts`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_render_snippet_with(`script`: RustBuffer.ByValue,`values`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_snippet_prompts(`script`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_clean_terminal_output(`data`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_command_failure(`command`: RustBuffer.ByValue,`output`: RustBuffer.ByValue,`exitCode`: RustBuffer.ByValue,`interactive`: Byte,uniffi_out_err: UniffiRustCallStatus, 
@@ -3006,7 +3115,28 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_terminal_themes() and 0xFFFF) != 64850) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_func_security_key_authorized_keys_line() and 0xFFFF) != 28259) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_security_key_from_credential() and 0xFFFF) != 2473) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_security_key_request() and 0xFFFF) != 63680) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_func_server_info() and 0xFFFF) != 52695) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_parse_snippet() and 0xFFFF) != 4903) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_render_snippet_for_hosts() and 0xFFFF) != 3805) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_render_snippet_with() and 0xFFFF) != 28164) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_snippet_prompts() and 0xFFFF) != 57679) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_clean_terminal_output() and 0xFFFF) != 54293) {
@@ -3594,6 +3724,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_terminalscreen_word_at() and 0xFFFF) != 18500) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_securitykeyhandler_sign() and 0xFFFF) != 25715) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_securitykeyhandler_make_credential() and 0xFFFF) != 12466) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_securitykeyhandler_list_resident() and 0xFFFF) != 8865) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_activeforward_bound_port() and 0xFFFF) != 14052) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4014,6 +4153,18 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events() and 0xFFFF) != 13941) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_create_security_key() and 0xFFFF) != 24894) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_has_security_key_handler() and 0xFFFF) != 36460) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_import_resident_security_keys() and 0xFFFF) != 37941) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_security_key_handler() and 0xFFFF) != 30635) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ai_access() and 0xFFFF) != 41770) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4123,6 +4274,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() and 0xFFFF) != 65042) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_remember_snippet_values() and 0xFFFF) != 65462) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_snippet_context() and 0xFFFF) != 58980) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_snippet_values() and 0xFFFF) != 9801) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect() and 0xFFFF) != 336) {
@@ -10279,6 +10439,436 @@ public object FfiConverterTypeLogListener: FfiConverter<LogListener, Long> {
 
 
 /**
+ * Implemented by the app to use security keys (YubiKit on Android and iOS,
+ * a CTAP2 library on the desktop).
+ *
+ * **Threads**: called from a background thread and it **may block** while
+ * the app shows "Touch your security key" (or "Hold it near the phone")
+ * and waits for the device; never from the main thread. Throw
+ * `Cancelled` when the user cancels.
+ */
+public interface SecurityKeyHandler {
+    
+    /**
+     * Signs (CTAP2 get assertion). Show the request's host, user, key and
+     * purpose: a request forwarded by the server (`purpose` other than
+     * `connect`) comes from a connection the server makes for you.
+     */
+    fun `sign`(`request`: SecurityKeySignRequest): SecurityKeyAssertion
+    
+    /**
+     * Creates a credential (CTAP2 make credential).
+     */
+    fun `makeCredential`(`request`: SecurityKeyCredentialRequest): SecurityKeyCredential
+    
+    /**
+     * Reads the resident credentials (CTAP 2.1 credential management;
+     * asks for the PIN). Throw `Unsupported` if the platform cannot.
+     */
+    fun `listResident`(`request`: SecurityKeyResidentRequest): List<SecurityKeyResident>
+    
+    companion object
+}
+
+/**
+ * Implemented by the app to use security keys (YubiKit on Android and iOS,
+ * a CTAP2 library on the desktop).
+ *
+ * **Threads**: called from a background thread and it **may block** while
+ * the app shows "Touch your security key" (or "Hold it near the phone")
+ * and waits for the device; never from the main thread. Throw
+ * `Cancelled` when the user cancels.
+ */
+open class SecurityKeyHandlerImpl: Disposable, AutoCloseable, SecurityKeyHandler
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_securitykeyhandler(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_securitykeyhandler(handle, status)
+        }
+    }
+
+    
+    /**
+     * Signs (CTAP2 get assertion). Show the request's host, user, key and
+     * purpose: a request forwarded by the server (`purpose` other than
+     * `connect`) comes from a connection the server makes for you.
+     */
+    @Throws(SecurityKeyException::class)override fun `sign`(`request`: SecurityKeySignRequest): SecurityKeyAssertion {
+            return FfiConverterTypeSecurityKeyAssertion.lift(
+    callWithHandle {
+    uniffiRustCallWithError(SecurityKeyException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_securitykeyhandler_sign(
+        it,
+        
+        FfiConverterTypeSecurityKeySignRequest.lower(`request`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Creates a credential (CTAP2 make credential).
+     */
+    @Throws(SecurityKeyException::class)override fun `makeCredential`(`request`: SecurityKeyCredentialRequest): SecurityKeyCredential {
+            return FfiConverterTypeSecurityKeyCredential.lift(
+    callWithHandle {
+    uniffiRustCallWithError(SecurityKeyException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_securitykeyhandler_make_credential(
+        it,
+        
+        FfiConverterTypeSecurityKeyCredentialRequest.lower(`request`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Reads the resident credentials (CTAP 2.1 credential management;
+     * asks for the PIN). Throw `Unsupported` if the platform cannot.
+     */
+    @Throws(SecurityKeyException::class)override fun `listResident`(`request`: SecurityKeyResidentRequest): List<SecurityKeyResident> {
+            return FfiConverterSequenceTypeSecurityKeyResident.lift(
+    callWithHandle {
+    uniffiRustCallWithError(SecurityKeyException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_securitykeyhandler_list_resident(
+        it,
+        
+        FfiConverterTypeSecurityKeyResidentRequest.lower(`request`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceSecurityKeyHandler {
+    internal object `sign`: UniffiCallbackInterfaceSecurityKeyHandlerMethod0 {
+        override fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecurityKeyHandler.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`sign`(
+                    FfiConverterTypeSecurityKeySignRequest.lift(`request`),
+                )
+            }
+            val writeReturn = { value: SecurityKeyAssertion -> uniffiOutReturn.setValue(FfiConverterTypeSecurityKeyAssertion.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: SecurityKeyException -> FfiConverterTypeSecurityKeyError.lower(e) }
+            )
+        }
+    }
+    internal object `makeCredential`: UniffiCallbackInterfaceSecurityKeyHandlerMethod1 {
+        override fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecurityKeyHandler.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`makeCredential`(
+                    FfiConverterTypeSecurityKeyCredentialRequest.lift(`request`),
+                )
+            }
+            val writeReturn = { value: SecurityKeyCredential -> uniffiOutReturn.setValue(FfiConverterTypeSecurityKeyCredential.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: SecurityKeyException -> FfiConverterTypeSecurityKeyError.lower(e) }
+            )
+        }
+    }
+    internal object `listResident`: UniffiCallbackInterfaceSecurityKeyHandlerMethod2 {
+        override fun callback(`uniffiHandle`: Long,`request`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecurityKeyHandler.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`listResident`(
+                    FfiConverterTypeSecurityKeyResidentRequest.lift(`request`),
+                )
+            }
+            val writeReturn = { value: List<SecurityKeyResident> -> uniffiOutReturn.setValue(FfiConverterSequenceTypeSecurityKeyResident.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: SecurityKeyException -> FfiConverterTypeSecurityKeyError.lower(e) }
+            )
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeSecurityKeyHandler.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeSecurityKeyHandler.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceSecurityKeyHandler.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `sign`,
+        `makeCredential`,
+        `listResident`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_termoak_ffi_fn_init_callback_vtable_securitykeyhandler(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyHandler: FfiConverter<SecurityKeyHandler, Long> {
+    internal val handleMap = UniffiHandleMap<SecurityKeyHandler>()
+
+    override fun lower(value: SecurityKeyHandler): Long {
+        if (value is SecurityKeyHandlerImpl) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): SecurityKeyHandler {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return SecurityKeyHandlerImpl(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): SecurityKeyHandler {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: SecurityKeyHandler) = 8UL
+
+    override fun write(value: SecurityKeyHandler, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
  * Implemented by the app to receive its account's events: AI tasks
  * (progress, pending approvals), sessions opened, closed or shared with you,
  * pending questions...
@@ -16207,6 +16797,33 @@ public interface TermoakCoreInterface {
     suspend fun `subscribeEvents`(`listener`: ServerEventListener): EventSubscription
     
     /**
+     * Creates a key on the security key (the handler's `make_credential`)
+     * and saves it (see `generate_key` for `account_id` and `vault_id`).
+     */
+    suspend fun `createSecurityKey`(`label`: kotlin.String, `options`: SecurityKeyOptions, `comment`: kotlin.String, `syncMode`: SyncMode?, `accountId`: kotlin.String? = null, `vaultId`: kotlin.String? = null, `handler`: SecurityKeyHandler): SshKey
+    
+    /**
+     * Whether a security key handler is set.
+     */
+    fun `hasSecurityKeyHandler`(): kotlin.Boolean
+    
+    /**
+     * Loads the resident keys of the security key (the handler's
+     * `list_resident`) and saves those whose fingerprint is not among the
+     * keys yet. `verify_required`: mark them as needing the PIN (the
+     * device does not say). Labels: "<device or Security key> (<user>)".
+     */
+    suspend fun `importResidentSecurityKeys`(`applicationPrefix`: kotlin.String?, `verifyRequired`: kotlin.Boolean, `device`: kotlin.String?, `syncMode`: SyncMode?, `accountId`: kotlin.String? = null, `vaultId`: kotlin.String? = null, `handler`: SecurityKeyHandler): List<SshKey>
+    
+    /**
+     * Sets (or clears, with `nil`) the app's security key handler: local
+     * connections with sk keys use it, and while it is set the events
+     * socket (`subscribe_events`, opened after this call) answers the
+     * server's signature requests for server sessions.
+     */
+    fun `setSecurityKeyHandler`(`handler`: SecurityKeyHandler?)
+    
+    /**
      * Your AI situation: own keys, whether your plan includes the server's
      * AI, its credit and this month's spending.
      */
@@ -16430,6 +17047,24 @@ public interface TermoakCoreInterface {
      * repeat with `totp_code`.
      */
     suspend fun `verifyCode`(`url`: kotlin.String, `email`: kotlin.String, `code`: kotlin.String, `totpCode`: kotlin.String? = null)
+    
+    /**
+     * Remembers the values of a run on this device (never synced). Secrets
+     * and built-ins are dropped. `script` is the snippet's script.
+     */
+    fun `rememberSnippetValues`(`snippetId`: kotlin.String, `hostId`: kotlin.String? = null, `script`: kotlin.String, `values`: Map<kotlin.String, kotlin.String>)
+    
+    /**
+     * The built-ins of a host (`{{host}}`, `{{user}}`...) for snippets.
+     * No credentials are fetched (also for Use-only hosts).
+     */
+    fun `snippetContext`(`hostId`: kotlin.String, `accountId`: kotlin.String? = null): SnippetContext
+    
+    /**
+     * Values remembered on this device for `snippet_id` on `host_id` (or
+     * for runs without a host).
+     */
+    fun `snippetValues`(`snippetId`: kotlin.String, `hostId`: kotlin.String? = null): Map<kotlin.String, kotlin.String>
     
     /**
      * Connects to a host over SSH from this device (through its jumps).
@@ -18992,6 +19627,107 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * Creates a key on the security key (the handler's `make_credential`)
+     * and saves it (see `generate_key` for `account_id` and `vault_id`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createSecurityKey`(`label`: kotlin.String, `options`: SecurityKeyOptions, `comment`: kotlin.String, `syncMode`: SyncMode?, `accountId`: kotlin.String?, `vaultId`: kotlin.String?, `handler`: SecurityKeyHandler) : SshKey {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_create_security_key(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`label`),
+        FfiConverterTypeSecurityKeyOptions.lower(`options`),
+        FfiConverterString.lower(`comment`),
+        FfiConverterOptionalTypeSyncMode.lower(`syncMode`),
+        FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterTypeSecurityKeyHandler.lower(`handler`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSshKey.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Whether a security key handler is set.
+     */override fun `hasSecurityKeyHandler`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_has_security_key_handler(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Loads the resident keys of the security key (the handler's
+     * `list_resident`) and saves those whose fingerprint is not among the
+     * keys yet. `verify_required`: mark them as needing the PIN (the
+     * device does not say). Labels: "<device or Security key> (<user>)".
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `importResidentSecurityKeys`(`applicationPrefix`: kotlin.String?, `verifyRequired`: kotlin.Boolean, `device`: kotlin.String?, `syncMode`: SyncMode?, `accountId`: kotlin.String?, `vaultId`: kotlin.String?, `handler`: SecurityKeyHandler) : List<SshKey> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_import_resident_security_keys(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`applicationPrefix`),
+        FfiConverterBoolean.lower(`verifyRequired`),
+        FfiConverterOptionalString.lower(`device`),
+        FfiConverterOptionalTypeSyncMode.lower(`syncMode`),
+        FfiConverterOptionalString.lower(`accountId`),
+        FfiConverterOptionalString.lower(`vaultId`),
+        FfiConverterTypeSecurityKeyHandler.lower(`handler`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeSshKey.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sets (or clears, with `nil`) the app's security key handler: local
+     * connections with sk keys use it, and while it is set the events
+     * socket (`subscribe_events`, opened after this call) answers the
+     * server's signature requests for server sessions.
+     */override fun `setSecurityKeyHandler`(`handler`: SecurityKeyHandler?)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_security_key_handler(
+        it,
+        
+        FfiConverterOptionalTypeSecurityKeyHandler.lower(`handler`),_status)
+}
+    }
+    
+    
+
+    
+    /**
      * Your AI situation: own keys, whether your plan includes the server's
      * AI, its credit and this month's spending.
      */
@@ -19966,6 +20702,67 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         TermoakException.ErrorHandler,
     )
     }
+
+    
+    /**
+     * Remembers the values of a run on this device (never synced). Secrets
+     * and built-ins are dropped. `script` is the snippet's script.
+     */
+    @Throws(TermoakException::class)override fun `rememberSnippetValues`(`snippetId`: kotlin.String, `hostId`: kotlin.String?, `script`: kotlin.String, `values`: Map<kotlin.String, kotlin.String>)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_remember_snippet_values(
+        it,
+        
+        FfiConverterString.lower(`snippetId`),
+        FfiConverterOptionalString.lower(`hostId`),
+        FfiConverterString.lower(`script`),
+        FfiConverterMapStringString.lower(`values`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * The built-ins of a host (`{{host}}`, `{{user}}`...) for snippets.
+     * No credentials are fetched (also for Use-only hosts).
+     */
+    @Throws(TermoakException::class)override fun `snippetContext`(`hostId`: kotlin.String, `accountId`: kotlin.String?): SnippetContext {
+            return FfiConverterTypeSnippetContext.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_snippet_context(
+        it,
+        
+        FfiConverterString.lower(`hostId`),
+        FfiConverterOptionalString.lower(`accountId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Values remembered on this device for `snippet_id` on `host_id` (or
+     * for runs without a host).
+     */
+    @Throws(TermoakException::class)override fun `snippetValues`(`snippetId`: kotlin.String, `hostId`: kotlin.String?): Map<kotlin.String, kotlin.String> {
+            return FfiConverterMapStringString.lift(
+    callWithHandle {
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_snippet_values(
+        it,
+        
+        FfiConverterString.lower(`snippetId`),
+        FfiConverterOptionalString.lower(`hostId`),_status)
+}
+    }
+    )
+    }
+    
 
     
     /**
@@ -25584,6 +26381,11 @@ data class KeyDetails (
      * The key is encrypted with a passphrase.
      */
     var `encrypted`: kotlin.Boolean
+    , 
+    /**
+     * FIDO2 security key details (sk keys).
+     */
+    var `securityKey`: SecurityKeyInfo? = null 
     
 ){
     
@@ -25605,6 +26407,7 @@ public object FfiConverterTypeKeyDetails: FfiConverterRustBuffer<KeyDetails> {
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeSecurityKeyInfo.read(buf),
         )
     }
 
@@ -25613,7 +26416,8 @@ public object FfiConverterTypeKeyDetails: FfiConverterRustBuffer<KeyDetails> {
             FfiConverterString.allocationSize(value.`publicKey`) +
             FfiConverterString.allocationSize(value.`fingerprint`) +
             FfiConverterString.allocationSize(value.`comment`) +
-            FfiConverterBoolean.allocationSize(value.`encrypted`)
+            FfiConverterBoolean.allocationSize(value.`encrypted`) +
+            FfiConverterOptionalTypeSecurityKeyInfo.allocationSize(value.`securityKey`)
     )
 
     override fun write(value: KeyDetails, buf: ByteBuffer) {
@@ -25622,6 +26426,7 @@ public object FfiConverterTypeKeyDetails: FfiConverterRustBuffer<KeyDetails> {
             FfiConverterString.write(value.`fingerprint`, buf)
             FfiConverterString.write(value.`comment`, buf)
             FfiConverterBoolean.write(value.`encrypted`, buf)
+            FfiConverterOptionalTypeSecurityKeyInfo.write(value.`securityKey`, buf)
     }
 }
 
@@ -27107,6 +27912,641 @@ public object FfiConverterTypeScreenSnapshot: FfiConverterRustBuffer<ScreenSnaps
 
 
 /**
+ * The device's assertion.
+ */
+data class SecurityKeyAssertion (
+    /**
+     * Authenticator data flags (0x01 user present, 0x04 verified).
+     * Ignored when `authenticator_data` is given.
+     */
+    var `flags`: kotlin.UByte = 0U 
+    , 
+    /**
+     * Signature counter. Ignored when `authenticator_data` is given.
+     */
+    var `counter`: kotlin.UInt = 0U 
+    , 
+    /**
+     * Ed25519: 64 bytes. ECDSA: DER (as CTAP2 returns it) or 64 bytes `r || s`.
+     */
+    var `signature`: kotlin.ByteArray
+    , 
+    /**
+     * The assertion's authenticator data, if the library gives it (flags
+     * and counter are read from it).
+     */
+    var `authenticatorData`: kotlin.ByteArray? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyAssertion: FfiConverterRustBuffer<SecurityKeyAssertion> {
+    override fun read(buf: ByteBuffer): SecurityKeyAssertion {
+        return SecurityKeyAssertion(
+            FfiConverterUByte.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterOptionalByteArray.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyAssertion) = (
+            FfiConverterUByte.allocationSize(value.`flags`) +
+            FfiConverterUInt.allocationSize(value.`counter`) +
+            FfiConverterByteArray.allocationSize(value.`signature`) +
+            FfiConverterOptionalByteArray.allocationSize(value.`authenticatorData`)
+    )
+
+    override fun write(value: SecurityKeyAssertion, buf: ByteBuffer) {
+            FfiConverterUByte.write(value.`flags`, buf)
+            FfiConverterUInt.write(value.`counter`, buf)
+            FfiConverterByteArray.write(value.`signature`, buf)
+            FfiConverterOptionalByteArray.write(value.`authenticatorData`, buf)
+    }
+}
+
+
+
+/**
+ * The device's new credential.
+ */
+data class SecurityKeyCredential (
+    /**
+     * The authenticator data (with the attested credential data).
+     */
+    var `authenticatorData`: kotlin.ByteArray = byteArrayOf() 
+    , 
+    /**
+     * Or the whole attestation object (CBOR), if that is what the library gives.
+     */
+    var `attestationObject`: kotlin.ByteArray = byteArrayOf() 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyCredential: FfiConverterRustBuffer<SecurityKeyCredential> {
+    override fun read(buf: ByteBuffer): SecurityKeyCredential {
+        return SecurityKeyCredential(
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyCredential) = (
+            FfiConverterByteArray.allocationSize(value.`authenticatorData`) +
+            FfiConverterByteArray.allocationSize(value.`attestationObject`)
+    )
+
+    override fun write(value: SecurityKeyCredential, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`authenticatorData`, buf)
+            FfiConverterByteArray.write(value.`attestationObject`, buf)
+    }
+}
+
+
+
+/**
+ * What the device must create (CTAP2 make credential with `rp.id =
+ * application`, `user`, `pubKeyCredParams = [algorithm]`, options `rk`
+ * and `uv`, and `client_data_hash`).
+ */
+data class SecurityKeyCredentialRequest (
+    var `algorithm`: SecurityKeyAlgorithm
+    , 
+    /**
+     * COSE algorithm (-8 EdDSA, -7 ES256).
+     */
+    var `coseAlgorithm`: kotlin.Long
+    , 
+    var `application`: kotlin.String
+    , 
+    var `userId`: kotlin.ByteArray
+    , 
+    var `userName`: kotlin.String
+    , 
+    var `clientDataHash`: kotlin.ByteArray
+    , 
+    var `resident`: kotlin.Boolean
+    , 
+    var `requireVerification`: kotlin.Boolean
+    , 
+    /**
+     * The flags the key will have (0x01 touch, 0x04 verify, 0x20 resident).
+     */
+    var `flags`: kotlin.UByte
+    , 
+    var `device`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyCredentialRequest: FfiConverterRustBuffer<SecurityKeyCredentialRequest> {
+    override fun read(buf: ByteBuffer): SecurityKeyCredentialRequest {
+        return SecurityKeyCredentialRequest(
+            FfiConverterTypeSecurityKeyAlgorithm.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterUByte.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyCredentialRequest) = (
+            FfiConverterTypeSecurityKeyAlgorithm.allocationSize(value.`algorithm`) +
+            FfiConverterLong.allocationSize(value.`coseAlgorithm`) +
+            FfiConverterString.allocationSize(value.`application`) +
+            FfiConverterByteArray.allocationSize(value.`userId`) +
+            FfiConverterString.allocationSize(value.`userName`) +
+            FfiConverterByteArray.allocationSize(value.`clientDataHash`) +
+            FfiConverterBoolean.allocationSize(value.`resident`) +
+            FfiConverterBoolean.allocationSize(value.`requireVerification`) +
+            FfiConverterUByte.allocationSize(value.`flags`) +
+            FfiConverterOptionalString.allocationSize(value.`device`)
+    )
+
+    override fun write(value: SecurityKeyCredentialRequest, buf: ByteBuffer) {
+            FfiConverterTypeSecurityKeyAlgorithm.write(value.`algorithm`, buf)
+            FfiConverterLong.write(value.`coseAlgorithm`, buf)
+            FfiConverterString.write(value.`application`, buf)
+            FfiConverterByteArray.write(value.`userId`, buf)
+            FfiConverterString.write(value.`userName`, buf)
+            FfiConverterByteArray.write(value.`clientDataHash`, buf)
+            FfiConverterBoolean.write(value.`resident`, buf)
+            FfiConverterBoolean.write(value.`requireVerification`, buf)
+            FfiConverterUByte.write(value.`flags`, buf)
+            FfiConverterOptionalString.write(value.`device`, buf)
+    }
+}
+
+
+
+/**
+ * Details of a security key (`SshKey.security_key`).
+ */
+data class SecurityKeyInfo (
+    /**
+     * FIDO relying party id (`ssh:` by default).
+     */
+    var `application`: kotlin.String
+    , 
+    /**
+     * User of a resident credential.
+     */
+    var `user`: kotlin.String? = null 
+    , 
+    /**
+     * Signing needs a touch (off: `no-touch-required`).
+     */
+    var `touchRequired`: kotlin.Boolean = true 
+    , 
+    /**
+     * Signing needs the PIN or biometrics (`verify-required`).
+     */
+    var `verifyRequired`: kotlin.Boolean = false 
+    , 
+    /**
+     * Resident (discoverable) credential.
+     */
+    var `resident`: kotlin.Boolean = false 
+    , 
+    /**
+     * Which device it lives on (a label).
+     */
+    var `device`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyInfo: FfiConverterRustBuffer<SecurityKeyInfo> {
+    override fun read(buf: ByteBuffer): SecurityKeyInfo {
+        return SecurityKeyInfo(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyInfo) = (
+            FfiConverterString.allocationSize(value.`application`) +
+            FfiConverterOptionalString.allocationSize(value.`user`) +
+            FfiConverterBoolean.allocationSize(value.`touchRequired`) +
+            FfiConverterBoolean.allocationSize(value.`verifyRequired`) +
+            FfiConverterBoolean.allocationSize(value.`resident`) +
+            FfiConverterOptionalString.allocationSize(value.`device`)
+    )
+
+    override fun write(value: SecurityKeyInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`application`, buf)
+            FfiConverterOptionalString.write(value.`user`, buf)
+            FfiConverterBoolean.write(value.`touchRequired`, buf)
+            FfiConverterBoolean.write(value.`verifyRequired`, buf)
+            FfiConverterBoolean.write(value.`resident`, buf)
+            FfiConverterOptionalString.write(value.`device`, buf)
+    }
+}
+
+
+
+/**
+ * A new security key from the device's answer, without saving it: its
+ * public part and the OpenSSH sk "private key" file (key handle, not a
+ * secret key) to import with `import_key`.
+ */
+data class SecurityKeyMaterial (
+    var `details`: KeyDetails
+    , 
+    var `privateKey`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyMaterial: FfiConverterRustBuffer<SecurityKeyMaterial> {
+    override fun read(buf: ByteBuffer): SecurityKeyMaterial {
+        return SecurityKeyMaterial(
+            FfiConverterTypeKeyDetails.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyMaterial) = (
+            FfiConverterTypeKeyDetails.allocationSize(value.`details`) +
+            FfiConverterString.allocationSize(value.`privateKey`)
+    )
+
+    override fun write(value: SecurityKeyMaterial, buf: ByteBuffer) {
+            FfiConverterTypeKeyDetails.write(value.`details`, buf)
+            FfiConverterString.write(value.`privateKey`, buf)
+    }
+}
+
+
+
+/**
+ * Options of a new security key.
+ */
+data class SecurityKeyOptions (
+    var `algorithm`: SecurityKeyAlgorithm
+    , 
+    /**
+     * Default `ssh:` (must start with `ssh:`).
+     */
+    var `application`: kotlin.String? = null 
+    , 
+    /**
+     * User of a resident credential (default `openssh`).
+     */
+    var `user`: kotlin.String? = null 
+    , 
+    var `resident`: kotlin.Boolean = false 
+    , 
+    var `verifyRequired`: kotlin.Boolean = false 
+    , 
+    var `noTouchRequired`: kotlin.Boolean = false 
+    , 
+    /**
+     * Device label (`SecurityKeyInfo.device`).
+     */
+    var `device`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyOptions: FfiConverterRustBuffer<SecurityKeyOptions> {
+    override fun read(buf: ByteBuffer): SecurityKeyOptions {
+        return SecurityKeyOptions(
+            FfiConverterTypeSecurityKeyAlgorithm.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyOptions) = (
+            FfiConverterTypeSecurityKeyAlgorithm.allocationSize(value.`algorithm`) +
+            FfiConverterOptionalString.allocationSize(value.`application`) +
+            FfiConverterOptionalString.allocationSize(value.`user`) +
+            FfiConverterBoolean.allocationSize(value.`resident`) +
+            FfiConverterBoolean.allocationSize(value.`verifyRequired`) +
+            FfiConverterBoolean.allocationSize(value.`noTouchRequired`) +
+            FfiConverterOptionalString.allocationSize(value.`device`)
+    )
+
+    override fun write(value: SecurityKeyOptions, buf: ByteBuffer) {
+            FfiConverterTypeSecurityKeyAlgorithm.write(value.`algorithm`, buf)
+            FfiConverterOptionalString.write(value.`application`, buf)
+            FfiConverterOptionalString.write(value.`user`, buf)
+            FfiConverterBoolean.write(value.`resident`, buf)
+            FfiConverterBoolean.write(value.`verifyRequired`, buf)
+            FfiConverterBoolean.write(value.`noTouchRequired`, buf)
+            FfiConverterOptionalString.write(value.`device`, buf)
+    }
+}
+
+
+
+/**
+ * A resident credential on the device.
+ */
+data class SecurityKeyResident (
+    var `application`: kotlin.String
+    , 
+    var `credentialId`: kotlin.ByteArray
+    , 
+    /**
+     * COSE public key (CBOR map) from credential management.
+     */
+    var `publicKeyCose`: kotlin.ByteArray
+    , 
+    var `userId`: kotlin.ByteArray = byteArrayOf() 
+    , 
+    var `userName`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyResident: FfiConverterRustBuffer<SecurityKeyResident> {
+    override fun read(buf: ByteBuffer): SecurityKeyResident {
+        return SecurityKeyResident(
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyResident) = (
+            FfiConverterString.allocationSize(value.`application`) +
+            FfiConverterByteArray.allocationSize(value.`credentialId`) +
+            FfiConverterByteArray.allocationSize(value.`publicKeyCose`) +
+            FfiConverterByteArray.allocationSize(value.`userId`) +
+            FfiConverterOptionalString.allocationSize(value.`userName`)
+    )
+
+    override fun write(value: SecurityKeyResident, buf: ByteBuffer) {
+            FfiConverterString.write(value.`application`, buf)
+            FfiConverterByteArray.write(value.`credentialId`, buf)
+            FfiConverterByteArray.write(value.`publicKeyCose`, buf)
+            FfiConverterByteArray.write(value.`userId`, buf)
+            FfiConverterOptionalString.write(value.`userName`, buf)
+    }
+}
+
+
+
+/**
+ * Which resident credentials to read (credential management, needs the PIN).
+ */
+data class SecurityKeyResidentRequest (
+    /**
+     * Relying parties starting with this (`ssh:`).
+     */
+    var `applicationPrefix`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyResidentRequest: FfiConverterRustBuffer<SecurityKeyResidentRequest> {
+    override fun read(buf: ByteBuffer): SecurityKeyResidentRequest {
+        return SecurityKeyResidentRequest(
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeyResidentRequest) = (
+            FfiConverterString.allocationSize(value.`applicationPrefix`)
+    )
+
+    override fun write(value: SecurityKeyResidentRequest, buf: ByteBuffer) {
+            FfiConverterString.write(value.`applicationPrefix`, buf)
+    }
+}
+
+
+
+/**
+ * What the device must sign (CTAP2 get assertion with `rp_id =
+ * application`, the allow list `[key_handle]` and `client_data_hash`).
+ */
+data class SecurityKeySignRequest (
+    var `algorithm`: SecurityKeyAlgorithm
+    , 
+    var `application`: kotlin.String
+    , 
+    var `keyHandle`: kotlin.ByteArray
+    , 
+    /**
+     * SHA-256 of `message` (what CTAP2 and YubiKit take).
+     */
+    var `clientDataHash`: kotlin.ByteArray
+    , 
+    /**
+     * The data to sign (for libraries that hash it themselves).
+     */
+    var `message`: kotlin.ByteArray
+    , 
+    /**
+     * CTAP2 option `up` (false: a `no-touch-required` key).
+     */
+    var `requirePresence`: kotlin.Boolean
+    , 
+    /**
+     * CTAP2 option `uv` (PIN or biometrics).
+     */
+    var `requireVerification`: kotlin.Boolean
+    , 
+    /**
+     * OpenSSH public key and fingerprint (to show or match).
+     */
+    var `publicKey`: kotlin.String
+    , 
+    var `fingerprint`: kotlin.String
+    , 
+    /**
+     * What to show: the host's label and address, the user, the key.
+     */
+    var `host`: kotlin.String
+    , 
+    var `address`: kotlin.String
+    , 
+    var `username`: kotlin.String
+    , 
+    var `keyLabel`: kotlin.String
+    , 
+    var `keyId`: kotlin.String?
+    , 
+    var `device`: kotlin.String?
+    , 
+    /**
+     * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
+     * `ai` (forwarded by the server).
+     */
+    var `purpose`: kotlin.String
+    , 
+    var `sessionId`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeySignRequest: FfiConverterRustBuffer<SecurityKeySignRequest> {
+    override fun read(buf: ByteBuffer): SecurityKeySignRequest {
+        return SecurityKeySignRequest(
+            FfiConverterTypeSecurityKeyAlgorithm.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SecurityKeySignRequest) = (
+            FfiConverterTypeSecurityKeyAlgorithm.allocationSize(value.`algorithm`) +
+            FfiConverterString.allocationSize(value.`application`) +
+            FfiConverterByteArray.allocationSize(value.`keyHandle`) +
+            FfiConverterByteArray.allocationSize(value.`clientDataHash`) +
+            FfiConverterByteArray.allocationSize(value.`message`) +
+            FfiConverterBoolean.allocationSize(value.`requirePresence`) +
+            FfiConverterBoolean.allocationSize(value.`requireVerification`) +
+            FfiConverterString.allocationSize(value.`publicKey`) +
+            FfiConverterString.allocationSize(value.`fingerprint`) +
+            FfiConverterString.allocationSize(value.`host`) +
+            FfiConverterString.allocationSize(value.`address`) +
+            FfiConverterString.allocationSize(value.`username`) +
+            FfiConverterString.allocationSize(value.`keyLabel`) +
+            FfiConverterOptionalString.allocationSize(value.`keyId`) +
+            FfiConverterOptionalString.allocationSize(value.`device`) +
+            FfiConverterString.allocationSize(value.`purpose`) +
+            FfiConverterOptionalString.allocationSize(value.`sessionId`)
+    )
+
+    override fun write(value: SecurityKeySignRequest, buf: ByteBuffer) {
+            FfiConverterTypeSecurityKeyAlgorithm.write(value.`algorithm`, buf)
+            FfiConverterString.write(value.`application`, buf)
+            FfiConverterByteArray.write(value.`keyHandle`, buf)
+            FfiConverterByteArray.write(value.`clientDataHash`, buf)
+            FfiConverterByteArray.write(value.`message`, buf)
+            FfiConverterBoolean.write(value.`requirePresence`, buf)
+            FfiConverterBoolean.write(value.`requireVerification`, buf)
+            FfiConverterString.write(value.`publicKey`, buf)
+            FfiConverterString.write(value.`fingerprint`, buf)
+            FfiConverterString.write(value.`host`, buf)
+            FfiConverterString.write(value.`address`, buf)
+            FfiConverterString.write(value.`username`, buf)
+            FfiConverterString.write(value.`keyLabel`, buf)
+            FfiConverterOptionalString.write(value.`keyId`, buf)
+            FfiConverterOptionalString.write(value.`device`, buf)
+            FfiConverterString.write(value.`purpose`, buf)
+            FfiConverterOptionalString.write(value.`sessionId`, buf)
+    }
+}
+
+
+
+/**
  * A language the server has for emails and notifications.
  */
 data class ServerLocale (
@@ -28350,6 +29790,232 @@ public object FfiConverterTypeSnippet: FfiConverterRustBuffer<Snippet> {
 
 
 /**
+ * Where a snippet runs: the host's built-ins (`None` fields: no host).
+ */
+data class SnippetContext (
+    /**
+     * The host's address (`{{host}}`); `None`: no host.
+     */
+    var `host`: kotlin.String? = null 
+    , 
+    var `label`: kotlin.String? = null 
+    , 
+    var `user`: kotlin.String? = null 
+    , 
+    var `port`: kotlin.UShort? = null 
+    , 
+    var `group`: kotlin.String? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSnippetContext: FfiConverterRustBuffer<SnippetContext> {
+    override fun read(buf: ByteBuffer): SnippetContext {
+        return SnippetContext(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalUShort.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SnippetContext) = (
+            FfiConverterOptionalString.allocationSize(value.`host`) +
+            FfiConverterOptionalString.allocationSize(value.`label`) +
+            FfiConverterOptionalString.allocationSize(value.`user`) +
+            FfiConverterOptionalUShort.allocationSize(value.`port`) +
+            FfiConverterOptionalString.allocationSize(value.`group`)
+    )
+
+    override fun write(value: SnippetContext, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`host`, buf)
+            FfiConverterOptionalString.write(value.`label`, buf)
+            FfiConverterOptionalString.write(value.`user`, buf)
+            FfiConverterOptionalUShort.write(value.`port`, buf)
+            FfiConverterOptionalString.write(value.`group`, buf)
+    }
+}
+
+
+
+/**
+ * A malformed tag (offsets in characters, Unicode scalar values).
+ */
+data class SnippetIssue (
+    var `start`: kotlin.UInt
+    , 
+    var `end`: kotlin.UInt
+    , 
+    var `tag`: kotlin.String
+    , 
+    var `message`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSnippetIssue: FfiConverterRustBuffer<SnippetIssue> {
+    override fun read(buf: ByteBuffer): SnippetIssue {
+        return SnippetIssue(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SnippetIssue) = (
+            FfiConverterUInt.allocationSize(value.`start`) +
+            FfiConverterUInt.allocationSize(value.`end`) +
+            FfiConverterString.allocationSize(value.`tag`) +
+            FfiConverterString.allocationSize(value.`message`)
+    )
+
+    override fun write(value: SnippetIssue, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`start`, buf)
+            FfiConverterUInt.write(value.`end`, buf)
+            FfiConverterString.write(value.`tag`, buf)
+            FfiConverterString.write(value.`message`, buf)
+    }
+}
+
+
+
+/**
+ * A parsed snippet.
+ */
+data class SnippetTemplate (
+    var `variables`: List<SnippetVariable>
+    , 
+    /**
+     * Malformed typed tags: show them in the editor; saving fails with
+     * `Invalid` (`apiError.code` `invalid_snippet`) while there are any.
+     */
+    var `issues`: List<SnippetIssue>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSnippetTemplate: FfiConverterRustBuffer<SnippetTemplate> {
+    override fun read(buf: ByteBuffer): SnippetTemplate {
+        return SnippetTemplate(
+            FfiConverterSequenceTypeSnippetVariable.read(buf),
+            FfiConverterSequenceTypeSnippetIssue.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SnippetTemplate) = (
+            FfiConverterSequenceTypeSnippetVariable.allocationSize(value.`variables`) +
+            FfiConverterSequenceTypeSnippetIssue.allocationSize(value.`issues`)
+    )
+
+    override fun write(value: SnippetTemplate, buf: ByteBuffer) {
+            FfiConverterSequenceTypeSnippetVariable.write(value.`variables`, buf)
+            FfiConverterSequenceTypeSnippetIssue.write(value.`issues`, buf)
+    }
+}
+
+
+
+/**
+ * A variable of a snippet.
+ */
+data class SnippetVariable (
+    /**
+     * What values are keyed by.
+     */
+    var `key`: kotlin.String
+    , 
+    var `kind`: SnippetVariableKind
+    , 
+    var `label`: kotlin.String
+    , 
+    /**
+     * Prefilled value (a prompt's default, a select's first option).
+     */
+    var `defaultValue`: kotlin.String?
+    , 
+    var `options`: List<kotlin.String>
+    , 
+    /**
+     * A built-in that needs a host (`host`, `label`, `user`, `port`,
+     * `group`): asked only when there is no host.
+     */
+    var `needsHost`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSnippetVariable: FfiConverterRustBuffer<SnippetVariable> {
+    override fun read(buf: ByteBuffer): SnippetVariable {
+        return SnippetVariable(
+            FfiConverterString.read(buf),
+            FfiConverterTypeSnippetVariableKind.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SnippetVariable) = (
+            FfiConverterString.allocationSize(value.`key`) +
+            FfiConverterTypeSnippetVariableKind.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`label`) +
+            FfiConverterOptionalString.allocationSize(value.`defaultValue`) +
+            FfiConverterSequenceString.allocationSize(value.`options`) +
+            FfiConverterBoolean.allocationSize(value.`needsHost`)
+    )
+
+    override fun write(value: SnippetVariable, buf: ByteBuffer) {
+            FfiConverterString.write(value.`key`, buf)
+            FfiConverterTypeSnippetVariableKind.write(value.`kind`, buf)
+            FfiConverterString.write(value.`label`, buf)
+            FfiConverterOptionalString.write(value.`defaultValue`, buf)
+            FfiConverterSequenceString.write(value.`options`, buf)
+            FfiConverterBoolean.write(value.`needsHost`, buf)
+    }
+}
+
+
+
+/**
  * Options for importing an `ssh_config`.
  */
 data class SshConfigImportOptions (
@@ -28848,6 +30514,12 @@ data class SshKey (
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     var `secretHidden`: kotlin.Boolean = false 
+    , 
+    /**
+     * Read-only: FIDO2 security key details (sk keys; also derived for
+     * sk keys imported by older apps). See docs/SSH-PRO.md.
+     */
+    var `securityKey`: SecurityKeyInfo? = null 
     
 ){
     
@@ -28879,6 +30551,7 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeItemAccess.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeSecurityKeyInfo.read(buf),
         )
     }
 
@@ -28897,7 +30570,8 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.allocationSize(value.`accountId`) +
             FfiConverterOptionalString.allocationSize(value.`vaultId`) +
             FfiConverterOptionalTypeItemAccess.allocationSize(value.`access`) +
-            FfiConverterBoolean.allocationSize(value.`secretHidden`)
+            FfiConverterBoolean.allocationSize(value.`secretHidden`) +
+            FfiConverterOptionalTypeSecurityKeyInfo.allocationSize(value.`securityKey`)
     )
 
     override fun write(value: SshKey, buf: ByteBuffer) {
@@ -28916,6 +30590,7 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.write(value.`vaultId`, buf)
             FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
             FfiConverterBoolean.write(value.`secretHidden`, buf)
+            FfiConverterOptionalTypeSecurityKeyInfo.write(value.`securityKey`, buf)
     }
 }
 
@@ -32046,6 +33721,281 @@ public object FfiConverterTypeSecretChange : FfiConverterRustBuffer<SecretChange
 
 
 /**
+ * Security key algorithm.
+ */
+
+enum class SecurityKeyAlgorithm {
+    
+    /**
+     * `sk-ssh-ed25519@openssh.com` (COSE EdDSA, -8).
+     */
+    ED25519,
+    /**
+     * `sk-ecdsa-sha2-nistp256@openssh.com` (COSE ES256, -7).
+     */
+    ECDSA_P256;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyAlgorithm: FfiConverterRustBuffer<SecurityKeyAlgorithm> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        SecurityKeyAlgorithm.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: SecurityKeyAlgorithm) = 4UL
+
+    override fun write(value: SecurityKeyAlgorithm, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+
+/**
+ * Errors the app's [`SecurityKeyHandler`] throws.
+ */
+sealed class SecurityKeyException: kotlin.Exception() {
+    
+    /**
+     * No security key is connected or in range.
+     */
+    class NoDevice(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    class Timeout(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    /**
+     * The user cancelled.
+     */
+    class Cancelled(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    /**
+     * The device does not have this credential (CTAP2_ERR_NO_CREDENTIALS).
+     */
+    class NotFound(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    /**
+     * The key needs its PIN and none was entered.
+     */
+    class PinRequired(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    /**
+     * Wrong or blocked PIN.
+     */
+    class PinInvalid(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    /**
+     * The device or platform cannot do this.
+     */
+    class Unsupported(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+    class Failed(
+        
+        val `message`: kotlin.String
+        ) : SecurityKeyException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+    
+
+    
+
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<SecurityKeyException> {
+        override fun lift(error_buf: RustBuffer.ByValue): SecurityKeyException = FfiConverterTypeSecurityKeyError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecurityKeyError : FfiConverterRustBuffer<SecurityKeyException> {
+    override fun read(buf: ByteBuffer): SecurityKeyException {
+        
+
+        return when(buf.getInt()) {
+            1 -> SecurityKeyException.NoDevice(
+                FfiConverterString.read(buf),
+                )
+            2 -> SecurityKeyException.Timeout(
+                FfiConverterString.read(buf),
+                )
+            3 -> SecurityKeyException.Cancelled(
+                FfiConverterString.read(buf),
+                )
+            4 -> SecurityKeyException.NotFound(
+                FfiConverterString.read(buf),
+                )
+            5 -> SecurityKeyException.PinRequired(
+                FfiConverterString.read(buf),
+                )
+            6 -> SecurityKeyException.PinInvalid(
+                FfiConverterString.read(buf),
+                )
+            7 -> SecurityKeyException.Unsupported(
+                FfiConverterString.read(buf),
+                )
+            8 -> SecurityKeyException.Failed(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: SecurityKeyException): ULong {
+        return when(value) {
+            is SecurityKeyException.NoDevice -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.Timeout -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.Cancelled -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.NotFound -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.PinRequired -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.PinInvalid -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.Unsupported -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+            is SecurityKeyException.Failed -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+        }
+    }
+
+    override fun write(value: SecurityKeyException, buf: ByteBuffer) {
+        when(value) {
+            is SecurityKeyException.NoDevice -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.Timeout -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.Cancelled -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.NotFound -> {
+                buf.putInt(4)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.PinRequired -> {
+                buf.putInt(5)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.PinInvalid -> {
+                buf.putInt(6)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.Unsupported -> {
+                buf.putInt(7)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+            is SecurityKeyException.Failed -> {
+                buf.putInt(8)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+/**
  * Which server to sign in to.
  */
 sealed class ServerChoice {
@@ -33318,6 +35268,59 @@ public object FfiConverterTypeSharedTerminalEvent : FfiConverterRustBuffer<Share
 
 
 /**
+ * Kind of snippet variable.
+ */
+
+enum class SnippetVariableKind {
+    
+    /**
+     * Filled from the host or the clock (`{{host}}`, `{{date}}`...).
+     */
+    BUILTIN,
+    /**
+     * Free text (`{{prompt:…}}` or a plain `{{name}}`).
+     */
+    PROMPT,
+    /**
+     * One of `options` (`{{select:…}}`): a picker.
+     */
+    SELECT,
+    /**
+     * Masked text (`{{secret:…}}`): never remember, store or log it.
+     */
+    SECRET;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSnippetVariableKind: FfiConverterRustBuffer<SnippetVariableKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        SnippetVariableKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: SnippetVariableKind) = 4UL
+
+    override fun write(value: SnippetVariableKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * Where a suggestion comes from.
  */
 
@@ -33975,6 +35978,17 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class NetworkUnavailable(message: String) : TermoakException(message)
         
+    /**
+     * A FIDO2 security key could not sign (or none can be used here):
+     * `apiError.code` says why (`security_key_required`,
+     * `security_key_no_device`, `security_key_timeout`,
+     * `security_key_cancelled`, `security_key_not_found`,
+     * `security_key_pin_required`, `security_key_pin_invalid`,
+     * `security_key_wrong_key`, `security_key_unsupported`,
+     * `security_key_invalid`, `security_key_failed`). See docs/SSH-PRO.md.
+     */
+        class SecurityKey(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -34016,6 +36030,7 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             26 -> TermoakException.NotSupportedForTelnet(FfiConverterString.read(buf))
             27 -> TermoakException.Cancelled(FfiConverterString.read(buf))
             28 -> TermoakException.NetworkUnavailable(FfiConverterString.read(buf))
+            29 -> TermoakException.SecurityKey(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -34137,6 +36152,10 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.NetworkUnavailable -> {
                 buf.putInt(28)
+                Unit
+            }
+            is TermoakException.SecurityKey -> {
+                buf.putInt(29)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -34674,6 +36693,38 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
 /**
  * @suppress
  */
+public object FfiConverterOptionalByteArray: FfiConverterRustBuffer<kotlin.ByteArray?> {
+    override fun read(buf: ByteBuffer): kotlin.ByteArray? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterByteArray.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.ByteArray?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterByteArray.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.ByteArray?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterByteArray.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeHostKeyChangeHandler: FfiConverterRustBuffer<HostKeyChangeHandler?> {
     override fun read(buf: ByteBuffer): HostKeyChangeHandler? {
         if (buf.get().toInt() == 0) {
@@ -34728,6 +36779,38 @@ public object FfiConverterOptionalTypeImportPreview: FfiConverterRustBuffer<Impo
         } else {
             buf.put(1)
             FfiConverterTypeImportPreview.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeSecurityKeyHandler: FfiConverterRustBuffer<SecurityKeyHandler?> {
+    override fun read(buf: ByteBuffer): SecurityKeyHandler? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeSecurityKeyHandler.read(buf)
+    }
+
+    override fun allocationSize(value: SecurityKeyHandler?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeSecurityKeyHandler.allocationSize(value)
+        }
+    }
+
+    override fun write(value: SecurityKeyHandler?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeSecurityKeyHandler.write(value, buf)
         }
     }
 }
@@ -35346,6 +37429,38 @@ public object FfiConverterOptionalTypeScreenRange: FfiConverterRustBuffer<Screen
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeSecurityKeyInfo: FfiConverterRustBuffer<SecurityKeyInfo?> {
+    override fun read(buf: ByteBuffer): SecurityKeyInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeSecurityKeyInfo.read(buf)
+    }
+
+    override fun allocationSize(value: SecurityKeyInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeSecurityKeyInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: SecurityKeyInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeSecurityKeyInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeSessionActivity: FfiConverterRustBuffer<SessionActivity?> {
     override fun read(buf: ByteBuffer): SessionActivity? {
         if (buf.get().toInt() == 0) {
@@ -35368,6 +37483,38 @@ public object FfiConverterOptionalTypeSessionActivity: FfiConverterRustBuffer<Se
         } else {
             buf.put(1)
             FfiConverterTypeSessionActivity.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeSnippetContext: FfiConverterRustBuffer<SnippetContext?> {
+    override fun read(buf: ByteBuffer): SnippetContext? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeSnippetContext.read(buf)
+    }
+
+    override fun allocationSize(value: SnippetContext?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeSnippetContext.allocationSize(value)
+        }
+    }
+
+    override fun write(value: SnippetContext?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeSnippetContext.write(value, buf)
         }
     }
 }
@@ -36918,6 +39065,34 @@ public object FfiConverterSequenceTypeScreenRun: FfiConverterRustBuffer<List<Scr
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeSecurityKeyResident: FfiConverterRustBuffer<List<SecurityKeyResident>> {
+    override fun read(buf: ByteBuffer): List<SecurityKeyResident> {
+        val len = buf.getInt()
+        return List<SecurityKeyResident>(len) {
+            FfiConverterTypeSecurityKeyResident.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SecurityKeyResident>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSecurityKeyResident.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SecurityKeyResident>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSecurityKeyResident.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeServerLocale: FfiConverterRustBuffer<List<ServerLocale>> {
     override fun read(buf: ByteBuffer): List<ServerLocale> {
         val len = buf.getInt()
@@ -37160,6 +39335,90 @@ public object FfiConverterSequenceTypeSnippet: FfiConverterRustBuffer<List<Snipp
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeSnippet.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSnippetContext: FfiConverterRustBuffer<List<SnippetContext>> {
+    override fun read(buf: ByteBuffer): List<SnippetContext> {
+        val len = buf.getInt()
+        return List<SnippetContext>(len) {
+            FfiConverterTypeSnippetContext.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SnippetContext>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSnippetContext.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SnippetContext>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSnippetContext.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSnippetIssue: FfiConverterRustBuffer<List<SnippetIssue>> {
+    override fun read(buf: ByteBuffer): List<SnippetIssue> {
+        val len = buf.getInt()
+        return List<SnippetIssue>(len) {
+            FfiConverterTypeSnippetIssue.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SnippetIssue>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSnippetIssue.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SnippetIssue>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSnippetIssue.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSnippetVariable: FfiConverterRustBuffer<List<SnippetVariable>> {
+    override fun read(buf: ByteBuffer): List<SnippetVariable> {
+        val len = buf.getInt()
+        return List<SnippetVariable>(len) {
+            FfiConverterTypeSnippetVariable.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SnippetVariable>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSnippetVariable.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SnippetVariable>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSnippetVariable.write(it, buf)
         }
     }
 }
@@ -38081,6 +40340,52 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
 
         /**
+         * The `authorized_keys` line of a key, with `no-touch-required` /
+         * `verify-required` when its flags need them.
+         */ fun `securityKeyAuthorizedKeysLine`(`publicKey`: kotlin.String, `info`: SecurityKeyInfo?): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_security_key_authorized_keys_line(
+    
+        
+        FfiConverterString.lower(`publicKey`),
+        FfiConverterOptionalTypeSecurityKeyInfo.lower(`info`),_status)
+}
+    )
+    }
+    
+
+    @Throws(TermoakException::class) fun `securityKeyFromCredential`(`request`: SecurityKeyCredentialRequest, `credential`: SecurityKeyCredential, `comment`: kotlin.String): SecurityKeyMaterial {
+            return FfiConverterTypeSecurityKeyMaterial.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_security_key_from_credential(
+    
+        
+        FfiConverterTypeSecurityKeyCredentialRequest.lower(`request`),
+        FfiConverterTypeSecurityKeyCredential.lower(`credential`),
+        FfiConverterString.lower(`comment`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The make credential request of `options` (to drive the device yourself;
+         * `TermoakCore.create_security_key` does it all).
+         */
+    @Throws(TermoakException::class) fun `securityKeyRequest`(`options`: SecurityKeyOptions): SecurityKeyCredentialRequest {
+            return FfiConverterTypeSecurityKeyCredentialRequest.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_security_key_request(
+    
+        
+        FfiConverterTypeSecurityKeyOptions.lower(`options`),_status)
+}
+    )
+    }
+    
+
+        /**
          * Public information about a server (version, whether it needs initial
          * setup...), without signing in. Useful to validate the URL.
          */
@@ -38099,6 +40404,73 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         TermoakException.ErrorHandler,
     )
     }
+
+        /**
+         * Parses a snippet: its variables and issues.
+         */ fun `parseSnippet`(`script`: kotlin.String): SnippetTemplate {
+            return FfiConverterTypeSnippetTemplate.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_parse_snippet(
+    
+        
+        FfiConverterString.lower(`script`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Renders `script` for several hosts at once (broadcast): the same asked
+         * `values`, each context's own built-ins; one result per context, in order.
+         */
+    @Throws(TermoakException::class) fun `renderSnippetForHosts`(`script`: kotlin.String, `values`: Map<kotlin.String, kotlin.String>, `contexts`: List<SnippetContext>): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_render_snippet_for_hosts(
+    
+        
+        FfiConverterString.lower(`script`),
+        FfiConverterMapStringString.lower(`values`),
+        FfiConverterSequenceTypeSnippetContext.lower(`contexts`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Renders `script` with the asked `values` and the built-ins of
+         * `context`. Fails with `Invalid` if a value is missing or a select value
+         * is not an option.
+         */
+    @Throws(TermoakException::class) fun `renderSnippetWith`(`script`: kotlin.String, `values`: Map<kotlin.String, kotlin.String>, `context`: SnippetContext? = null): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_render_snippet_with(
+    
+        
+        FfiConverterString.lower(`script`),
+        FfiConverterMapStringString.lower(`values`),
+        FfiConverterOptionalTypeSnippetContext.lower(`context`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The variables to ask for before running `script` in `context` (no
+         * context: also the host built-ins).
+         */ fun `snippetPrompts`(`script`: kotlin.String, `context`: SnippetContext? = null): List<SnippetVariable> {
+            return FfiConverterSequenceTypeSnippetVariable.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_snippet_prompts(
+    
+        
+        FfiConverterString.lower(`script`),
+        FfiConverterOptionalTypeSnippetContext.lower(`context`),_status)
+}
+    )
+    }
+    
 
         /**
          * Text of raw terminal output: escape sequences removed, carriage returns

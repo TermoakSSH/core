@@ -64,6 +64,9 @@ struct State {
     events: broadcast::Sender<Value>,
     /// Sync soon after local changes of an account.
     auto_sync: std::sync::atomic::AtomicBool,
+    /// Signs with FIDO2 security keys (local connections and server
+    /// forwarding through the events sockets).
+    security_key: crate::events::SignerSlot,
 }
 
 /// The device's workspace. Cheap to clone.
@@ -147,6 +150,7 @@ impl Workspace {
                 pinned: RwLock::new(None),
                 events,
                 auto_sync: std::sync::atomic::AtomicBool::new(false),
+                security_key: Default::default(),
             }),
         })
     }
@@ -285,9 +289,38 @@ impl Workspace {
     pub fn start_events(&self) {
         for a in self.account_list() {
             if a.is_signed_in() {
-                crate::events::start(&a, self.state.events.clone());
+                crate::events::start(
+                    &a,
+                    self.state.events.clone(),
+                    self.state.security_key.clone(),
+                );
             }
         }
+    }
+
+    /// Sets (or clears) the FIDO2 security key signer: local connections
+    /// use it for sk keys, and the running events sockets reconnect to
+    /// declare (or stop declaring) that this device answers the server's
+    /// signature requests (docs/SSH-PRO.md §5).
+    pub fn set_security_key_signer(
+        &self,
+        signer: Option<Arc<dyn termoak_ssh::sk::SecurityKeySigner>>,
+    ) {
+        *self.state.security_key.write() = signer;
+        for a in self.account_list() {
+            if a.is_signed_in() && a.events.lock().is_some() {
+                crate::events::start(
+                    &a,
+                    self.state.events.clone(),
+                    self.state.security_key.clone(),
+                );
+            }
+        }
+    }
+
+    /// The FIDO2 security key signer, if set.
+    pub fn security_key_signer(&self) -> Option<Arc<dyn termoak_ssh::sk::SecurityKeySigner>> {
+        self.state.security_key.read().clone()
     }
 
     /// Stops every events WebSocket.
@@ -786,6 +819,7 @@ impl Workspace {
         )?)
         .with_prompter(prompter)
         .with_agent(use_agent)
+        .with_security_key(self.security_key_signer())
         .with_dialer(self.network_dialer(item.scope, &resolved).await?);
         let conn = Connection::connect(&resolved, &opts).await;
         resolved.zeroize_secrets();

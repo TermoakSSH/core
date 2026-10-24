@@ -59,4 +59,6 @@ tokio-tungstenite = { workspace = true, features = ["rustls-tls-webpki-roots"] }
 
 [dev-dependencies]
 tempfile = "3"
+# The software security key (tests only).
+termoak-ssh = { workspace = true, features = ["soft-sk"] }
 rusqlite.workspace = true

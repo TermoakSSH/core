@@ -18,6 +18,7 @@ pub mod prompt;
 mod proxy;
 pub mod recording;
 pub mod sftp;
+pub mod sk;
 pub mod sshconfig;
 pub mod telnet;
 pub mod terminal;

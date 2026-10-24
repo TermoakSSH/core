@@ -21,6 +21,9 @@ pub struct ResolvedKey {
     pub private_key: String,
     pub passphrase: Option<String>,
     pub certificate: Option<String>,
+    /// Security key details (0.7), when the key is one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub security_key: Option<crate::model::SecurityKeyInfo>,
 }
 
 impl std::fmt::Debug for ResolvedKey {
@@ -53,6 +56,9 @@ pub struct ResolvedHost {
     /// data from cores before 0.7.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub network: Option<ResolvedNetwork>,
+    /// Name of the host's group (snippet built-in `{{group}}`, 0.7).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group_name: Option<String>,
 }
 
 /// Private network ready to use (by the server's `termoak-netd`).
@@ -96,6 +102,18 @@ impl ResolvedHost {
     /// The first host connected to: the first jump, or this host.
     pub fn first_hop(&self) -> &ResolvedHost {
         self.jumps.first().unwrap_or(self)
+    }
+
+    /// The snippet built-ins of this host (`{{host}}`, `{{user}}`...).
+    pub fn template_context(&self) -> crate::template::TemplateContext {
+        crate::template::TemplateContext {
+            host: Some(self.host.address.clone()),
+            label: Some(self.host.label.clone()),
+            user: Some(self.username.clone()),
+            port: Some(self.port),
+            group: self.group_name.clone(),
+            now: None,
+        }
     }
 }
 
@@ -393,11 +411,22 @@ impl Store {
                     private_key,
                     passphrase: secret.passphrase,
                     certificate: meta.certificate,
+                    security_key: meta.security_key,
                 })
             }
             None => None,
         };
 
+        let group_name = match host.group_id {
+            Some(gid) => self
+                .scoped_get::<Group>(scope, gid)
+                .await?
+                .map(|(g, _)| g.name),
+            None => None,
+        };
+
+        // Startup snippets cannot ask: built-ins, defaults and first options
+        // are filled, other tags stay as written (docs/SSH-PRO.md §7.3).
         let startup_script = match settings.startup_snippet_id {
             Some(sid) => self
                 .scoped_get::<Snippet>(scope, sid)
@@ -405,6 +434,20 @@ impl Store {
                 .map(|(s, _)| s.script),
             None => None,
         };
+        let port = settings.port.unwrap_or(host.protocol.default_port());
+        let startup_script = startup_script.map(|script| {
+            crate::template::render_startup(
+                &script,
+                &crate::template::TemplateContext {
+                    host: Some(host.address.clone()),
+                    label: Some(host.label.clone()),
+                    user: Some(username.clone()),
+                    port: Some(port),
+                    group: group_name.clone(),
+                    now: None,
+                },
+            )
+        });
 
         let proxy = settings
             .proxy
@@ -439,9 +482,10 @@ impl Store {
         };
 
         Ok(ResolvedHost {
-            port: settings.port.unwrap_or(host.protocol.default_port()),
+            port,
             proxy,
             network,
+            group_name,
             host,
             settings,
             username,
@@ -475,6 +519,7 @@ mod tests {
                     comment: String::new(),
                     has_passphrase: false,
                     certificate: None,
+                    security_key: None,
                 },
                 SecretUpdate::Set(SshKeySecret {
                     private_key: Some("PRIVATE".into()),

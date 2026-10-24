@@ -229,6 +229,7 @@ fn apply_credentials(resolved: &mut ResolvedHost, creds: &Credentials) {
             private_key: k.private_key.clone(),
             passphrase: k.passphrase.clone(),
             certificate: k.certificate.clone(),
+            security_key: r.key.as_ref().and_then(|k| k.security_key.clone()),
         });
         if let Some(p) = r.proxy.as_mut() {
             p.password = hop.proxy_password.clone();

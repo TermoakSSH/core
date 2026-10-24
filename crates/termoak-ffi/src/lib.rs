@@ -60,7 +60,9 @@ mod redact;
 mod remote;
 mod runtime;
 mod screen;
+mod security_key;
 mod server;
+mod snippets;
 mod ssh;
 mod term_ai;
 mod transfer;
@@ -92,7 +94,9 @@ pub use screen::{
     TerminalColors, TerminalKey, TerminalModes, TerminalScreen, TerminalThemeInfo,
     terminal_theme_for_host, terminal_themes,
 };
+pub use security_key::*;
 pub use server::*;
+pub use snippets::*;
 pub use ssh::{
     ActiveForward, ConnectionDetails, ExecResult, ForwardStats, RemoteFile, RemoteFileKind,
     SshSession, TerminalHandle, TerminalListener, TerminalStatus, TransferListener,
@@ -108,3 +112,5 @@ pub use vault::{
 mod tests;
 #[cfg(test)]
 mod tests_api;
+#[cfg(test)]
+mod tests_sk;

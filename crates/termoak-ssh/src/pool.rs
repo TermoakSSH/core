@@ -24,6 +24,11 @@ struct Slot {
 
 type SlotMap = HashMap<(Id, Id), Arc<tokio::sync::Mutex<Slot>>>;
 
+/// The security key signer for a user's pooled connections (server: the
+/// forwarding to the user's devices, `(user, vault)`).
+pub type SecurityKeys =
+    Arc<dyn Fn(Id, Id) -> Option<Arc<dyn crate::sk::SecurityKeySigner>> + Send + Sync>;
+
 /// Connection pool.
 pub struct ConnectionPool {
     store: Store,
@@ -32,6 +37,8 @@ pub struct ConnectionPool {
     slots: Mutex<SlotMap>,
     /// Dialer for hosts with a private network (server: `termoak-netd`).
     dialer: Mutex<Option<crate::net::Dialer>>,
+    /// Signer for hosts whose key is a FIDO2 security key.
+    security_keys: Mutex<Option<SecurityKeys>>,
 }
 
 impl ConnectionPool {
@@ -43,6 +50,7 @@ impl ConnectionPool {
             idle,
             slots: Mutex::new(HashMap::new()),
             dialer: Mutex::new(None),
+            security_keys: Mutex::new(None),
         });
         let weak = Arc::downgrade(&pool);
         tokio::spawn(async move {
@@ -59,6 +67,12 @@ impl ConnectionPool {
     /// Sets the dialer for hosts with a private network.
     pub fn set_dialer(&self, dialer: Option<crate::net::Dialer>) {
         *self.dialer.lock() = dialer;
+    }
+
+    /// Sets where pooled connections get a security key signer (purpose
+    /// `server`: SFTP, `/exec` and the AI on the server).
+    pub fn set_security_keys(&self, keys: Option<SecurityKeys>) {
+        *self.security_keys.lock() = keys;
     }
 
     /// Live connection of `user` to `host_id` (reused or opened). Checks the
@@ -101,7 +115,14 @@ impl ConnectionPool {
             self.policy,
             None,
         )))
-        .with_dialer(self.dialer.lock().clone());
+        .with_dialer(self.dialer.lock().clone())
+        .with_security_key(
+            self.security_keys
+                .lock()
+                .clone()
+                .and_then(|f| f(user, vault)),
+        )
+        .with_purpose("server", None);
         let conn = Connection::connect(&resolved, &opts).await?;
         slot.conn = Some(conn.clone());
         slot.vault = Some(vault);

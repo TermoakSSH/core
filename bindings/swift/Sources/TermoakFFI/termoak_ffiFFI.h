@@ -299,6 +299,27 @@ typedef void (*UniffiCallbackInterfaceSharedTerminalListenerMethod0)(uint64_t, R
     );
 
 #endif
+#ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD0
+#define UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD0
+typedef void (*UniffiCallbackInterfaceSecurityKeyHandlerMethod0)(uint64_t, RustBuffer, RustBuffer* _Nonnull, 
+        RustCallStatus *_Nonnull uniffiCallStatus
+    );
+
+#endif
+#ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD1
+#define UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD1
+typedef void (*UniffiCallbackInterfaceSecurityKeyHandlerMethod1)(uint64_t, RustBuffer, RustBuffer* _Nonnull, 
+        RustCallStatus *_Nonnull uniffiCallStatus
+    );
+
+#endif
+#ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD2
+#define UNIFFI_FFIDEF_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER_METHOD2
+typedef void (*UniffiCallbackInterfaceSecurityKeyHandlerMethod2)(uint64_t, RustBuffer, RustBuffer* _Nonnull, 
+        RustCallStatus *_Nonnull uniffiCallStatus
+    );
+
+#endif
 #ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_TERMINAL_LISTENER_METHOD0
 #define UNIFFI_FFIDEF_CALLBACK_INTERFACE_TERMINAL_LISTENER_METHOD0
 typedef void (*UniffiCallbackInterfaceTerminalListenerMethod0)(uint64_t, RustBuffer, void* _Nonnull, 
@@ -374,6 +395,17 @@ typedef struct UniffiVTableCallbackInterfaceSharedTerminalListener {
     UniffiCallbackInterfaceClone _Nonnull uniffiClone;
     UniffiCallbackInterfaceSharedTerminalListenerMethod0 _Nonnull onEvent;
 } UniffiVTableCallbackInterfaceSharedTerminalListener;
+
+#endif
+#ifndef UNIFFI_FFIDEF_V_TABLE_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER
+#define UNIFFI_FFIDEF_V_TABLE_CALLBACK_INTERFACE_SECURITY_KEY_HANDLER
+typedef struct UniffiVTableCallbackInterfaceSecurityKeyHandler {
+    UniffiCallbackInterfaceFree _Nonnull uniffiFree;
+    UniffiCallbackInterfaceClone _Nonnull uniffiClone;
+    UniffiCallbackInterfaceSecurityKeyHandlerMethod0 _Nonnull sign;
+    UniffiCallbackInterfaceSecurityKeyHandlerMethod1 _Nonnull makeCredential;
+    UniffiCallbackInterfaceSecurityKeyHandlerMethod2 _Nonnull listResident;
+} UniffiVTableCallbackInterfaceSecurityKeyHandler;
 
 #endif
 #ifndef UNIFFI_FFIDEF_V_TABLE_CALLBACK_INTERFACE_TERMINAL_LISTENER
@@ -1461,6 +1493,36 @@ RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_text_range(uint64_t ptr, 
 RustBuffer uniffi_termoak_ffi_fn_method_terminalscreen_word_at(uint64_t ptr, RustBuffer point, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_SECURITYKEYHANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_SECURITYKEYHANDLER
+uint64_t uniffi_termoak_ffi_fn_clone_securitykeyhandler(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_SECURITYKEYHANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FREE_SECURITYKEYHANDLER
+void uniffi_termoak_ffi_fn_free_securitykeyhandler(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_INIT_CALLBACK_VTABLE_SECURITYKEYHANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_INIT_CALLBACK_VTABLE_SECURITYKEYHANDLER
+void uniffi_termoak_ffi_fn_init_callback_vtable_securitykeyhandler(const UniffiVTableCallbackInterfaceSecurityKeyHandler* _Nonnull vtable
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_SIGN
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_SIGN
+RustBuffer uniffi_termoak_ffi_fn_method_securitykeyhandler_sign(uint64_t ptr, RustBuffer request, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_MAKE_CREDENTIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_MAKE_CREDENTIAL
+RustBuffer uniffi_termoak_ffi_fn_method_securitykeyhandler_make_credential(uint64_t ptr, RustBuffer request, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_LIST_RESIDENT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_SECURITYKEYHANDLER_LIST_RESIDENT
+RustBuffer uniffi_termoak_ffi_fn_method_securitykeyhandler_list_resident(uint64_t ptr, RustBuffer request, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_ACTIVEFORWARD
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_CLONE_ACTIVEFORWARD
 uint64_t uniffi_termoak_ffi_fn_clone_activeforward(uint64_t handle, RustCallStatus *_Nonnull out_status
@@ -2267,6 +2329,26 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_share_terminal(uint64_t ptr, u
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_subscribe_events(uint64_t ptr, uint64_t listener
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CREATE_SECURITY_KEY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CREATE_SECURITY_KEY
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_create_security_key(uint64_t ptr, RustBuffer label, RustBuffer options, RustBuffer comment, RustBuffer sync_mode, RustBuffer account_id, RustBuffer vault_id, uint64_t handler
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_HAS_SECURITY_KEY_HANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_HAS_SECURITY_KEY_HANDLER
+int8_t uniffi_termoak_ffi_fn_method_termoakcore_has_security_key_handler(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_IMPORT_RESIDENT_SECURITY_KEYS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_IMPORT_RESIDENT_SECURITY_KEYS
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_import_resident_security_keys(uint64_t ptr, RustBuffer application_prefix, int8_t verify_required, RustBuffer device, RustBuffer sync_mode, RustBuffer account_id, RustBuffer vault_id, uint64_t handler
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_SECURITY_KEY_HANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_SECURITY_KEY_HANDLER
+void uniffi_termoak_ffi_fn_method_termoakcore_set_security_key_handler(uint64_t ptr, RustBuffer handler, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_AI_ACCESS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_AI_ACCESS
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_ai_access(uint64_t ptr
@@ -2450,6 +2532,21 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_verification_required(uint64_t
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFY_CODE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_VERIFY_CODE
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_verify_code(uint64_t ptr, RustBuffer url, RustBuffer email, RustBuffer code, RustBuffer totp_code
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REMEMBER_SNIPPET_VALUES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REMEMBER_SNIPPET_VALUES
+void uniffi_termoak_ffi_fn_method_termoakcore_remember_snippet_values(uint64_t ptr, RustBuffer snippet_id, RustBuffer host_id, RustBuffer script, RustBuffer values, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SNIPPET_CONTEXT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SNIPPET_CONTEXT
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_snippet_context(uint64_t ptr, RustBuffer host_id, RustBuffer account_id, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SNIPPET_VALUES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SNIPPET_VALUES
+RustBuffer uniffi_termoak_ffi_fn_method_termoakcore_snippet_values(uint64_t ptr, RustBuffer snippet_id, RustBuffer host_id, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_CONNECT
@@ -2814,9 +2911,44 @@ RustBuffer uniffi_termoak_ffi_fn_func_terminal_themes(RustCallStatus *_Nonnull o
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_AUTHORIZED_KEYS_LINE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_AUTHORIZED_KEYS_LINE
+RustBuffer uniffi_termoak_ffi_fn_func_security_key_authorized_keys_line(RustBuffer public_key, RustBuffer info, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_FROM_CREDENTIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_FROM_CREDENTIAL
+RustBuffer uniffi_termoak_ffi_fn_func_security_key_from_credential(RustBuffer request, RustBuffer credential, RustBuffer comment, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_REQUEST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SECURITY_KEY_REQUEST
+RustBuffer uniffi_termoak_ffi_fn_func_security_key_request(RustBuffer options, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SERVER_INFO
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SERVER_INFO
 uint64_t uniffi_termoak_ffi_fn_func_server_info(RustBuffer url
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PARSE_SNIPPET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PARSE_SNIPPET
+RustBuffer uniffi_termoak_ffi_fn_func_parse_snippet(RustBuffer script, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_RENDER_SNIPPET_FOR_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_RENDER_SNIPPET_FOR_HOSTS
+RustBuffer uniffi_termoak_ffi_fn_func_render_snippet_for_hosts(RustBuffer script, RustBuffer values, RustBuffer contexts, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_RENDER_SNIPPET_WITH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_RENDER_SNIPPET_WITH
+RustBuffer uniffi_termoak_ffi_fn_func_render_snippet_with(RustBuffer script, RustBuffer values, RustBuffer context, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SNIPPET_PROMPTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_SNIPPET_PROMPTS
+RustBuffer uniffi_termoak_ffi_fn_func_snippet_prompts(RustBuffer script, RustBuffer context, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CLEAN_TERMINAL_OUTPUT
@@ -3323,9 +3455,51 @@ uint16_t uniffi_termoak_ffi_checksum_func_terminal_themes(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_AUTHORIZED_KEYS_LINE
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_AUTHORIZED_KEYS_LINE
+uint16_t uniffi_termoak_ffi_checksum_func_security_key_authorized_keys_line(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_FROM_CREDENTIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_FROM_CREDENTIAL
+uint16_t uniffi_termoak_ffi_checksum_func_security_key_from_credential(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_REQUEST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SECURITY_KEY_REQUEST
+uint16_t uniffi_termoak_ffi_checksum_func_security_key_request(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SERVER_INFO
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SERVER_INFO
 uint16_t uniffi_termoak_ffi_checksum_func_server_info(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PARSE_SNIPPET
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PARSE_SNIPPET
+uint16_t uniffi_termoak_ffi_checksum_func_parse_snippet(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_RENDER_SNIPPET_FOR_HOSTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_RENDER_SNIPPET_FOR_HOSTS
+uint16_t uniffi_termoak_ffi_checksum_func_render_snippet_for_hosts(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_RENDER_SNIPPET_WITH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_RENDER_SNIPPET_WITH
+uint16_t uniffi_termoak_ffi_checksum_func_render_snippet_with(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SNIPPET_PROMPTS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_SNIPPET_PROMPTS
+uint16_t uniffi_termoak_ffi_checksum_func_snippet_prompts(void
     
 );
 #endif
@@ -4499,6 +4673,24 @@ uint16_t uniffi_termoak_ffi_checksum_method_terminalscreen_word_at(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_SIGN
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_SIGN
+uint16_t uniffi_termoak_ffi_checksum_method_securitykeyhandler_sign(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_MAKE_CREDENTIAL
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_MAKE_CREDENTIAL
+uint16_t uniffi_termoak_ffi_checksum_method_securitykeyhandler_make_credential(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_LIST_RESIDENT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_SECURITYKEYHANDLER_LIST_RESIDENT
+uint16_t uniffi_termoak_ffi_checksum_method_securitykeyhandler_list_resident(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACTIVEFORWARD_BOUND_PORT
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACTIVEFORWARD_BOUND_PORT
 uint16_t uniffi_termoak_ffi_checksum_method_activeforward_bound_port(void
@@ -5339,6 +5531,30 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_CREATE_SECURITY_KEY
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_CREATE_SECURITY_KEY
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_create_security_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_HAS_SECURITY_KEY_HANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_HAS_SECURITY_KEY_HANDLER
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_has_security_key_handler(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_IMPORT_RESIDENT_SECURITY_KEYS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_IMPORT_RESIDENT_SECURITY_KEYS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_import_resident_security_keys(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_SECURITY_KEY_HANDLER
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_SECURITY_KEY_HANDLER
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_set_security_key_handler(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_AI_ACCESS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_AI_ACCESS
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_ai_access(void
@@ -5558,6 +5774,24 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_verification_required(vo
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFY_CODE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_VERIFY_CODE
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_verify_code(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REMEMBER_SNIPPET_VALUES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REMEMBER_SNIPPET_VALUES
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_remember_snippet_values(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SNIPPET_CONTEXT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SNIPPET_CONTEXT
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_snippet_context(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SNIPPET_VALUES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SNIPPET_VALUES
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_snippet_values(void
     
 );
 #endif

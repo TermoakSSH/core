@@ -1024,6 +1024,7 @@ mod tests {
                     comment: String::new(),
                     has_passphrase: false,
                     certificate: None,
+                    security_key: None,
                 },
                 SecretUpdate::Set(SshKeySecret {
                     private_key: Some("PRIVATE".into()),

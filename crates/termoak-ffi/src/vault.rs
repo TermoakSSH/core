@@ -610,7 +610,7 @@ impl TermoakCore {
     }
 }
 
-async fn save_key_material(
+pub(crate) async fn save_key_material(
     ws: &Workspace,
     target: SaveTarget,
     label: String,
@@ -628,6 +628,7 @@ async fn save_key_material(
         comment: material.comment.clone(),
         has_passphrase: material.encrypted,
         certificate: None,
+        security_key: material.security_key.clone(),
     };
     let secret = SshKeySecret {
         private_key: Some(material.private_openssh.clone()),

@@ -162,11 +162,13 @@ fn resolved(sshd: &Sshd, jumps: Vec<ResolvedHost>) -> ResolvedHost {
             private_key: sshd.private_key.clone(),
             passphrase: None,
             certificate: None,
+            security_key: None,
         }),
         jumps,
         proxy: None,
         startup_script: None,
         network: None,
+        group_name: None,
     }
 }
 

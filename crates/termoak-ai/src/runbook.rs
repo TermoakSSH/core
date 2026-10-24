@@ -236,7 +236,9 @@ pub fn parameterize(text: &str, hosts: &[HostNames], used: &mut bool) -> String 
     // Longest first (`web1.example.com` before `web1`).
     names.sort_by_key(|n| std::cmp::Reverse(n.len()));
     names.dedup();
-    let mut out = text.to_string();
+    // What the commands already had between `{{` and `}}` stays literal
+    // (snippet templates, docs/SSH-PRO.md §7.3).
+    let mut out = termoak_core::template::escape(text);
     for name in names {
         let mut result = String::with_capacity(out.len());
         let mut rest = out.as_str();
@@ -527,6 +529,18 @@ mod tests {
         assert_eq!(rb.description, "Fix nginx on web1");
         assert_eq!(rb.steps, 3);
         assert_eq!(rb.variables, ["host"]);
+        // A command that had a template tag keeps it literal.
+        let mut used = false;
+        let p = parameterize(
+            "docker inspect -f '{{.State}}' {{name}} web1",
+            &[HostNames {
+                label: "web1".into(),
+                address: "10.0.0.1".into(),
+            }],
+            &mut used,
+        );
+        assert_eq!(p, "docker inspect -f '{{.State}}' \\{{name}} {{host}}");
+        assert!(used);
         assert_eq!(
             rb.script,
             "# Fix nginx\n\n# First I check the configuration.\nnginx -t\n\n# Reload it\nsystemctl reload nginx # on {{host}}\n\ncat > /etc/motd <<'TERMOAK_EOF'\nWelcome to {{host}}\nTERMOAK_EOF\n"

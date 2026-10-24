@@ -119,6 +119,15 @@ pub enum TermoakError {
     /// when the server has networks.
     #[error("{0}")]
     NetworkUnavailable(String),
+    /// A FIDO2 security key could not sign (or none can be used here):
+    /// `apiError.code` says why (`security_key_required`,
+    /// `security_key_no_device`, `security_key_timeout`,
+    /// `security_key_cancelled`, `security_key_not_found`,
+    /// `security_key_pin_required`, `security_key_pin_invalid`,
+    /// `security_key_wrong_key`, `security_key_unsupported`,
+    /// `security_key_invalid`, `security_key_failed`). See docs/SSH-PRO.md.
+    #[error("{0}")]
+    SecurityKey(String),
 }
 
 /// The structured part of an error: HTTP status, stable code and the
@@ -247,6 +256,7 @@ impl From<CoreError> for TermoakError {
                 termoak_core::error::codes::NETWORK_UNAVAILABLE => Self::NetworkUnavailable(msg),
                 termoak_core::error::codes::NETWORK_DIAL_FAILED => Self::Connection(msg),
                 termoak_core::error::codes::INVALID_ROLE
+                | termoak_core::error::codes::INVALID_SNIPPET
                 | termoak_core::error::codes::CROSS_VAULT_REFERENCE => Self::Invalid(msg),
                 termoak_core::error::codes::MEMBER_EXISTS
                 | termoak_core::error::codes::ID_IN_USE
@@ -261,7 +271,7 @@ impl From<CoreError> for TermoakError {
 impl From<SshError> for TermoakError {
     fn from(e: SshError) -> Self {
         let msg = e.to_string();
-        if let SshError::Network { code, message } = &e {
+        if let SshError::Network { code, message } | SshError::SecurityKey { code, message } = &e {
             remember(
                 &msg,
                 ApiErrorInfo {
@@ -286,6 +296,7 @@ impl From<SshError> for TermoakError {
             SshError::Sftp(_) => Self::Sftp(msg),
             SshError::Closed => Self::Closed(msg),
             SshError::Io(_) => Self::Io(msg),
+            SshError::SecurityKey { .. } => Self::SecurityKey(msg),
             SshError::Network { code, .. } => match code {
                 termoak_core::error::codes::NETWORK_UNAVAILABLE => Self::NetworkUnavailable(msg),
                 termoak_core::error::codes::NETWORK_NOT_FOUND => Self::NotFound(msg),
@@ -331,6 +342,9 @@ impl From<ClientError> for TermoakError {
                 if code == termoak_core::error::codes::NETWORK_UNAVAILABLE =>
             {
                 Self::NetworkUnavailable(msg)
+            }
+            ClientError::Api { ref code, .. } if code.starts_with("security_key_") => {
+                Self::SecurityKey(msg)
             }
             ClientError::Api { status, .. } => match status {
                 401 => Self::SessionExpired(msg),

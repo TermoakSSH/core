@@ -45,6 +45,7 @@ pub mod qr;
 pub mod relay;
 pub mod remote;
 pub mod servers;
+pub mod snippets;
 pub mod sync;
 pub mod vault;
 pub mod workspace;

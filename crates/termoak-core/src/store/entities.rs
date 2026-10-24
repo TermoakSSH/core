@@ -218,29 +218,36 @@ pub fn references(kind: EntityKind, data: &Value) -> Vec<(&'static str, Id)> {
 }
 
 /// Fields of an entity's JSON that older cores drop when they edit it
-/// (they do not know them), as (object path, key): `settings.network_id` of
-/// hosts and groups (cores before 0.7) and `tailscale.ephemeral` of
-/// networks (before 0.7.0-next.3). Newer cores always write them (`null`
-/// when empty).
+/// (they do not know them), as (object path or `""` for the top level,
+/// key): `settings.network_id` of hosts and groups (cores before 0.7),
+/// `tailscale.ephemeral` of networks (before 0.7.0-next.3) and
+/// `security_key` of keys (before 0.7.0-next.4). Newer cores always write
+/// them (`null` when empty).
 const OMITTABLE: &[(EntityKind, &str, &str)] = &[
     (EntityKind::Host, "settings", "network_id"),
     (EntityKind::Group, "settings", "network_id"),
     (EntityKind::Network, "tailscale", "ephemeral"),
+    (EntityKind::Key, "", "security_key"),
 ];
 
-/// Compatibility with apps on cores before 0.7: when `incoming` (a pushed
-/// or REST-updated host or group) lacks a field such a core does not know,
-/// the value of `stored` (the current data) is kept, so editing a host on
-/// an old app does not take it out of its private network. A field that is
-/// present (also as `null`) is taken as it comes. Returns whether something
-/// was kept.
+/// Compatibility with apps on older cores: when `incoming` (a pushed or
+/// REST-updated item) lacks a field such a core does not know, the value of
+/// `stored` (the current data) is kept, so editing a host on an old app does
+/// not take it out of its private network (or a security key out of its
+/// details). A field that is present (also as `null`) is taken as it comes.
+/// Returns whether something was kept.
 pub fn keep_omitted_fields(kind: EntityKind, incoming: &mut Value, stored: &Value) -> bool {
     let mut kept = false;
     for (k, parent, field) in OMITTABLE {
         if *k != kind {
             continue;
         }
-        let Some(old) = stored.get(*parent).and_then(|p| p.get(*field)) else {
+        let old = if parent.is_empty() {
+            stored.get(*field)
+        } else {
+            stored.get(*parent).and_then(|p| p.get(*field))
+        };
+        let Some(old) = old else {
             continue;
         };
         if old.is_null() {
@@ -249,16 +256,22 @@ pub fn keep_omitted_fields(kind: EntityKind, incoming: &mut Value, stored: &Valu
         let Some(obj) = incoming.as_object_mut() else {
             continue;
         };
-        let parent_obj = obj
-            .entry(parent.to_string())
-            .or_insert_with(|| Value::Object(Default::default()));
-        if parent_obj.is_null() {
-            *parent_obj = Value::Object(Default::default());
-        }
-        if let Some(p) = parent_obj.as_object_mut()
-            && !p.contains_key(*field)
-        {
-            p.insert(field.to_string(), old.clone());
+        let target = if parent.is_empty() {
+            obj
+        } else {
+            let parent_obj = obj
+                .entry(parent.to_string())
+                .or_insert_with(|| Value::Object(Default::default()));
+            if parent_obj.is_null() {
+                *parent_obj = Value::Object(Default::default());
+            }
+            match parent_obj.as_object_mut() {
+                Some(p) => p,
+                None => continue,
+            }
+        };
+        if !target.contains_key(*field) {
+            target.insert(field.to_string(), old.clone());
             kept = true;
         }
     }
@@ -453,6 +466,7 @@ impl Store {
             data.set_id(new_id());
         }
         data.validate()?;
+        data.validate_edit()?;
         if let SecretUpdate::Set(sec) = &secret {
             data.validate_secret(sec)?;
         }
@@ -831,6 +845,7 @@ impl Store {
             data.set_id(new_id());
         }
         data.validate()?;
+        data.validate_edit()?;
         if let SecretUpdate::Set(sec) = &secret {
             data.validate_secret(sec)?;
         }

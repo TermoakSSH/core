@@ -49,6 +49,9 @@ pub struct KeyMaterial {
     pub algorithm: String,
     pub comment: String,
     pub encrypted: bool,
+    /// FIDO2 security key details (sk keys only).
+    #[serde(default)]
+    pub security_key: Option<termoak_core::model::SecurityKeyInfo>,
 }
 
 impl std::fmt::Debug for KeyMaterial {
@@ -57,6 +60,7 @@ impl std::fmt::Debug for KeyMaterial {
             .field("algorithm", &self.algorithm)
             .field("fingerprint", &self.fingerprint)
             .field("encrypted", &self.encrypted)
+            .field("security_key", &self.security_key)
             .finish_non_exhaustive()
     }
 }
@@ -121,6 +125,7 @@ fn material(key: &PrivateKey, comment: &str, encrypted: bool) -> Result<KeyMater
         algorithm: public.algorithm().as_str().to_string(),
         comment: comment.to_string(),
         encrypted,
+        security_key: None,
     })
 }
 
@@ -141,6 +146,11 @@ pub fn import_private(pem: &str, passphrase: Option<&str>) -> Result<KeyMaterial
         }
         let comment = key.comment().to_string();
         let public = key.public_key();
+        // Security keys: the flags are in the (maybe encrypted) private part.
+        let security_key = match crate::sk::parse_private(pem, passphrase) {
+            Ok(Some(sk)) => Some(sk.info()),
+            _ => crate::sk::public_info(public),
+        };
         return Ok(KeyMaterial {
             private_openssh: format!("{pem}\n"),
             public_openssh: public.to_openssh().map_err(key_err)?,
@@ -148,6 +158,7 @@ pub fn import_private(pem: &str, passphrase: Option<&str>) -> Result<KeyMaterial
             algorithm: public.algorithm().as_str().to_string(),
             comment,
             encrypted,
+            security_key,
         });
     }
     // Other formats: decode it (and re-export it in OpenSSH format).

@@ -4251,6 +4251,322 @@ public func FfiConverterTypeLogListener_lower(_ value: LogListener) -> UInt64 {
 
 
 /**
+ * Implemented by the app to use security keys (YubiKit on Android and iOS,
+ * a CTAP2 library on the desktop).
+ *
+ * **Threads**: called from a background thread and it **may block** while
+ * the app shows "Touch your security key" (or "Hold it near the phone")
+ * and waits for the device; never from the main thread. Throw
+ * `Cancelled` when the user cancels.
+ */
+public protocol SecurityKeyHandler: AnyObject, Sendable {
+    
+    /**
+     * Signs (CTAP2 get assertion). Show the request's host, user, key and
+     * purpose: a request forwarded by the server (`purpose` other than
+     * `connect`) comes from a connection the server makes for you.
+     */
+    func sign(request: SecurityKeySignRequest) throws  -> SecurityKeyAssertion
+    
+    /**
+     * Creates a credential (CTAP2 make credential).
+     */
+    func makeCredential(request: SecurityKeyCredentialRequest) throws  -> SecurityKeyCredential
+    
+    /**
+     * Reads the resident credentials (CTAP 2.1 credential management;
+     * asks for the PIN). Throw `Unsupported` if the platform cannot.
+     */
+    func listResident(request: SecurityKeyResidentRequest) throws  -> [SecurityKeyResident]
+    
+}
+/**
+ * Implemented by the app to use security keys (YubiKit on Android and iOS,
+ * a CTAP2 library on the desktop).
+ *
+ * **Threads**: called from a background thread and it **may block** while
+ * the app shows "Touch your security key" (or "Hold it near the phone")
+ * and waits for the device; never from the main thread. Throw
+ * `Cancelled` when the user cancels.
+ */
+open class SecurityKeyHandlerImpl: SecurityKeyHandler, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_securitykeyhandler(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_securitykeyhandler(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * Signs (CTAP2 get assertion). Show the request's host, user, key and
+     * purpose: a request forwarded by the server (`purpose` other than
+     * `connect`) comes from a connection the server makes for you.
+     */
+open func sign(request: SecurityKeySignRequest)throws  -> SecurityKeyAssertion  {
+    return try  FfiConverterTypeSecurityKeyAssertion_lift(try rustCallWithError(FfiConverterTypeSecurityKeyError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_securitykeyhandler_sign(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeSecurityKeySignRequest_lower(request),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Creates a credential (CTAP2 make credential).
+     */
+open func makeCredential(request: SecurityKeyCredentialRequest)throws  -> SecurityKeyCredential  {
+    return try  FfiConverterTypeSecurityKeyCredential_lift(try rustCallWithError(FfiConverterTypeSecurityKeyError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_securitykeyhandler_make_credential(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeSecurityKeyCredentialRequest_lower(request),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Reads the resident credentials (CTAP 2.1 credential management;
+     * asks for the PIN). Throw `Unsupported` if the platform cannot.
+     */
+open func listResident(request: SecurityKeyResidentRequest)throws  -> [SecurityKeyResident]  {
+    return try  FfiConverterSequenceTypeSecurityKeyResident.lift(try rustCallWithError(FfiConverterTypeSecurityKeyError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_securitykeyhandler_list_resident(
+            self.uniffiCloneHandle(),
+        FfiConverterTypeSecurityKeyResidentRequest_lower(request),uniffiCallStatus
+    )
+})
+}
+    
+
+    
+}
+
+
+
+// Put the implementation in a struct so we don't pollute the top-level namespace
+fileprivate struct UniffiCallbackInterfaceSecurityKeyHandler {
+
+    // Create the VTable using a series of closures.
+    // Swift automatically converts these into C callback functions.
+    //
+    // Store the vtable directly.
+    static let vtable: UniffiVTableCallbackInterfaceSecurityKeyHandler = UniffiVTableCallbackInterfaceSecurityKeyHandler(
+        uniffiFree: { (uniffiHandle: UInt64) -> () in
+            do {
+                try FfiConverterTypeSecurityKeyHandler.handleMap.remove(handle: uniffiHandle)
+            } catch {
+                print("Uniffi callback interface SecurityKeyHandler: handle missing in uniffiFree")
+            }
+        },
+        uniffiClone: { (uniffiHandle: UInt64) -> UInt64 in
+            do {
+                return try FfiConverterTypeSecurityKeyHandler.handleMap.clone(handle: uniffiHandle)
+            } catch {
+                fatalError("Uniffi callback interface SecurityKeyHandler: handle missing in uniffiClone")
+            }
+        },
+        sign: { (
+            uniffiHandle: UInt64,
+            request: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> SecurityKeyAssertion in
+                guard let uniffiObj = try? FfiConverterTypeSecurityKeyHandler.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.sign(
+                     request: try FfiConverterTypeSecurityKeySignRequest_lift(request)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterTypeSecurityKeyAssertion_lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeSecurityKeyError_lower
+            )
+        },
+        makeCredential: { (
+            uniffiHandle: UInt64,
+            request: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> SecurityKeyCredential in
+                guard let uniffiObj = try? FfiConverterTypeSecurityKeyHandler.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.makeCredential(
+                     request: try FfiConverterTypeSecurityKeyCredentialRequest_lift(request)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterTypeSecurityKeyCredential_lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeSecurityKeyError_lower
+            )
+        },
+        listResident: { (
+            uniffiHandle: UInt64,
+            request: RustBuffer,
+            uniffiOutReturn: UnsafeMutablePointer<RustBuffer>,
+            uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
+        ) in
+            let makeCall = {
+                () throws -> [SecurityKeyResident] in
+                guard let uniffiObj = try? FfiConverterTypeSecurityKeyHandler.handleMap.get(handle: uniffiHandle) else {
+                    throw UniffiInternalError.unexpectedStaleHandle
+                }
+                return try uniffiObj.listResident(
+                     request: try FfiConverterTypeSecurityKeyResidentRequest_lift(request)
+                )
+            }
+
+            
+            let writeReturn = { uniffiOutReturn.pointee = FfiConverterSequenceTypeSecurityKeyResident.lower($0) }
+            uniffiTraitInterfaceCallWithError(
+                callStatus: uniffiCallStatus,
+                makeCall: makeCall,
+                writeReturn: writeReturn,
+                lowerError: FfiConverterTypeSecurityKeyError_lower
+            )
+        }
+    )
+
+    // Rust stores this pointer for future callback invocations, so it must live
+    // for the process lifetime (not just for the init function call).
+    //
+    // `nonisolated(unsafe)` is needed under Swift 6 strict concurrency.
+    // This is safe because the pointee is initialized once during static init
+    // and never mutated by either side of the FFI.  Its fields are C function pointers.
+    nonisolated(unsafe) static let vtablePtr: UnsafePointer<UniffiVTableCallbackInterfaceSecurityKeyHandler> = {
+        let ptr = UnsafeMutablePointer<UniffiVTableCallbackInterfaceSecurityKeyHandler>.allocate(capacity: 1)
+        ptr.initialize(to: vtable)
+        return UnsafePointer(ptr)
+    }()
+}
+
+private func uniffiCallbackInitSecurityKeyHandler() {
+    uniffi_termoak_ffi_fn_init_callback_vtable_securitykeyhandler(UniffiCallbackInterfaceSecurityKeyHandler.vtablePtr)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyHandler: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<SecurityKeyHandler>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = SecurityKeyHandler
+
+    public static func lift(_ handle: UInt64) throws -> SecurityKeyHandler {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return SecurityKeyHandlerImpl(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: SecurityKeyHandler) -> UInt64 {
+         if let rustImpl = value as? SecurityKeyHandlerImpl {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyHandler {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SecurityKeyHandler, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyHandler_lift(_ handle: UInt64) throws -> SecurityKeyHandler {
+    return try FfiConverterTypeSecurityKeyHandler.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyHandler_lower(_ value: SecurityKeyHandler) -> UInt64 {
+    return FfiConverterTypeSecurityKeyHandler.lower(value)
+}
+
+
+
+
+
+
+/**
  * Implemented by the app to receive its account's events: AI tasks
  * (progress, pending approvals), sessions opened, closed or shared with you,
  * pending questions...
@@ -8522,6 +8838,33 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func subscribeEvents(listener: ServerEventListener) async throws  -> EventSubscription
     
     /**
+     * Creates a key on the security key (the handler's `make_credential`)
+     * and saves it (see `generate_key` for `account_id` and `vault_id`).
+     */
+    func createSecurityKey(label: String, options: SecurityKeyOptions, comment: String, syncMode: SyncMode?, accountId: String?, vaultId: String?, handler: SecurityKeyHandler) async throws  -> SshKey
+    
+    /**
+     * Whether a security key handler is set.
+     */
+    func hasSecurityKeyHandler()  -> Bool
+    
+    /**
+     * Loads the resident keys of the security key (the handler's
+     * `list_resident`) and saves those whose fingerprint is not among the
+     * keys yet. `verify_required`: mark them as needing the PIN (the
+     * device does not say). Labels: "<device or Security key> (<user>)".
+     */
+    func importResidentSecurityKeys(applicationPrefix: String?, verifyRequired: Bool, device: String?, syncMode: SyncMode?, accountId: String?, vaultId: String?, handler: SecurityKeyHandler) async throws  -> [SshKey]
+    
+    /**
+     * Sets (or clears, with `nil`) the app's security key handler: local
+     * connections with sk keys use it, and while it is set the events
+     * socket (`subscribe_events`, opened after this call) answers the
+     * server's signature requests for server sessions.
+     */
+    func setSecurityKeyHandler(handler: SecurityKeyHandler?) 
+    
+    /**
      * Your AI situation: own keys, whether your plan includes the server's
      * AI, its credit and this month's spending.
      */
@@ -8745,6 +9088,24 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * repeat with `totp_code`.
      */
     func verifyCode(url: String, email: String, code: String, totpCode: String?) async throws 
+    
+    /**
+     * Remembers the values of a run on this device (never synced). Secrets
+     * and built-ins are dropped. `script` is the snippet's script.
+     */
+    func rememberSnippetValues(snippetId: String, hostId: String?, script: String, values: [String: String]) throws 
+    
+    /**
+     * The built-ins of a host (`{{host}}`, `{{user}}`...) for snippets.
+     * No credentials are fetched (also for Use-only hosts).
+     */
+    func snippetContext(hostId: String, accountId: String?) throws  -> SnippetContext
+    
+    /**
+     * Values remembered on this device for `snippet_id` on `host_id` (or
+     * for runs without a host).
+     */
+    func snippetValues(snippetId: String, hostId: String?) throws  -> [String: String]
     
     /**
      * Connects to a host over SSH from this device (through its jumps).
@@ -10645,6 +11006,75 @@ open func subscribeEvents(listener: ServerEventListener)async throws  -> EventSu
 }
     
     /**
+     * Creates a key on the security key (the handler's `make_credential`)
+     * and saves it (see `generate_key` for `account_id` and `vault_id`).
+     */
+open func createSecurityKey(label: String, options: SecurityKeyOptions, comment: String, syncMode: SyncMode?, accountId: String? = nil, vaultId: String? = nil, handler: SecurityKeyHandler)async throws  -> SshKey  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_create_security_key(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(label),FfiConverterTypeSecurityKeyOptions_lower(options),FfiConverterString.lower(comment),FfiConverterOptionTypeSyncMode.lower(syncMode),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId),FfiConverterTypeSecurityKeyHandler_lower(handler)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSshKey_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Whether a security key handler is set.
+     */
+open func hasSecurityKeyHandler() -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_has_security_key_handler(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Loads the resident keys of the security key (the handler's
+     * `list_resident`) and saves those whose fingerprint is not among the
+     * keys yet. `verify_required`: mark them as needing the PIN (the
+     * device does not say). Labels: "<device or Security key> (<user>)".
+     */
+open func importResidentSecurityKeys(applicationPrefix: String?, verifyRequired: Bool, device: String?, syncMode: SyncMode?, accountId: String? = nil, vaultId: String? = nil, handler: SecurityKeyHandler)async throws  -> [SshKey]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_import_resident_security_keys(
+                        self.uniffiCloneHandle(),FfiConverterOptionString.lower(applicationPrefix),FfiConverterBool.lower(verifyRequired),FfiConverterOptionString.lower(device),FfiConverterOptionTypeSyncMode.lower(syncMode),FfiConverterOptionString.lower(accountId),FfiConverterOptionString.lower(vaultId),FfiConverterTypeSecurityKeyHandler_lower(handler)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeSshKey.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Sets (or clears, with `nil`) the app's security key handler: local
+     * connections with sk keys use it, and while it is set the events
+     * socket (`subscribe_events`, opened after this call) answers the
+     * server's signature requests for server sessions.
+     */
+open func setSecurityKeyHandler(handler: SecurityKeyHandler?)  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_set_security_key_handler(
+            self.uniffiCloneHandle(),
+        FfiConverterOptionTypeSecurityKeyHandler.lower(handler),uniffiCallStatus
+    )
+}
+}
+    
+    /**
      * Your AI situation: own keys, whether your plan includes the server's
      * AI, its credit and this month's spending.
      */
@@ -11371,6 +11801,52 @@ open func verifyCode(url: String, email: String, code: String, totpCode: String?
             liftFunc: { $0 },
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+    
+    /**
+     * Remembers the values of a run on this device (never synced). Secrets
+     * and built-ins are dropped. `script` is the snippet's script.
+     */
+open func rememberSnippetValues(snippetId: String, hostId: String? = nil, script: String, values: [String: String])throws   {try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_remember_snippet_values(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(snippetId),
+        FfiConverterOptionString.lower(hostId),
+        FfiConverterString.lower(script),
+        FfiConverterDictionaryStringString.lower(values),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * The built-ins of a host (`{{host}}`, `{{user}}`...) for snippets.
+     * No credentials are fetched (also for Use-only hosts).
+     */
+open func snippetContext(hostId: String, accountId: String? = nil)throws  -> SnippetContext  {
+    return try  FfiConverterTypeSnippetContext_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_snippet_context(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(hostId),
+        FfiConverterOptionString.lower(accountId),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Values remembered on this device for `snippet_id` on `host_id` (or
+     * for runs without a host).
+     */
+open func snippetValues(snippetId: String, hostId: String? = nil)throws  -> [String: String]  {
+    return try  FfiConverterDictionaryStringString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_snippet_values(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(snippetId),
+        FfiConverterOptionString.lower(hostId),uniffiCallStatus
+    )
+})
 }
     
     /**
@@ -17797,18 +18273,26 @@ public struct KeyDetails: Equatable, Hashable {
      * The key is encrypted with a passphrase.
      */
     public var encrypted: Bool
+    /**
+     * FIDO2 security key details (sk keys).
+     */
+    public var securityKey: SecurityKeyInfo?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(algorithm: String, publicKey: String, fingerprint: String, comment: String, 
         /**
          * The key is encrypted with a passphrase.
-         */encrypted: Bool) {
+         */encrypted: Bool, 
+        /**
+         * FIDO2 security key details (sk keys).
+         */securityKey: SecurityKeyInfo? = nil) {
         self.algorithm = algorithm
         self.publicKey = publicKey
         self.fingerprint = fingerprint
         self.comment = comment
         self.encrypted = encrypted
+        self.securityKey = securityKey
     }
 
     
@@ -17831,7 +18315,8 @@ public struct FfiConverterTypeKeyDetails: FfiConverterRustBuffer {
                 publicKey: FfiConverterString.read(from: &buf), 
                 fingerprint: FfiConverterString.read(from: &buf), 
                 comment: FfiConverterString.read(from: &buf), 
-                encrypted: FfiConverterBool.read(from: &buf)
+                encrypted: FfiConverterBool.read(from: &buf), 
+                securityKey: FfiConverterOptionTypeSecurityKeyInfo.read(from: &buf)
         )
     }
 
@@ -17841,6 +18326,7 @@ public struct FfiConverterTypeKeyDetails: FfiConverterRustBuffer {
         FfiConverterString.write(value.fingerprint, into: &buf)
         FfiConverterString.write(value.comment, into: &buf)
         FfiConverterBool.write(value.encrypted, into: &buf)
+        FfiConverterOptionTypeSecurityKeyInfo.write(value.securityKey, into: &buf)
     }
 }
 
@@ -19812,6 +20298,830 @@ public func FfiConverterTypeScreenSnapshot_lower(_ value: ScreenSnapshot) -> Rus
 
 
 /**
+ * The device's assertion.
+ */
+public struct SecurityKeyAssertion: Equatable, Hashable {
+    /**
+     * Authenticator data flags (0x01 user present, 0x04 verified).
+     * Ignored when `authenticator_data` is given.
+     */
+    public var flags: UInt8
+    /**
+     * Signature counter. Ignored when `authenticator_data` is given.
+     */
+    public var counter: UInt32
+    /**
+     * Ed25519: 64 bytes. ECDSA: DER (as CTAP2 returns it) or 64 bytes `r || s`.
+     */
+    public var signature: Data
+    /**
+     * The assertion's authenticator data, if the library gives it (flags
+     * and counter are read from it).
+     */
+    public var authenticatorData: Data?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Authenticator data flags (0x01 user present, 0x04 verified).
+         * Ignored when `authenticator_data` is given.
+         */flags: UInt8 = UInt8(0), 
+        /**
+         * Signature counter. Ignored when `authenticator_data` is given.
+         */counter: UInt32 = UInt32(0), 
+        /**
+         * Ed25519: 64 bytes. ECDSA: DER (as CTAP2 returns it) or 64 bytes `r || s`.
+         */signature: Data, 
+        /**
+         * The assertion's authenticator data, if the library gives it (flags
+         * and counter are read from it).
+         */authenticatorData: Data? = nil) {
+        self.flags = flags
+        self.counter = counter
+        self.signature = signature
+        self.authenticatorData = authenticatorData
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyAssertion: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyAssertion: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyAssertion {
+        return
+            try SecurityKeyAssertion(
+                flags: FfiConverterUInt8.read(from: &buf), 
+                counter: FfiConverterUInt32.read(from: &buf), 
+                signature: FfiConverterData.read(from: &buf), 
+                authenticatorData: FfiConverterOptionData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyAssertion, into buf: inout [UInt8]) {
+        FfiConverterUInt8.write(value.flags, into: &buf)
+        FfiConverterUInt32.write(value.counter, into: &buf)
+        FfiConverterData.write(value.signature, into: &buf)
+        FfiConverterOptionData.write(value.authenticatorData, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyAssertion_lift(_ buf: RustBuffer) throws -> SecurityKeyAssertion {
+    return try FfiConverterTypeSecurityKeyAssertion.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyAssertion_lower(_ value: SecurityKeyAssertion) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyAssertion.lower(value)
+}
+
+
+/**
+ * The device's new credential.
+ */
+public struct SecurityKeyCredential: Equatable, Hashable {
+    /**
+     * The authenticator data (with the attested credential data).
+     */
+    public var authenticatorData: Data
+    /**
+     * Or the whole attestation object (CBOR), if that is what the library gives.
+     */
+    public var attestationObject: Data
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The authenticator data (with the attested credential data).
+         */authenticatorData: Data = Data([]), 
+        /**
+         * Or the whole attestation object (CBOR), if that is what the library gives.
+         */attestationObject: Data = Data([])) {
+        self.authenticatorData = authenticatorData
+        self.attestationObject = attestationObject
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyCredential: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyCredential: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyCredential {
+        return
+            try SecurityKeyCredential(
+                authenticatorData: FfiConverterData.read(from: &buf), 
+                attestationObject: FfiConverterData.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyCredential, into buf: inout [UInt8]) {
+        FfiConverterData.write(value.authenticatorData, into: &buf)
+        FfiConverterData.write(value.attestationObject, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyCredential_lift(_ buf: RustBuffer) throws -> SecurityKeyCredential {
+    return try FfiConverterTypeSecurityKeyCredential.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyCredential_lower(_ value: SecurityKeyCredential) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyCredential.lower(value)
+}
+
+
+/**
+ * What the device must create (CTAP2 make credential with `rp.id =
+ * application`, `user`, `pubKeyCredParams = [algorithm]`, options `rk`
+ * and `uv`, and `client_data_hash`).
+ */
+public struct SecurityKeyCredentialRequest: Equatable, Hashable {
+    public var algorithm: SecurityKeyAlgorithm
+    /**
+     * COSE algorithm (-8 EdDSA, -7 ES256).
+     */
+    public var coseAlgorithm: Int64
+    public var application: String
+    public var userId: Data
+    public var userName: String
+    public var clientDataHash: Data
+    public var resident: Bool
+    public var requireVerification: Bool
+    /**
+     * The flags the key will have (0x01 touch, 0x04 verify, 0x20 resident).
+     */
+    public var flags: UInt8
+    public var device: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(algorithm: SecurityKeyAlgorithm, 
+        /**
+         * COSE algorithm (-8 EdDSA, -7 ES256).
+         */coseAlgorithm: Int64, application: String, userId: Data, userName: String, clientDataHash: Data, resident: Bool, requireVerification: Bool, 
+        /**
+         * The flags the key will have (0x01 touch, 0x04 verify, 0x20 resident).
+         */flags: UInt8, device: String?) {
+        self.algorithm = algorithm
+        self.coseAlgorithm = coseAlgorithm
+        self.application = application
+        self.userId = userId
+        self.userName = userName
+        self.clientDataHash = clientDataHash
+        self.resident = resident
+        self.requireVerification = requireVerification
+        self.flags = flags
+        self.device = device
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyCredentialRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyCredentialRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyCredentialRequest {
+        return
+            try SecurityKeyCredentialRequest(
+                algorithm: FfiConverterTypeSecurityKeyAlgorithm.read(from: &buf), 
+                coseAlgorithm: FfiConverterInt64.read(from: &buf), 
+                application: FfiConverterString.read(from: &buf), 
+                userId: FfiConverterData.read(from: &buf), 
+                userName: FfiConverterString.read(from: &buf), 
+                clientDataHash: FfiConverterData.read(from: &buf), 
+                resident: FfiConverterBool.read(from: &buf), 
+                requireVerification: FfiConverterBool.read(from: &buf), 
+                flags: FfiConverterUInt8.read(from: &buf), 
+                device: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyCredentialRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeSecurityKeyAlgorithm.write(value.algorithm, into: &buf)
+        FfiConverterInt64.write(value.coseAlgorithm, into: &buf)
+        FfiConverterString.write(value.application, into: &buf)
+        FfiConverterData.write(value.userId, into: &buf)
+        FfiConverterString.write(value.userName, into: &buf)
+        FfiConverterData.write(value.clientDataHash, into: &buf)
+        FfiConverterBool.write(value.resident, into: &buf)
+        FfiConverterBool.write(value.requireVerification, into: &buf)
+        FfiConverterUInt8.write(value.flags, into: &buf)
+        FfiConverterOptionString.write(value.device, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyCredentialRequest_lift(_ buf: RustBuffer) throws -> SecurityKeyCredentialRequest {
+    return try FfiConverterTypeSecurityKeyCredentialRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyCredentialRequest_lower(_ value: SecurityKeyCredentialRequest) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyCredentialRequest.lower(value)
+}
+
+
+/**
+ * Details of a security key (`SshKey.security_key`).
+ */
+public struct SecurityKeyInfo: Equatable, Hashable {
+    /**
+     * FIDO relying party id (`ssh:` by default).
+     */
+    public var application: String
+    /**
+     * User of a resident credential.
+     */
+    public var user: String?
+    /**
+     * Signing needs a touch (off: `no-touch-required`).
+     */
+    public var touchRequired: Bool
+    /**
+     * Signing needs the PIN or biometrics (`verify-required`).
+     */
+    public var verifyRequired: Bool
+    /**
+     * Resident (discoverable) credential.
+     */
+    public var resident: Bool
+    /**
+     * Which device it lives on (a label).
+     */
+    public var device: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * FIDO relying party id (`ssh:` by default).
+         */application: String, 
+        /**
+         * User of a resident credential.
+         */user: String? = nil, 
+        /**
+         * Signing needs a touch (off: `no-touch-required`).
+         */touchRequired: Bool = true, 
+        /**
+         * Signing needs the PIN or biometrics (`verify-required`).
+         */verifyRequired: Bool = false, 
+        /**
+         * Resident (discoverable) credential.
+         */resident: Bool = false, 
+        /**
+         * Which device it lives on (a label).
+         */device: String? = nil) {
+        self.application = application
+        self.user = user
+        self.touchRequired = touchRequired
+        self.verifyRequired = verifyRequired
+        self.resident = resident
+        self.device = device
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyInfo {
+        return
+            try SecurityKeyInfo(
+                application: FfiConverterString.read(from: &buf), 
+                user: FfiConverterOptionString.read(from: &buf), 
+                touchRequired: FfiConverterBool.read(from: &buf), 
+                verifyRequired: FfiConverterBool.read(from: &buf), 
+                resident: FfiConverterBool.read(from: &buf), 
+                device: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.application, into: &buf)
+        FfiConverterOptionString.write(value.user, into: &buf)
+        FfiConverterBool.write(value.touchRequired, into: &buf)
+        FfiConverterBool.write(value.verifyRequired, into: &buf)
+        FfiConverterBool.write(value.resident, into: &buf)
+        FfiConverterOptionString.write(value.device, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyInfo_lift(_ buf: RustBuffer) throws -> SecurityKeyInfo {
+    return try FfiConverterTypeSecurityKeyInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyInfo_lower(_ value: SecurityKeyInfo) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyInfo.lower(value)
+}
+
+
+/**
+ * A new security key from the device's answer, without saving it: its
+ * public part and the OpenSSH sk "private key" file (key handle, not a
+ * secret key) to import with `import_key`.
+ */
+public struct SecurityKeyMaterial: Equatable, Hashable {
+    public var details: KeyDetails
+    public var privateKey: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(details: KeyDetails, privateKey: String) {
+        self.details = details
+        self.privateKey = privateKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyMaterial: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyMaterial: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyMaterial {
+        return
+            try SecurityKeyMaterial(
+                details: FfiConverterTypeKeyDetails.read(from: &buf), 
+                privateKey: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyMaterial, into buf: inout [UInt8]) {
+        FfiConverterTypeKeyDetails.write(value.details, into: &buf)
+        FfiConverterString.write(value.privateKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyMaterial_lift(_ buf: RustBuffer) throws -> SecurityKeyMaterial {
+    return try FfiConverterTypeSecurityKeyMaterial.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyMaterial_lower(_ value: SecurityKeyMaterial) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyMaterial.lower(value)
+}
+
+
+/**
+ * Options of a new security key.
+ */
+public struct SecurityKeyOptions: Equatable, Hashable {
+    public var algorithm: SecurityKeyAlgorithm
+    /**
+     * Default `ssh:` (must start with `ssh:`).
+     */
+    public var application: String?
+    /**
+     * User of a resident credential (default `openssh`).
+     */
+    public var user: String?
+    public var resident: Bool
+    public var verifyRequired: Bool
+    public var noTouchRequired: Bool
+    /**
+     * Device label (`SecurityKeyInfo.device`).
+     */
+    public var device: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(algorithm: SecurityKeyAlgorithm, 
+        /**
+         * Default `ssh:` (must start with `ssh:`).
+         */application: String? = nil, 
+        /**
+         * User of a resident credential (default `openssh`).
+         */user: String? = nil, resident: Bool = false, verifyRequired: Bool = false, noTouchRequired: Bool = false, 
+        /**
+         * Device label (`SecurityKeyInfo.device`).
+         */device: String? = nil) {
+        self.algorithm = algorithm
+        self.application = application
+        self.user = user
+        self.resident = resident
+        self.verifyRequired = verifyRequired
+        self.noTouchRequired = noTouchRequired
+        self.device = device
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyOptions: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyOptions: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyOptions {
+        return
+            try SecurityKeyOptions(
+                algorithm: FfiConverterTypeSecurityKeyAlgorithm.read(from: &buf), 
+                application: FfiConverterOptionString.read(from: &buf), 
+                user: FfiConverterOptionString.read(from: &buf), 
+                resident: FfiConverterBool.read(from: &buf), 
+                verifyRequired: FfiConverterBool.read(from: &buf), 
+                noTouchRequired: FfiConverterBool.read(from: &buf), 
+                device: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyOptions, into buf: inout [UInt8]) {
+        FfiConverterTypeSecurityKeyAlgorithm.write(value.algorithm, into: &buf)
+        FfiConverterOptionString.write(value.application, into: &buf)
+        FfiConverterOptionString.write(value.user, into: &buf)
+        FfiConverterBool.write(value.resident, into: &buf)
+        FfiConverterBool.write(value.verifyRequired, into: &buf)
+        FfiConverterBool.write(value.noTouchRequired, into: &buf)
+        FfiConverterOptionString.write(value.device, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyOptions_lift(_ buf: RustBuffer) throws -> SecurityKeyOptions {
+    return try FfiConverterTypeSecurityKeyOptions.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyOptions_lower(_ value: SecurityKeyOptions) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyOptions.lower(value)
+}
+
+
+/**
+ * A resident credential on the device.
+ */
+public struct SecurityKeyResident: Equatable, Hashable {
+    public var application: String
+    public var credentialId: Data
+    /**
+     * COSE public key (CBOR map) from credential management.
+     */
+    public var publicKeyCose: Data
+    public var userId: Data
+    public var userName: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(application: String, credentialId: Data, 
+        /**
+         * COSE public key (CBOR map) from credential management.
+         */publicKeyCose: Data, userId: Data = Data([]), userName: String? = nil) {
+        self.application = application
+        self.credentialId = credentialId
+        self.publicKeyCose = publicKeyCose
+        self.userId = userId
+        self.userName = userName
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyResident: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyResident: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyResident {
+        return
+            try SecurityKeyResident(
+                application: FfiConverterString.read(from: &buf), 
+                credentialId: FfiConverterData.read(from: &buf), 
+                publicKeyCose: FfiConverterData.read(from: &buf), 
+                userId: FfiConverterData.read(from: &buf), 
+                userName: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyResident, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.application, into: &buf)
+        FfiConverterData.write(value.credentialId, into: &buf)
+        FfiConverterData.write(value.publicKeyCose, into: &buf)
+        FfiConverterData.write(value.userId, into: &buf)
+        FfiConverterOptionString.write(value.userName, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyResident_lift(_ buf: RustBuffer) throws -> SecurityKeyResident {
+    return try FfiConverterTypeSecurityKeyResident.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyResident_lower(_ value: SecurityKeyResident) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyResident.lower(value)
+}
+
+
+/**
+ * Which resident credentials to read (credential management, needs the PIN).
+ */
+public struct SecurityKeyResidentRequest: Equatable, Hashable {
+    /**
+     * Relying parties starting with this (`ssh:`).
+     */
+    public var applicationPrefix: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Relying parties starting with this (`ssh:`).
+         */applicationPrefix: String) {
+        self.applicationPrefix = applicationPrefix
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyResidentRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyResidentRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyResidentRequest {
+        return
+            try SecurityKeyResidentRequest(
+                applicationPrefix: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeyResidentRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.applicationPrefix, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyResidentRequest_lift(_ buf: RustBuffer) throws -> SecurityKeyResidentRequest {
+    return try FfiConverterTypeSecurityKeyResidentRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyResidentRequest_lower(_ value: SecurityKeyResidentRequest) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyResidentRequest.lower(value)
+}
+
+
+/**
+ * What the device must sign (CTAP2 get assertion with `rp_id =
+ * application`, the allow list `[key_handle]` and `client_data_hash`).
+ */
+public struct SecurityKeySignRequest: Equatable, Hashable {
+    public var algorithm: SecurityKeyAlgorithm
+    public var application: String
+    public var keyHandle: Data
+    /**
+     * SHA-256 of `message` (what CTAP2 and YubiKit take).
+     */
+    public var clientDataHash: Data
+    /**
+     * The data to sign (for libraries that hash it themselves).
+     */
+    public var message: Data
+    /**
+     * CTAP2 option `up` (false: a `no-touch-required` key).
+     */
+    public var requirePresence: Bool
+    /**
+     * CTAP2 option `uv` (PIN or biometrics).
+     */
+    public var requireVerification: Bool
+    /**
+     * OpenSSH public key and fingerprint (to show or match).
+     */
+    public var publicKey: String
+    public var fingerprint: String
+    /**
+     * What to show: the host's label and address, the user, the key.
+     */
+    public var host: String
+    public var address: String
+    public var username: String
+    public var keyLabel: String
+    public var keyId: String?
+    public var device: String?
+    /**
+     * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
+     * `ai` (forwarded by the server).
+     */
+    public var purpose: String
+    public var sessionId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(algorithm: SecurityKeyAlgorithm, application: String, keyHandle: Data, 
+        /**
+         * SHA-256 of `message` (what CTAP2 and YubiKit take).
+         */clientDataHash: Data, 
+        /**
+         * The data to sign (for libraries that hash it themselves).
+         */message: Data, 
+        /**
+         * CTAP2 option `up` (false: a `no-touch-required` key).
+         */requirePresence: Bool, 
+        /**
+         * CTAP2 option `uv` (PIN or biometrics).
+         */requireVerification: Bool, 
+        /**
+         * OpenSSH public key and fingerprint (to show or match).
+         */publicKey: String, fingerprint: String, 
+        /**
+         * What to show: the host's label and address, the user, the key.
+         */host: String, address: String, username: String, keyLabel: String, keyId: String?, device: String?, 
+        /**
+         * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
+         * `ai` (forwarded by the server).
+         */purpose: String, sessionId: String?) {
+        self.algorithm = algorithm
+        self.application = application
+        self.keyHandle = keyHandle
+        self.clientDataHash = clientDataHash
+        self.message = message
+        self.requirePresence = requirePresence
+        self.requireVerification = requireVerification
+        self.publicKey = publicKey
+        self.fingerprint = fingerprint
+        self.host = host
+        self.address = address
+        self.username = username
+        self.keyLabel = keyLabel
+        self.keyId = keyId
+        self.device = device
+        self.purpose = purpose
+        self.sessionId = sessionId
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeySignRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeySignRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeySignRequest {
+        return
+            try SecurityKeySignRequest(
+                algorithm: FfiConverterTypeSecurityKeyAlgorithm.read(from: &buf), 
+                application: FfiConverterString.read(from: &buf), 
+                keyHandle: FfiConverterData.read(from: &buf), 
+                clientDataHash: FfiConverterData.read(from: &buf), 
+                message: FfiConverterData.read(from: &buf), 
+                requirePresence: FfiConverterBool.read(from: &buf), 
+                requireVerification: FfiConverterBool.read(from: &buf), 
+                publicKey: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf), 
+                host: FfiConverterString.read(from: &buf), 
+                address: FfiConverterString.read(from: &buf), 
+                username: FfiConverterString.read(from: &buf), 
+                keyLabel: FfiConverterString.read(from: &buf), 
+                keyId: FfiConverterOptionString.read(from: &buf), 
+                device: FfiConverterOptionString.read(from: &buf), 
+                purpose: FfiConverterString.read(from: &buf), 
+                sessionId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SecurityKeySignRequest, into buf: inout [UInt8]) {
+        FfiConverterTypeSecurityKeyAlgorithm.write(value.algorithm, into: &buf)
+        FfiConverterString.write(value.application, into: &buf)
+        FfiConverterData.write(value.keyHandle, into: &buf)
+        FfiConverterData.write(value.clientDataHash, into: &buf)
+        FfiConverterData.write(value.message, into: &buf)
+        FfiConverterBool.write(value.requirePresence, into: &buf)
+        FfiConverterBool.write(value.requireVerification, into: &buf)
+        FfiConverterString.write(value.publicKey, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
+        FfiConverterString.write(value.host, into: &buf)
+        FfiConverterString.write(value.address, into: &buf)
+        FfiConverterString.write(value.username, into: &buf)
+        FfiConverterString.write(value.keyLabel, into: &buf)
+        FfiConverterOptionString.write(value.keyId, into: &buf)
+        FfiConverterOptionString.write(value.device, into: &buf)
+        FfiConverterString.write(value.purpose, into: &buf)
+        FfiConverterOptionString.write(value.sessionId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeySignRequest_lift(_ buf: RustBuffer) throws -> SecurityKeySignRequest {
+    return try FfiConverterTypeSecurityKeySignRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeySignRequest_lower(_ value: SecurityKeySignRequest) -> RustBuffer {
+    return FfiConverterTypeSecurityKeySignRequest.lower(value)
+}
+
+
+/**
  * A language the server has for emails and notifications.
  */
 public struct ServerLocale: Equatable, Hashable {
@@ -21400,6 +22710,304 @@ public func FfiConverterTypeSnippet_lower(_ value: Snippet) -> RustBuffer {
 
 
 /**
+ * Where a snippet runs: the host's built-ins (`None` fields: no host).
+ */
+public struct SnippetContext: Equatable, Hashable {
+    /**
+     * The host's address (`{{host}}`); `None`: no host.
+     */
+    public var host: String?
+    public var label: String?
+    public var user: String?
+    public var port: UInt16?
+    public var group: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The host's address (`{{host}}`); `None`: no host.
+         */host: String? = nil, label: String? = nil, user: String? = nil, port: UInt16? = nil, group: String? = nil) {
+        self.host = host
+        self.label = label
+        self.user = user
+        self.port = port
+        self.group = group
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SnippetContext: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSnippetContext: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SnippetContext {
+        return
+            try SnippetContext(
+                host: FfiConverterOptionString.read(from: &buf), 
+                label: FfiConverterOptionString.read(from: &buf), 
+                user: FfiConverterOptionString.read(from: &buf), 
+                port: FfiConverterOptionUInt16.read(from: &buf), 
+                group: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SnippetContext, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.host, into: &buf)
+        FfiConverterOptionString.write(value.label, into: &buf)
+        FfiConverterOptionString.write(value.user, into: &buf)
+        FfiConverterOptionUInt16.write(value.port, into: &buf)
+        FfiConverterOptionString.write(value.group, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetContext_lift(_ buf: RustBuffer) throws -> SnippetContext {
+    return try FfiConverterTypeSnippetContext.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetContext_lower(_ value: SnippetContext) -> RustBuffer {
+    return FfiConverterTypeSnippetContext.lower(value)
+}
+
+
+/**
+ * A malformed tag (offsets in characters, Unicode scalar values).
+ */
+public struct SnippetIssue: Equatable, Hashable {
+    public var start: UInt32
+    public var end: UInt32
+    public var tag: String
+    public var message: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(start: UInt32, end: UInt32, tag: String, message: String) {
+        self.start = start
+        self.end = end
+        self.tag = tag
+        self.message = message
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SnippetIssue: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSnippetIssue: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SnippetIssue {
+        return
+            try SnippetIssue(
+                start: FfiConverterUInt32.read(from: &buf), 
+                end: FfiConverterUInt32.read(from: &buf), 
+                tag: FfiConverterString.read(from: &buf), 
+                message: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SnippetIssue, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.start, into: &buf)
+        FfiConverterUInt32.write(value.end, into: &buf)
+        FfiConverterString.write(value.tag, into: &buf)
+        FfiConverterString.write(value.message, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetIssue_lift(_ buf: RustBuffer) throws -> SnippetIssue {
+    return try FfiConverterTypeSnippetIssue.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetIssue_lower(_ value: SnippetIssue) -> RustBuffer {
+    return FfiConverterTypeSnippetIssue.lower(value)
+}
+
+
+/**
+ * A parsed snippet.
+ */
+public struct SnippetTemplate: Equatable, Hashable {
+    public var variables: [SnippetVariable]
+    /**
+     * Malformed typed tags: show them in the editor; saving fails with
+     * `Invalid` (`apiError.code` `invalid_snippet`) while there are any.
+     */
+    public var issues: [SnippetIssue]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(variables: [SnippetVariable], 
+        /**
+         * Malformed typed tags: show them in the editor; saving fails with
+         * `Invalid` (`apiError.code` `invalid_snippet`) while there are any.
+         */issues: [SnippetIssue]) {
+        self.variables = variables
+        self.issues = issues
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SnippetTemplate: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSnippetTemplate: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SnippetTemplate {
+        return
+            try SnippetTemplate(
+                variables: FfiConverterSequenceTypeSnippetVariable.read(from: &buf), 
+                issues: FfiConverterSequenceTypeSnippetIssue.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SnippetTemplate, into buf: inout [UInt8]) {
+        FfiConverterSequenceTypeSnippetVariable.write(value.variables, into: &buf)
+        FfiConverterSequenceTypeSnippetIssue.write(value.issues, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetTemplate_lift(_ buf: RustBuffer) throws -> SnippetTemplate {
+    return try FfiConverterTypeSnippetTemplate.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetTemplate_lower(_ value: SnippetTemplate) -> RustBuffer {
+    return FfiConverterTypeSnippetTemplate.lower(value)
+}
+
+
+/**
+ * A variable of a snippet.
+ */
+public struct SnippetVariable: Equatable, Hashable {
+    /**
+     * What values are keyed by.
+     */
+    public var key: String
+    public var kind: SnippetVariableKind
+    public var label: String
+    /**
+     * Prefilled value (a prompt's default, a select's first option).
+     */
+    public var defaultValue: String?
+    public var options: [String]
+    /**
+     * A built-in that needs a host (`host`, `label`, `user`, `port`,
+     * `group`): asked only when there is no host.
+     */
+    public var needsHost: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * What values are keyed by.
+         */key: String, kind: SnippetVariableKind, label: String, 
+        /**
+         * Prefilled value (a prompt's default, a select's first option).
+         */defaultValue: String?, options: [String], 
+        /**
+         * A built-in that needs a host (`host`, `label`, `user`, `port`,
+         * `group`): asked only when there is no host.
+         */needsHost: Bool) {
+        self.key = key
+        self.kind = kind
+        self.label = label
+        self.defaultValue = defaultValue
+        self.options = options
+        self.needsHost = needsHost
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SnippetVariable: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSnippetVariable: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SnippetVariable {
+        return
+            try SnippetVariable(
+                key: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeSnippetVariableKind.read(from: &buf), 
+                label: FfiConverterString.read(from: &buf), 
+                defaultValue: FfiConverterOptionString.read(from: &buf), 
+                options: FfiConverterSequenceString.read(from: &buf), 
+                needsHost: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SnippetVariable, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.key, into: &buf)
+        FfiConverterTypeSnippetVariableKind.write(value.kind, into: &buf)
+        FfiConverterString.write(value.label, into: &buf)
+        FfiConverterOptionString.write(value.defaultValue, into: &buf)
+        FfiConverterSequenceString.write(value.options, into: &buf)
+        FfiConverterBool.write(value.needsHost, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetVariable_lift(_ buf: RustBuffer) throws -> SnippetVariable {
+    return try FfiConverterTypeSnippetVariable.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetVariable_lower(_ value: SnippetVariable) -> RustBuffer {
+    return FfiConverterTypeSnippetVariable.lower(value)
+}
+
+
+/**
  * Options for importing an `ssh_config`.
  */
 public struct SshConfigImportOptions: Equatable, Hashable {
@@ -22003,6 +23611,11 @@ public struct SshKey: Equatable, Hashable {
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     public var secretHidden: Bool
+    /**
+     * Read-only: FIDO2 security key details (sk keys; also derived for
+     * sk keys imported by older apps). See docs/SSH-PRO.md.
+     */
+    public var securityKey: SecurityKeyInfo?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -22043,7 +23656,11 @@ public struct SshKey: Equatable, Hashable {
          */access: ItemAccess? = nil, 
         /**
          * Read-only: a secret exists but you cannot see it (Use-only vault).
-         */secretHidden: Bool = false) {
+         */secretHidden: Bool = false, 
+        /**
+         * Read-only: FIDO2 security key details (sk keys; also derived for
+         * sk keys imported by older apps). See docs/SSH-PRO.md.
+         */securityKey: SecurityKeyInfo? = nil) {
         self.id = id
         self.label = label
         self.algorithm = algorithm
@@ -22059,6 +23676,7 @@ public struct SshKey: Equatable, Hashable {
         self.vaultId = vaultId
         self.access = access
         self.secretHidden = secretHidden
+        self.securityKey = securityKey
     }
 
     
@@ -22091,7 +23709,8 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
                 accountId: FfiConverterOptionString.read(from: &buf), 
                 vaultId: FfiConverterOptionString.read(from: &buf), 
                 access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
-                secretHidden: FfiConverterBool.read(from: &buf)
+                secretHidden: FfiConverterBool.read(from: &buf), 
+                securityKey: FfiConverterOptionTypeSecurityKeyInfo.read(from: &buf)
         )
     }
 
@@ -22111,6 +23730,7 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.vaultId, into: &buf)
         FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
         FfiConverterBool.write(value.secretHidden, into: &buf)
+        FfiConverterOptionTypeSecurityKeyInfo.write(value.securityKey, into: &buf)
     }
 }
 
@@ -26672,6 +28292,247 @@ public func FfiConverterTypeSecretChange_lower(_ value: SecretChange) -> RustBuf
 
 
 /**
+ * Security key algorithm.
+ */
+
+public enum SecurityKeyAlgorithm: Equatable, Hashable {
+    
+    /**
+     * `sk-ssh-ed25519@openssh.com` (COSE EdDSA, -8).
+     */
+    case ed25519
+    /**
+     * `sk-ecdsa-sha2-nistp256@openssh.com` (COSE ES256, -7).
+     */
+    case ecdsaP256
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SecurityKeyAlgorithm: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyAlgorithm: FfiConverterRustBuffer {
+    typealias SwiftType = SecurityKeyAlgorithm
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyAlgorithm {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .ed25519
+        
+        case 2: return .ecdsaP256
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SecurityKeyAlgorithm, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .ed25519:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .ecdsaP256:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyAlgorithm_lift(_ buf: RustBuffer) throws -> SecurityKeyAlgorithm {
+    return try FfiConverterTypeSecurityKeyAlgorithm.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyAlgorithm_lower(_ value: SecurityKeyAlgorithm) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyAlgorithm.lower(value)
+}
+
+
+
+/**
+ * Errors the app's [`SecurityKeyHandler`] throws.
+ */
+public 
+enum SecurityKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
+
+    
+    
+    /**
+     * No security key is connected or in range.
+     */
+    case NoDevice(message: String
+    )
+    case Timeout(message: String
+    )
+    /**
+     * The user cancelled.
+     */
+    case Cancelled(message: String
+    )
+    /**
+     * The device does not have this credential (CTAP2_ERR_NO_CREDENTIALS).
+     */
+    case NotFound(message: String
+    )
+    /**
+     * The key needs its PIN and none was entered.
+     */
+    case PinRequired(message: String
+    )
+    /**
+     * Wrong or blocked PIN.
+     */
+    case PinInvalid(message: String
+    )
+    /**
+     * The device or platform cannot do this.
+     */
+    case Unsupported(message: String
+    )
+    case Failed(message: String
+    )
+
+    
+
+    
+
+    
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    
+}
+
+#if compiler(>=6)
+extension SecurityKeyError: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSecurityKeyError: FfiConverterRustBuffer {
+    typealias SwiftType = SecurityKeyError
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SecurityKeyError {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+
+        
+
+        
+        case 1: return .NoDevice(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 2: return .Timeout(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 3: return .Cancelled(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 4: return .NotFound(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 5: return .PinRequired(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 6: return .PinInvalid(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 7: return .Unsupported(
+            message: try FfiConverterString.read(from: &buf)
+            )
+        case 8: return .Failed(
+            message: try FfiConverterString.read(from: &buf)
+            )
+
+         default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SecurityKeyError, into buf: inout [UInt8]) {
+        switch value {
+
+        
+
+        
+        
+        case let .NoDevice(message):
+            writeInt(&buf, Int32(1))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Timeout(message):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Cancelled(message):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .NotFound(message):
+            writeInt(&buf, Int32(4))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .PinRequired(message):
+            writeInt(&buf, Int32(5))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .PinInvalid(message):
+            writeInt(&buf, Int32(6))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Unsupported(message):
+            writeInt(&buf, Int32(7))
+            FfiConverterString.write(message, into: &buf)
+            
+        
+        case let .Failed(message):
+            writeInt(&buf, Int32(8))
+            FfiConverterString.write(message, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyError_lift(_ buf: RustBuffer) throws -> SecurityKeyError {
+    return try FfiConverterTypeSecurityKeyError.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSecurityKeyError_lower(_ value: SecurityKeyError) -> RustBuffer {
+    return FfiConverterTypeSecurityKeyError.lower(value)
+}
+
+
+/**
  * Which server to sign in to.
  */
 
@@ -27593,6 +29454,101 @@ public func FfiConverterTypeSharedTerminalEvent_lower(_ value: SharedTerminalEve
 
 
 /**
+ * Kind of snippet variable.
+ */
+
+public enum SnippetVariableKind: Equatable, Hashable {
+    
+    /**
+     * Filled from the host or the clock (`{{host}}`, `{{date}}`...).
+     */
+    case builtin
+    /**
+     * Free text (`{{prompt:…}}` or a plain `{{name}}`).
+     */
+    case prompt
+    /**
+     * One of `options` (`{{select:…}}`): a picker.
+     */
+    case select
+    /**
+     * Masked text (`{{secret:…}}`): never remember, store or log it.
+     */
+    case secret
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension SnippetVariableKind: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSnippetVariableKind: FfiConverterRustBuffer {
+    typealias SwiftType = SnippetVariableKind
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SnippetVariableKind {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .builtin
+        
+        case 2: return .prompt
+        
+        case 3: return .select
+        
+        case 4: return .secret
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: SnippetVariableKind, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .builtin:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .prompt:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .select:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .secret:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetVariableKind_lift(_ buf: RustBuffer) throws -> SnippetVariableKind {
+    return try FfiConverterTypeSnippetVariableKind.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSnippetVariableKind_lower(_ value: SnippetVariableKind) -> RustBuffer {
+    return FfiConverterTypeSnippetVariableKind.lower(value)
+}
+
+
+
+/**
  * Where a suggestion comes from.
  */
 
@@ -28251,6 +30207,17 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case NetworkUnavailable(message: String)
     
+    /**
+     * A FIDO2 security key could not sign (or none can be used here):
+     * `apiError.code` says why (`security_key_required`,
+     * `security_key_no_device`, `security_key_timeout`,
+     * `security_key_cancelled`, `security_key_not_found`,
+     * `security_key_pin_required`, `security_key_pin_invalid`,
+     * `security_key_wrong_key`, `security_key_unsupported`,
+     * `security_key_invalid`, `security_key_failed`). See docs/SSH-PRO.md.
+     */
+    case SecurityKey(message: String)
+    
 
     
 
@@ -28392,6 +30359,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 29: return .SecurityKey(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -28459,6 +30430,8 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(27))
         case .NetworkUnavailable(_ /* message is ignored*/):
             writeInt(&buf, Int32(28))
+        case .SecurityKey(_ /* message is ignored*/):
+            writeInt(&buf, Int32(29))
 
         
         }
@@ -29082,6 +31055,30 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionData: FfiConverterRustBuffer {
+    typealias SwiftType = Data?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterData.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterData.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeHostKeyChangeHandler: FfiConverterRustBuffer {
     typealias SwiftType = HostKeyChangeHandler?
 
@@ -29122,6 +31119,30 @@ fileprivate struct FfiConverterOptionTypeImportPreview: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeImportPreview.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeSecurityKeyHandler: FfiConverterRustBuffer {
+    typealias SwiftType = SecurityKeyHandler?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSecurityKeyHandler.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSecurityKeyHandler.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -29586,6 +31607,30 @@ fileprivate struct FfiConverterOptionTypeScreenRange: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeSecurityKeyInfo: FfiConverterRustBuffer {
+    typealias SwiftType = SecurityKeyInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSecurityKeyInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSecurityKeyInfo.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeSessionActivity: FfiConverterRustBuffer {
     typealias SwiftType = SessionActivity?
 
@@ -29602,6 +31647,30 @@ fileprivate struct FfiConverterOptionTypeSessionActivity: FfiConverterRustBuffer
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeSessionActivity.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeSnippetContext: FfiConverterRustBuffer {
+    typealias SwiftType = SnippetContext?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSnippetContext.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSnippetContext.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -30921,6 +32990,31 @@ fileprivate struct FfiConverterSequenceTypeScreenRun: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeSecurityKeyResident: FfiConverterRustBuffer {
+    typealias SwiftType = [SecurityKeyResident]
+
+    public static func write(_ value: [SecurityKeyResident], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSecurityKeyResident.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SecurityKeyResident] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SecurityKeyResident]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSecurityKeyResident.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeServerLocale: FfiConverterRustBuffer {
     typealias SwiftType = [ServerLocale]
 
@@ -31138,6 +33232,81 @@ fileprivate struct FfiConverterSequenceTypeSnippet: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeSnippet.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSnippetContext: FfiConverterRustBuffer {
+    typealias SwiftType = [SnippetContext]
+
+    public static func write(_ value: [SnippetContext], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSnippetContext.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SnippetContext] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SnippetContext]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSnippetContext.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSnippetIssue: FfiConverterRustBuffer {
+    typealias SwiftType = [SnippetIssue]
+
+    public static func write(_ value: [SnippetIssue], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSnippetIssue.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SnippetIssue] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SnippetIssue]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSnippetIssue.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSnippetVariable: FfiConverterRustBuffer {
+    typealias SwiftType = [SnippetVariable]
+
+    public static func write(_ value: [SnippetVariable], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSnippetVariable.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SnippetVariable] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SnippetVariable]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSnippetVariable.read(from: &buf))
         }
         return seq
     }
@@ -31961,6 +34130,41 @@ public func terminalThemes() -> [TerminalThemeInfo]  {
 })
 }
 /**
+ * The `authorized_keys` line of a key, with `no-touch-required` /
+ * `verify-required` when its flags need them.
+ */
+public func securityKeyAuthorizedKeysLine(publicKey: String, info: SecurityKeyInfo?) -> String  {
+    return try!  FfiConverterString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_security_key_authorized_keys_line(
+        FfiConverterString.lower(publicKey),
+        FfiConverterOptionTypeSecurityKeyInfo.lower(info),uniffiCallStatus
+    )
+})
+}
+public func securityKeyFromCredential(request: SecurityKeyCredentialRequest, credential: SecurityKeyCredential, comment: String)throws  -> SecurityKeyMaterial  {
+    return try  FfiConverterTypeSecurityKeyMaterial_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_security_key_from_credential(
+        FfiConverterTypeSecurityKeyCredentialRequest_lower(request),
+        FfiConverterTypeSecurityKeyCredential_lower(credential),
+        FfiConverterString.lower(comment),uniffiCallStatus
+    )
+})
+}
+/**
+ * The make credential request of `options` (to drive the device yourself;
+ * `TermoakCore.create_security_key` does it all).
+ */
+public func securityKeyRequest(options: SecurityKeyOptions)throws  -> SecurityKeyCredentialRequest  {
+    return try  FfiConverterTypeSecurityKeyCredentialRequest_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_security_key_request(
+        FfiConverterTypeSecurityKeyOptions_lower(options),uniffiCallStatus
+    )
+})
+}
+/**
  * Public information about a server (version, whether it needs initial
  * setup...), without signing in. Useful to validate the URL.
  */
@@ -31977,6 +34181,59 @@ public func serverInfo(url: String)async throws  -> String  {
             liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+/**
+ * Parses a snippet: its variables and issues.
+ */
+public func parseSnippet(script: String) -> SnippetTemplate  {
+    return try!  FfiConverterTypeSnippetTemplate_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_parse_snippet(
+        FfiConverterString.lower(script),uniffiCallStatus
+    )
+})
+}
+/**
+ * Renders `script` for several hosts at once (broadcast): the same asked
+ * `values`, each context's own built-ins; one result per context, in order.
+ */
+public func renderSnippetForHosts(script: String, values: [String: String], contexts: [SnippetContext])throws  -> [String]  {
+    return try  FfiConverterSequenceString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_render_snippet_for_hosts(
+        FfiConverterString.lower(script),
+        FfiConverterDictionaryStringString.lower(values),
+        FfiConverterSequenceTypeSnippetContext.lower(contexts),uniffiCallStatus
+    )
+})
+}
+/**
+ * Renders `script` with the asked `values` and the built-ins of
+ * `context`. Fails with `Invalid` if a value is missing or a select value
+ * is not an option.
+ */
+public func renderSnippetWith(script: String, values: [String: String], context: SnippetContext? = nil)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_render_snippet_with(
+        FfiConverterString.lower(script),
+        FfiConverterDictionaryStringString.lower(values),
+        FfiConverterOptionTypeSnippetContext.lower(context),uniffiCallStatus
+    )
+})
+}
+/**
+ * The variables to ask for before running `script` in `context` (no
+ * context: also the host built-ins).
+ */
+public func snippetPrompts(script: String, context: SnippetContext? = nil) -> [SnippetVariable]  {
+    return try!  FfiConverterSequenceTypeSnippetVariable.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_snippet_prompts(
+        FfiConverterString.lower(script),
+        FfiConverterOptionTypeSnippetContext.lower(context),uniffiCallStatus
+    )
+})
 }
 /**
  * Text of raw terminal output: escape sequences removed, carriage returns
@@ -32288,7 +34545,28 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_terminal_themes() != 64850) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_security_key_authorized_keys_line() != 28259) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_security_key_from_credential() != 2473) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_security_key_request() != 63680) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_server_info() != 52695) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_parse_snippet() != 4903) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_render_snippet_for_hosts() != 3805) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_render_snippet_with() != 28164) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_snippet_prompts() != 57679) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_clean_terminal_output() != 54293) {
@@ -32876,6 +35154,15 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_terminalscreen_word_at() != 18500) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_securitykeyhandler_sign() != 25715) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_securitykeyhandler_make_credential() != 12466) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_securitykeyhandler_list_resident() != 8865) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_activeforward_bound_port() != 14052) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -33296,6 +35583,18 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_subscribe_events() != 13941) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_create_security_key() != 24894) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_has_security_key_handler() != 36460) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_import_resident_security_keys() != 37941) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_security_key_handler() != 30635) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_ai_access() != 41770) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -33405,6 +35704,15 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_code() != 65042) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_remember_snippet_values() != 65462) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_snippet_context() != 58980) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_snippet_values() != 9801) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_connect() != 336) {
@@ -33561,6 +35869,7 @@ private let initializationResult: InitializationResult = {
     uniffiCallbackInitAuthHandler()
     uniffiCallbackInitHostKeyChangeHandler()
     uniffiCallbackInitLogListener()
+    uniffiCallbackInitSecurityKeyHandler()
     uniffiCallbackInitServerEventListener()
     uniffiCallbackInitServerTerminalListener()
     uniffiCallbackInitSharedTerminalListener()

@@ -105,6 +105,21 @@ pub mod codes {
     pub const NETWORK_UNAVAILABLE: &str = "network_unavailable";
     /// The network could not reach the host (`termoak-netd` dial failed).
     pub const NETWORK_DIAL_FAILED: &str = "network_dial_failed";
+    /// A snippet template with malformed typed tags (`{{select:X}}` without
+    /// options...): detail `issues` (docs/SSH-PRO.md §7.1).
+    pub const INVALID_SNIPPET: &str = "invalid_snippet";
+    /// Security keys (FIDO2, docs/SSH-PRO.md §3.6).
+    pub const SECURITY_KEY_REQUIRED: &str = "security_key_required";
+    pub const SECURITY_KEY_NO_DEVICE: &str = "security_key_no_device";
+    pub const SECURITY_KEY_TIMEOUT: &str = "security_key_timeout";
+    pub const SECURITY_KEY_CANCELLED: &str = "security_key_cancelled";
+    pub const SECURITY_KEY_NOT_FOUND: &str = "security_key_not_found";
+    pub const SECURITY_KEY_PIN_REQUIRED: &str = "security_key_pin_required";
+    pub const SECURITY_KEY_PIN_INVALID: &str = "security_key_pin_invalid";
+    pub const SECURITY_KEY_WRONG_KEY: &str = "security_key_wrong_key";
+    pub const SECURITY_KEY_UNSUPPORTED: &str = "security_key_unsupported";
+    pub const SECURITY_KEY_INVALID: &str = "security_key_invalid";
+    pub const SECURITY_KEY_FAILED: &str = "security_key_failed";
 }
 
 pub type Result<T, E = CoreError> = std::result::Result<T, E>;

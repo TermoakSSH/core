@@ -563,12 +563,27 @@ pub struct SshKey {
     /// Read-only: a secret exists but you cannot see it (Use-only vault).
     #[uniffi(default)]
     pub secret_hidden: bool,
+    /// Read-only: FIDO2 security key details (sk keys; also derived for
+    /// sk keys imported by older apps). See docs/SSH-PRO.md.
+    #[uniffi(default)]
+    pub security_key: Option<crate::security_key::SecurityKeyInfo>,
 }
 
 impl From<Record<cm::SshKey>> for SshKey {
     fn from(r: Record<cm::SshKey>) -> Self {
         let k = r.data;
+        let security_key = k
+            .security_key
+            .clone()
+            .or_else(|| {
+                cm::is_security_key_algorithm(&k.algorithm)
+                    .then(|| termoak_ssh::keys::parse_public(&k.public_key).ok())
+                    .flatten()
+                    .and_then(|p| termoak_ssh::sk::public_info(&p))
+            })
+            .map(Into::into);
         Self {
+            security_key,
             id: k.id.to_string(),
             label: k.label,
             algorithm: k.algorithm,
@@ -603,6 +618,7 @@ impl SshKey {
                     .certificate
                     .map(|c| c.trim().to_string())
                     .filter(|c| !c.is_empty()),
+                security_key: self.security_key.map(Into::into),
             },
             self.sync_mode.map(Into::into),
         ))
@@ -645,6 +661,9 @@ pub struct KeyDetails {
     pub comment: String,
     /// The key is encrypted with a passphrase.
     pub encrypted: bool,
+    /// FIDO2 security key details (sk keys).
+    #[uniffi(default)]
+    pub security_key: Option<crate::security_key::SecurityKeyInfo>,
 }
 
 impl From<&termoak_ssh::keys::KeyMaterial> for KeyDetails {
@@ -655,6 +674,7 @@ impl From<&termoak_ssh::keys::KeyMaterial> for KeyDetails {
             fingerprint: k.fingerprint.clone(),
             comment: k.comment.clone(),
             encrypted: k.encrypted,
+            security_key: k.security_key.clone().map(Into::into),
         }
     }
 }

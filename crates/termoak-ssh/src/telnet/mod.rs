@@ -435,6 +435,7 @@ mod tests {
             startup_script: None,
             proxy: None,
             network: None,
+            group_name: None,
         }
     }
 

@@ -137,6 +137,13 @@ pub trait Entity: Serialize + DeserializeOwned + Clone + Send + Sync + 'static {
         Ok(())
     }
 
+    /// Stricter checks for saves made through an editor (the apps' saves
+    /// and the REST API), on top of [`Entity::validate`]. Not applied to
+    /// pushed sync records, which an older app may have written.
+    fn validate_edit(&self) -> Result<()> {
+        Ok(())
+    }
+
     /// Validation of a secret saved with the entity (its shape, never
     /// echoing it). Checked on saves and on pushed sync records.
     fn validate_secret(&self, _secret: &Self::Secret) -> Result<()> {
@@ -551,6 +558,73 @@ pub struct SshKey {
     /// Associated OpenSSH certificate (optional).
     #[serde(default)]
     pub certificate: Option<String>,
+    /// FIDO2 security key details (0.7; `sk-*` algorithms only). Always
+    /// written (`null` for other keys): older cores drop it when they edit a
+    /// key and the store keeps the stored value then (see
+    /// `store::entities::keep_omitted_fields`). Descriptive: the private key
+    /// file (application, flags, key handle) is the source of truth.
+    #[serde(default)]
+    pub security_key: Option<SecurityKeyInfo>,
+}
+
+impl SshKey {
+    /// A FIDO2 security key (`sk-ssh-ed25519@openssh.com`,
+    /// `sk-ecdsa-sha2-nistp256@openssh.com`), with or without
+    /// [`SshKey::security_key`] (older apps imported `id_*_sk` files as
+    /// regular keys).
+    pub fn is_security_key(&self) -> bool {
+        is_security_key_algorithm(&self.algorithm) || self.security_key.is_some()
+    }
+}
+
+/// Whether an algorithm name is a security key's (`sk-…`, also certificates).
+pub fn is_security_key_algorithm(algorithm: &str) -> bool {
+    algorithm.starts_with("sk-")
+}
+
+/// Details of a FIDO2 security key (docs/SSH-PRO.md §3.1).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct SecurityKeyInfo {
+    /// FIDO relying party id (`ssh:` by default; always starts with `ssh:`).
+    pub application: String,
+    /// User name of a resident credential (OpenSSH's default: `openssh`).
+    #[serde(default)]
+    pub user: Option<String>,
+    /// Signing needs a touch (key flag 0x01; off = `no-touch-required`).
+    #[serde(default = "yes")]
+    pub touch_required: bool,
+    /// Signing needs the PIN or biometrics (key flag 0x04, `verify-required`).
+    #[serde(default)]
+    pub verify_required: bool,
+    /// Resident (discoverable) credential (key flag 0x20).
+    #[serde(default)]
+    pub resident: bool,
+    /// Which device it lives on (a label the user picks).
+    #[serde(default)]
+    pub device: Option<String>,
+}
+
+fn yes() -> bool {
+    true
+}
+
+impl SecurityKeyInfo {
+    pub fn validate(&self) -> Result<()> {
+        if !self.application.starts_with("ssh:") || self.application.len() > 128 {
+            return Err(CoreError::Invalid(
+                "security_key.application must start with \"ssh:\" (at most 128 characters)".into(),
+            ));
+        }
+        for (field, v) in [("device", &self.device), ("user", &self.user)] {
+            if v.as_ref().is_some_and(|v| v.chars().count() > 64) {
+                return Err(CoreError::Invalid(format!(
+                    "security_key.{field} is longer than 64 characters"
+                )));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -575,11 +649,20 @@ impl Entity for SshKey {
     }
     fn validate(&self) -> Result<()> {
         non_empty("label", &self.label)?;
-        non_empty("public_key", &self.public_key)
+        non_empty("public_key", &self.public_key)?;
+        if let Some(sk) = &self.security_key {
+            if !is_security_key_algorithm(&self.algorithm) {
+                return Err(CoreError::Invalid(
+                    "security_key is only for security key algorithms (sk-…)".into(),
+                ));
+            }
+            sk.validate()?;
+        }
+        Ok(())
     }
 }
 
-/// Reusable command snippet. Supports `{{name}}` variables.
+/// Reusable command snippet with `{{variables}}` (see [`crate::template`]).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Snippet {
@@ -594,59 +677,26 @@ pub struct Snippet {
 }
 
 impl Snippet {
-    /// `{{name}}` variables in the script, deduplicated and in order.
+    /// The parsed template.
+    pub fn template(&self) -> crate::template::Template {
+        crate::template::parse(&self.script)
+    }
+
+    /// Keys of the script's variables (built-ins included), in order.
     pub fn variables(&self) -> Vec<String> {
-        let mut out: Vec<String> = Vec::new();
-        let mut rest = self.script.as_str();
-        while let Some(start) = rest.find("{{") {
-            let after = &rest[start + 2..];
-            let Some(end) = after.find("}}") else { break };
-            let name = after[..end].trim();
-            if !name.is_empty()
-                && name
-                    .chars()
-                    .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
-                && !out.iter().any(|v| v == name)
-            {
-                out.push(name.to_string());
-            }
-            rest = &after[end + 2..];
-        }
-        out
+        self.template()
+            .variables
+            .into_iter()
+            .map(|v| v.key)
+            .collect()
     }
 
-    /// Substitutes the variables. Fails if any is missing.
+    /// Renders the script without a host (the host built-ins need a value,
+    /// the clock ones are filled). Fails if any variable is missing.
     pub fn render(&self, values: &BTreeMap<String, String>) -> Result<String> {
-        let mut script = self.script.clone();
-        for var in self.variables() {
-            let value = values
-                .get(&var)
-                .ok_or_else(|| CoreError::Invalid(format!("missing variable \"{var}\"")))?;
-            script = replace_var(&script, &var, value);
-        }
-        Ok(script)
+        self.template()
+            .render(values, &crate::template::TemplateContext::default())
     }
-}
-
-fn replace_var(script: &str, var: &str, value: &str) -> String {
-    let mut out = String::with_capacity(script.len());
-    let mut rest = script;
-    while let Some(start) = rest.find("{{") {
-        out.push_str(&rest[..start]);
-        let after = &rest[start + 2..];
-        match after.find("}}") {
-            Some(end) if after[..end].trim() == var => {
-                out.push_str(value);
-                rest = &after[end + 2..];
-            }
-            _ => {
-                out.push_str("{{");
-                rest = after;
-            }
-        }
-    }
-    out.push_str(rest);
-    out
 }
 
 impl Entity for Snippet {
@@ -661,6 +711,9 @@ impl Entity for Snippet {
     fn validate(&self) -> Result<()> {
         non_empty("name", &self.name)?;
         non_empty("script", &self.script)
+    }
+    fn validate_edit(&self) -> Result<()> {
+        self.template().check()
     }
 }
 
@@ -941,8 +994,13 @@ impl TailscaleConfig {
             let name = t.trim().strip_prefix("tag:").unwrap_or("");
             let ok = !name.is_empty()
                 && name.len() <= 63
-                && name.chars().next().is_some_and(|c| c.is_ascii_alphanumeric())
-                && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+                && name
+                    .chars()
+                    .next()
+                    .is_some_and(|c| c.is_ascii_alphanumeric())
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
             if !ok {
                 return Err(CoreError::Invalid(format!(
                     "invalid tag \"{}\": tags look like tag:termoak (letters, digits, - and _)",
@@ -984,7 +1042,9 @@ fn valid_control_url(url: &str) -> Result<()> {
 pub fn validate_tailscale_auth_key(key: &str) -> Result<()> {
     let key = key.trim();
     if key.len() > 1024 {
-        return Err(CoreError::Invalid("the Tailscale auth key is too long".into()));
+        return Err(CoreError::Invalid(
+            "the Tailscale auth key is too long".into(),
+        ));
     }
     if key.chars().any(|c| !c.is_ascii_graphic()) {
         return Err(CoreError::Invalid(

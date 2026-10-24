@@ -9,6 +9,7 @@ pub mod qr;
 pub mod redact;
 pub mod resolve;
 pub mod store;
+pub mod template;
 pub mod themes;
 pub mod time;
 pub mod totp;

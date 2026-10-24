@@ -181,6 +181,7 @@ pub(crate) mod tests {
             jumps: vec![],
             startup_script: None,
             proxy: None,
+            group_name: None,
             network: network.map(|id| ResolvedNetwork {
                 network: Network {
                     id,

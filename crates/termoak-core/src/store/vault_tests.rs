@@ -690,6 +690,7 @@ async fn owner_based_functions_keep_working_for_clients() {
                 comment: String::new(),
                 has_passphrase: false,
                 certificate: None,
+                security_key: None,
             },
             SecretUpdate::Set(SshKeySecret {
                 private_key: Some("PRIVATE".into()),
@@ -1099,14 +1100,19 @@ fn network_validation_and_unknown_kinds() {
 #[test]
 fn tailscale_settings_are_validated() {
     let net = |cfg: serde_json::Value| -> Network {
-        serde_json::from_value(json!({"name": "tail", "kind": "tailscale", "tailscale": cfg})).unwrap()
+        serde_json::from_value(json!({"name": "tail", "kind": "tailscale", "tailscale": cfg}))
+            .unwrap()
     };
     net(json!({})).validate().unwrap();
-    net(json!({"control_url": "https://hs.example.com:8443/", "hostname": "termoak-Office",
-               "tags": ["tag:termoak", "tag:prod_1"], "ephemeral": false}))
+    net(
+        json!({"control_url": "https://hs.example.com:8443/", "hostname": "termoak-Office",
+               "tags": ["tag:termoak", "tag:prod_1"], "ephemeral": false}),
+    )
     .validate()
     .unwrap();
-    net(json!({"control_url": "", "hostname": " ", "tags": []})).validate().unwrap();
+    net(json!({"control_url": "", "hostname": " ", "tags": []}))
+        .validate()
+        .unwrap();
     for bad in [
         json!({"control_url": "ftp://x"}),
         json!({"control_url": "https://"}),
@@ -1127,7 +1133,12 @@ fn tailscale_settings_are_validated() {
     // `ephemeral` is always written (null when unset): its absence means an
     // older core.
     let v = serde_json::to_value(net(json!({}))).unwrap();
-    assert!(v["tailscale"].as_object().unwrap().contains_key("ephemeral"));
+    assert!(
+        v["tailscale"]
+            .as_object()
+            .unwrap()
+            .contains_key("ephemeral")
+    );
 
     // The auth key: printable ASCII, never echoed in the error.
     let n = net(json!({}));
@@ -1135,10 +1146,18 @@ fn tailscale_settings_are_validated() {
         auth_key: Some(k.into()),
         ..Default::default()
     };
-    n.validate_secret(&secret("hskey-auth-abc_DEF-123")).unwrap();
-    n.validate_secret(&secret("tskey-client-k123-SECRET?ephemeral=true&preauthorized=true")).unwrap();
+    n.validate_secret(&secret("hskey-auth-abc_DEF-123"))
+        .unwrap();
+    n.validate_secret(&secret(
+        "tskey-client-k123-SECRET?ephemeral=true&preauthorized=true",
+    ))
+    .unwrap();
     n.validate_secret(&NetworkSecret::default()).unwrap();
-    for bad in ["tskey-auth SECRET", "tskey-auth-\u{e9}SECRET", &"k".repeat(1025)] {
+    for bad in [
+        "tskey-auth SECRET",
+        "tskey-auth-\u{e9}SECRET",
+        &"k".repeat(1025),
+    ] {
         let err = n.validate_secret(&secret(bad)).unwrap_err().to_string();
         assert!(!err.contains("SECRET"), "{err}");
     }
@@ -1196,7 +1215,14 @@ async fn tailscale_networks_are_checked_on_save_and_push_and_old_cores_keep_ephe
     // A pushed bad key or bad tags are rejected as invalid.
     let data = serde_json::to_value(&net).unwrap();
     let rep = store
-        .apply_remote_v2(&a, vec![push(data.clone(), Some(json!({"auth_key": "a b"})), now_plus())])
+        .apply_remote_v2(
+            &a,
+            vec![push(
+                data.clone(),
+                Some(json!({"auth_key": "a b"})),
+                now_plus(),
+            )],
+        )
         .await
         .unwrap();
     assert_eq!(rep.rejected.len(), 1);
@@ -1211,7 +1237,10 @@ async fn tailscale_networks_are_checked_on_save_and_push_and_old_cores_keep_ephe
     // A core before 0.7.0-next.3 drops `ephemeral` when it renames the
     // network: the stored value is kept.
     let mut old = data.clone();
-    old["tailscale"].as_object_mut().unwrap().remove("ephemeral");
+    old["tailscale"]
+        .as_object_mut()
+        .unwrap()
+        .remove("ephemeral");
     old["name"] = json!("tail (renamed)");
     let rep = store
         .apply_remote_v2(&a, vec![push(old, None, now_plus() + 1)])

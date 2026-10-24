@@ -166,6 +166,8 @@ not matter: the bindings are the same.
 | `generateVaultKey()` | New vault key (stored in Keychain/Keystore) |
 | `listHosts/getHost/saveHost/deleteHost`, and the same for groups, identities, keys, snippets, tunnels, known hosts and memories | Vault CRUD (synchronous, fast) |
 | `generateKey`, `importKey`, `inspectPrivateKey`, `exportPrivateKey` | SSH keychain |
+| `setSecurityKeyHandler(handler)`, `createSecurityKey`, `importResidentSecurityKeys`, `securityKeyRequest`, `securityKeyFromCredential`, `securityKeyAuthorizedKeysLine`; `SshKey.securityKey` | FIDO2 security keys (0.7): see [Security keys](#security-keys-fido2-07) |
+| `parseSnippet(script)`, `snippetPrompts(script, context)`, `renderSnippetWith(script, values, context)`, `renderSnippetForHosts(script, values, contexts)`, `snippetContext(hostId)`, `snippetValues` / `rememberSnippetValues` | Snippets with variables (0.7): see [Snippets with variables](#snippets-with-variables-07) |
 | `connect(hostId, auth, accountId, keyChanged)` → `SshSession` | Local SSH connection. `keyChanged` (`HostKeyChangeHandler`, optional): asked when a known host's key changed (see [Known hosts](#known-hosts)) |
 | `connectTerminal(hostId, cols, rows, auth, listener, accountId, telnetAutoLogin, record, keyChanged)` → `TerminalHandle` | Shortcut: connect and open a terminal. Telnet hosts open a Telnet terminal (same handle). `record` (default `false`): record it (`recordingPath()`) |
 | `TerminalHandle`: `write`, `writeText`, `resize`, `closeTerminal`, `status`, `snapshot`, `textTail`, `recordingPath`, `latencyMs(timeoutMs)`, `isTelnet`, `protocol`, `session` | A local terminal (SSH or Telnet) |
@@ -262,6 +264,56 @@ Conventions:
   `detached`; the network stays in the account) and a network cannot be
   moved there (`Invalid`). See
   `docs-next/NETWORKS.md` (server repo: `docs/NETWORKS.md`).
+
+### Security keys (FIDO2, 0.7)
+
+Design and rules: [SSH-PRO.md](SSH-PRO.md) §3–§5 and §8 (libraries per
+platform: YubiKit on Android and iOS).
+
+- Implement `SecurityKeyHandler` (`sign`, `makeCredential`, `listResident`;
+  blocking calls from a background thread, like `AuthHandler`): run CTAP2
+  get assertion / make credential with `rpId = application` and the
+  request's `clientDataHash`, show the request's host, user, key and
+  `purpose`, and throw `SecurityKeyError.Cancelled` when the user cancels
+  (`NoDevice`, `Timeout`, `NotFound`, `PinRequired`, `PinInvalid`,
+  `Unsupported`, `Failed`). ECDSA signatures may be DER as the device
+  returns them; give `authenticatorData` if the library has it.
+- `setSecurityKeyHandler(handler)` once at start: local connections use it
+  for sk keys, and `subscribeEvents` (called **after** it) answers the
+  server's signature requests for server sessions, host tests, `/exec`,
+  SFTP and AI connections (`security_key_request` events still reach the
+  listener: show "Touch your key for …" and dismiss it on
+  `security_key_done`). Without a handler an sk key fails with
+  `TermoakError.SecurityKey` (`apiError.code` `security_key_required`).
+- New key on the device: `createSecurityKey(label, options, comment, …,
+  handler)`; resident keys: `importResidentSecurityKeys(…, handler)`;
+  `id_ed25519_sk` / `id_ecdsa_sk` files import with `importKey` (they hold
+  the key handle, not a secret). `SshKey.securityKey` (application, touch /
+  verify required, resident, device label); `securityKeyAuthorizedKeysLine`
+  for the line to copy.
+- Errors: `TermoakError.SecurityKey` with `apiError.code`
+  `security_key_*` (also from the server: `security_key_no_device`,
+  `security_key_timeout`…).
+
+### Snippets with variables (0.7)
+
+Syntax and rules: [SSH-PRO.md](SSH-PRO.md) §7 (`{{host}}`, `{{user}}`,
+`{{port}}`, `{{label}}`, `{{group}}`, `{{date}}`, `{{time}}`,
+`{{datetime}}`, `{{timestamp}}`, `{{prompt:Label|default}}`,
+`{{select:Label|a|b}}`, `{{secret:Label}}`, `\{{`).
+
+- Editor: `parseSnippet(script)` → variables (kind, default, options) and
+  `issues` to show; `saveSnippet` fails with `Invalid` (`apiError.code`
+  `invalid_snippet`) while there are issues.
+- Run on a host: `snippetContext(hostId)` (no credentials are fetched),
+  `snippetPrompts(script, context)` for the dialog (selects → picker,
+  secrets → masked, defaults prefilled, plus `snippetValues(snippetId,
+  hostId)`), then `renderSnippetWith(script, values, context)` and
+  `rememberSnippetValues` (secrets are dropped).
+- Broadcast: one dialog (`snippetPrompts` with any host's context), then
+  `renderSnippetForHosts(script, values, contexts)`.
+- The old `snippetVariables` / `renderSnippet` keep working (no host: the
+  host built-ins are variables to fill).
 
 ## Swift
 

@@ -50,6 +50,10 @@ pub enum SshError {
     /// `network_dial_failed` or `network_not_found`.
     #[error("{message}")]
     Network { code: &'static str, message: String },
+    /// FIDO2 security key: `code` is one of the `security_key_*` codes
+    /// (`termoak_core::error::codes`, docs/SSH-PRO.md §3.6).
+    #[error("{message}")]
+    SecurityKey { code: &'static str, message: String },
     #[error("I/O: {0}")]
     Io(#[from] std::io::Error),
     #[error("SSH: {0}")]
