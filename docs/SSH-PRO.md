@@ -1,9 +1,11 @@
 # SSH pro (Termoak 0.7): security keys and snippets with variables
 
-Status: **phases 3a and 3b done** (2026-10-24): design, core
-(v0.7.0-next.4; v0.7.0-next.5 only fixes the Windows build of
-termoak-client), server (0.7.0-next.5), desktop (0.7.0-next.3), web and QA.
-Next: phase 3c (Android + iOS), with the checklist of §9.2.
+Status: **phases 3a, 3b and 3c done** (2026-10-24): design, core
+(v0.7.0-next.4; v0.7.0-next.5 fixes the Windows build of termoak-client;
+v0.7.0-next.6 renames `SecurityKeyError`'s text to `reason` so the Kotlin
+bindings compile), server (0.7.0-next.6), desktop (0.7.0-next.3), web, QA,
+Android (0.7.0-next.3) and iOS (not built yet: on the Mac). What is left
+needs a real key: §9.2.
 
 Plan: `PLAN-0.7.md` §2 ("SSH pro") and §5 (phase 3). A copy of this
 document lives in the core repository (`docs/SSH-PRO.md`); keep both equal.
@@ -513,7 +515,7 @@ Rules:
 | Desktop Linux/macOS | **ctap-hid-fido2** 3.6 (Rust, maintained, last release 2026-09) | MIT | USB HID | Any rp id; `MakeCredentialArgsBuilder` / `GetAssertionArgsBuilder` (takes a "challenge" = our `message`, hashed into the client data hash), PIN, CTAP 2.1 credential management (resident keys). Linux needs udev access to `/dev/hidraw*` (the usual `70-u2f.rules`; Flatpak: `--device=all`) |
 | Desktop Windows | **webauthn.dll** (Windows WebAuthn API) via the `windows` crate | MIT/Apache-2.0 | USB, NFC, BLE (Windows handles it) | Since Windows 10 1903 only administrators can open FIDO HID devices, so ctap-hid-fido2 would need admin. webauthn.dll accepts any rp id from native apps (it is what Win32-OpenSSH/libfido2 use) and shows the device, PIN and touch UI itself; it creates resident keys but cannot list a security key's resident credentials (`WebAuthNGetPlatformCredentialList` lists only Windows Hello's own), so the desktop says to run `ssh-keygen -K` and import the files; Windows always asks for a touch (`no-touch-required` keys too). Alternative: kanidm's `webauthn-authenticator-rs` (MPL-2.0, `win10` + `usb` + `nfc` features) |
 | Android | **yubikit-android** `fido` + `android` modules | Apache-2.0 | USB (YubiKeys), NFC | `Ctap2Session.makeCredential` / `getAssertions` take the client data hash and any rp id; `ClientPin`, `CredentialManagement`. The platform FIDO2 API (Credential Manager / `Fido2ApiClient`) binds the rp id to the app's Digital Asset Links domain, so it cannot use `ssh:` |
-| iOS | **YubiKit iOS** (`YKFFIDO2Session`) | Apache-2.0 | NFC (`YKFNFCConnection`), Lightning (YubiKey 5Ci accessory) | Any rp id with the client data hash. Apple's `ASAuthorizationSecurityKeyPublicKeyCredentialProvider` binds the rp id to associated domains (no `ssh:`). USB-C keys on iPhone 15+/iPad: YubiKit's smart-card connection does not carry FIDO2; check on a device in 3c and document what works |
+| iOS | **yubikit-swift** 1.4 (Yubico's newer Swift SDK; `YKFFIDO2Session` of the older YubiKit iOS 4.x has no credential management and no FIDO2 over its smart card connection) | Apache-2.0 | NFC (FIDO applet), Lightning (YubiKey 5Ci accessory), USB-C (CryptoTokenKit smart card, iPhone 15+/iPad) | Any rp id with the client data hash; credential management; needs iOS 16 and Xcode 16.3+. Apple's `ASAuthorizationSecurityKeyPublicKeyCredentialProvider` binds the rp id to associated domains (no `ssh:`). USB-C: FIDO2 over the smart card interface is what Yubico's own samples use; to check on a device |
 | Web | none | — | — | Browsers bind WebAuthn rp ids to the site's domain: the web cannot sign `ssh:` credentials. The web shows sk keys, imports their files and public keys, and server sessions with sk keys are signed by the user's phone or desktop through forwarding |
 
 libfido2 (BSD-2-Clause, Yubico; what OpenSSH uses) was considered for the
@@ -592,41 +594,65 @@ leaves the device waiting until it times out (~30 s), so the next operation
 waits for it; the desktop's REST paths need the `/api/v1` prefix;
 termoak-client did not build for Windows (winreg; fixed in v0.7.0-next.5).
 
-### 9.2 Phase 3c: Android + iOS
+### 9.2 Phase 3c: Android + iOS (done 2026-10-24, without a real key)
 
-Android:
-- [ ] yubikit-android (`fido`, `android`): USB and NFC discovery; a
-      `SecurityKeyHandler` (Kotlin) running `getAssertions` with the
-      request's client data hash and rp id, `makeCredential`, credential
-      management for resident keys; PIN dialog (`ClientPin`); bottom sheet
-      "Tap or plug in your security key" with host/user/key/purpose and cancel.
-- [ ] `setSecurityKeyHandler` at start; `subscribeEvents` already answers
-      forwarding (foreground only); show/dismiss the sheet from
-      `security_key_request` / `security_key_done`.
-- [ ] Keys: new security key, load resident keys, import `id_*_sk`, details,
-      authorized_keys line; errors by `apiError.code`; en/es.
-- [ ] Snippets: same as desktop (prompts, selects, secrets, remembered
-      values, broadcast with `render_for_hosts`).
-- [ ] Rebuild the `.so` (the ones in core's jniLibs are from before 0.7).
-- [ ] JVM tests with a fake handler; LiveTest against staging with the
-      software authenticator answering as "the phone" (JNA build).
-- [ ] Copy the desktop's structure: hardware / dialogs / flow, so the flow is
-      tested without a key; one request at a time; Cancel must stop the
-      YubiKit session (the device keeps waiting otherwise); answer
-      `no_device` quickly when no key is near so a desktop can still answer.
-- [ ] Use the server's texts mapping for session reasons and `/exec`
-      results (they carry no code) and the "Touch your security key (X)…"
-      connecting message, as desktop and web do.
+Android 0.7.0-next.3 (core v0.7.0-next.6; `app/.../sk/`):
+- [x] yubikit-android 3.2.1 (`android`, `fido`): `CtapKey` (CTAP2 through
+      YubiKit's `Ctap2Session` over USB HID or NFC ISO 7816: get assertion
+      with the client data hash and rp id, `up` off only for no-touch keys,
+      never `uv`, the PIN's token and auth param; make credential;
+      credential management, 2.1 or 2.1-PRE as YubiKit picks; CTAP statuses
+      → `security_key_*`), `YubiHardware` (USB discovery of the FIDO makers'
+      vendor ids only while a request is open, so Android's permission
+      dialog only shows then; NFC reader mode on the activity in front),
+      `SecurityKeyFlow` (the engine's handler: one operation at a time, PIN
+      with retries, Cancel = CTAPHID_CANCEL + closing the connection) and the
+      sheet (`SecurityKeySheet`, a bottom sheet above every screen and
+      dialog; hidden while the app lock is on).
+- [x] The handler is set when the engine starts; `security_key_request` /
+      `security_key_done` of the events sockets show and close the sheet
+      (matched by the request's message). A server's request answers
+      `no_device` at once in the background, with the app lock on, or with
+      no NFC and no key plugged in; otherwise it waits 30 s (60 s for this
+      phone's own connections) and the sheet offers "Not on this phone"
+      (`no_device`) besides Cancel (`cancelled`).
+- [x] Keys: new security key, load resident keys, `id_*_sk` import with
+      the badge, details (device name editable, authorized_keys line with
+      its options, key handle wording), "Install on a host" writes the line
+      with its options; errors by `apiError.code` and the server's English
+      texts; en/es.
+- [x] Snippets: the editor shows variables and issues and refuses to save
+      with issues; one run dialog (prompts with defaults, selects, masked
+      secrets, remembered values per snippet and host, never secrets);
+      every target rendered with its own host's built-ins (the terminal,
+      broadcast panes, all open terminals, several hosts, the palette);
+      the host editor warns when the startup snippet asks.
+- [x] Tests on the JVM: the YubiKit layer against a pretend CTAPHID/CTAP
+      2.1 key (`SoftFido`: PIN protocols 1 and 2, credential management and
+      its preview, keepalives and CTAPHID_CANCEL), the flow, the texts and
+      snippets; screenshots; opt-in `LiveSecurityKeyTest` against staging
+      (keys made on the pretend key, OpenSSH with `verify-required`, the
+      server's test, session and `/exec` signed by "the phone").
 
-iOS:
-- [ ] YubiKit iOS: NFC (`YKFNFCConnection`, NFC entitlement and
-      `NFCReaderUsageDescription`, ISO7816 AID `A0000006472F0001`), Lightning
-      (accessory, `com.yubico.ylp` protocol in Info.plist); a
-      `SecurityKeyHandler` (Swift) for sign / make credential / resident
-      keys; PIN sheet; "Hold your key near the top of the iPhone" UI.
-- [ ] Same keys, snippets and forwarding work as Android; demo mode answers
-      the new calls.
-- [ ] XCTest with a fake handler; compile on the Mac.
+iOS (mobile-ios next; not built here):
+- [x] yubikit-swift 1.4 (NFC, Lightning, USB-C), the same three layers,
+      sheet, rules, keys, snippets, errors and strings as Android; demo
+      mode answers the new calls; XCTest with a fake device (compiled and
+      run on Linux). Deployment target iOS 16 (yubikit-swift needs it).
+
+Gotchas found: UniFFI's Kotlin errors cannot have a field called `message`
+(it clashes with `Throwable.message`: v0.7.0-next.6 renames it `reason`);
+YubiKit refuses PINs shorter than 4 characters with an
+`IllegalArgumentException` before sending them (mapped to a wrong PIN);
+the USB discovery calls back once per plugged-in key, so the hardware layer
+keeps the keys it found for the next try (PIN retries); Android's reader
+mode needs the activity in front (the USB permission dialog pauses it:
+reader mode is enabled again on resume).
+
+Still needs a real key (see the phase reports): Android over USB (the
+permission dialog, touch, Cancel) and NFC (tap, PIN then tap again, resident
+keys on 2.1 and 2.1-PRE firmware); iOS NFC, Lightning and USB-C; a
+server session signed by the phone with a desktop also open.
 
 ---
 
