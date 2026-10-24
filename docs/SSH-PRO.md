@@ -1,8 +1,9 @@
 # SSH pro (Termoak 0.7): security keys and snippets with variables
 
-Status: **phase 3a done** (2026-10-24): design, core (v0.7.0-next.4),
-server (0.7.0-next.4) and QA. Next: phase 3b (desktop + web) and phase 3c
-(Android + iOS), with the checklists of §9.
+Status: **phases 3a and 3b done** (2026-10-24): design, core
+(v0.7.0-next.4; v0.7.0-next.5 only fixes the Windows build of
+termoak-client), server (0.7.0-next.5), desktop (0.7.0-next.3), web and QA.
+Next: phase 3c (Android + iOS), with the checklist of §9.2.
 
 Plan: `PLAN-0.7.md` §2 ("SSH pro") and §5 (phase 3). A copy of this
 document lives in the core repository (`docs/SSH-PRO.md`); keep both equal.
@@ -363,7 +364,9 @@ device), `unsupported`, `failed`.
 - The app must be open and signed in (events socket). Push wake-up for
   sign requests comes with the push work (UnifiedPush/APNs) of phase 4.
 - The web cannot answer (§8.2): a web user with an sk key needs a phone or
-  desktop app open.
+  desktop app open. Since phase 3b the web opens server sessions itself
+  (Sessions → New session, Session on a vault's hosts) and shows the wait
+  and the errors in words.
 - One request per SSH authentication; reconnects ask again.
 
 ---
@@ -508,7 +511,7 @@ Rules:
 | Platform | Library | Licence | Transport | Notes |
 |---|---|---|---|---|
 | Desktop Linux/macOS | **ctap-hid-fido2** 3.6 (Rust, maintained, last release 2026-09) | MIT | USB HID | Any rp id; `MakeCredentialArgsBuilder` / `GetAssertionArgsBuilder` (takes a "challenge" = our `message`, hashed into the client data hash), PIN, CTAP 2.1 credential management (resident keys). Linux needs udev access to `/dev/hidraw*` (the usual `70-u2f.rules`; Flatpak: `--device=all`) |
-| Desktop Windows | **webauthn.dll** (Windows WebAuthn API) via the `windows` crate | MIT/Apache-2.0 | USB, NFC, BLE (Windows handles it) | Since Windows 10 1903 only administrators can open FIDO HID devices, so ctap-hid-fido2 would need admin. webauthn.dll accepts any rp id from native apps (it is what Win32-OpenSSH/libfido2 use), shows the PIN/touch UI itself and supports resident keys (credential listing only on API v4+). Alternative: kanidm's `webauthn-authenticator-rs` (MPL-2.0, `win10` + `usb` + `nfc` features) |
+| Desktop Windows | **webauthn.dll** (Windows WebAuthn API) via the `windows` crate | MIT/Apache-2.0 | USB, NFC, BLE (Windows handles it) | Since Windows 10 1903 only administrators can open FIDO HID devices, so ctap-hid-fido2 would need admin. webauthn.dll accepts any rp id from native apps (it is what Win32-OpenSSH/libfido2 use) and shows the device, PIN and touch UI itself; it creates resident keys but cannot list a security key's resident credentials (`WebAuthNGetPlatformCredentialList` lists only Windows Hello's own), so the desktop says to run `ssh-keygen -K` and import the files; Windows always asks for a touch (`no-touch-required` keys too). Alternative: kanidm's `webauthn-authenticator-rs` (MPL-2.0, `win10` + `usb` + `nfc` features) |
 | Android | **yubikit-android** `fido` + `android` modules | Apache-2.0 | USB (YubiKeys), NFC | `Ctap2Session.makeCredential` / `getAssertions` take the client data hash and any rp id; `ClientPin`, `CredentialManagement`. The platform FIDO2 API (Credential Manager / `Fido2ApiClient`) binds the rp id to the app's Digital Asset Links domain, so it cannot use `ssh:` |
 | iOS | **YubiKit iOS** (`YKFFIDO2Session`) | Apache-2.0 | NFC (`YKFNFCConnection`), Lightning (YubiKey 5Ci accessory) | Any rp id with the client data hash. Apple's `ASAuthorizationSecurityKeyPublicKeyCredentialProvider` binds the rp id to associated domains (no `ssh:`). USB-C keys on iPhone 15+/iPad: YubiKit's smart-card connection does not carry FIDO2; check on a device in 3c and document what works |
 | Web | none | — | — | Browsers bind WebAuthn rp ids to the site's domain: the web cannot sign `ssh:` credentials. The web shows sk keys, imports their files and public keys, and server sessions with sk keys are signed by the user's phone or desktop through forwarding |
@@ -538,46 +541,56 @@ fallback.
 
 ## 9. Checklists for the UI phases
 
-### 9.1 Phase 3b: desktop + web
+### 9.1 Phase 3b: desktop + web (done 2026-10-24)
 
-Desktop (core v0.7.0-next.4):
-- [ ] `SecurityKeySigner` implementation: ctap-hid-fido2 on Linux/macOS,
-      webauthn.dll on Windows; device picker when several keys; touch prompt
-      (toast/dialog with host, user, key, purpose; cancel); PIN dialog when
-      `require_verification` or the device asks; map errors to `SkError`.
-- [ ] `ConnectOptions::with_security_key` for terminals, SFTP, tunnels,
-      exec, local AI (`Workspace::connect` takes it through the prompter path).
-- [ ] `Accounts::set_security_key_signer` so the events socket answers
-      server forwarding; a visible "Touch your key for the server session on
-      web1" toast with cancel; `security_key_done` dismisses it.
-- [ ] Keys: "New security key" (algorithm, application, resident, verify
-      required, no-touch, device label) → `create_security_key`; "Load from
-      security key" (resident) → `import_resident_security_keys`; import of
-      `id_*_sk` files; key details with application, flags, device; the
-      authorized_keys line with options; never "export private key" wording
-      for sk files ("key handle file").
-- [ ] Errors by code (`security_key_*`), en/es texts.
-- [ ] Snippets: editor with live issues (`parse`), variable list with kinds;
-      run dialog from `prompts(ctx)` (select → dropdown, secret → masked,
-      defaults prefilled, remembered values per snippet+host); broadcast /
-      multi-run uses `render_for_hosts` (one dialog, per-host built-ins);
-      server `/exec` with `snippet_id` + `variables`.
-- [ ] Tests with the software authenticator (feature `soft-sk` in dev
-      dependencies) and Xvfb screenshots.
+Desktop 0.7.0-next.3 (core v0.7.0-next.5; `src/security_keys/`):
+- [x] `SecurityKeySigner` in three layers: the hardware (`Authenticator`:
+      ctap-hid-fido2 on Linux/macOS, webauthn.dll on Windows, checked with
+      `cargo check --target x86_64-pc-windows-gnu`), the dialogs (`SkUi`)
+      and the flow (`SecurityKeys`: one operation at a time, waiting for a
+      key to be plugged in, device picker, PIN with retries, "Touch your
+      security key" with host, user, key and purpose and Cancel). Everything
+      above the hardware is tested with the software authenticator.
+- [x] The workspace's signer: terminals, SFTP, tunnels, "Run on…", local AI.
+- [x] The desktop's own events loop declares `features=security_keys` and
+      answers requests on a task per request; `security_key_done` drops it
+      (the dialog closes). With no key plugged in, a server request is a card
+      that does not block the window (a phone may answer it).
+- [x] Keys: New security key, Load from security key (not on Windows),
+      `id_*_sk` import, details with the authorized_keys line, key handle
+      wording, badge.
+- [x] Errors by code in en/es, also the server's texts (session reasons,
+      host tests, `/exec`).
+- [x] Snippets: editor with live issues and variables; "Run on…" (one form,
+      per-host built-ins, from this computer or from the server with
+      `/exec` + `snippet_id` for hosts of one account); Send snippet renders
+      per pane; remembered values per snippet (+ host), never secrets.
+- [x] Tests (324): the flow with the soft authenticator, forwarding, an
+      OpenSSH sshd end to end through `Workspace::connect`; opt-in live test
+      against staging (host test, server session and `/exec` signed by the
+      desktop). Xvfb screenshots.
 
 Web:
-- [ ] Keys page: sk keys with a badge, application, flags, device; import of
-      `id_*_sk` files and of public keys; no "generate security key" (needs an
-      app); explain that sessions with them are confirmed on your phone or
-      desktop.
-- [ ] Server session state "Touch your security key on one of your devices…"
-      and errors `security_key_no_device` / `_timeout` / `_cancelled` with
-      texts.
-- [ ] Snippet editor: issues from the API's `invalid_snippet` (and a JS port
-      of the parser that passes `template_vectors.json`); run dialog with
-      prompts/selects/secrets for `/exec`; remembered values in localStorage
-      (never secrets).
-- [ ] QA: web tests for both.
+- [x] Vault page: SSH keys (badge, details, authorized_keys line, import of
+      key files including `id_*_sk`, no generation with a link to the apps)
+      and Snippets (editor with issues from a JS port of the parser that
+      passes `template_vectors.json`, `tests/template.test.mjs`; run from the
+      server with prompts/selects/secrets; values in localStorage, never
+      secrets).
+- [x] Server sessions opened from the web; "Touch your security key (X) on
+      one of your devices…" while waiting; `security_key_*` texts (session
+      reasons and `/exec` results carry only English text: the web and the
+      desktop recognize the server's and the core's messages).
+- [x] QA: `security-keys` suite with web tests for both.
+
+Gotchas found: ctap-hid-fido2 sends `uv=true` by default (keys without
+built-in verification refuse it: use `without_pin_and_uv()` unless there is a
+PIN); its "challenge" is hashed (pass the SSH message); hidapi links libudev
+(builder image: `libudev-dev`); resident listing needs CTAP 2.1 or 2.1-PRE
+commands depending on the firmware (`credMgmt` in getInfo); a cancelled touch
+leaves the device waiting until it times out (~30 s), so the next operation
+waits for it; the desktop's REST paths need the `/api/v1` prefix;
+termoak-client did not build for Windows (winreg; fixed in v0.7.0-next.5).
 
 ### 9.2 Phase 3c: Android + iOS
 
@@ -597,6 +610,13 @@ Android:
 - [ ] Rebuild the `.so` (the ones in core's jniLibs are from before 0.7).
 - [ ] JVM tests with a fake handler; LiveTest against staging with the
       software authenticator answering as "the phone" (JNA build).
+- [ ] Copy the desktop's structure: hardware / dialogs / flow, so the flow is
+      tested without a key; one request at a time; Cancel must stop the
+      YubiKit session (the device keeps waiting otherwise); answer
+      `no_device` quickly when no key is near so a desktop can still answer.
+- [ ] Use the server's texts mapping for session reasons and `/exec`
+      results (they carry no code) and the "Touch your security key (X)…"
+      connecting message, as desktop and web do.
 
 iOS:
 - [ ] YubiKit iOS: NFC (`YKFNFCConnection`, NFC entitlement and
