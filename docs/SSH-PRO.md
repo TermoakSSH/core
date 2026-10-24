@@ -241,7 +241,7 @@ callback interface SecurityKeyHandler {
   list_resident(request: SecurityKeyResidentRequest) -> [SecurityKeyResident]     throws SecurityKeyError
 }
 error SecurityKeyError { NoDevice, Timeout, Cancelled, NotFound, PinRequired, PinInvalid,
-                         Unsupported, Failed }        // each with `message`; foreign exceptions → Failed
+                         Unsupported, Failed }        // each with `reason` (v0.7.0-next.6; `message` broke Kotlin); foreign exceptions → Failed
 
 TermoakCore.set_security_key_handler(handler?)       // nil disables (and stops answering the server)
 TermoakCore.has_security_key_handler() -> bool

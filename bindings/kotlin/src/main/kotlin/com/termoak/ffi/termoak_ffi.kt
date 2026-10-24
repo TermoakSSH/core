@@ -33768,7 +33768,8 @@ public object FfiConverterTypeSecurityKeyAlgorithm: FfiConverterRustBuffer<Secur
 
 
 /**
- * Errors the app's [`SecurityKeyHandler`] throws.
+ * Errors the app's [`SecurityKeyHandler`] throws. The text is `reason`
+ * (`message` would clash with the exceptions' own `message` in Kotlin).
  */
 sealed class SecurityKeyException: kotlin.Exception() {
     
@@ -33777,18 +33778,18 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class NoDevice(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     class Timeout(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     /**
@@ -33796,10 +33797,10 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class Cancelled(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     /**
@@ -33807,10 +33808,10 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class NotFound(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     /**
@@ -33818,10 +33819,10 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class PinRequired(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     /**
@@ -33829,10 +33830,10 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class PinInvalid(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     /**
@@ -33840,18 +33841,18 @@ sealed class SecurityKeyException: kotlin.Exception() {
      */
     class Unsupported(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     class Failed(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : SecurityKeyException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
 
@@ -33906,42 +33907,42 @@ public object FfiConverterTypeSecurityKeyError : FfiConverterRustBuffer<Security
             is SecurityKeyException.NoDevice -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.Timeout -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.Cancelled -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.NotFound -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.PinRequired -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.PinInvalid -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.Unsupported -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is SecurityKeyException.Failed -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
         }
     }
@@ -33950,42 +33951,42 @@ public object FfiConverterTypeSecurityKeyError : FfiConverterRustBuffer<Security
         when(value) {
             is SecurityKeyException.NoDevice -> {
                 buf.putInt(1)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.Timeout -> {
                 buf.putInt(2)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.Cancelled -> {
                 buf.putInt(3)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.NotFound -> {
                 buf.putInt(4)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.PinRequired -> {
                 buf.putInt(5)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.PinInvalid -> {
                 buf.putInt(6)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.Unsupported -> {
                 buf.putInt(7)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is SecurityKeyException.Failed -> {
                 buf.putInt(8)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

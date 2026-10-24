@@ -33,12 +33,12 @@ impl SoftHandler {
 }
 
 fn to_err(e: sk::SkError) -> SecurityKeyError {
-    let message = e.message;
+    let reason = e.message;
     match e.code {
-        SkErrorCode::Cancelled => SecurityKeyError::Cancelled { message },
-        SkErrorCode::NotFound => SecurityKeyError::NotFound { message },
-        SkErrorCode::PinRequired => SecurityKeyError::PinRequired { message },
-        _ => SecurityKeyError::Failed { message },
+        SkErrorCode::Cancelled => SecurityKeyError::Cancelled { reason },
+        SkErrorCode::NotFound => SecurityKeyError::NotFound { reason },
+        SkErrorCode::PinRequired => SecurityKeyError::PinRequired { reason },
+        _ => SecurityKeyError::Failed { reason },
     }
 }
 
@@ -47,7 +47,7 @@ impl SecurityKeyHandler for SoftHandler {
         self.requests.lock().push(r.clone());
         if self.cancel.load(std::sync::atomic::Ordering::SeqCst) {
             return Err(SecurityKeyError::Cancelled {
-                message: String::new(),
+                reason: String::new(),
             });
         }
         let req = sk::SkSignRequest {

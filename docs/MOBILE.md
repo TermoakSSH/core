@@ -276,7 +276,7 @@ platform: YubiKit on Android and iOS).
   request's `clientDataHash`, show the request's host, user, key and
   `purpose`, and throw `SecurityKeyError.Cancelled` when the user cancels
   (`NoDevice`, `Timeout`, `NotFound`, `PinRequired`, `PinInvalid`,
-  `Unsupported`, `Failed`). ECDSA signatures may be DER as the device
+  `Unsupported`, `Failed`; each with a `reason` text). ECDSA signatures may be DER as the device
   returns them; give `authenticatorData` if the library has it.
 - `setSecurityKeyHandler(handler)` once at start: local connections use it
   for sk keys, and `subscribeEvents` (called **after** it) answers the

@@ -28367,7 +28367,8 @@ public func FfiConverterTypeSecurityKeyAlgorithm_lower(_ value: SecurityKeyAlgor
 
 
 /**
- * Errors the app's [`SecurityKeyHandler`] throws.
+ * Errors the app's [`SecurityKeyHandler`] throws. The text is `reason`
+ * (`message` would clash with the exceptions' own `message` in Kotlin).
  */
 public 
 enum SecurityKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
@@ -28377,36 +28378,36 @@ enum SecurityKeyError: Swift.Error, Equatable, Hashable, Foundation.LocalizedErr
     /**
      * No security key is connected or in range.
      */
-    case NoDevice(message: String
+    case NoDevice(reason: String
     )
-    case Timeout(message: String
+    case Timeout(reason: String
     )
     /**
      * The user cancelled.
      */
-    case Cancelled(message: String
+    case Cancelled(reason: String
     )
     /**
      * The device does not have this credential (CTAP2_ERR_NO_CREDENTIALS).
      */
-    case NotFound(message: String
+    case NotFound(reason: String
     )
     /**
      * The key needs its PIN and none was entered.
      */
-    case PinRequired(message: String
+    case PinRequired(reason: String
     )
     /**
      * Wrong or blocked PIN.
      */
-    case PinInvalid(message: String
+    case PinInvalid(reason: String
     )
     /**
      * The device or platform cannot do this.
      */
-    case Unsupported(message: String
+    case Unsupported(reason: String
     )
-    case Failed(message: String
+    case Failed(reason: String
     )
 
     
@@ -28438,28 +28439,28 @@ public struct FfiConverterTypeSecurityKeyError: FfiConverterRustBuffer {
 
         
         case 1: return .NoDevice(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 2: return .Timeout(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 3: return .Cancelled(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 4: return .NotFound(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 5: return .PinRequired(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 6: return .PinInvalid(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 7: return .Unsupported(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 8: return .Failed(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
 
          default: throw UniffiInternalError.unexpectedEnumCase
@@ -28473,44 +28474,44 @@ public struct FfiConverterTypeSecurityKeyError: FfiConverterRustBuffer {
 
         
         
-        case let .NoDevice(message):
+        case let .NoDevice(reason):
             writeInt(&buf, Int32(1))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .Timeout(message):
+        case let .Timeout(reason):
             writeInt(&buf, Int32(2))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .Cancelled(message):
+        case let .Cancelled(reason):
             writeInt(&buf, Int32(3))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .NotFound(message):
+        case let .NotFound(reason):
             writeInt(&buf, Int32(4))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .PinRequired(message):
+        case let .PinRequired(reason):
             writeInt(&buf, Int32(5))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .PinInvalid(message):
+        case let .PinInvalid(reason):
             writeInt(&buf, Int32(6))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .Unsupported(message):
+        case let .Unsupported(reason):
             writeInt(&buf, Int32(7))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         
-        case let .Failed(message):
+        case let .Failed(reason):
             writeInt(&buf, Int32(8))
-            FfiConverterString.write(message, into: &buf)
+            FfiConverterString.write(reason, into: &buf)
             
         }
     }

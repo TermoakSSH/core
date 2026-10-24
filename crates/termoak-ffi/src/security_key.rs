@@ -283,50 +283,51 @@ impl From<SecurityKeyOptions> for sk::SkKeyOptions {
     }
 }
 
-/// Errors the app's [`SecurityKeyHandler`] throws.
+/// Errors the app's [`SecurityKeyHandler`] throws. The text is `reason`
+/// (`message` would clash with the exceptions' own `message` in Kotlin).
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error, uniffi::Error)]
 pub enum SecurityKeyError {
     /// No security key is connected or in range.
-    #[error("{message}")]
-    NoDevice { message: String },
-    #[error("{message}")]
-    Timeout { message: String },
+    #[error("{reason}")]
+    NoDevice { reason: String },
+    #[error("{reason}")]
+    Timeout { reason: String },
     /// The user cancelled.
-    #[error("{message}")]
-    Cancelled { message: String },
+    #[error("{reason}")]
+    Cancelled { reason: String },
     /// The device does not have this credential (CTAP2_ERR_NO_CREDENTIALS).
-    #[error("{message}")]
-    NotFound { message: String },
+    #[error("{reason}")]
+    NotFound { reason: String },
     /// The key needs its PIN and none was entered.
-    #[error("{message}")]
-    PinRequired { message: String },
+    #[error("{reason}")]
+    PinRequired { reason: String },
     /// Wrong or blocked PIN.
-    #[error("{message}")]
-    PinInvalid { message: String },
+    #[error("{reason}")]
+    PinInvalid { reason: String },
     /// The device or platform cannot do this.
-    #[error("{message}")]
-    Unsupported { message: String },
-    #[error("{message}")]
-    Failed { message: String },
+    #[error("{reason}")]
+    Unsupported { reason: String },
+    #[error("{reason}")]
+    Failed { reason: String },
 }
 
 impl From<uniffi::UnexpectedUniFFICallbackError> for SecurityKeyError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
-        SecurityKeyError::Failed { message: e.reason }
+        SecurityKeyError::Failed { reason: e.reason }
     }
 }
 
 impl From<SecurityKeyError> for SkError {
     fn from(e: SecurityKeyError) -> Self {
         let (code, message) = match e {
-            SecurityKeyError::NoDevice { message } => (SkErrorCode::NoDevice, message),
-            SecurityKeyError::Timeout { message } => (SkErrorCode::Timeout, message),
-            SecurityKeyError::Cancelled { message } => (SkErrorCode::Cancelled, message),
-            SecurityKeyError::NotFound { message } => (SkErrorCode::NotFound, message),
-            SecurityKeyError::PinRequired { message } => (SkErrorCode::PinRequired, message),
-            SecurityKeyError::PinInvalid { message } => (SkErrorCode::PinInvalid, message),
-            SecurityKeyError::Unsupported { message } => (SkErrorCode::Unsupported, message),
-            SecurityKeyError::Failed { message } => (SkErrorCode::Failed, message),
+            SecurityKeyError::NoDevice { reason } => (SkErrorCode::NoDevice, reason),
+            SecurityKeyError::Timeout { reason } => (SkErrorCode::Timeout, reason),
+            SecurityKeyError::Cancelled { reason } => (SkErrorCode::Cancelled, reason),
+            SecurityKeyError::NotFound { reason } => (SkErrorCode::NotFound, reason),
+            SecurityKeyError::PinRequired { reason } => (SkErrorCode::PinRequired, reason),
+            SecurityKeyError::PinInvalid { reason } => (SkErrorCode::PinInvalid, reason),
+            SecurityKeyError::Unsupported { reason } => (SkErrorCode::Unsupported, reason),
+            SecurityKeyError::Failed { reason } => (SkErrorCode::Failed, reason),
         };
         if message.trim().is_empty() {
             SkError::of(code)
