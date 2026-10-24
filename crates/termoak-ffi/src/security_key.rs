@@ -113,8 +113,8 @@ pub struct SecurityKeySignRequest {
     pub key_label: String,
     pub key_id: Option<String>,
     pub device: Option<String>,
-    /// `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
-    /// `ai` (forwarded by the server).
+    /// `connect` (this device); forwarded by the server: `server_session`,
+    /// `test` (host test), `server` (`/exec`, SFTP, AI).
     pub purpose: String,
     pub session_id: Option<String>,
 }

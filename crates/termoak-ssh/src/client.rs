@@ -35,7 +35,8 @@ pub struct ConnectOptions {
     /// key is a security key fails with `security_key_required`.
     pub security_key: Option<Arc<dyn crate::sk::SecurityKeySigner>>,
     /// What the connection is for (shown with security key requests:
-    /// `connect`, `server_session`, `test`, `exec`, `sftp`, `ai`...).
+    /// `connect` on a device; on the server `server_session`, `test` and
+    /// `server` for pooled connections: `/exec`, SFTP and the AI).
     pub purpose: String,
     /// Server session id (shown with security key requests).
     pub session_id: Option<String>,

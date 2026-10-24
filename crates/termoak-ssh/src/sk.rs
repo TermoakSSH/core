@@ -254,7 +254,8 @@ pub struct SkContext {
     /// The device label of the key (`SecurityKeyInfo::device`).
     #[serde(default)]
     pub device: Option<String>,
-    /// `connect`, `server_session`, `test`, `exec`, `sftp`, `ai`...
+    /// `connect` (a device), `server_session`, `test`, `server` (the
+    /// server's pooled connections: `/exec`, SFTP, AI).
     pub purpose: String,
     /// Server session id, when the request comes from one.
     #[serde(default)]

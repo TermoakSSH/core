@@ -20998,8 +20998,8 @@ public struct SecurityKeySignRequest: Equatable, Hashable {
     public var keyId: String?
     public var device: String?
     /**
-     * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
-     * `ai` (forwarded by the server).
+     * `connect` (this device); forwarded by the server: `server_session`,
+     * `test` (host test), `server` (`/exec`, SFTP, AI).
      */
     public var purpose: String
     public var sessionId: String?
@@ -21026,8 +21026,8 @@ public struct SecurityKeySignRequest: Equatable, Hashable {
          * What to show: the host's label and address, the user, the key.
          */host: String, address: String, username: String, keyLabel: String, keyId: String?, device: String?, 
         /**
-         * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
-         * `ai` (forwarded by the server).
+         * `connect` (this device); forwarded by the server: `server_session`,
+         * `test` (host test), `server` (`/exec`, SFTP, AI).
          */purpose: String, sessionId: String?) {
         self.algorithm = algorithm
         self.application = application

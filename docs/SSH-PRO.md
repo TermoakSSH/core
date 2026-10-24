@@ -259,8 +259,9 @@ TermoakError.SecurityKey(message)        (apiError.code = security_key_*)
 - `SecurityKeySignRequest` carries `application`, `key_handle`,
   `client_data_hash`, `message`, `algorithm`, `require_presence`,
   `require_verification`, `public_key`, `fingerprint`, and what to show:
-  `host`, `username`, `key_label`, `device` (label), `purpose` (`connect`,
-  `server_session`, `test`, `exec`, `sftp`, `ai`), `session_id`.
+  `host`, `username`, `key_label`, `device` (label), `purpose` (`connect`
+  on this device; forwarded: `server_session`, `test`, `server` for
+  `/exec`, SFTP and AI), `session_id`.
 - `SecurityKeyAssertion {flags, counter, signature, authenticator_data?}`.
 - Local connections (`connect_terminal`, SFTP, tunnels, exec) use the
   handler set on the core. Without a handler an sk key fails with
@@ -349,9 +350,10 @@ device), `unsupported`, `failed`.
   feature `security_keys`); a server whose holder does not announce it keeps
   sk sessions in its own process (like private networks with older holders).
   The holder protocol version does not change.
-- **AI**: AI tool connections forward too (purpose `ai`): the user sees
-  "AI task … wants to connect to web1" and touches the key, or the tool call
-  fails with `security_key_timeout` / `security_key_no_device`.
+- **AI, SFTP and `/exec`**: connections of the server's pool forward too
+  (purpose `server`, with the host and key): the user sees "the server wants
+  to connect to web1" and touches the key, or the call fails with
+  `security_key_timeout` / `security_key_no_device`.
 - **E2EE vaults (phase 5)**: forwarding does not need the server to read the
   key handle; when vaults become E2EE the device will fill `key_handle`
   itself (the request then carries only the key id and fingerprint).

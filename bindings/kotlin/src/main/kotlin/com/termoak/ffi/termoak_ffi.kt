@@ -28461,8 +28461,8 @@ data class SecurityKeySignRequest (
     var `device`: kotlin.String?
     , 
     /**
-     * `connect` (this device), `server_session`, `test`, `exec`, `sftp`,
-     * `ai` (forwarded by the server).
+     * `connect` (this device); forwarded by the server: `server_session`,
+     * `test` (host test), `server` (`/exec`, SFTP, AI).
      */
     var `purpose`: kotlin.String
     , 
