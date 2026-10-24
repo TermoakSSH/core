@@ -483,9 +483,24 @@ async fn authenticate(
                     .map(russh::keys::Certificate::from_openssh);
                 let result = match cert {
                     Some(Ok(cert)) => {
-                        handle
-                            .authenticate_openssh_cert(user.clone(), private, cert)
-                            .await?
+                        let r = handle
+                            .authenticate_openssh_cert(user.clone(), private.clone(), cert)
+                            .await?;
+                        if r.success() {
+                            r
+                        } else {
+                            // The host may not trust the CA (or the
+                            // certificate expired): the key alone may still
+                            // be in its authorized_keys (0.7 phase 4b).
+                            reasons.push(format!("certificate of key \"{}\" rejected", key.label));
+                            let hash = handle.best_supported_rsa_hash().await?.flatten();
+                            handle
+                                .authenticate_publickey(
+                                    user.clone(),
+                                    PrivateKeyWithHashAlg::new(private, hash),
+                                )
+                                .await?
+                        }
                     }
                     Some(Err(e)) => {
                         reasons.push(format!("invalid certificate: {e}"));
@@ -627,9 +642,24 @@ async fn security_key_auth(
         .and_then(|c| russh::keys::Certificate::from_openssh(c).ok());
     let result = match cert {
         Some(cert) => {
-            handle
+            let r = handle
                 .authenticate_certificate_with(hop.username.clone(), cert, None, &mut auth_signer)
-                .await
+                .await;
+            match r {
+                // Certificate refused (not the device): the key alone may
+                // still be authorized (one more touch).
+                Ok(r) if !r.success() && auth_signer.error.is_none() => {
+                    handle
+                        .authenticate_publickey_with(
+                            hop.username.clone(),
+                            sk.public.clone(),
+                            None,
+                            &mut auth_signer,
+                        )
+                        .await
+                }
+                other => other,
+            }
         }
         None => {
             handle

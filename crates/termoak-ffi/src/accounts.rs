@@ -121,9 +121,13 @@ impl From<cm::VaultKind> for VaultKind {
     }
 }
 
-/// Role in a vault (`UseOnly` < `Editor` < `Manager`).
+/// Role in a vault (`ConnectOnly` < `UseOnly` < `Editor` < `Manager`).
+/// UI names: Connect only, Use, Edit, Admin.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
 pub enum VaultRole {
+    /// Connects through the server or with team certificates; never gets
+    /// secrets, not even just in time (0.7 phase 4b).
+    ConnectOnly,
     /// Uses the items, never sees their secrets nor changes them.
     UseOnly,
     Editor,
@@ -135,6 +139,7 @@ pub enum VaultRole {
 impl From<cm::VaultRole> for VaultRole {
     fn from(r: cm::VaultRole) -> Self {
         match r {
+            cm::VaultRole::ConnectOnly => Self::ConnectOnly,
             cm::VaultRole::UseOnly => Self::UseOnly,
             cm::VaultRole::Editor => Self::Editor,
             cm::VaultRole::Manager => Self::Manager,
@@ -146,6 +151,7 @@ impl From<cm::VaultRole> for VaultRole {
 impl VaultRole {
     fn to_core(self) -> Result<cm::VaultRole> {
         match self {
+            VaultRole::ConnectOnly => Ok(cm::VaultRole::ConnectOnly),
             VaultRole::UseOnly => Ok(cm::VaultRole::UseOnly),
             VaultRole::Editor => Ok(cm::VaultRole::Editor),
             VaultRole::Manager => Ok(cm::VaultRole::Manager),
@@ -178,6 +184,9 @@ pub struct VaultInfo {
     pub strict: bool,
     /// Team vaults: role of plain team members (`None`: no access).
     pub team_member_role: Option<VaultRole>,
+    /// What the team's policies mean for you here (0.7 phase 4b; `None`:
+    /// no policy, or an older server). Hide what it forbids.
+    pub policy: Option<crate::teams_security::VaultPolicyInfo>,
 }
 
 impl VaultInfo {
@@ -199,6 +208,7 @@ impl VaultInfo {
             host_count: v.item_counts.get("host").copied().unwrap_or(0),
             strict: !v.settings.use_only_local,
             team_member_role: v.team_member_role.map(Into::into),
+            policy: v.policy.as_ref().map(Into::into),
         }
     }
 }

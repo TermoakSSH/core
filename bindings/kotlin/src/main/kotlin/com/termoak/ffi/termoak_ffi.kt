@@ -990,6 +990,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_snippet_prompts(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_parse_certificate(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_clean_terminal_output(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_command_failure(
@@ -1189,6 +1191,60 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_upload(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_write(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_access_policies(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_access_requests(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_approve_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_ca_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_ca_info(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_ca_install_script(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_cancel_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_create_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_create_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_delete_access_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_deny_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_disable_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_host_access(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_my_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_request_certificate(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_revoke_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_revoke_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_rotate_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_access_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_member_principal(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_team_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_2fa_requirements(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_compliance(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_upload_recording(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_vault_recordings(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_linetracker_at_end(
     ): Int
@@ -1770,6 +1826,60 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_access_policies(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_access_requests(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_approve_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_ca_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_ca_info(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_ca_install_script(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_cancel_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_create_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_create_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_access_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_deny_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_disable_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_host_access(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_my_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_request_certificate(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_revoke_access_request(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_revoke_certificates(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_rotate_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_access_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_member_principal(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_team_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_2fa_requirements(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_compliance(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_policy(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_upload_recording(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_vault_recordings(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_data_dir(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_forward(
@@ -2066,6 +2176,60 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_upload(`ptr`: Long,`hostId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`remotePath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_write(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`data`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_access_policies(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_access_requests(`ptr`: Long,`scope`: RustBuffer.ByValue,`status`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_approve_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`minutes`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_ca_certificates(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`activeOnly`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_ca_info(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_ca_install_script(`ptr`: Long,`teamId`: RustBuffer.ByValue,`krl`: Byte,`principals`: Byte,`refresh`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_cancel_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_create_access_request(`ptr`: Long,`targetKind`: RustBuffer.ByValue,`targetId`: RustBuffer.ByValue,`minutes`: Int,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_create_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`algorithm`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_delete_access_policy(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`policyId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_deny_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_disable_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`confirm`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_host_access(`ptr`: Long,`hostId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_my_certificates(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_request_certificate(`ptr`: Long,`hostId`: RustBuffer.ByValue,`keyId`: RustBuffer.ByValue,`ttlMinutes`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_revoke_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_revoke_certificates(`ptr`: Long,`teamId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_rotate_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`overlapHours`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_access_policy(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`targetKind`: RustBuffer.ByValue,`targetId`: RustBuffer.ByValue,`policy`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_member_principal(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`principal`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_team_policy(`ptr`: Long,`teamId`: RustBuffer.ByValue,`policy`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_2fa_requirements(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_compliance(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_policy(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_upload_recording(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`startedAt`: Long,`title`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_vault_recordings(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_clone_linetracker(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
@@ -2759,6 +2923,60 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_connect_terminal(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`auth`: Long,`listener`: Long,`accountId`: RustBuffer.ByValue,`telnetAutoLogin`: Byte,`record`: Byte,`keyChanged`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_access_policies(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_access_requests(`ptr`: Long,`scope`: RustBuffer.ByValue,`status`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_approve_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`minutes`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_ca_certificates(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`activeOnly`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_ca_info(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_ca_install_script(`ptr`: Long,`teamId`: RustBuffer.ByValue,`krl`: Byte,`principals`: Byte,`refresh`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_cancel_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_create_access_request(`ptr`: Long,`targetKind`: RustBuffer.ByValue,`targetId`: RustBuffer.ByValue,`minutes`: Int,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_create_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`algorithm`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_access_policy(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`policyId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_deny_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_disable_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`confirm`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_host_access(`ptr`: Long,`hostId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_my_certificates(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_request_certificate(`ptr`: Long,`hostId`: RustBuffer.ByValue,`keyId`: RustBuffer.ByValue,`ttlMinutes`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_revoke_access_request(`ptr`: Long,`requestId`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_revoke_certificates(`ptr`: Long,`teamId`: RustBuffer.ByValue,`target`: RustBuffer.ByValue,`reason`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_rotate_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`overlapHours`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_access_policy(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`targetKind`: RustBuffer.ByValue,`targetId`: RustBuffer.ByValue,`policy`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_member_principal(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`principal`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_team_policy(`ptr`: Long,`teamId`: RustBuffer.ByValue,`policy`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_2fa_requirements(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_compliance(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_policy(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_upload_recording(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`startedAt`: Long,`title`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_vault_recordings(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_data_dir(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_forward(`ptr`: Long,`id`: RustBuffer.ByValue,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -2922,6 +3140,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_func_render_snippet_with(`script`: RustBuffer.ByValue,`values`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_snippet_prompts(`script`: RustBuffer.ByValue,`context`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_parse_certificate(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_clean_terminal_output(`data`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -3189,6 +3409,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_snippet_prompts() and 0xFFFF) != 57679) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_parse_certificate() and 0xFFFF) != 27296) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_clean_terminal_output() and 0xFFFF) != 54293) {
@@ -3489,6 +3712,87 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_write() and 0xFFFF) != 25501) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_access_policies() and 0xFFFF) != 26671) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_access_request() and 0xFFFF) != 21879) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_access_requests() and 0xFFFF) != 32430) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_approve_access_request() and 0xFFFF) != 59307) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_ca_certificates() and 0xFFFF) != 52725) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_ca_info() and 0xFFFF) != 20569) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_ca_install_script() and 0xFFFF) != 21871) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_cancel_access_request() and 0xFFFF) != 54203) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_create_access_request() and 0xFFFF) != 46029) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_create_ca() and 0xFFFF) != 53578) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_delete_access_policy() and 0xFFFF) != 14357) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_deny_access_request() and 0xFFFF) != 42611) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_disable_ca() and 0xFFFF) != 53380) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_host_access() and 0xFFFF) != 23384) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_my_certificates() and 0xFFFF) != 9344) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_request_certificate() and 0xFFFF) != 60327) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_revoke_access_request() and 0xFFFF) != 10215) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_revoke_certificates() and 0xFFFF) != 52633) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_rotate_ca() and 0xFFFF) != 51145) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_access_policy() and 0xFFFF) != 3658) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_member_principal() and 0xFFFF) != 56014) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_team_policy() and 0xFFFF) != 61607) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_2fa_requirements() and 0xFFFF) != 18200) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_compliance() and 0xFFFF) != 12505) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_policy() and 0xFFFF) != 9888) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_upload_recording() and 0xFFFF) != 8865) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_vault_recordings() and 0xFFFF) != 4322) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_linetracker_at_end() and 0xFFFF) != 39551) {
@@ -4359,6 +4663,87 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_connect_terminal() and 0xFFFF) != 25364) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_access_policies() and 0xFFFF) != 60744) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_access_request() and 0xFFFF) != 16417) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_access_requests() and 0xFFFF) != 64656) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_approve_access_request() and 0xFFFF) != 63561) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ca_certificates() and 0xFFFF) != 36613) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ca_info() and 0xFFFF) != 55425) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_ca_install_script() and 0xFFFF) != 1766) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_cancel_access_request() and 0xFFFF) != 48902) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_create_access_request() and 0xFFFF) != 43562) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_create_ca() and 0xFFFF) != 55705) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_access_policy() and 0xFFFF) != 9165) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_deny_access_request() and 0xFFFF) != 43588) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_disable_ca() and 0xFFFF) != 39205) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_host_access() and 0xFFFF) != 51725) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_my_certificates() and 0xFFFF) != 17516) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_request_certificate() and 0xFFFF) != 16111) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_access_request() and 0xFFFF) != 48324) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_revoke_certificates() and 0xFFFF) != 47003) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_rotate_ca() and 0xFFFF) != 10200) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_access_policy() and 0xFFFF) != 22653) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_member_principal() and 0xFFFF) != 47929) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_team_policy() and 0xFFFF) != 63163) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_2fa_requirements() and 0xFFFF) != 53468) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_compliance() and 0xFFFF) != 46226) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_policy() and 0xFFFF) != 2079) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_upload_recording() and 0xFFFF) != 25212) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_vault_recordings() and 0xFFFF) != 25826) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_data_dir() and 0xFFFF) != 56000) {
@@ -5338,6 +5723,60 @@ public interface AccountHandleInterface {
     suspend fun `serverSftpUpload`(`hostId`: kotlin.String, `localPath`: kotlin.String, `remotePath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
     
     suspend fun `serverSftpWrite`(`hostId`: kotlin.String, `path`: kotlin.String, `data`: kotlin.ByteArray): kotlin.ULong
+    
+    suspend fun `accessPolicies`(`vaultId`: kotlin.String): List<AccessPolicyRecord>
+    
+    suspend fun `accessRequest`(`requestId`: kotlin.String): AccessRequestInfo
+    
+    suspend fun `accessRequests`(`scope`: AccessRequestScope, `status`: AccessRequestStatus?): List<AccessRequestInfo>
+    
+    suspend fun `approveAccessRequest`(`requestId`: kotlin.String, `minutes`: kotlin.UInt?, `reason`: kotlin.String?): AccessRequestInfo
+    
+    suspend fun `caCertificates`(`teamId`: kotlin.String?, `userId`: kotlin.String?, `activeOnly`: kotlin.Boolean): List<IssuedCertificateInfo>
+    
+    suspend fun `caInfo`(`teamId`: kotlin.String?): CaOverview
+    
+    suspend fun `caInstallScript`(`teamId`: kotlin.String?, `krl`: kotlin.Boolean, `principals`: kotlin.Boolean, `refresh`: kotlin.Boolean): kotlin.String
+    
+    suspend fun `cancelAccessRequest`(`requestId`: kotlin.String): AccessRequestInfo
+    
+    suspend fun `createAccessRequest`(`targetKind`: AccessTargetKind, `targetId`: kotlin.String, `minutes`: kotlin.UInt, `reason`: kotlin.String): AccessRequestInfo
+    
+    suspend fun `createCa`(`teamId`: kotlin.String?, `algorithm`: kotlin.String?): CaOverview
+    
+    suspend fun `deleteAccessPolicy`(`vaultId`: kotlin.String, `policyId`: kotlin.String)
+    
+    suspend fun `denyAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?): AccessRequestInfo
+    
+    suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String)
+    
+    suspend fun `hostAccess`(`hostId`: kotlin.String): HostAccessInfo
+    
+    suspend fun `myCertificates`(): List<IssuedCertificateInfo>
+    
+    suspend fun `requestCertificate`(`hostId`: kotlin.String, `keyId`: kotlin.String?, `ttlMinutes`: kotlin.UInt?): NewCertificate
+    
+    suspend fun `revokeAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?): AccessRequestInfo
+    
+    suspend fun `revokeCertificates`(`teamId`: kotlin.String?, `target`: RevokeTarget, `reason`: kotlin.String?): List<kotlin.Long>
+    
+    suspend fun `rotateCa`(`teamId`: kotlin.String?, `overlapHours`: kotlin.UInt?): CaOverview
+    
+    suspend fun `setAccessPolicy`(`vaultId`: kotlin.String, `targetKind`: AccessTargetKind, `targetId`: kotlin.String, `policy`: AccessPolicyInfo): AccessPolicyRecord
+    
+    suspend fun `setMemberPrincipal`(`teamId`: kotlin.String, `userId`: kotlin.String, `principal`: kotlin.String?)
+    
+    suspend fun `setTeamPolicy`(`teamId`: kotlin.String, `policy`: TeamSecurityPolicy): TeamSecurityPolicy
+    
+    suspend fun `team2faRequirements`(): List<Team2faRequirement>
+    
+    suspend fun `teamCompliance`(`teamId`: kotlin.String): List<TeamComplianceMember>
+    
+    suspend fun `teamPolicy`(`teamId`: kotlin.String): TeamSecurityPolicy
+    
+    suspend fun `uploadRecording`(`hostId`: kotlin.String, `path`: kotlin.String, `startedAt`: kotlin.Long, `title`: kotlin.String): kotlin.String
+    
+    suspend fun `vaultRecordings`(`vaultId`: kotlin.String): List<VaultRecording>
     
     companion object
 }
@@ -7425,6 +7864,631 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
         // lift function
         { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessPolicies`(`vaultId`: kotlin.String) : List<AccessPolicyRecord> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_access_policies(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccessPolicyRecord.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessRequest`(`requestId`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessRequests`(`scope`: AccessRequestScope, `status`: AccessRequestStatus?) : List<AccessRequestInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_access_requests(
+                uniffiHandle,
+                
+        FfiConverterTypeAccessRequestScope.lower(`scope`),
+        FfiConverterOptionalTypeAccessRequestStatus.lower(`status`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `approveAccessRequest`(`requestId`: kotlin.String, `minutes`: kotlin.UInt?, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_approve_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalUInt.lower(`minutes`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caCertificates`(`teamId`: kotlin.String?, `userId`: kotlin.String?, `activeOnly`: kotlin.Boolean) : List<IssuedCertificateInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_ca_certificates(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalString.lower(`userId`),
+        FfiConverterBoolean.lower(`activeOnly`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeIssuedCertificateInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caInfo`(`teamId`: kotlin.String?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_ca_info(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caInstallScript`(`teamId`: kotlin.String?, `krl`: kotlin.Boolean, `principals`: kotlin.Boolean, `refresh`: kotlin.Boolean) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_ca_install_script(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterBoolean.lower(`krl`),
+        FfiConverterBoolean.lower(`principals`),
+        FfiConverterBoolean.lower(`refresh`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `cancelAccessRequest`(`requestId`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_cancel_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createAccessRequest`(`targetKind`: AccessTargetKind, `targetId`: kotlin.String, `minutes`: kotlin.UInt, `reason`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_create_access_request(
+                uniffiHandle,
+                
+        FfiConverterTypeAccessTargetKind.lower(`targetKind`),
+        FfiConverterString.lower(`targetId`),
+        FfiConverterUInt.lower(`minutes`),
+        FfiConverterString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createCa`(`teamId`: kotlin.String?, `algorithm`: kotlin.String?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_create_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalString.lower(`algorithm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAccessPolicy`(`vaultId`: kotlin.String, `policyId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_delete_access_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterString.lower(`policyId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `denyAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_deny_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_disable_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterString.lower(`confirm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `hostAccess`(`hostId`: kotlin.String) : HostAccessInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_host_access(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeHostAccessInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `myCertificates`() : List<IssuedCertificateInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_my_certificates(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeIssuedCertificateInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `requestCertificate`(`hostId`: kotlin.String, `keyId`: kotlin.String?, `ttlMinutes`: kotlin.UInt?) : NewCertificate {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_request_certificate(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterOptionalString.lower(`keyId`),
+        FfiConverterOptionalUInt.lower(`ttlMinutes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeNewCertificate.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_revoke_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeCertificates`(`teamId`: kotlin.String?, `target`: RevokeTarget, `reason`: kotlin.String?) : List<kotlin.Long> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_revoke_certificates(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterTypeRevokeTarget.lower(`target`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceLong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `rotateCa`(`teamId`: kotlin.String?, `overlapHours`: kotlin.UInt?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_rotate_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalUInt.lower(`overlapHours`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setAccessPolicy`(`vaultId`: kotlin.String, `targetKind`: AccessTargetKind, `targetId`: kotlin.String, `policy`: AccessPolicyInfo) : AccessPolicyRecord {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_access_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterTypeAccessTargetKind.lower(`targetKind`),
+        FfiConverterString.lower(`targetId`),
+        FfiConverterTypeAccessPolicyInfo.lower(`policy`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessPolicyRecord.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setMemberPrincipal`(`teamId`: kotlin.String, `userId`: kotlin.String, `principal`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_member_principal(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`userId`),
+        FfiConverterOptionalString.lower(`principal`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamPolicy`(`teamId`: kotlin.String, `policy`: TeamSecurityPolicy) : TeamSecurityPolicy {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_team_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterTypeTeamSecurityPolicy.lower(`policy`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamSecurityPolicy.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `team2faRequirements`() : List<Team2faRequirement> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_2fa_requirements(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeam2faRequirement.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamCompliance`(`teamId`: kotlin.String) : List<TeamComplianceMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_compliance(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamComplianceMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamPolicy`(`teamId`: kotlin.String) : TeamSecurityPolicy {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamSecurityPolicy.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `uploadRecording`(`hostId`: kotlin.String, `path`: kotlin.String, `startedAt`: kotlin.Long, `title`: kotlin.String) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_upload_recording(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterLong.lower(`startedAt`),
+        FfiConverterString.lower(`title`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `vaultRecordings`(`vaultId`: kotlin.String) : List<VaultRecording> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_vault_recordings(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeVaultRecording.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -17276,6 +18340,132 @@ public interface TermoakCoreInterface {
      */
     suspend fun `connectTerminal`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `auth`: AuthHandler, `listener`: TerminalListener, `accountId`: kotlin.String? = null, `telnetAutoLogin`: kotlin.Boolean = true, `record`: kotlin.Boolean = false, `keyChanged`: HostKeyChangeHandler? = null): TerminalHandle
     
+    suspend fun `accessPolicies`(`vaultId`: kotlin.String): List<AccessPolicyRecord>
+    
+    suspend fun `accessRequest`(`requestId`: kotlin.String): AccessRequestInfo
+    
+    suspend fun `accessRequests`(`scope`: AccessRequestScope, `status`: AccessRequestStatus?): List<AccessRequestInfo>
+    
+    /**
+     * Approves a request; `minutes` may shorten the window.
+     */
+    suspend fun `approveAccessRequest`(`requestId`: kotlin.String, `minutes`: kotlin.UInt?, `reason`: kotlin.String?): AccessRequestInfo
+    
+    /**
+     * Certificates issued by the CA (`active_only`: not expired or revoked).
+     */
+    suspend fun `caCertificates`(`teamId`: kotlin.String?, `userId`: kotlin.String?, `activeOnly`: kotlin.Boolean): List<IssuedCertificateInfo>
+    
+    /**
+     * The SSH CA of a team (`None`: your personal CA) and how hosts trust
+     * it.
+     */
+    suspend fun `caInfo`(`teamId`: kotlin.String?): CaOverview
+    
+    /**
+     * The install script for hosts (run as root: `sh install.sh`).
+     */
+    suspend fun `caInstallScript`(`teamId`: kotlin.String?, `krl`: kotlin.Boolean, `principals`: kotlin.Boolean, `refresh`: kotlin.Boolean): kotlin.String
+    
+    /**
+     * Cancels your request (or ends your window early).
+     */
+    suspend fun `cancelAccessRequest`(`requestId`: kotlin.String): AccessRequestInfo
+    
+    /**
+     * Asks for access to a host, group or vault for `minutes`.
+     */
+    suspend fun `createAccessRequest`(`targetKind`: AccessTargetKind, `targetId`: kotlin.String, `minutes`: kotlin.UInt, `reason`: kotlin.String): AccessRequestInfo
+    
+    /**
+     * Creates the CA (`algorithm`: `ed25519` by default, or `ecdsa-p256`).
+     */
+    suspend fun `createCa`(`teamId`: kotlin.String?, `algorithm`: kotlin.String?): CaOverview
+    
+    suspend fun `deleteAccessPolicy`(`vaultId`: kotlin.String, `policyId`: kotlin.String)
+    
+    suspend fun `denyAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?): AccessRequestInfo
+    
+    /**
+     * Turns the CA off (every key retired at once; no more certificates).
+     * `confirm`: the team's name (`personal` for your own CA).
+     */
+    suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String)
+    
+    /**
+     * What you can do with a host now (mode, window, pending request,
+     * recording, certificates).
+     */
+    suspend fun `hostAccess`(`hostId`: kotlin.String): HostAccessInfo
+    
+    /**
+     * Your recent certificates.
+     */
+    suspend fun `myCertificates`(): List<IssuedCertificateInfo>
+    
+    /**
+     * Asks for a certificate for a key of your vaults (`key_id`) or, without
+     * one, for this device's ephemeral key, to connect to `host_id`. The
+     * engine does this by itself for hosts with "Team certificate".
+     */
+    suspend fun `requestCertificate`(`hostId`: kotlin.String, `keyId`: kotlin.String?, `ttlMinutes`: kotlin.UInt?): NewCertificate
+    
+    /**
+     * Ends someone's window early (approvers and managers).
+     */
+    suspend fun `revokeAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?): AccessRequestInfo
+    
+    /**
+     * Revokes certificates (or a key). Returns the revoked serials.
+     */
+    suspend fun `revokeCertificates`(`teamId`: kotlin.String?, `target`: RevokeTarget, `reason`: kotlin.String?): List<kotlin.Long>
+    
+    /**
+     * Rotates the CA: the new one signs from now on; the old one stays
+     * published for `overlap_hours` (24 by default).
+     */
+    suspend fun `rotateCa`(`teamId`: kotlin.String?, `overlapHours`: kotlin.UInt?): CaOverview
+    
+    /**
+     * Sets the policy of a host, group or the vault itself (managers).
+     */
+    suspend fun `setAccessPolicy`(`vaultId`: kotlin.String, `targetKind`: AccessTargetKind, `targetId`: kotlin.String, `policy`: AccessPolicyInfo): AccessPolicyRecord
+    
+    /**
+     * Sets (or clears) a member's certificate principal (`{member}`).
+     */
+    suspend fun `setMemberPrincipal`(`teamId`: kotlin.String, `userId`: kotlin.String, `principal`: kotlin.String?)
+    
+    /**
+     * Saves a team's policy (owners and admins). Turning on 2FA needs 2FA
+     * yourself (`policy_requires_2fa`).
+     */
+    suspend fun `setTeamPolicy`(`teamId`: kotlin.String, `policy`: TeamSecurityPolicy): TeamSecurityPolicy
+    
+    /**
+     * Teams that require 2FA from you (deadline, blocked).
+     */
+    suspend fun `team2faRequirements`(): List<Team2faRequirement>
+    
+    /**
+     * Members and their 2FA state (owners and admins).
+     */
+    suspend fun `teamCompliance`(`teamId`: kotlin.String): List<TeamComplianceMember>
+    
+    suspend fun `teamPolicy`(`teamId`: kotlin.String): TeamSecurityPolicy
+    
+    /**
+     * Uploads the recording (asciicast) of a local session on a host of an
+     * account. The engine does it by itself for hosts with mandatory
+     * recording; returns the new session id.
+     */
+    suspend fun `uploadRecording`(`hostId`: kotlin.String, `path`: kotlin.String, `startedAt`: kotlin.Long, `title`: kotlin.String): kotlin.String
+    
+    /**
+     * Recorded sessions of a vault (managers).
+     */
+    suspend fun `vaultRecordings`(`vaultId`: kotlin.String): List<VaultRecording>
+    
     /**
      * The vault's data directory.
      */
@@ -21111,6 +22301,703 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     }
 
     
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessPolicies`(`vaultId`: kotlin.String) : List<AccessPolicyRecord> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_access_policies(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccessPolicyRecord.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessRequest`(`requestId`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `accessRequests`(`scope`: AccessRequestScope, `status`: AccessRequestStatus?) : List<AccessRequestInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_access_requests(
+                uniffiHandle,
+                
+        FfiConverterTypeAccessRequestScope.lower(`scope`),
+        FfiConverterOptionalTypeAccessRequestStatus.lower(`status`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Approves a request; `minutes` may shorten the window.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `approveAccessRequest`(`requestId`: kotlin.String, `minutes`: kotlin.UInt?, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_approve_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalUInt.lower(`minutes`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Certificates issued by the CA (`active_only`: not expired or revoked).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caCertificates`(`teamId`: kotlin.String?, `userId`: kotlin.String?, `activeOnly`: kotlin.Boolean) : List<IssuedCertificateInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_ca_certificates(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalString.lower(`userId`),
+        FfiConverterBoolean.lower(`activeOnly`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeIssuedCertificateInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * The SSH CA of a team (`None`: your personal CA) and how hosts trust
+     * it.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caInfo`(`teamId`: kotlin.String?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_ca_info(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * The install script for hosts (run as root: `sh install.sh`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `caInstallScript`(`teamId`: kotlin.String?, `krl`: kotlin.Boolean, `principals`: kotlin.Boolean, `refresh`: kotlin.Boolean) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_ca_install_script(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterBoolean.lower(`krl`),
+        FfiConverterBoolean.lower(`principals`),
+        FfiConverterBoolean.lower(`refresh`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Cancels your request (or ends your window early).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `cancelAccessRequest`(`requestId`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_cancel_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Asks for access to a host, group or vault for `minutes`.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createAccessRequest`(`targetKind`: AccessTargetKind, `targetId`: kotlin.String, `minutes`: kotlin.UInt, `reason`: kotlin.String) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_create_access_request(
+                uniffiHandle,
+                
+        FfiConverterTypeAccessTargetKind.lower(`targetKind`),
+        FfiConverterString.lower(`targetId`),
+        FfiConverterUInt.lower(`minutes`),
+        FfiConverterString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Creates the CA (`algorithm`: `ed25519` by default, or `ecdsa-p256`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createCa`(`teamId`: kotlin.String?, `algorithm`: kotlin.String?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_create_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalString.lower(`algorithm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAccessPolicy`(`vaultId`: kotlin.String, `policyId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_delete_access_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterString.lower(`policyId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `denyAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_deny_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Turns the CA off (every key retired at once; no more certificates).
+     * `confirm`: the team's name (`personal` for your own CA).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_disable_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterString.lower(`confirm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * What you can do with a host now (mode, window, pending request,
+     * recording, certificates).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `hostAccess`(`hostId`: kotlin.String) : HostAccessInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_host_access(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeHostAccessInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Your recent certificates.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `myCertificates`() : List<IssuedCertificateInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_my_certificates(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeIssuedCertificateInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Asks for a certificate for a key of your vaults (`key_id`) or, without
+     * one, for this device's ephemeral key, to connect to `host_id`. The
+     * engine does this by itself for hosts with "Team certificate".
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `requestCertificate`(`hostId`: kotlin.String, `keyId`: kotlin.String?, `ttlMinutes`: kotlin.UInt?) : NewCertificate {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_request_certificate(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterOptionalString.lower(`keyId`),
+        FfiConverterOptionalUInt.lower(`ttlMinutes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeNewCertificate.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Ends someone's window early (approvers and managers).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?) : AccessRequestInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_revoke_access_request(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`requestId`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessRequestInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Revokes certificates (or a key). Returns the revoked serials.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeCertificates`(`teamId`: kotlin.String?, `target`: RevokeTarget, `reason`: kotlin.String?) : List<kotlin.Long> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_revoke_certificates(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterTypeRevokeTarget.lower(`target`),
+        FfiConverterOptionalString.lower(`reason`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceLong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Rotates the CA: the new one signs from now on; the old one stays
+     * published for `overlap_hours` (24 by default).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `rotateCa`(`teamId`: kotlin.String?, `overlapHours`: kotlin.UInt?) : CaOverview {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_rotate_ca(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalUInt.lower(`overlapHours`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeCaOverview.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sets the policy of a host, group or the vault itself (managers).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setAccessPolicy`(`vaultId`: kotlin.String, `targetKind`: AccessTargetKind, `targetId`: kotlin.String, `policy`: AccessPolicyInfo) : AccessPolicyRecord {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_access_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterTypeAccessTargetKind.lower(`targetKind`),
+        FfiConverterString.lower(`targetId`),
+        FfiConverterTypeAccessPolicyInfo.lower(`policy`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccessPolicyRecord.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sets (or clears) a member's certificate principal (`{member}`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setMemberPrincipal`(`teamId`: kotlin.String, `userId`: kotlin.String, `principal`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_member_principal(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`userId`),
+        FfiConverterOptionalString.lower(`principal`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Saves a team's policy (owners and admins). Turning on 2FA needs 2FA
+     * yourself (`policy_requires_2fa`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamPolicy`(`teamId`: kotlin.String, `policy`: TeamSecurityPolicy) : TeamSecurityPolicy {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_team_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterTypeTeamSecurityPolicy.lower(`policy`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamSecurityPolicy.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Teams that require 2FA from you (deadline, blocked).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `team2faRequirements`() : List<Team2faRequirement> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_2fa_requirements(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeam2faRequirement.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Members and their 2FA state (owners and admins).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamCompliance`(`teamId`: kotlin.String) : List<TeamComplianceMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_compliance(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamComplianceMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamPolicy`(`teamId`: kotlin.String) : TeamSecurityPolicy {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_policy(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamSecurityPolicy.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Uploads the recording (asciicast) of a local session on a host of an
+     * account. The engine does it by itself for hosts with mandatory
+     * recording; returns the new session id.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `uploadRecording`(`hostId`: kotlin.String, `path`: kotlin.String, `startedAt`: kotlin.Long, `title`: kotlin.String) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_upload_recording(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterString.lower(`path`),
+        FfiConverterLong.lower(`startedAt`),
+        FfiConverterString.lower(`title`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Recorded sessions of a vault (managers).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `vaultRecordings`(`vaultId`: kotlin.String) : List<VaultRecording> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_vault_recordings(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeVaultRecording.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
     /**
      * The vault's data directory.
      */override fun `dataDir`(): kotlin.String {
@@ -22534,6 +24421,319 @@ public object FfiConverterTypeTransferListener: FfiConverter<TransferListener, L
 
     override fun write(value: TransferListener, buf: ByteBuffer) {
         buf.putLong(lower(value))
+    }
+}
+
+
+
+/**
+ * Rules for a host, a group or a vault.
+ */
+data class AccessPolicyInfo (
+    var `mode`: AccessMode
+    , 
+    /**
+     * User ids; empty: the vault's managers.
+     */
+    var `approvers`: List<kotlin.String> = listOf() 
+    , 
+    var `maxMinutes`: kotlin.UInt = 60u 
+    , 
+    var `requestTtlMinutes`: kotlin.UInt = 240u 
+    , 
+    var `allowSelfApproval`: kotlin.Boolean = false 
+    , 
+    var `requireForManagers`: kotlin.Boolean = false 
+    , 
+    var `principals`: List<kotlin.String>? = null 
+    , 
+    var `certTtlMinutes`: kotlin.UInt? = null 
+    , 
+    var `extensions`: List<kotlin.String>? = null 
+    , 
+    var `sourceAddress`: kotlin.String? = null 
+    , 
+    var `forceCommand`: kotlin.String? = null 
+    , 
+    var `recordSessions`: kotlin.Boolean = false 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessPolicyInfo: FfiConverterRustBuffer<AccessPolicyInfo> {
+    override fun read(buf: ByteBuffer): AccessPolicyInfo {
+        return AccessPolicyInfo(
+            FfiConverterTypeAccessMode.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalSequenceString.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalSequenceString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AccessPolicyInfo) = (
+            FfiConverterTypeAccessMode.allocationSize(value.`mode`) +
+            FfiConverterSequenceString.allocationSize(value.`approvers`) +
+            FfiConverterUInt.allocationSize(value.`maxMinutes`) +
+            FfiConverterUInt.allocationSize(value.`requestTtlMinutes`) +
+            FfiConverterBoolean.allocationSize(value.`allowSelfApproval`) +
+            FfiConverterBoolean.allocationSize(value.`requireForManagers`) +
+            FfiConverterOptionalSequenceString.allocationSize(value.`principals`) +
+            FfiConverterOptionalUInt.allocationSize(value.`certTtlMinutes`) +
+            FfiConverterOptionalSequenceString.allocationSize(value.`extensions`) +
+            FfiConverterOptionalString.allocationSize(value.`sourceAddress`) +
+            FfiConverterOptionalString.allocationSize(value.`forceCommand`) +
+            FfiConverterBoolean.allocationSize(value.`recordSessions`)
+    )
+
+    override fun write(value: AccessPolicyInfo, buf: ByteBuffer) {
+            FfiConverterTypeAccessMode.write(value.`mode`, buf)
+            FfiConverterSequenceString.write(value.`approvers`, buf)
+            FfiConverterUInt.write(value.`maxMinutes`, buf)
+            FfiConverterUInt.write(value.`requestTtlMinutes`, buf)
+            FfiConverterBoolean.write(value.`allowSelfApproval`, buf)
+            FfiConverterBoolean.write(value.`requireForManagers`, buf)
+            FfiConverterOptionalSequenceString.write(value.`principals`, buf)
+            FfiConverterOptionalUInt.write(value.`certTtlMinutes`, buf)
+            FfiConverterOptionalSequenceString.write(value.`extensions`, buf)
+            FfiConverterOptionalString.write(value.`sourceAddress`, buf)
+            FfiConverterOptionalString.write(value.`forceCommand`, buf)
+            FfiConverterBoolean.write(value.`recordSessions`, buf)
+    }
+}
+
+
+
+/**
+ * A stored access policy.
+ */
+data class AccessPolicyRecord (
+    var `id`: kotlin.String
+    , 
+    var `vaultId`: kotlin.String
+    , 
+    var `targetKind`: AccessTargetKind
+    , 
+    var `targetId`: kotlin.String
+    , 
+    var `policy`: AccessPolicyInfo
+    , 
+    var `updatedBy`: kotlin.String
+    , 
+    var `updatedAt`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessPolicyRecord: FfiConverterRustBuffer<AccessPolicyRecord> {
+    override fun read(buf: ByteBuffer): AccessPolicyRecord {
+        return AccessPolicyRecord(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeAccessTargetKind.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeAccessPolicyInfo.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AccessPolicyRecord) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`vaultId`) +
+            FfiConverterTypeAccessTargetKind.allocationSize(value.`targetKind`) +
+            FfiConverterString.allocationSize(value.`targetId`) +
+            FfiConverterTypeAccessPolicyInfo.allocationSize(value.`policy`) +
+            FfiConverterString.allocationSize(value.`updatedBy`) +
+            FfiConverterLong.allocationSize(value.`updatedAt`)
+    )
+
+    override fun write(value: AccessPolicyRecord, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`vaultId`, buf)
+            FfiConverterTypeAccessTargetKind.write(value.`targetKind`, buf)
+            FfiConverterString.write(value.`targetId`, buf)
+            FfiConverterTypeAccessPolicyInfo.write(value.`policy`, buf)
+            FfiConverterString.write(value.`updatedBy`, buf)
+            FfiConverterLong.write(value.`updatedAt`, buf)
+    }
+}
+
+
+
+/**
+ * A request for temporary access.
+ */
+data class AccessRequestInfo (
+    var `id`: kotlin.String
+    , 
+    var `vaultId`: kotlin.String
+    , 
+    var `targetKind`: AccessTargetKind
+    , 
+    var `targetId`: kotlin.String
+    , 
+    var `targetLabel`: kotlin.String
+    , 
+    var `requesterId`: kotlin.String
+    , 
+    var `requesterName`: kotlin.String
+    , 
+    var `requesterEmail`: kotlin.String
+    , 
+    var `reason`: kotlin.String
+    , 
+    /**
+     * Asked for (or, once approved, granted) minutes.
+     */
+    var `minutes`: kotlin.UInt
+    , 
+    var `status`: AccessRequestStatus
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    /**
+     * A pending request expires then.
+     */
+    var `expiresAt`: kotlin.Long
+    , 
+    var `decidedBy`: kotlin.String?
+    , 
+    var `decidedByName`: kotlin.String?
+    , 
+    var `decidedAt`: kotlin.Long?
+    , 
+    var `decisionReason`: kotlin.String?
+    , 
+    var `startsAt`: kotlin.Long?
+    , 
+    var `endsAt`: kotlin.Long?
+    , 
+    var `selfApproved`: kotlin.Boolean
+    , 
+    /**
+     * Approved and inside its window now.
+     */
+    var `active`: kotlin.Boolean
+    , 
+    /**
+     * You may approve or deny it (pending) / revoke it (active).
+     */
+    var `canDecide`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessRequestInfo: FfiConverterRustBuffer<AccessRequestInfo> {
+    override fun read(buf: ByteBuffer): AccessRequestInfo {
+        return AccessRequestInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeAccessTargetKind.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterTypeAccessRequestStatus.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AccessRequestInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`vaultId`) +
+            FfiConverterTypeAccessTargetKind.allocationSize(value.`targetKind`) +
+            FfiConverterString.allocationSize(value.`targetId`) +
+            FfiConverterString.allocationSize(value.`targetLabel`) +
+            FfiConverterString.allocationSize(value.`requesterId`) +
+            FfiConverterString.allocationSize(value.`requesterName`) +
+            FfiConverterString.allocationSize(value.`requesterEmail`) +
+            FfiConverterString.allocationSize(value.`reason`) +
+            FfiConverterUInt.allocationSize(value.`minutes`) +
+            FfiConverterTypeAccessRequestStatus.allocationSize(value.`status`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterLong.allocationSize(value.`expiresAt`) +
+            FfiConverterOptionalString.allocationSize(value.`decidedBy`) +
+            FfiConverterOptionalString.allocationSize(value.`decidedByName`) +
+            FfiConverterOptionalLong.allocationSize(value.`decidedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`decisionReason`) +
+            FfiConverterOptionalLong.allocationSize(value.`startsAt`) +
+            FfiConverterOptionalLong.allocationSize(value.`endsAt`) +
+            FfiConverterBoolean.allocationSize(value.`selfApproved`) +
+            FfiConverterBoolean.allocationSize(value.`active`) +
+            FfiConverterBoolean.allocationSize(value.`canDecide`)
+    )
+
+    override fun write(value: AccessRequestInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`vaultId`, buf)
+            FfiConverterTypeAccessTargetKind.write(value.`targetKind`, buf)
+            FfiConverterString.write(value.`targetId`, buf)
+            FfiConverterString.write(value.`targetLabel`, buf)
+            FfiConverterString.write(value.`requesterId`, buf)
+            FfiConverterString.write(value.`requesterName`, buf)
+            FfiConverterString.write(value.`requesterEmail`, buf)
+            FfiConverterString.write(value.`reason`, buf)
+            FfiConverterUInt.write(value.`minutes`, buf)
+            FfiConverterTypeAccessRequestStatus.write(value.`status`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterLong.write(value.`expiresAt`, buf)
+            FfiConverterOptionalString.write(value.`decidedBy`, buf)
+            FfiConverterOptionalString.write(value.`decidedByName`, buf)
+            FfiConverterOptionalLong.write(value.`decidedAt`, buf)
+            FfiConverterOptionalString.write(value.`decisionReason`, buf)
+            FfiConverterOptionalLong.write(value.`startsAt`, buf)
+            FfiConverterOptionalLong.write(value.`endsAt`, buf)
+            FfiConverterBoolean.write(value.`selfApproved`, buf)
+            FfiConverterBoolean.write(value.`active`, buf)
+            FfiConverterBoolean.write(value.`canDecide`, buf)
     }
 }
 
@@ -24716,6 +26916,334 @@ public object FfiConverterTypeAuthorPeriod: FfiConverterRustBuffer<AuthorPeriod>
 
 
 /**
+ * A CA key (public part).
+ */
+data class CaKeyInfo (
+    var `id`: kotlin.String
+    , 
+    /**
+     * `ssh-ed25519` or `ecdsa-sha2-nistp256`.
+     */
+    var `algorithm`: kotlin.String
+    , 
+    var `publicKey`: kotlin.String
+    , 
+    var `fingerprint`: kotlin.String
+    , 
+    /**
+     * `active`, `retiring` (still published until `retire_at`) or `retired`.
+     */
+    var `status`: kotlin.String
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    var `retireAt`: kotlin.Long?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCaKeyInfo: FfiConverterRustBuffer<CaKeyInfo> {
+    override fun read(buf: ByteBuffer): CaKeyInfo {
+        return CaKeyInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CaKeyInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`algorithm`) +
+            FfiConverterString.allocationSize(value.`publicKey`) +
+            FfiConverterString.allocationSize(value.`fingerprint`) +
+            FfiConverterString.allocationSize(value.`status`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterOptionalLong.allocationSize(value.`retireAt`)
+    )
+
+    override fun write(value: CaKeyInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`algorithm`, buf)
+            FfiConverterString.write(value.`publicKey`, buf)
+            FfiConverterString.write(value.`fingerprint`, buf)
+            FfiConverterString.write(value.`status`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterOptionalLong.write(value.`retireAt`, buf)
+    }
+}
+
+
+
+/**
+ * A CA owner's certificate authority and how hosts trust it.
+ */
+data class CaOverview (
+    /**
+     * The active CA (`None`: not configured).
+     */
+    var `ca`: CaKeyInfo?
+    , 
+    /**
+     * Retiring CAs still published.
+     */
+    var `previous`: List<CaKeyInfo>
+    , 
+    /**
+     * Content of the `TrustedUserCAKeys` file (every published key).
+     */
+    var `keysFile`: kotlin.String
+    , 
+    /**
+     * Lines for `sshd_config`.
+     */
+    var `sshdConfig`: List<kotlin.String>
+    , 
+    /**
+     * Optional lines (`RevokedKeys`, `AuthorizedPrincipalsFile`).
+     */
+    var `sshdConfigOptional`: List<kotlin.String>
+    , 
+    /**
+     * Public URLs of the keys file and the KRL; the install script's URL
+     * (needs a manager's token: `ca_install_script`).
+     */
+    var `keysUrl`: kotlin.String
+    , 
+    var `krlUrl`: kotlin.String
+    , 
+    var `installUrl`: kotlin.String
+    , 
+    var `policy`: CertificatePolicy
+    , 
+    /**
+     * You can change it (team owner/admin, or your personal CA).
+     */
+    var `canManage`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCaOverview: FfiConverterRustBuffer<CaOverview> {
+    override fun read(buf: ByteBuffer): CaOverview {
+        return CaOverview(
+            FfiConverterOptionalTypeCaKeyInfo.read(buf),
+            FfiConverterSequenceTypeCaKeyInfo.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeCertificatePolicy.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CaOverview) = (
+            FfiConverterOptionalTypeCaKeyInfo.allocationSize(value.`ca`) +
+            FfiConverterSequenceTypeCaKeyInfo.allocationSize(value.`previous`) +
+            FfiConverterString.allocationSize(value.`keysFile`) +
+            FfiConverterSequenceString.allocationSize(value.`sshdConfig`) +
+            FfiConverterSequenceString.allocationSize(value.`sshdConfigOptional`) +
+            FfiConverterString.allocationSize(value.`keysUrl`) +
+            FfiConverterString.allocationSize(value.`krlUrl`) +
+            FfiConverterString.allocationSize(value.`installUrl`) +
+            FfiConverterTypeCertificatePolicy.allocationSize(value.`policy`) +
+            FfiConverterBoolean.allocationSize(value.`canManage`)
+    )
+
+    override fun write(value: CaOverview, buf: ByteBuffer) {
+            FfiConverterOptionalTypeCaKeyInfo.write(value.`ca`, buf)
+            FfiConverterSequenceTypeCaKeyInfo.write(value.`previous`, buf)
+            FfiConverterString.write(value.`keysFile`, buf)
+            FfiConverterSequenceString.write(value.`sshdConfig`, buf)
+            FfiConverterSequenceString.write(value.`sshdConfigOptional`, buf)
+            FfiConverterString.write(value.`keysUrl`, buf)
+            FfiConverterString.write(value.`krlUrl`, buf)
+            FfiConverterString.write(value.`installUrl`, buf)
+            FfiConverterTypeCertificatePolicy.write(value.`policy`, buf)
+            FfiConverterBoolean.write(value.`canManage`, buf)
+    }
+}
+
+
+
+/**
+ * What an OpenSSH certificate says.
+ */
+data class CertificateDetails (
+    var `keyId`: kotlin.String
+    , 
+    var `serial`: kotlin.ULong
+    , 
+    /**
+     * `user` or `host`.
+     */
+    var `certType`: kotlin.String
+    , 
+    var `principals`: List<kotlin.String>
+    , 
+    /**
+     * Milliseconds since the epoch.
+     */
+    var `validAfter`: kotlin.Long
+    , 
+    var `validBefore`: kotlin.Long
+    , 
+    var `extensions`: List<kotlin.String>
+    , 
+    var `criticalOptions`: List<kotlin.String>
+    , 
+    var `keyFingerprint`: kotlin.String
+    , 
+    var `caFingerprint`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCertificateDetails: FfiConverterRustBuffer<CertificateDetails> {
+    override fun read(buf: ByteBuffer): CertificateDetails {
+        return CertificateDetails(
+            FfiConverterString.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CertificateDetails) = (
+            FfiConverterString.allocationSize(value.`keyId`) +
+            FfiConverterULong.allocationSize(value.`serial`) +
+            FfiConverterString.allocationSize(value.`certType`) +
+            FfiConverterSequenceString.allocationSize(value.`principals`) +
+            FfiConverterLong.allocationSize(value.`validAfter`) +
+            FfiConverterLong.allocationSize(value.`validBefore`) +
+            FfiConverterSequenceString.allocationSize(value.`extensions`) +
+            FfiConverterSequenceString.allocationSize(value.`criticalOptions`) +
+            FfiConverterString.allocationSize(value.`keyFingerprint`) +
+            FfiConverterString.allocationSize(value.`caFingerprint`)
+    )
+
+    override fun write(value: CertificateDetails, buf: ByteBuffer) {
+            FfiConverterString.write(value.`keyId`, buf)
+            FfiConverterULong.write(value.`serial`, buf)
+            FfiConverterString.write(value.`certType`, buf)
+            FfiConverterSequenceString.write(value.`principals`, buf)
+            FfiConverterLong.write(value.`validAfter`, buf)
+            FfiConverterLong.write(value.`validBefore`, buf)
+            FfiConverterSequenceString.write(value.`extensions`, buf)
+            FfiConverterSequenceString.write(value.`criticalOptions`, buf)
+            FfiConverterString.write(value.`keyFingerprint`, buf)
+            FfiConverterString.write(value.`caFingerprint`, buf)
+    }
+}
+
+
+
+/**
+ * Defaults of a CA owner's certificates.
+ */
+data class CertificatePolicy (
+    var `defaultTtlMinutes`: kotlin.UInt
+    , 
+    var `maxTtlMinutes`: kotlin.UInt
+    , 
+    /**
+     * Templates: `{login}`, `{member}`, `{email}`, `{user_id}` or names.
+     */
+    var `principals`: List<kotlin.String>
+    , 
+    /**
+     * `permit-pty`, `permit-port-forwarding`, `permit-agent-forwarding`,
+     * `permit-X11-forwarding`, `permit-user-rc`.
+     */
+    var `extensions`: List<kotlin.String>
+    , 
+    /**
+     * `source-address` (comma-separated CIDRs).
+     */
+    var `sourceAddress`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCertificatePolicy: FfiConverterRustBuffer<CertificatePolicy> {
+    override fun read(buf: ByteBuffer): CertificatePolicy {
+        return CertificatePolicy(
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CertificatePolicy) = (
+            FfiConverterUInt.allocationSize(value.`defaultTtlMinutes`) +
+            FfiConverterUInt.allocationSize(value.`maxTtlMinutes`) +
+            FfiConverterSequenceString.allocationSize(value.`principals`) +
+            FfiConverterSequenceString.allocationSize(value.`extensions`) +
+            FfiConverterOptionalString.allocationSize(value.`sourceAddress`)
+    )
+
+    override fun write(value: CertificatePolicy, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`defaultTtlMinutes`, buf)
+            FfiConverterUInt.write(value.`maxTtlMinutes`, buf)
+            FfiConverterSequenceString.write(value.`principals`, buf)
+            FfiConverterSequenceString.write(value.`extensions`, buf)
+            FfiConverterOptionalString.write(value.`sourceAddress`, buf)
+    }
+}
+
+
+
+/**
  * A command that ended.
  */
 data class CommandEnded (
@@ -25692,6 +28220,127 @@ public object FfiConverterTypeForwardStats: FfiConverterRustBuffer<ForwardStats>
 
 
 /**
+ * What you can do with one host now (`host_access`).
+ */
+data class HostAccessInfo (
+    var `hostId`: kotlin.String
+    , 
+    var `vaultId`: kotlin.String
+    , 
+    var `mode`: AccessMode
+    , 
+    /**
+     * The policy that applies and what it is set on.
+     */
+    var `policy`: AccessPolicyRecord?
+    , 
+    /**
+     * Allowed without a request (direct, or an exempt manager).
+     */
+    var `exempt`: kotlin.Boolean
+    , 
+    /**
+     * Allowed right now (exempt or inside a window).
+     */
+    var `allowed`: kotlin.Boolean
+    , 
+    var `grant`: AccessRequestInfo?
+    , 
+    var `pending`: AccessRequestInfo?
+    , 
+    var `canRequest`: kotlin.Boolean
+    , 
+    var `maxMinutes`: kotlin.UInt
+    , 
+    /**
+     * The vault's owner has a CA.
+     */
+    var `certificates`: kotlin.Boolean
+    , 
+    /**
+     * The host uses team certificates.
+     */
+    var `teamCertificate`: kotlin.Boolean
+    , 
+    var `recordRequired`: kotlin.Boolean
+    , 
+    var `aiAllowed`: kotlin.Boolean
+    , 
+    var `revealAllowed`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHostAccessInfo: FfiConverterRustBuffer<HostAccessInfo> {
+    override fun read(buf: ByteBuffer): HostAccessInfo {
+        return HostAccessInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeAccessMode.read(buf),
+            FfiConverterOptionalTypeAccessPolicyRecord.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeAccessRequestInfo.read(buf),
+            FfiConverterOptionalTypeAccessRequestInfo.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: HostAccessInfo) = (
+            FfiConverterString.allocationSize(value.`hostId`) +
+            FfiConverterString.allocationSize(value.`vaultId`) +
+            FfiConverterTypeAccessMode.allocationSize(value.`mode`) +
+            FfiConverterOptionalTypeAccessPolicyRecord.allocationSize(value.`policy`) +
+            FfiConverterBoolean.allocationSize(value.`exempt`) +
+            FfiConverterBoolean.allocationSize(value.`allowed`) +
+            FfiConverterOptionalTypeAccessRequestInfo.allocationSize(value.`grant`) +
+            FfiConverterOptionalTypeAccessRequestInfo.allocationSize(value.`pending`) +
+            FfiConverterBoolean.allocationSize(value.`canRequest`) +
+            FfiConverterUInt.allocationSize(value.`maxMinutes`) +
+            FfiConverterBoolean.allocationSize(value.`certificates`) +
+            FfiConverterBoolean.allocationSize(value.`teamCertificate`) +
+            FfiConverterBoolean.allocationSize(value.`recordRequired`) +
+            FfiConverterBoolean.allocationSize(value.`aiAllowed`) +
+            FfiConverterBoolean.allocationSize(value.`revealAllowed`)
+    )
+
+    override fun write(value: HostAccessInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`hostId`, buf)
+            FfiConverterString.write(value.`vaultId`, buf)
+            FfiConverterTypeAccessMode.write(value.`mode`, buf)
+            FfiConverterOptionalTypeAccessPolicyRecord.write(value.`policy`, buf)
+            FfiConverterBoolean.write(value.`exempt`, buf)
+            FfiConverterBoolean.write(value.`allowed`, buf)
+            FfiConverterOptionalTypeAccessRequestInfo.write(value.`grant`, buf)
+            FfiConverterOptionalTypeAccessRequestInfo.write(value.`pending`, buf)
+            FfiConverterBoolean.write(value.`canRequest`, buf)
+            FfiConverterUInt.write(value.`maxMinutes`, buf)
+            FfiConverterBoolean.write(value.`certificates`, buf)
+            FfiConverterBoolean.write(value.`teamCertificate`, buf)
+            FfiConverterBoolean.write(value.`recordRequired`, buf)
+            FfiConverterBoolean.write(value.`aiAllowed`, buf)
+            FfiConverterBoolean.write(value.`revealAllowed`, buf)
+    }
+}
+
+
+
+/**
  * Host group (can be nested).
  */
 data class HostGroup (
@@ -26074,6 +28723,14 @@ data class HostSettings (
      * settings (copy them) so it is kept when they do not show it.
      */
     var `networkId`: kotlin.String? = null 
+    , 
+    /**
+     * Authentication (0.7 phase 4b): `nil` (inherit, or the host's
+     * password/key) or `"team_certificate"` (a short-lived certificate from
+     * the vault's team CA, obtained by the engine when connecting). Keep
+     * any other value you do not know, like `network_id`.
+     */
+    var `auth`: kotlin.String? = null 
     
 ){
     
@@ -26104,6 +28761,7 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalBoolean.read(buf),
             FfiConverterOptionalTypeHostProxy.read(buf),
             FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -26121,7 +28779,8 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalString.allocationSize(value.`theme`) +
             FfiConverterOptionalBoolean.allocationSize(value.`recordSessions`) +
             FfiConverterOptionalTypeHostProxy.allocationSize(value.`proxy`) +
-            FfiConverterOptionalString.allocationSize(value.`networkId`)
+            FfiConverterOptionalString.allocationSize(value.`networkId`) +
+            FfiConverterOptionalString.allocationSize(value.`auth`)
     )
 
     override fun write(value: HostSettings, buf: ByteBuffer) {
@@ -26139,6 +28798,7 @@ public object FfiConverterTypeHostSettings: FfiConverterRustBuffer<HostSettings>
             FfiConverterOptionalBoolean.write(value.`recordSessions`, buf)
             FfiConverterOptionalTypeHostProxy.write(value.`proxy`, buf)
             FfiConverterOptionalString.write(value.`networkId`, buf)
+            FfiConverterOptionalString.write(value.`auth`, buf)
     }
 }
 
@@ -26523,6 +29183,115 @@ public object FfiConverterTypeInviteInfo: FfiConverterRustBuffer<InviteInfo> {
             FfiConverterOptionalString.write(value.`email`, buf)
             FfiConverterOptionalString.write(value.`team`, buf)
             FfiConverterOptionalLong.write(value.`expiresAt`, buf)
+    }
+}
+
+
+
+/**
+ * A certificate the server issued (its record).
+ */
+data class IssuedCertificateInfo (
+    var `serial`: kotlin.Long
+    , 
+    var `userId`: kotlin.String
+    , 
+    var `userEmail`: kotlin.String?
+    , 
+    var `hostId`: kotlin.String?
+    , 
+    var `vaultId`: kotlin.String?
+    , 
+    var `requestId`: kotlin.String?
+    , 
+    /**
+     * `device`, `server` or `credentials`.
+     */
+    var `purpose`: kotlin.String
+    , 
+    var `keyFingerprint`: kotlin.String
+    , 
+    var `keyId`: kotlin.String
+    , 
+    var `principals`: List<kotlin.String>
+    , 
+    var `validAfter`: kotlin.Long
+    , 
+    var `validBefore`: kotlin.Long
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    var `revokedAt`: kotlin.Long?
+    , 
+    var `revokeReason`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeIssuedCertificateInfo: FfiConverterRustBuffer<IssuedCertificateInfo> {
+    override fun read(buf: ByteBuffer): IssuedCertificateInfo {
+        return IssuedCertificateInfo(
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: IssuedCertificateInfo) = (
+            FfiConverterLong.allocationSize(value.`serial`) +
+            FfiConverterString.allocationSize(value.`userId`) +
+            FfiConverterOptionalString.allocationSize(value.`userEmail`) +
+            FfiConverterOptionalString.allocationSize(value.`hostId`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterOptionalString.allocationSize(value.`requestId`) +
+            FfiConverterString.allocationSize(value.`purpose`) +
+            FfiConverterString.allocationSize(value.`keyFingerprint`) +
+            FfiConverterString.allocationSize(value.`keyId`) +
+            FfiConverterSequenceString.allocationSize(value.`principals`) +
+            FfiConverterLong.allocationSize(value.`validAfter`) +
+            FfiConverterLong.allocationSize(value.`validBefore`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterOptionalLong.allocationSize(value.`revokedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`revokeReason`)
+    )
+
+    override fun write(value: IssuedCertificateInfo, buf: ByteBuffer) {
+            FfiConverterLong.write(value.`serial`, buf)
+            FfiConverterString.write(value.`userId`, buf)
+            FfiConverterOptionalString.write(value.`userEmail`, buf)
+            FfiConverterOptionalString.write(value.`hostId`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterOptionalString.write(value.`requestId`, buf)
+            FfiConverterString.write(value.`purpose`, buf)
+            FfiConverterString.write(value.`keyFingerprint`, buf)
+            FfiConverterString.write(value.`keyId`, buf)
+            FfiConverterSequenceString.write(value.`principals`, buf)
+            FfiConverterLong.write(value.`validAfter`, buf)
+            FfiConverterLong.write(value.`validBefore`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterOptionalLong.write(value.`revokedAt`, buf)
+            FfiConverterOptionalString.write(value.`revokeReason`, buf)
     }
 }
 
@@ -27054,6 +29823,76 @@ public object FfiConverterTypeNetworkSecrets: FfiConverterRustBuffer<NetworkSecr
             FfiConverterOptionalString.write(value.`presharedKey`, buf)
             FfiConverterOptionalString.write(value.`authKey`, buf)
             FfiConverterOptionalString.write(value.`apiToken`, buf)
+    }
+}
+
+
+
+/**
+ * A new certificate (normally the engine asks for them by itself when a
+ * host uses "Team certificate").
+ */
+data class NewCertificate (
+    /**
+     * OpenSSH certificate line.
+     */
+    var `certificate`: kotlin.String
+    , 
+    var `serial`: kotlin.Long
+    , 
+    var `keyId`: kotlin.String
+    , 
+    var `principals`: List<kotlin.String>
+    , 
+    var `validAfter`: kotlin.Long
+    , 
+    var `validBefore`: kotlin.Long
+    , 
+    var `requestId`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeNewCertificate: FfiConverterRustBuffer<NewCertificate> {
+    override fun read(buf: ByteBuffer): NewCertificate {
+        return NewCertificate(
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: NewCertificate) = (
+            FfiConverterString.allocationSize(value.`certificate`) +
+            FfiConverterLong.allocationSize(value.`serial`) +
+            FfiConverterString.allocationSize(value.`keyId`) +
+            FfiConverterSequenceString.allocationSize(value.`principals`) +
+            FfiConverterLong.allocationSize(value.`validAfter`) +
+            FfiConverterLong.allocationSize(value.`validBefore`) +
+            FfiConverterOptionalString.allocationSize(value.`requestId`)
+    )
+
+    override fun write(value: NewCertificate, buf: ByteBuffer) {
+            FfiConverterString.write(value.`certificate`, buf)
+            FfiConverterLong.write(value.`serial`, buf)
+            FfiConverterString.write(value.`keyId`, buf)
+            FfiConverterSequenceString.write(value.`principals`, buf)
+            FfiConverterLong.write(value.`validAfter`, buf)
+            FfiConverterLong.write(value.`validBefore`, buf)
+            FfiConverterOptionalString.write(value.`requestId`, buf)
     }
 }
 
@@ -31353,6 +34192,137 @@ public object FfiConverterTypeTeam: FfiConverterRustBuffer<Team> {
 
 
 /**
+ * A team that requires 2FA from you (`team_2fa` of sign-in and `/me`).
+ */
+data class Team2faRequirement (
+    var `teamId`: kotlin.String
+    , 
+    var `teamName`: kotlin.String
+    , 
+    var `deadline`: kotlin.Long
+    , 
+    var `blocked`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTeam2faRequirement: FfiConverterRustBuffer<Team2faRequirement> {
+    override fun read(buf: ByteBuffer): Team2faRequirement {
+        return Team2faRequirement(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: Team2faRequirement) = (
+            FfiConverterString.allocationSize(value.`teamId`) +
+            FfiConverterString.allocationSize(value.`teamName`) +
+            FfiConverterLong.allocationSize(value.`deadline`) +
+            FfiConverterBoolean.allocationSize(value.`blocked`)
+    )
+
+    override fun write(value: Team2faRequirement, buf: ByteBuffer) {
+            FfiConverterString.write(value.`teamId`, buf)
+            FfiConverterString.write(value.`teamName`, buf)
+            FfiConverterLong.write(value.`deadline`, buf)
+            FfiConverterBoolean.write(value.`blocked`, buf)
+    }
+}
+
+
+
+/**
+ * A member's 2FA state under the team's policy.
+ */
+data class TeamComplianceMember (
+    var `userId`: kotlin.String
+    , 
+    var `email`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    var `role`: TeamRole
+    , 
+    var `totpEnabled`: kotlin.Boolean
+    , 
+    /**
+     * End of the member's grace period (if 2FA is required and missing).
+     */
+    var `deadline`: kotlin.Long?
+    , 
+    /**
+     * Over the grace period: the team's vaults are hidden for them.
+     */
+    var `blocked`: kotlin.Boolean
+    , 
+    /**
+     * Certificate principal set by an admin.
+     */
+    var `principal`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTeamComplianceMember: FfiConverterRustBuffer<TeamComplianceMember> {
+    override fun read(buf: ByteBuffer): TeamComplianceMember {
+        return TeamComplianceMember(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeTeamRole.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TeamComplianceMember) = (
+            FfiConverterString.allocationSize(value.`userId`) +
+            FfiConverterString.allocationSize(value.`email`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterTypeTeamRole.allocationSize(value.`role`) +
+            FfiConverterBoolean.allocationSize(value.`totpEnabled`) +
+            FfiConverterOptionalLong.allocationSize(value.`deadline`) +
+            FfiConverterBoolean.allocationSize(value.`blocked`) +
+            FfiConverterOptionalString.allocationSize(value.`principal`)
+    )
+
+    override fun write(value: TeamComplianceMember, buf: ByteBuffer) {
+            FfiConverterString.write(value.`userId`, buf)
+            FfiConverterString.write(value.`email`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterTypeTeamRole.write(value.`role`, buf)
+            FfiConverterBoolean.write(value.`totpEnabled`, buf)
+            FfiConverterOptionalLong.write(value.`deadline`, buf)
+            FfiConverterBoolean.write(value.`blocked`, buf)
+            FfiConverterOptionalString.write(value.`principal`, buf)
+    }
+}
+
+
+
+/**
  * Result of inviting someone to a team by email.
  */
 data class TeamInviteResult (
@@ -31462,6 +34432,91 @@ public object FfiConverterTypeTeamMember: FfiConverterRustBuffer<TeamMember> {
             FfiConverterString.write(value.`name`, buf)
             FfiConverterTypeTeamRole.write(value.`role`, buf)
             FfiConverterLong.write(value.`addedAt`, buf)
+    }
+}
+
+
+
+/**
+ * A team's security policy.
+ */
+data class TeamSecurityPolicy (
+    var `require2fa`: kotlin.Boolean
+    , 
+    /**
+     * When `require_2fa` was turned on (set by the server).
+     */
+    var `require2faSince`: kotlin.Long?
+    , 
+    /**
+     * Days a member without 2FA keeps access (0-90).
+     */
+    var `graceDays`: kotlin.UInt
+    , 
+    /**
+     * Editors may reveal and export secrets.
+     */
+    var `allowReveal`: kotlin.Boolean
+    , 
+    var `aiAllowed`: kotlin.Boolean
+    , 
+    var `aiApproval`: AiApprovalLevel
+    , 
+    var `networksAllowed`: kotlin.Boolean
+    , 
+    var `recordSessions`: kotlin.Boolean
+    , 
+    var `certificates`: CertificatePolicy
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTeamSecurityPolicy: FfiConverterRustBuffer<TeamSecurityPolicy> {
+    override fun read(buf: ByteBuffer): TeamSecurityPolicy {
+        return TeamSecurityPolicy(
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterTypeAiApprovalLevel.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterTypeCertificatePolicy.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TeamSecurityPolicy) = (
+            FfiConverterBoolean.allocationSize(value.`require2fa`) +
+            FfiConverterOptionalLong.allocationSize(value.`require2faSince`) +
+            FfiConverterUInt.allocationSize(value.`graceDays`) +
+            FfiConverterBoolean.allocationSize(value.`allowReveal`) +
+            FfiConverterBoolean.allocationSize(value.`aiAllowed`) +
+            FfiConverterTypeAiApprovalLevel.allocationSize(value.`aiApproval`) +
+            FfiConverterBoolean.allocationSize(value.`networksAllowed`) +
+            FfiConverterBoolean.allocationSize(value.`recordSessions`) +
+            FfiConverterTypeCertificatePolicy.allocationSize(value.`certificates`)
+    )
+
+    override fun write(value: TeamSecurityPolicy, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`require2fa`, buf)
+            FfiConverterOptionalLong.write(value.`require2faSince`, buf)
+            FfiConverterUInt.write(value.`graceDays`, buf)
+            FfiConverterBoolean.write(value.`allowReveal`, buf)
+            FfiConverterBoolean.write(value.`aiAllowed`, buf)
+            FfiConverterTypeAiApprovalLevel.write(value.`aiApproval`, buf)
+            FfiConverterBoolean.write(value.`networksAllowed`, buf)
+            FfiConverterBoolean.write(value.`recordSessions`, buf)
+            FfiConverterTypeCertificatePolicy.write(value.`certificates`, buf)
     }
 }
 
@@ -32102,6 +35157,12 @@ data class VaultInfo (
      * Team vaults: role of plain team members (`None`: no access).
      */
     var `teamMemberRole`: VaultRole?
+    , 
+    /**
+     * What the team's policies mean for you here (0.7 phase 4b; `None`:
+     * no policy, or an older server). Hide what it forbids.
+     */
+    var `policy`: VaultPolicyInfo?
     
 ){
     
@@ -32133,6 +35194,7 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterLong.read(buf),
             FfiConverterBoolean.read(buf),
             FfiConverterOptionalTypeVaultRole.read(buf),
+            FfiConverterOptionalTypeVaultPolicyInfo.read(buf),
         )
     }
 
@@ -32151,7 +35213,8 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterLong.allocationSize(value.`memberCount`) +
             FfiConverterLong.allocationSize(value.`hostCount`) +
             FfiConverterBoolean.allocationSize(value.`strict`) +
-            FfiConverterOptionalTypeVaultRole.allocationSize(value.`teamMemberRole`)
+            FfiConverterOptionalTypeVaultRole.allocationSize(value.`teamMemberRole`) +
+            FfiConverterOptionalTypeVaultPolicyInfo.allocationSize(value.`policy`)
     )
 
     override fun write(value: VaultInfo, buf: ByteBuffer) {
@@ -32170,6 +35233,7 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterLong.write(value.`hostCount`, buf)
             FfiConverterBoolean.write(value.`strict`, buf)
             FfiConverterOptionalTypeVaultRole.write(value.`teamMemberRole`, buf)
+            FfiConverterOptionalTypeVaultPolicyInfo.write(value.`policy`, buf)
     }
 }
 
@@ -32252,6 +35316,174 @@ public object FfiConverterTypeVaultMember: FfiConverterRustBuffer<VaultMember> {
             FfiConverterTypeVaultRole.write(value.`role`, buf)
             FfiConverterBoolean.write(value.`implicit`, buf)
             FfiConverterLong.write(value.`addedAt`, buf)
+    }
+}
+
+
+
+/**
+ * What the team's policies mean for you in a vault (`VaultInfo.policy`).
+ */
+data class VaultPolicyInfo (
+    var `teamId`: kotlin.String?
+    , 
+    /**
+     * You may reveal, copy and export secrets (as far as your role allows).
+     */
+    var `revealAllowed`: kotlin.Boolean
+    , 
+    /**
+     * AI actions are allowed on these hosts.
+     */
+    var `aiAllowed`: kotlin.Boolean
+    , 
+    var `aiApproval`: AiApprovalLevel
+    , 
+    /**
+     * Hosts may use private networks.
+     */
+    var `networksAllowed`: kotlin.Boolean
+    , 
+    /**
+     * Every session on these hosts is recorded.
+     */
+    var `recordSessions`: kotlin.Boolean
+    , 
+    var `require2fa`: kotlin.Boolean
+    , 
+    /**
+     * Some hosts need approval or have rules (`host_access`).
+     */
+    var `accessPolicies`: kotlin.Boolean
+    , 
+    /**
+     * The vault's owner has an SSH CA ("Team certificate" available).
+     */
+    var `certificates`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeVaultPolicyInfo: FfiConverterRustBuffer<VaultPolicyInfo> {
+    override fun read(buf: ByteBuffer): VaultPolicyInfo {
+        return VaultPolicyInfo(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterTypeAiApprovalLevel.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: VaultPolicyInfo) = (
+            FfiConverterOptionalString.allocationSize(value.`teamId`) +
+            FfiConverterBoolean.allocationSize(value.`revealAllowed`) +
+            FfiConverterBoolean.allocationSize(value.`aiAllowed`) +
+            FfiConverterTypeAiApprovalLevel.allocationSize(value.`aiApproval`) +
+            FfiConverterBoolean.allocationSize(value.`networksAllowed`) +
+            FfiConverterBoolean.allocationSize(value.`recordSessions`) +
+            FfiConverterBoolean.allocationSize(value.`require2fa`) +
+            FfiConverterBoolean.allocationSize(value.`accessPolicies`) +
+            FfiConverterBoolean.allocationSize(value.`certificates`)
+    )
+
+    override fun write(value: VaultPolicyInfo, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`teamId`, buf)
+            FfiConverterBoolean.write(value.`revealAllowed`, buf)
+            FfiConverterBoolean.write(value.`aiAllowed`, buf)
+            FfiConverterTypeAiApprovalLevel.write(value.`aiApproval`, buf)
+            FfiConverterBoolean.write(value.`networksAllowed`, buf)
+            FfiConverterBoolean.write(value.`recordSessions`, buf)
+            FfiConverterBoolean.write(value.`require2fa`, buf)
+            FfiConverterBoolean.write(value.`accessPolicies`, buf)
+            FfiConverterBoolean.write(value.`certificates`, buf)
+    }
+}
+
+
+
+/**
+ * A recording of a session in a vault (managers).
+ */
+data class VaultRecording (
+    var `sessionId`: kotlin.String
+    , 
+    var `ownerId`: kotlin.String
+    , 
+    var `ownerEmail`: kotlin.String?
+    , 
+    var `hostId`: kotlin.String?
+    , 
+    var `title`: kotlin.String
+    , 
+    /**
+     * `server` or `device` (uploaded by an app).
+     */
+    var `kind`: kotlin.String
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    var `endedAt`: kotlin.Long?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeVaultRecording: FfiConverterRustBuffer<VaultRecording> {
+    override fun read(buf: ByteBuffer): VaultRecording {
+        return VaultRecording(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: VaultRecording) = (
+            FfiConverterString.allocationSize(value.`sessionId`) +
+            FfiConverterString.allocationSize(value.`ownerId`) +
+            FfiConverterOptionalString.allocationSize(value.`ownerEmail`) +
+            FfiConverterOptionalString.allocationSize(value.`hostId`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterOptionalLong.allocationSize(value.`endedAt`)
+    )
+
+    override fun write(value: VaultRecording, buf: ByteBuffer) {
+            FfiConverterString.write(value.`sessionId`, buf)
+            FfiConverterString.write(value.`ownerId`, buf)
+            FfiConverterOptionalString.write(value.`ownerEmail`, buf)
+            FfiConverterOptionalString.write(value.`hostId`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterOptionalLong.write(value.`endedAt`, buf)
     }
 }
 
@@ -32519,6 +35751,232 @@ public object FfiConverterTypeZerotierSettings: FfiConverterRustBuffer<ZerotierS
 
 
 /**
+ * How members reach a target.
+ */
+
+enum class AccessMode {
+    
+    DIRECT,
+    /**
+     * A member asks for a time window; an approver grants it.
+     */
+    APPROVAL;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessMode: FfiConverterRustBuffer<AccessMode> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AccessMode.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AccessMode) = 4UL
+
+    override fun write(value: AccessMode, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Which requests to list.
+ */
+sealed class AccessRequestScope {
+    
+    /**
+     * Yours.
+     */
+    object Mine : AccessRequestScope()
+    
+    
+    /**
+     * The ones you can approve.
+     */
+    object Approvals : AccessRequestScope()
+    
+    
+    /**
+     * Every request of a vault you manage.
+     */
+    data class Vault(
+        val `vaultId`: kotlin.String) : AccessRequestScope()
+        
+    {
+        
+
+        companion object
+    }
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessRequestScope : FfiConverterRustBuffer<AccessRequestScope>{
+    override fun read(buf: ByteBuffer): AccessRequestScope {
+        return when(buf.getInt()) {
+            1 -> AccessRequestScope.Mine
+            2 -> AccessRequestScope.Approvals
+            3 -> AccessRequestScope.Vault(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: AccessRequestScope): ULong = when(value) {
+        is AccessRequestScope.Mine -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is AccessRequestScope.Approvals -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+            )
+        }
+        is AccessRequestScope.Vault -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`vaultId`)
+            )
+        }
+    }
+
+    override fun write(value: AccessRequestScope, buf: ByteBuffer) {
+        when(value) {
+            is AccessRequestScope.Mine -> {
+                buf.putInt(1)
+                Unit
+            }
+            is AccessRequestScope.Approvals -> {
+                buf.putInt(2)
+                Unit
+            }
+            is AccessRequestScope.Vault -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`vaultId`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+
+
+
+/**
+ * State of an access request.
+ */
+
+enum class AccessRequestStatus {
+    
+    PENDING,
+    APPROVED,
+    DENIED,
+    EXPIRED,
+    CANCELLED,
+    REVOKED,
+    UNKNOWN;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessRequestStatus: FfiConverterRustBuffer<AccessRequestStatus> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AccessRequestStatus.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AccessRequestStatus) = 4UL
+
+    override fun write(value: AccessRequestStatus, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What a policy or request is about.
+ */
+
+enum class AccessTargetKind {
+    
+    VAULT,
+    GROUP,
+    HOST,
+    UNKNOWN;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAccessTargetKind: FfiConverterRustBuffer<AccessTargetKind> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AccessTargetKind.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AccessTargetKind) = 4UL
+
+    override fun write(value: AccessTargetKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
  * State of an account on this device.
  */
 
@@ -32559,6 +36017,51 @@ public object FfiConverterTypeAccountStatus: FfiConverterRustBuffer<AccountStatu
     override fun allocationSize(value: AccountStatus) = 4UL
 
     override fun write(value: AccountStatus, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Approval level of AI actions on a team's hosts.
+ */
+
+enum class AiApprovalLevel {
+    
+    /**
+     * The task's own mode.
+     */
+    DEFAULT,
+    /**
+     * Every action on a host needs an approval.
+     */
+    ALWAYS;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAiApprovalLevel: FfiConverterRustBuffer<AiApprovalLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AiApprovalLevel.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AiApprovalLevel) = 4UL
+
+    override fun write(value: AiApprovalLevel, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -33351,6 +36854,11 @@ enum class ItemAccess {
      * hide reveal, copy password, export key and duplicate; show a lock.
      */
     USE_ONLY,
+    /**
+     * Connects through the server or with team certificates only (0.7
+     * phase 4b): like `UseOnly`, and no just-in-time credentials.
+     */
+    CONNECT_ONLY,
     UNKNOWN;
 
     
@@ -34061,6 +37569,125 @@ public object FfiConverterTypeRemoteFileKind: FfiConverterRustBuffer<RemoteFileK
 
     override fun write(value: RemoteFileKind, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What to revoke.
+ */
+sealed class RevokeTarget {
+    
+    /**
+     * One certificate.
+     */
+    data class Serial(
+        val `serial`: kotlin.Long) : RevokeTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * Every unexpired certificate of a user.
+     */
+    data class User(
+        val `userId`: kotlin.String) : RevokeTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+    /**
+     * A public key, forever (also in the KRL).
+     */
+    data class PublicKey(
+        val `publicKey`: kotlin.String) : RevokeTarget()
+        
+    {
+        
+
+        companion object
+    }
+    
+
+    
+
+    
+    
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeRevokeTarget : FfiConverterRustBuffer<RevokeTarget>{
+    override fun read(buf: ByteBuffer): RevokeTarget {
+        return when(buf.getInt()) {
+            1 -> RevokeTarget.Serial(
+                FfiConverterLong.read(buf),
+                )
+            2 -> RevokeTarget.User(
+                FfiConverterString.read(buf),
+                )
+            3 -> RevokeTarget.PublicKey(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: RevokeTarget): ULong = when(value) {
+        is RevokeTarget.Serial -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterLong.allocationSize(value.`serial`)
+            )
+        }
+        is RevokeTarget.User -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`userId`)
+            )
+        }
+        is RevokeTarget.PublicKey -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                + FfiConverterString.allocationSize(value.`publicKey`)
+            )
+        }
+    }
+
+    override fun write(value: RevokeTarget, buf: ByteBuffer) {
+        when(value) {
+            is RevokeTarget.Serial -> {
+                buf.putInt(1)
+                FfiConverterLong.write(value.`serial`, buf)
+                Unit
+            }
+            is RevokeTarget.User -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`userId`, buf)
+                Unit
+            }
+            is RevokeTarget.PublicKey -> {
+                buf.putInt(3)
+                FfiConverterString.write(value.`publicKey`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 }
 
@@ -37017,11 +40644,17 @@ public object FfiConverterTypeVaultMemberTarget : FfiConverterRustBuffer<VaultMe
 
 
 /**
- * Role in a vault (`UseOnly` < `Editor` < `Manager`).
+ * Role in a vault (`ConnectOnly` < `UseOnly` < `Editor` < `Manager`).
+ * UI names: Connect only, Use, Edit, Admin.
  */
 
 enum class VaultRole {
     
+    /**
+     * Connects through the server or with team certificates; never gets
+     * secrets, not even just in time (0.7 phase 4b).
+     */
+    CONNECT_ONLY,
     /**
      * Uses the items, never sees their secrets nor changes them.
      */
@@ -37547,6 +41180,70 @@ public object FfiConverterOptionalTypeTransferListener: FfiConverterRustBuffer<T
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeAccessPolicyRecord: FfiConverterRustBuffer<AccessPolicyRecord?> {
+    override fun read(buf: ByteBuffer): AccessPolicyRecord? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAccessPolicyRecord.read(buf)
+    }
+
+    override fun allocationSize(value: AccessPolicyRecord?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAccessPolicyRecord.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AccessPolicyRecord?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAccessPolicyRecord.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeAccessRequestInfo: FfiConverterRustBuffer<AccessRequestInfo?> {
+    override fun read(buf: ByteBuffer): AccessRequestInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAccessRequestInfo.read(buf)
+    }
+
+    override fun allocationSize(value: AccessRequestInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAccessRequestInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AccessRequestInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAccessRequestInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeAccountInfo: FfiConverterRustBuffer<AccountInfo?> {
     override fun read(buf: ByteBuffer): AccountInfo? {
         if (buf.get().toInt() == 0) {
@@ -37697,6 +41394,38 @@ public object FfiConverterOptionalTypeApiErrorInfo: FfiConverterRustBuffer<ApiEr
         } else {
             buf.put(1)
             FfiConverterTypeApiErrorInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeCaKeyInfo: FfiConverterRustBuffer<CaKeyInfo?> {
+    override fun read(buf: ByteBuffer): CaKeyInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeCaKeyInfo.read(buf)
+    }
+
+    override fun allocationSize(value: CaKeyInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeCaKeyInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: CaKeyInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeCaKeyInfo.write(value, buf)
         }
     }
 }
@@ -38187,6 +41916,38 @@ public object FfiConverterOptionalTypeTailscaleSettings: FfiConverterRustBuffer<
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeVaultPolicyInfo: FfiConverterRustBuffer<VaultPolicyInfo?> {
+    override fun read(buf: ByteBuffer): VaultPolicyInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeVaultPolicyInfo.read(buf)
+    }
+
+    override fun allocationSize(value: VaultPolicyInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeVaultPolicyInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: VaultPolicyInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeVaultPolicyInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeWireguardSettings: FfiConverterRustBuffer<WireguardSettings?> {
     override fun read(buf: ByteBuffer): WireguardSettings? {
         if (buf.get().toInt() == 0) {
@@ -38241,6 +42002,38 @@ public object FfiConverterOptionalTypeZerotierSettings: FfiConverterRustBuffer<Z
         } else {
             buf.put(1)
             FfiConverterTypeZerotierSettings.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeAccessRequestStatus: FfiConverterRustBuffer<AccessRequestStatus?> {
+    override fun read(buf: ByteBuffer): AccessRequestStatus? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeAccessRequestStatus.read(buf)
+    }
+
+    override fun allocationSize(value: AccessRequestStatus?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeAccessRequestStatus.allocationSize(value)
+        }
+    }
+
+    override fun write(value: AccessRequestStatus?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeAccessRequestStatus.write(value, buf)
         }
     }
 }
@@ -38631,6 +42424,34 @@ public object FfiConverterSequenceUInt: FfiConverterRustBuffer<List<kotlin.UInt>
 /**
  * @suppress
  */
+public object FfiConverterSequenceLong: FfiConverterRustBuffer<List<kotlin.Long>> {
+    override fun read(buf: ByteBuffer): List<kotlin.Long> {
+        val len = buf.getInt()
+        return List<kotlin.Long>(len) {
+            FfiConverterLong.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<kotlin.Long>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterLong.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<kotlin.Long>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterLong.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceBoolean: FfiConverterRustBuffer<List<kotlin.Boolean>> {
     override fun read(buf: ByteBuffer): List<kotlin.Boolean> {
         val len = buf.getInt()
@@ -38705,6 +42526,62 @@ public object FfiConverterSequenceTypeActiveForward: FfiConverterRustBuffer<List
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeActiveForward.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeAccessPolicyRecord: FfiConverterRustBuffer<List<AccessPolicyRecord>> {
+    override fun read(buf: ByteBuffer): List<AccessPolicyRecord> {
+        val len = buf.getInt()
+        return List<AccessPolicyRecord>(len) {
+            FfiConverterTypeAccessPolicyRecord.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AccessPolicyRecord>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAccessPolicyRecord.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AccessPolicyRecord>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAccessPolicyRecord.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeAccessRequestInfo: FfiConverterRustBuffer<List<AccessRequestInfo>> {
+    override fun read(buf: ByteBuffer): List<AccessRequestInfo> {
+        val len = buf.getInt()
+        return List<AccessRequestInfo>(len) {
+            FfiConverterTypeAccessRequestInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AccessRequestInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAccessRequestInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AccessRequestInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAccessRequestInfo.write(it, buf)
         }
     }
 }
@@ -39079,6 +42956,34 @@ public object FfiConverterSequenceTypeAuthorPeriod: FfiConverterRustBuffer<List<
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeCaKeyInfo: FfiConverterRustBuffer<List<CaKeyInfo>> {
+    override fun read(buf: ByteBuffer): List<CaKeyInfo> {
+        val len = buf.getInt()
+        return List<CaKeyInfo>(len) {
+            FfiConverterTypeCaKeyInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CaKeyInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCaKeyInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CaKeyInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCaKeyInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeCommandHistoryItem: FfiConverterRustBuffer<List<CommandHistoryItem>> {
     override fun read(buf: ByteBuffer): List<CommandHistoryItem> {
         val len = buf.getInt()
@@ -39377,6 +43282,34 @@ public object FfiConverterSequenceTypeImportWarningInfo: FfiConverterRustBuffer<
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeImportWarningInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeIssuedCertificateInfo: FfiConverterRustBuffer<List<IssuedCertificateInfo>> {
+    override fun read(buf: ByteBuffer): List<IssuedCertificateInfo> {
+        val len = buf.getInt()
+        return List<IssuedCertificateInfo>(len) {
+            FfiConverterTypeIssuedCertificateInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<IssuedCertificateInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeIssuedCertificateInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<IssuedCertificateInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeIssuedCertificateInfo.write(it, buf)
         }
     }
 }
@@ -40171,6 +44104,62 @@ public object FfiConverterSequenceTypeTeam: FfiConverterRustBuffer<List<Team>> {
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeTeam2faRequirement: FfiConverterRustBuffer<List<Team2faRequirement>> {
+    override fun read(buf: ByteBuffer): List<Team2faRequirement> {
+        val len = buf.getInt()
+        return List<Team2faRequirement>(len) {
+            FfiConverterTypeTeam2faRequirement.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<Team2faRequirement>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTeam2faRequirement.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<Team2faRequirement>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTeam2faRequirement.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTeamComplianceMember: FfiConverterRustBuffer<List<TeamComplianceMember>> {
+    override fun read(buf: ByteBuffer): List<TeamComplianceMember> {
+        val len = buf.getInt()
+        return List<TeamComplianceMember>(len) {
+            FfiConverterTypeTeamComplianceMember.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TeamComplianceMember>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTeamComplianceMember.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TeamComplianceMember>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTeamComplianceMember.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer<List<TeamMember>> {
     override fun read(buf: ByteBuffer): List<TeamMember> {
         val len = buf.getInt()
@@ -40329,6 +44318,34 @@ public object FfiConverterSequenceTypeVaultMember: FfiConverterRustBuffer<List<V
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeVaultMember.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeVaultRecording: FfiConverterRustBuffer<List<VaultRecording>> {
+    override fun read(buf: ByteBuffer): List<VaultRecording> {
+        val len = buf.getInt()
+        return List<VaultRecording>(len) {
+            FfiConverterTypeVaultRecording.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<VaultRecording>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeVaultRecording.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<VaultRecording>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeVaultRecording.write(it, buf)
         }
     }
 }
@@ -41197,6 +45214,21 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         
         FfiConverterString.lower(`script`),
         FfiConverterOptionalTypeSnippetContext.lower(`context`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Reads an OpenSSH certificate (principals, validity, key id, CA).
+         */
+    @Throws(TermoakException::class) fun `parseCertificate`(`text`: kotlin.String): CertificateDetails {
+            return FfiConverterTypeCertificateDetails.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_parse_certificate(
+    
+        
+        FfiConverterString.lower(`text`),_status)
 }
     )
     }

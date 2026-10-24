@@ -894,7 +894,21 @@ impl Workspace {
         record: bool,
     ) -> Result<Arc<TerminalSession>> {
         let resolved = self.resolve_public(item).await?;
-        let recorder = self.recorder_for(&resolved, record, cols, rows).await;
+        // Mandatory recording (team or access policy, 0.7 phase 4b): record
+        // and upload it to the server when the terminal closes.
+        let upload = match item.scope {
+            Scope::Account(a) => match self.require_account(a) {
+                Ok(acc) => {
+                    let vault = acc.store.locate_local(item.id).await?.and_then(|(_, v)| v);
+                    acc.must_record(item.id, vault).await.then_some(acc)
+                }
+                Err(_) => None,
+            },
+            Scope::Device => None,
+        };
+        let recorder = self
+            .recorder_for(&resolved, record || upload.is_some(), cols, rows)
+            .await;
         let pty = PtyOptions {
             term: resolved
                 .settings
@@ -907,7 +921,16 @@ impl Workspace {
             startup_script: resolved.startup_script.clone(),
             agent_forwarding: resolved.settings.agent_forwarding.unwrap_or(false),
         };
-        Ok(TerminalSession::open(conn, pty, 4 * 1024 * 1024, recorder).await?)
+        let term = TerminalSession::open(conn, pty, 4 * 1024 * 1024, recorder).await?;
+        if let Some(acc) = upload {
+            crate::team_security::upload_when_closed(
+                acc,
+                item.id,
+                term.clone(),
+                resolved.host.label.clone(),
+            );
+        }
+        Ok(term)
     }
 
     /// The recording of a new terminal, if asked for or set on the host.

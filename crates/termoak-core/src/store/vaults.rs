@@ -42,6 +42,26 @@ pub struct VaultAccess {
     pub roles: BTreeMap<Id, VaultRole>,
     /// Vaults in Strict mode (`settings.use_only_local = false`).
     pub strict: BTreeSet<Id>,
+    /// Team policies (0.7 phase 4b, docs-next/TEAMS-SECURITY.md §6), per
+    /// vault where they restrict this user:
+    /// Editors who may not reveal, export or receive secrets.
+    pub no_reveal: BTreeSet<Id>,
+    /// The server AI may not use the vault's hosts.
+    pub no_ai: BTreeSet<Id>,
+    /// Every AI action on the vault's hosts needs an approval.
+    pub ai_confirm: BTreeSet<Id>,
+    /// Hosts of the vault may not use private networks.
+    pub no_networks: BTreeSet<Id>,
+    /// Sessions on the vault's hosts are always recorded.
+    pub record: BTreeSet<Id>,
+    /// Team owning each team vault of `roles`.
+    pub team_of: BTreeMap<Id, Id>,
+    /// Team vaults hidden because the team requires 2FA and the grace
+    /// period is over (they are not in `roles`).
+    pub blocked_2fa: BTreeSet<Id>,
+    /// This access changes by itself at this time (a 2FA grace period
+    /// ends): cached copies expire then.
+    pub valid_until: Option<i64>,
 }
 
 /// Why a secret is opened. Every path that decrypts a secret for a user goes
@@ -67,7 +87,7 @@ impl VaultAccess {
                 .into_iter()
                 .map(|v| (v, VaultRole::Manager))
                 .collect(),
-            strict: BTreeSet::new(),
+            ..Default::default()
         }
     }
 
@@ -91,6 +111,28 @@ impl VaultAccess {
 
     pub fn is_strict(&self, vault: Id) -> bool {
         self.strict.contains(&vault)
+    }
+
+    /// May see, export and receive the secrets of `vault` (role and team
+    /// policy).
+    pub fn can_reveal(&self, vault: Id) -> bool {
+        self.role(vault).is_some_and(VaultRole::can_read_secrets)
+            && !self.no_reveal.contains(&vault)
+    }
+
+    /// The team policy lets the server AI use the vault's hosts.
+    pub fn ai_allowed(&self, vault: Id) -> bool {
+        !self.no_ai.contains(&vault)
+    }
+
+    /// Sessions on the vault's hosts must be recorded (team policy).
+    pub fn must_record(&self, vault: Id) -> bool {
+        self.record.contains(&vault)
+    }
+
+    /// The team policy lets the vault's hosts use private networks.
+    pub fn networks_allowed(&self, vault: Id) -> bool {
+        !self.no_networks.contains(&vault)
     }
 
     /// Requires at least `min` in `vault`: `vault_not_found` without access,
@@ -126,12 +168,22 @@ impl VaultAccess {
         };
         match purpose {
             SecretUse::Server => Ok(()),
-            SecretUse::Reveal if role.can_read_secrets() => Ok(()),
+            SecretUse::Reveal if role.can_read_secrets() && !self.no_reveal.contains(&vault) => {
+                Ok(())
+            }
+            SecretUse::Reveal if role.can_read_secrets() => Err(CoreError::vault(
+                codes::SECRET_REVEAL_FORBIDDEN,
+                "the team does not allow revealing or exporting the secrets of this vault",
+            )),
             SecretUse::Reveal => Err(CoreError::vault(
                 codes::SECRET_HIDDEN,
                 "Use-only members cannot see the secrets of this vault",
             )),
             SecretUse::Credentials if role.can_read_secrets() => Ok(()),
+            SecretUse::Credentials if !role.can_get_credentials() => Err(CoreError::vault(
+                codes::CONNECT_ONLY,
+                "Connect only members connect through the server or with team certificates",
+            )),
             SecretUse::Credentials if !self.is_strict(vault) => Ok(()),
             SecretUse::Credentials => Err(CoreError::vault(
                 codes::USE_ONLY_STRICT,
@@ -429,6 +481,7 @@ fn map_vault(r: &rusqlite::Row<'_>) -> rusqlite::Result<Vault> {
         owner_name: r.get(16)?,
         member_count: r.get(17)?,
         item_counts: BTreeMap::new(),
+        policy: None,
     })
 }
 
@@ -465,13 +518,27 @@ fn check_opt(field: &str, value: Option<String>, max: usize) -> Result<Option<St
     }
 }
 
-/// Grantable roles: `editor` and `use_only` (`manager` is computed).
+/// Grantable roles: `connect_only`, `use_only`, `editor` and (0.7 phase
+/// 4b) `manager` ("Admin"). The role of plain team members of a team
+/// vault cannot be `manager` (team admins already are).
 fn check_grant_role(role: VaultRole) -> Result<()> {
     match role {
-        VaultRole::Editor | VaultRole::UseOnly => Ok(()),
+        VaultRole::Manager | VaultRole::Editor | VaultRole::UseOnly | VaultRole::ConnectOnly => {
+            Ok(())
+        }
         _ => Err(CoreError::vault(
             codes::INVALID_ROLE,
-            "the role must be editor or use_only",
+            "the role must be connect_only, use_only, editor or manager",
+        )),
+    }
+}
+
+fn check_team_member_role(role: VaultRole) -> Result<()> {
+    match role {
+        VaultRole::Editor | VaultRole::UseOnly | VaultRole::ConnectOnly => Ok(()),
+        _ => Err(CoreError::vault(
+            codes::INVALID_ROLE,
+            "the role of team members must be connect_only, use_only or editor",
         )),
     }
 }
@@ -527,7 +594,81 @@ fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<Vault
             access.strict.insert(vault);
         }
     }
+    apply_team_policies(conn, &mut access, now_ms())?;
     Ok(access)
+}
+
+/// Applies the policies of the teams that own vaults of `access` (0.7
+/// phase 4b): 2FA (hides team vaults after the grace period), reveal, AI,
+/// networks and recording. Server data only (clients have no teams).
+fn apply_team_policies(conn: &Connection, access: &mut VaultAccess, now: i64) -> Result<()> {
+    if access.roles.is_empty() {
+        return Ok(());
+    }
+    let user = access.user.to_string();
+    let rows = {
+        let mut stmt = conn.prepare_cached(
+            "SELECT v.id, t.id, t.policy,
+                    (SELECT added_at FROM team_members WHERE team_id = t.id AND user_id = ?1)
+             FROM vaults v JOIN teams t ON t.id = v.owner_team_id
+             WHERE v.owner_team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1)
+                OR v.id IN (SELECT vault_id FROM vault_members WHERE user_id = ?1
+                            OR team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1))",
+        )?;
+        stmt.query_map([&user], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, Option<i64>>(3)?,
+            ))
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?
+    };
+    if rows.is_empty() {
+        return Ok(());
+    }
+    let totp: bool = conn
+        .query_row(
+            "SELECT totp_enabled FROM users WHERE id = ?1",
+            [&user],
+            |r| r.get::<_, i64>(0),
+        )
+        .optional()?
+        .is_some_and(|v| v != 0);
+    for (vault, team, policy, joined) in rows {
+        let vault = parse_id(&vault)?;
+        let Some(role) = access.roles.get(&vault).copied() else {
+            continue;
+        };
+        access.team_of.insert(vault, parse_id(&team)?);
+        let policy: crate::access::TeamPolicy = serde_json::from_str(&policy).unwrap_or_default();
+        if !totp && let Some(deadline) = policy.twofa_deadline(joined.unwrap_or(0)) {
+            if now >= deadline {
+                access.roles.remove(&vault);
+                access.strict.remove(&vault);
+                access.blocked_2fa.insert(vault);
+                continue;
+            }
+            access.valid_until = Some(access.valid_until.map_or(deadline, |v| v.min(deadline)));
+        }
+        if !policy.allow_reveal && role == VaultRole::Editor {
+            access.no_reveal.insert(vault);
+        }
+        if !policy.ai.allowed {
+            access.no_ai.insert(vault);
+        }
+        if policy.ai.approval.always() {
+            access.ai_confirm.insert(vault);
+        }
+        if !policy.networks_allowed {
+            access.no_networks.insert(vault);
+        }
+        if policy.record_sessions {
+            access.record.insert(vault);
+        }
+    }
+    Ok(())
 }
 
 /// Deletes a vault with its entities, departures, keys and grants (inside
@@ -653,7 +794,9 @@ impl Store {
     pub async fn vault_access(&self, user: Id) -> Result<Arc<VaultAccess>> {
         let cache = &self.inner.access;
         let generation = cache.generation.load(Ordering::SeqCst);
-        if let Some(a) = cache.map.lock().get(&user) {
+        if let Some(a) = cache.map.lock().get(&user)
+            && a.valid_until.is_none_or(|t| now_ms() < t)
+        {
             return Ok(a.clone());
         }
         let access = Arc::new(self.call(move |c, _| compute_access(c, user, None)).await?);
@@ -710,7 +853,7 @@ impl Store {
         let team_role = match (req.team_id, req.team_member_role) {
             (Some(_), None) => Some(VaultRole::Editor),
             (Some(_), Some(r)) => {
-                check_grant_role(r)?;
+                check_team_member_role(r)?;
                 Some(r)
             }
             (None, Some(_)) => {
@@ -865,7 +1008,7 @@ impl Store {
         let color = patch.color.map(|c| check_opt("color", c, 32)).transpose()?;
         let icon = patch.icon.map(|i| check_opt("icon", i, 64)).transpose()?;
         if let Some(Some(r)) = patch.team_member_role {
-            check_grant_role(r)?;
+            check_team_member_role(r)?;
         }
         let settings = patch
             .settings
@@ -1519,7 +1662,7 @@ mod tests {
         ));
         assert!(matches!(
             store
-                .add_vault_member(ops.id, ana, VaultGrantee::User(carlos), VaultRole::Manager)
+                .add_vault_member(ops.id, ana, VaultGrantee::User(carlos), VaultRole::Unknown)
                 .await,
             Err(CoreError::Vault {
                 code: codes::INVALID_ROLE,
@@ -1641,10 +1784,168 @@ mod tests {
         assert_eq!(store.vault_access(dani).await.unwrap().role(ops.id), None);
     }
 
+    #[tokio::test]
+    async fn team_policies_shape_access() {
+        use crate::access::{AiApproval, TeamPolicy};
+        let store = test_store();
+        let ana = user(&store, "ana@example.com").await;
+        let bea = user(&store, "bea@example.com").await;
+        let carla = user(&store, "carla@example.com").await;
+        let team = store.create_team(ana, "Ops").await.unwrap();
+        store
+            .set_team_member(team.id, bea, TeamRole::Member)
+            .await
+            .unwrap();
+        store
+            .set_team_member(team.id, carla, TeamRole::Member)
+            .await
+            .unwrap();
+        let tv = store
+            .create_vault(
+                ana,
+                NewVault {
+                    name: "Prod".into(),
+                    team_id: Some(team.id),
+                    team_member_role: Some(VaultRole::Editor),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        // Connect only by a direct grant (the maximum of both wins: the
+        // team role, Editor, is higher).
+        store
+            .add_vault_member(
+                tv.id,
+                ana,
+                VaultGrantee::User(carla),
+                VaultRole::ConnectOnly,
+            )
+            .await
+            .unwrap();
+        // Explicit Admin grants are allowed now (on shared vaults).
+        let shared = store
+            .create_vault(
+                ana,
+                NewVault {
+                    name: "S".into(),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        store
+            .add_vault_member(shared.id, ana, VaultGrantee::User(bea), VaultRole::Manager)
+            .await
+            .unwrap();
+        assert_eq!(
+            store.vault_access(bea).await.unwrap().role(shared.id),
+            Some(VaultRole::Manager)
+        );
+        let a = store.vault_access(bea).await.unwrap();
+        assert!(a.can_reveal(tv.id) && a.ai_allowed(tv.id) && a.networks_allowed(tv.id));
+        assert_eq!(a.team_of.get(&tv.id), Some(&team.id));
+
+        let mut p = TeamPolicy {
+            allow_reveal: false,
+            networks_allowed: false,
+            record_sessions: true,
+            ..Default::default()
+        };
+        p.ai.allowed = false;
+        p.ai.approval = AiApproval::Always;
+        store.set_team_policy(team.id, p.clone()).await.unwrap();
+        let a = store.vault_access(bea).await.unwrap();
+        assert!(!a.can_reveal(tv.id));
+        assert!(matches!(
+            a.authorize_secret(tv.id, SecretUse::Reveal),
+            Err(CoreError::Vault {
+                code: codes::SECRET_REVEAL_FORBIDDEN,
+                ..
+            })
+        ));
+        // Editors still use secrets just in time and on the server.
+        assert!(a.authorize_secret(tv.id, SecretUse::Credentials).is_ok());
+        assert!(!a.ai_allowed(tv.id) && a.ai_confirm.contains(&tv.id));
+        assert!(!a.networks_allowed(tv.id) && a.must_record(tv.id));
+        // Managers keep revealing.
+        let owner = store.vault_access(ana).await.unwrap();
+        assert!(owner.can_reveal(tv.id));
+        // Not the shared vault (not owned by the team).
+        assert!(a.can_reveal(shared.id) && a.networks_allowed(shared.id));
+
+        // 2FA: grace period running → access with an expiry; over → hidden.
+        p.require_2fa = true;
+        p.grace_days = 7;
+        p.require_2fa_since = Some(now_ms() - 86_400_000);
+        store.set_team_policy(team.id, p.clone()).await.unwrap();
+        let a = store.vault_access(bea).await.unwrap();
+        assert!(a.role(tv.id).is_some());
+        assert!(a.valid_until.is_some_and(|t| t > now_ms()));
+        p.require_2fa_since = Some(now_ms() - 8 * 86_400_000);
+        // Bea joined long ago (the grace period counts from the later of
+        // the policy and the join).
+        store
+            .call(move |c, _| {
+                c.execute(
+                    "UPDATE team_members SET added_at = 0 WHERE user_id = ?1",
+                    [bea.to_string()],
+                )?;
+                Ok(())
+            })
+            .await
+            .unwrap();
+        store.set_team_policy(team.id, p.clone()).await.unwrap();
+        let a = store.vault_access(bea).await.unwrap();
+        assert_eq!(a.role(tv.id), None);
+        assert!(a.blocked_2fa.contains(&tv.id));
+        assert!(a.role(bea).is_some(), "the personal vault stays");
+        assert!(
+            a.role(shared.id).is_some(),
+            "vaults not owned by the team stay"
+        );
+        // Enabling 2FA gives access back at once.
+        store
+            .call(move |c, _| {
+                c.execute(
+                    "UPDATE users SET totp_enabled = 1 WHERE id = ?1",
+                    [bea.to_string()],
+                )?;
+                Ok(())
+            })
+            .await
+            .unwrap();
+        store.bump_access();
+        assert!(store.vault_access(bea).await.unwrap().role(tv.id).is_some());
+        // A member who joined recently still has their own grace period.
+        let dani = user(&store, "dani@example.com").await;
+        store
+            .set_team_member(team.id, dani, TeamRole::Member)
+            .await
+            .unwrap();
+        assert!(
+            store
+                .vault_access(dani)
+                .await
+                .unwrap()
+                .role(tv.id)
+                .is_some()
+        );
+    }
+
     #[test]
     fn role_rank_order() {
         assert!(VaultRole::Manager > VaultRole::Editor);
         assert!(VaultRole::Editor > VaultRole::UseOnly);
+        assert!(VaultRole::UseOnly > VaultRole::ConnectOnly);
+        assert!(VaultRole::ConnectOnly > VaultRole::Unknown);
+        assert!(VaultRole::ConnectOnly.can_use() && !VaultRole::ConnectOnly.can_get_credentials());
+        assert_eq!(VaultRole::ConnectOnly.legacy(), VaultRole::UseOnly);
+        assert_eq!(VaultRole::Editor.legacy(), VaultRole::Editor);
+        assert_eq!(
+            serde_json::to_string(&VaultRole::ConnectOnly).unwrap(),
+            "\"connect_only\""
+        );
         assert!(VaultRole::UseOnly > VaultRole::Unknown);
         assert!(!VaultRole::Unknown.can_use());
         // Text order would say otherwise ("use_only" > "manager" > "editor").
@@ -1688,6 +1989,24 @@ mod tests {
         assert!(matches!(
             a.authorize_secret(new_id(), SecretUse::Server),
             Err(CoreError::NotFound(_))
+        ));
+        // Connect only: server use only, never just-in-time credentials.
+        let co = new_id();
+        a.roles.insert(co, VaultRole::ConnectOnly);
+        assert!(a.authorize_secret(co, SecretUse::Server).is_ok());
+        assert!(matches!(
+            a.authorize_secret(co, SecretUse::Credentials),
+            Err(CoreError::Vault {
+                code: codes::CONNECT_ONLY,
+                ..
+            })
+        ));
+        assert!(matches!(
+            a.authorize_secret(co, SecretUse::Reveal),
+            Err(CoreError::Vault {
+                code: codes::SECRET_HIDDEN,
+                ..
+            })
         ));
     }
 }

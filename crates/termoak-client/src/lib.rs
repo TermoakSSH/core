@@ -47,6 +47,7 @@ pub mod remote;
 pub mod servers;
 pub mod snippets;
 pub mod sync;
+pub mod team_security;
 pub mod vault;
 pub mod workspace;
 

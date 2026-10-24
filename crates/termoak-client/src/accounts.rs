@@ -357,6 +357,9 @@ pub struct Account {
     /// The server refused the session in this process (not a sign-out).
     expired: Arc<AtomicBool>,
     pub(crate) events: Mutex<Option<tokio::task::JoinHandle<()>>>,
+    /// Team certificates, the ephemeral key and host access answers
+    /// (memory only, 0.7 phase 4b).
+    pub(crate) security: crate::team_security::SecurityCache,
 }
 
 impl std::fmt::Debug for Account {
@@ -426,6 +429,7 @@ impl Account {
             sync_pending: AtomicBool::new(false),
             expired,
             events: Mutex::new(None),
+            security: Default::default(),
         }))
     }
 

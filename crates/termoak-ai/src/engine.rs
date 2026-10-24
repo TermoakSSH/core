@@ -2041,7 +2041,18 @@ impl AgentHooks for EngineHooks {
         let effect = ToolRuntime::effect(name, input);
         let summary = ToolRuntime::summarize(name, input);
         let mode = *self.live.mode.lock();
-        let verdict = decide(mode, name, effect);
+        let mut verdict = decide(mode, name, effect);
+        // The team requires an approval for every action on this host.
+        if verdict == Verdict::Allow
+            && crate::policy::runs_on_host(name)
+            && self
+                .engine
+                .tools
+                .always_confirm(&self.live.ctx, input)
+                .await
+        {
+            verdict = Verdict::NeedsApproval;
+        }
         self.emit(TaskEvent::ToolCall {
             call_id: call_id.to_string(),
             tool: name.to_string(),

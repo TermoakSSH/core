@@ -70,6 +70,9 @@ pub enum ItemAccess {
     Editor,
     /// Use it (connect, run), never see its secrets or change it.
     UseOnly,
+    /// Connect through the server or with team certificates only (0.7
+    /// phase 4b): no secrets, not even just in time.
+    ConnectOnly,
 }
 
 impl ItemAccess {
@@ -78,11 +81,12 @@ impl ItemAccess {
             VaultRole::Manager => ItemAccess::Manager,
             VaultRole::Editor => ItemAccess::Editor,
             VaultRole::UseOnly | VaultRole::Unknown => ItemAccess::UseOnly,
+            VaultRole::ConnectOnly => ItemAccess::ConnectOnly,
         }
     }
 
     pub fn can_write(self) -> bool {
-        !matches!(self, ItemAccess::UseOnly)
+        !matches!(self, ItemAccess::UseOnly | ItemAccess::ConnectOnly)
     }
 
     pub fn can_read_secrets(self) -> bool {
@@ -501,7 +505,7 @@ impl Workspace {
         if let Scope::Account(a) = item.scope {
             let acc = self.require_account(a)?;
             let rec = acc.store.get::<T>(LOCAL_OWNER, item.id).await?;
-            if rec.meta.secret_hidden || !acc.role(rec.meta.vault_id).await?.can_read_secrets() {
+            if rec.meta.secret_hidden || !acc.can_reveal(rec.meta.vault_id).await? {
                 return Err(secret_hidden());
             }
         }
@@ -530,19 +534,44 @@ impl Workspace {
             .locate_local(item.id)
             .await?
             .ok_or_else(|| CoreError::NotFound(format!("host {}", item.id)))?;
+        // Access policies (0.7 phase 4b): the server must allow it now.
+        acc.check_host_access(item.id, vault).await?;
         let mut resolved = acc
             .store
             .resolve_local(vault, item.id, Some((&self.store, LOCAL_OWNER)))
             .await?;
-        if acc.role(vault).await?.can_read_secrets() {
+        if acc.can_reveal(vault).await? {
+            self.team_certificates(&acc, &mut resolved).await?;
             return Ok(resolved);
         }
+        let role = acc.role(vault).await?;
         let vault = vault.unwrap_or_default();
-        if acc.is_strict(vault).await? {
-            return Err(CoreError::vault(
-                codes::USE_ONLY_STRICT,
-                "this vault only allows connections through the server",
-            )
+        let team_cert = std::iter::once(&resolved)
+            .chain(resolved.jumps.iter())
+            .any(|h| {
+                h.settings
+                    .auth
+                    .as_ref()
+                    .is_some_and(|a| a.is_team_certificate())
+            });
+        // Connect only, or a Strict vault: no secrets on this device; team
+        // certificates (for an ephemeral key) still work.
+        if !role.can_get_credentials() || acc.is_strict(vault).await? {
+            if team_cert && acc.teams_security_supported() && acc.is_signed_in() {
+                self.team_certificates(&acc, &mut resolved).await?;
+                return Ok(resolved);
+            }
+            return Err(if role.can_get_credentials() {
+                CoreError::vault(
+                    codes::USE_ONLY_STRICT,
+                    "this vault only allows connections through the server",
+                )
+            } else {
+                CoreError::vault(
+                    codes::CONNECT_ONLY,
+                    "Connect only members connect through the server or with team certificates",
+                )
+            }
             .into());
         }
         let needs_server = || -> ClientError {
@@ -566,7 +595,24 @@ impl Workspace {
                 other => other,
             })?;
         apply_credentials(&mut resolved, &creds);
+        self.team_certificates(&acc, &mut resolved).await?;
         Ok(resolved)
+    }
+
+    /// Team certificates for the hops of a resolved host of an account
+    /// (0.7 phase 4b).
+    async fn team_certificates(&self, acc: &Account, resolved: &mut ResolvedHost) -> Result<()> {
+        let mut in_vault: BTreeSet<Id> = BTreeSet::new();
+        for hop in std::iter::once(&*resolved).chain(resolved.jumps.iter()) {
+            if let Some(k) = &hop.key
+                && !k.id.is_nil()
+                && acc.store.locate_local(k.id).await?.is_some()
+            {
+                in_vault.insert(k.id);
+            }
+        }
+        acc.apply_team_certificates(resolved, &|id| in_vault.contains(&id))
+            .await
     }
 
     /// Resolves a host without credentials from the server (terminal

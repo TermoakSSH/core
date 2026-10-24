@@ -240,6 +240,57 @@ pub struct HostSettings {
     /// know, and the server keeps the stored value
     /// ([`keep_omitted_fields`](crate::store::keep_omitted_fields)).
     pub network_id: Option<Uuid>,
+    /// How to authenticate (0.7 phase 4b): `None` (inherit, or the host's
+    /// password/key as always) or [`HostAuth::TeamCertificate`]: a
+    /// short-lived certificate from the CA of the vault's team (or owner).
+    /// Always serialized, like `network_id`: an older core's edit keeps the
+    /// stored value.
+    #[cfg_attr(feature = "openapi", schema(value_type = Option<String>))]
+    pub auth: Option<HostAuth>,
+}
+
+/// Authentication method of a host (`HostSettings::auth`). Serialized as a
+/// string; a value from a later version is kept as is
+/// ([`HostAuth::Other`]) and ignored (the host's own credentials are used).
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum HostAuth {
+    /// A certificate from the vault's CA (docs-next/TEAMS-SECURITY.md §4.8).
+    TeamCertificate,
+    /// Unknown method (from a later version), lowercase.
+    Other(String),
+}
+
+impl HostAuth {
+    pub fn as_str(&self) -> &str {
+        match self {
+            HostAuth::TeamCertificate => "team_certificate",
+            HostAuth::Other(s) => s,
+        }
+    }
+
+    pub fn parse(s: &str) -> Self {
+        let s = s.trim().to_ascii_lowercase();
+        match s.as_str() {
+            "team_certificate" => HostAuth::TeamCertificate,
+            _ => HostAuth::Other(s),
+        }
+    }
+
+    pub fn is_team_certificate(&self) -> bool {
+        *self == HostAuth::TeamCertificate
+    }
+}
+
+impl Serialize for HostAuth {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        s.serialize_str(self.as_str())
+    }
+}
+
+impl<'de> Deserialize<'de> for HostAuth {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Self, D::Error> {
+        Ok(HostAuth::parse(&String::deserialize(d)?))
+    }
 }
 
 /// Proxy type.
@@ -291,6 +342,7 @@ impl HostSettings {
             record_sessions: over.record_sessions.or(self.record_sessions),
             proxy: over.proxy.clone().or_else(|| self.proxy.clone()),
             network_id: over.network_id.or(self.network_id),
+            auth: over.auth.clone().or_else(|| self.auth.clone()),
         }
     }
 }
@@ -1282,8 +1334,13 @@ impl VaultKind {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum VaultRole {
-    /// Uses the items (connections through the server, or just-in-time
-    /// credentials) but never sees their secrets and cannot change them.
+    /// "Connect only" (0.7): connects through the server or with team
+    /// certificates; never gets secrets, not even just in time. Servers
+    /// show it as `use_only` to clients that do not declare `roles_v2`.
+    ConnectOnly,
+    /// "Use": uses the items (connections through the server, or
+    /// just-in-time credentials) but never sees their secrets and cannot
+    /// change them.
     UseOnly,
     /// Reads secrets and changes items.
     Editor,
@@ -1300,9 +1357,10 @@ impl VaultRole {
     pub fn rank(self) -> u8 {
         match self {
             VaultRole::Unknown => 0,
-            VaultRole::UseOnly => 1,
-            VaultRole::Editor => 2,
-            VaultRole::Manager => 3,
+            VaultRole::ConnectOnly => 1,
+            VaultRole::UseOnly => 2,
+            VaultRole::Editor => 3,
+            VaultRole::Manager => 4,
         }
     }
 }
@@ -1323,6 +1381,7 @@ impl VaultRole {
     pub fn as_str(self) -> &'static str {
         match self {
             VaultRole::Unknown => "unknown",
+            VaultRole::ConnectOnly => "connect_only",
             VaultRole::UseOnly => "use_only",
             VaultRole::Editor => "editor",
             VaultRole::Manager => "manager",
@@ -1331,6 +1390,7 @@ impl VaultRole {
 
     pub fn parse(s: &str) -> Self {
         match s {
+            "connect_only" => VaultRole::ConnectOnly,
             "use_only" => VaultRole::UseOnly,
             "editor" => VaultRole::Editor,
             "manager" => VaultRole::Manager,
@@ -1340,7 +1400,22 @@ impl VaultRole {
 
     /// Any access at all.
     pub fn can_use(self) -> bool {
+        self >= VaultRole::ConnectOnly
+    }
+
+    /// May get just-in-time credentials (Use and up; Strict vaults and
+    /// policies restrict it further).
+    pub fn can_get_credentials(self) -> bool {
         self >= VaultRole::UseOnly
+    }
+
+    /// The role as clients before 0.7 phase 4b understand it
+    /// (`connect_only` → `use_only`).
+    pub fn legacy(self) -> Self {
+        match self {
+            VaultRole::ConnectOnly => VaultRole::UseOnly,
+            r => r,
+        }
     }
 
     pub fn can_read_secrets(self) -> bool {
@@ -1451,6 +1526,10 @@ pub struct Vault {
     /// Live items per kind (`host`, `key`...), in listings.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub item_counts: BTreeMap<String, i64>,
+    /// What the team's policies mean for you in this vault (0.7 phase 4b;
+    /// only sent to clients that declare `policies`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub policy: Option<crate::access::VaultPolicy>,
 }
 
 /// Who a vault grant is for.

@@ -5,6 +5,7 @@
 //! dependency.
 
 pub mod ansi;
+pub mod ca;
 pub mod client;
 pub mod detect;
 pub mod error;

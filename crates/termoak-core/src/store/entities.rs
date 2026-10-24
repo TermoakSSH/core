@@ -228,6 +228,8 @@ const OMITTABLE: &[(EntityKind, &str, &str)] = &[
     (EntityKind::Group, "settings", "network_id"),
     (EntityKind::Network, "tailscale", "ephemeral"),
     (EntityKind::Key, "", "security_key"),
+    (EntityKind::Host, "settings", "auth"),
+    (EntityKind::Group, "settings", "auth"),
 ];
 
 /// Compatibility with apps on older cores: when `incoming` (a pushed or
@@ -276,6 +278,13 @@ pub fn keep_omitted_fields(kind: EntityKind, incoming: &mut Value, stored: &Valu
         }
     }
     kept
+}
+
+fn networks_forbidden() -> CoreError {
+    CoreError::vault(
+        codes::NETWORKS_FORBIDDEN_BY_POLICY,
+        "the team does not allow private networks in this vault",
+    )
 }
 
 /// Fields of `data` that reference a live item of another vault.
@@ -771,7 +780,7 @@ impl Store {
     ) -> Result<Vec<Record<T>>> {
         let vaults = match vault {
             Some(v) => {
-                access.require(v, VaultRole::UseOnly)?;
+                access.require(v, VaultRole::ConnectOnly)?;
                 vec![v]
             }
             None => access.vault_ids(),
@@ -841,6 +850,9 @@ impl Store {
         sync_mode: Option<SyncMode>,
     ) -> Result<Record<T>> {
         let role = access.require(vault, VaultRole::Editor)?;
+        if T::KIND == EntityKind::Network && !access.networks_allowed(vault) {
+            return Err(networks_forbidden());
+        }
         if data.id().is_nil() {
             data.set_id(new_id());
         }
@@ -1031,7 +1043,7 @@ impl Store {
         since: i64,
         limit: usize,
     ) -> Result<VaultChanges> {
-        access.require(vault, VaultRole::UseOnly)?;
+        access.require(vault, VaultRole::ConnectOnly)?;
         let with_secrets = access.authorize_secret(vault, SecretUse::Reveal).is_ok();
         self.call_keys(move |c, keys| {
             let head: i64 = c.query_row(
@@ -1147,6 +1159,18 @@ impl Store {
                             continue;
                         }
                         Some(_) => {}
+                    }
+                    if rec.kind == EntityKind::Network
+                        && !rec.deleted
+                        && !access.networks_allowed(target)
+                    {
+                        reject(
+                            &mut report,
+                            rec.id,
+                            codes::NETWORKS_FORBIDDEN_BY_POLICY,
+                            "the team does not allow private networks in this vault",
+                        );
+                        continue;
                     }
                     if let Some(row) = &existing {
                         if row.updated_at > rec.updated_at {
@@ -1335,11 +1359,22 @@ impl Store {
                             CoreError::NotFound(format!("{} {}", r.kind.as_str(), r.id))
                         })?;
                     let min = if req.mode == TransferMode::Copy && snippets_only {
-                        VaultRole::UseOnly
+                        VaultRole::ConnectOnly
                     } else {
                         VaultRole::Editor
                     };
                     access.require(row.vault(), min)?;
+                    // A team that forbids revealing secrets: its items (and
+                    // their secrets) do not leave the vault (0.7 phase 4b).
+                    if !snippets_only
+                        && row.vault() != target
+                        && access.no_reveal.contains(&row.vault())
+                    {
+                        return Err(CoreError::vault(
+                            codes::SECRET_REVEAL_FORBIDDEN,
+                            "the team does not allow taking items with secrets out of this vault",
+                        ));
+                    }
                     sources.insert(row.vault());
                 }
                 let load_items = |vault: Id| -> Result<Vec<Item>> {

@@ -65,6 +65,7 @@ mod security_key;
 mod server;
 mod snippets;
 mod ssh;
+mod teams_security;
 mod term_ai;
 mod transfer;
 mod vault;
@@ -103,6 +104,7 @@ pub use ssh::{
     ActiveForward, ConnectionDetails, ExecResult, ForwardStats, RemoteFile, RemoteFileKind,
     SshSession, TerminalHandle, TerminalListener, TerminalStatus, TransferListener,
 };
+pub use teams_security::*;
 pub use term_ai::*;
 pub use transfer::TransferHandle;
 pub use vault::{

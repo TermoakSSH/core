@@ -167,6 +167,50 @@ impl Store {
         .await
     }
 
+    /// Recorded sessions on hosts of a vault, newest first, with the
+    /// owner's email (vault managers, 0.7 phase 4b).
+    pub async fn vault_recordings(
+        &self,
+        vault: Id,
+        limit: usize,
+    ) -> Result<Vec<(SessionInfo, Option<String>)>> {
+        self.call(move |c, _| {
+            let mut stmt = c.prepare(&format!(
+                "SELECT {}, u.email FROM sessions s LEFT JOIN users u ON u.id = s.owner_id
+                 WHERE s.vault_id = ?1 AND s.recording = 1
+                 ORDER BY s.created_at DESC LIMIT ?2",
+                SESSION_COLUMNS
+                    .split(", ")
+                    .map(|c| format!("s.{c}"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ))?;
+            let rows = stmt
+                .query_map(
+                    params![vault.to_string(), limit.clamp(1, 1000) as i64],
+                    |r| Ok((map_session(r)?, r.get::<_, Option<String>>(10)?)),
+                )?
+                .collect::<rusqlite::Result<Vec<_>>>()?;
+            Ok(rows)
+        })
+        .await
+    }
+
+    /// The vault of a session (`None`: none recorded).
+    pub async fn session_vault(&self, id: Id) -> Result<Option<Id>> {
+        self.call(move |c, _| {
+            let v: Option<Option<String>> = c
+                .query_row(
+                    "SELECT vault_id FROM sessions WHERE id = ?1",
+                    [id.to_string()],
+                    |r| r.get(0),
+                )
+                .optional()?;
+            Ok(parse_opt_id(v.flatten())?)
+        })
+        .await
+    }
+
     /// A user's own sessions. `active_only` filters out closed ones.
     pub async fn list_sessions(
         &self,
@@ -176,7 +220,7 @@ impl Store {
     ) -> Result<Vec<SessionInfo>> {
         self.call(move |c, _| {
             let sql = format!(
-                "SELECT {SESSION_COLUMNS} FROM sessions WHERE owner_id = ?1 {}
+                "SELECT {SESSION_COLUMNS} FROM sessions WHERE owner_id = ?1 AND kind != 'device' {}
                  ORDER BY created_at DESC LIMIT ?2",
                 if active_only {
                     "AND status IN ('connecting','running')"

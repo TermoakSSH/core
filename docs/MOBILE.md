@@ -318,6 +318,57 @@ Syntax and rules: [SSH-PRO.md](SSH-PRO.md) §7 (`{{host}}`, `{{user}}`,
 - The old `snippetVariables` / `renderSnippet` keep working (no host: the
   host built-ins are variables to fill).
 
+### Teams security (0.7 phase 4b)
+
+Design, rules and the UI checklists: `docs-next/TEAMS-SECURITY.md` in the
+workspace (copy in the server's `docs/`). Calls exist on `TermoakCore` and
+on `AccountHandle`; check `/info` `features.teams_security` before showing
+anything (older servers answer `NotFound`).
+
+- **Roles**: `VaultRole.ConnectOnly` < `UseOnly` ("Use") < `Editor`
+  ("Edit") < `Manager` ("Admin", now grantable with `addVaultMember`).
+  `ItemAccess.ConnectOnly`: like `UseOnly` (no secrets) and no just-in-time
+  credentials; the engine connects with team certificates or the server.
+  Exhaustive `when`/`switch` statements need the new cases.
+- **Policies**: `VaultInfo.policy` (`VaultPolicyInfo`: `revealAllowed`,
+  `aiAllowed`, `aiApproval`, `networksAllowed`, `recordSessions`,
+  `require2fa`, `accessPolicies`, `certificates`) — hide reveal/copy/export,
+  AI actions and the network picker accordingly. The server enforces them
+  anyway. Team admins: `teamPolicy`, `setTeamPolicy` (`TeamSecurityPolicy`),
+  `teamCompliance`, `setMemberPrincipal`; your own state:
+  `team2faRequirements` (also `team_2fa` in the sign-in answer).
+- **Team certificates**: `HostSettings.auth = "team_certificate"` (inherited
+  from groups; keep unknown values). Nothing else is needed to connect: the
+  engine asks the server for a short-lived certificate for the host's key,
+  or for an ephemeral key made in memory, and caches it in memory.
+  `requestCertificate`, `myCertificates`, `parseCertificate(text)` for
+  details. CA management (team owners/admins; `teamId = null` for the
+  personal CA): `caInfo` (`CaOverview`: keys file, `sshdConfig` lines,
+  URLs, policy), `createCa`, `rotateCa`, `disableCa`, `caInstallScript`,
+  `caCertificates`, `revokeCertificates(RevokeTarget)`.
+- **Access policies and requests**: `hostAccess(hostId)` (`HostAccessInfo`:
+  mode, `allowed`, `grant` with `endsAt`, `pending`, `canRequest`,
+  `maxMinutes`, `recordRequired`). A connection to a host that needs a
+  window fails with `apiError.code == "access_approval_required"` (details:
+  `max_minutes`, `pending`): offer "Request access" →
+  `createAccessRequest(kind, targetId, minutes, reason)`. Approvers:
+  `accessRequests(Approvals, Pending)`, `approveAccessRequest(id, minutes,
+  reason)` (a shorter window only), `denyAccessRequest`,
+  `revokeAccessRequest`; the requester `cancelAccessRequest`. Managers:
+  `accessPolicies`, `setAccessPolicy`, `deleteAccessPolicy`. Events: `{"type":
+  "access_request", "event": "created|approved|denied|cancelled|expired|
+  revoked|ended", "request": {...}}` and `{"type": "team", "event":
+  "policy"}` on the events socket; push kinds `access_request` (approval)
+  and `access_decided` (info).
+- **Mandatory recording**: terminals to hosts whose policy records are
+  recorded by the engine and uploaded when they close (`uploadRecording`
+  exists for apps that record by themselves); managers list them with
+  `vaultRecordings`.
+- New error codes: `connect_only`, `secret_reveal_forbidden`,
+  `access_approval_required`, `access_needs_server`, `ca_not_configured`,
+  `certificate_*`, `team_2fa_required`, `policy_requires_2fa`,
+  `recording_required` (see the design doc §7).
+
 ## Swift
 
 ### Creating the core with the key in the Keychain

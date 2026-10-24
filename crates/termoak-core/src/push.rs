@@ -35,6 +35,9 @@ pub const KINDS: &[&str] = &[
     "team_added",
     "security_key_request",
     "access_request",
+    // 0.7 phase 4b: your access request was approved, denied, revoked or
+    // expired (info).
+    "access_decided",
 ];
 
 /// Kinds that are always delivered whatever the preferences say.

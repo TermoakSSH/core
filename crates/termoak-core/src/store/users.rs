@@ -1060,6 +1060,7 @@ impl Store {
             Ok(codes)
         })
         .await
+        .inspect(|_| self.bump_access())
     }
 
     /// Disables two-factor authentication (admins also use it to reset it).
@@ -1080,6 +1081,7 @@ impl Store {
             Ok(())
         })
         .await
+        .inspect(|_| self.bump_access())
     }
 
     /// Checks the second factor: a TOTP code (not used before) or a recovery

@@ -259,7 +259,7 @@ impl Store {
         vault: Id,
         host: &Host,
     ) -> Result<HostSettings> {
-        access.require(vault, crate::model::VaultRole::UseOnly)?;
+        access.require(vault, crate::model::VaultRole::ConnectOnly)?;
         self.effective_scoped(
             Scope::Vault {
                 vault: Some(vault),
@@ -311,14 +311,31 @@ impl Store {
     ) -> Result<ResolvedHost> {
         let vault = self.vault_of::<Host>(access, host_id).await?;
         access.authorize_secret(vault, purpose)?;
-        self.resolve_scoped(
-            Scope::Vault {
-                vault: Some(vault),
-                fallback: None,
-            },
-            host_id,
-        )
-        .await
+        let mut resolved = self
+            .resolve_scoped(
+                Scope::Vault {
+                    vault: Some(vault),
+                    fallback: None,
+                },
+                host_id,
+            )
+            .await?;
+        // Team policy: no private networks in this vault (0.7 phase 4b).
+        if !access.networks_allowed(vault)
+            && std::iter::once(&resolved)
+                .chain(resolved.jumps.iter())
+                .any(|h| h.settings.network_id.is_some())
+        {
+            return Err(CoreError::vault(
+                crate::error::codes::NETWORKS_FORBIDDEN_BY_POLICY,
+                "the team does not allow private networks in this vault",
+            ));
+        }
+        if let Some(hook) = self.resolve_hook() {
+            hook.after_resolve(access, vault, purpose, &mut resolved)
+                .await?;
+        }
+        Ok(resolved)
     }
 
     /// Client side: resolves a host of this store's `vault` (same-vault

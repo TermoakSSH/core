@@ -64,7 +64,7 @@ pub enum Effect {
 }
 
 /// Tools that run something on a host (even if it only reads).
-fn runs_on_host(tool: &str) -> bool {
+pub fn runs_on_host(tool: &str) -> bool {
     matches!(tool, "run_command" | "send_to_terminal" | "write_file")
 }
 

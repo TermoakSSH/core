@@ -208,6 +208,18 @@ pub struct ApiClient {
     refresh_lock: Arc<tokio::sync::Mutex<()>>,
 }
 
+/// Header with what this core understands (0.7 phase 4b,
+/// docs-next/TEAMS-SECURITY.md §10): servers hide what older clients cannot
+/// handle (`connect_only` → `use_only`, `Vault.policy`) and only give
+/// credentials for hosts with mandatory recording to clients that record.
+pub const FEATURES_HEADER: &str = "x-termoak-features";
+
+/// The features of this core: `roles_v2` (Connect only / Admin roles),
+/// `policies` (`Vault.policy`), `certificates` (team certificates) and
+/// `recording` (terminals of hosts with mandatory recording are recorded
+/// and uploaded).
+pub const CLIENT_FEATURES: &str = "roles_v2,policies,certificates,recording";
+
 /// The client's WebSocket.
 pub type WsStream =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
@@ -217,9 +229,15 @@ impl ApiClient {
     pub fn new(base: &str) -> Result<Self> {
         let base = base.trim().trim_end_matches('/').to_string();
         url::Url::parse(&base).map_err(|e| ClientError::Invalid(format!("invalid URL: {e}")))?;
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert(
+            FEATURES_HEADER,
+            reqwest::header::HeaderValue::from_static(CLIENT_FEATURES),
+        );
         let http = reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(15))
             .user_agent(concat!("Termoak/", env!("CARGO_PKG_VERSION")))
+            .default_headers(headers)
             .build()?;
         Ok(Self {
             base,
@@ -387,6 +405,52 @@ impl ApiClient {
 
     pub async fn delete(&self, path: &str) -> Result<Value> {
         self.request(Method::DELETE, path, None).await
+    }
+
+    /// Text answer of an authenticated GET (scripts, key files).
+    pub async fn get_text(&self, path: &str) -> Result<String> {
+        Ok(String::from_utf8_lossy(&self.get_bytes(path).await?).into_owned())
+    }
+
+    /// Raw answer of an authenticated GET (a KRL...).
+    pub async fn get_bytes(&self, path: &str) -> Result<Vec<u8>> {
+        let send = |token: String| self.http.get(self.url(path)).bearer_auth(token).send();
+        let mut resp = send(self.ensure_fresh().await?).await?;
+        if resp.status().as_u16() == 401 {
+            if let Some(t) = self.tokens.lock().as_mut() {
+                t.access_expires_at = 0;
+            }
+            resp = send(self.refresh().await?).await?;
+        }
+        if !resp.status().is_success() {
+            return Err(Self::error_of(resp).await);
+        }
+        Ok(resp.bytes().await?.to_vec())
+    }
+
+    /// Authenticated POST of a raw body (a recording).
+    pub async fn post_bytes<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        body: Vec<u8>,
+        content_type: &str,
+    ) -> Result<T> {
+        let send = |token: String| {
+            self.http
+                .post(self.url(path))
+                .bearer_auth(token)
+                .header(reqwest::header::CONTENT_TYPE, content_type)
+                .body(body.clone())
+                .send()
+        };
+        let mut resp = send(self.ensure_fresh().await?).await?;
+        if resp.status().as_u16() == 401 {
+            if let Some(t) = self.tokens.lock().as_mut() {
+                t.access_expires_at = 0;
+            }
+            resp = send(self.refresh().await?).await?;
+        }
+        Self::parse(resp).await
     }
 
     /// Error from a non-2xx response.

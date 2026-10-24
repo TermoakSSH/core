@@ -116,14 +116,15 @@ fn upsert_vault(conn: &Connection, v: &Vault) -> rusqlite::Result<usize> {
     conn.execute(
         "INSERT INTO vaults (id, kind, name, description, color, icon, owner_user_id, owner_team_id,
                              team_member_role, crypto_mode, key_version, settings, rev, created_by,
-                             created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+                             created_at, updated_at, policy)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)
          ON CONFLICT(id) DO UPDATE SET
             kind = excluded.kind, name = excluded.name, description = excluded.description,
             color = excluded.color, icon = excluded.icon, owner_user_id = excluded.owner_user_id,
             owner_team_id = excluded.owner_team_id, team_member_role = excluded.team_member_role,
             crypto_mode = excluded.crypto_mode, key_version = excluded.key_version,
-            settings = excluded.settings, rev = excluded.rev, updated_at = excluded.updated_at",
+            settings = excluded.settings, rev = excluded.rev, updated_at = excluded.updated_at,
+            policy = excluded.policy",
         params![
             v.id.to_string(),
             v.kind.as_str(),
@@ -140,9 +141,21 @@ fn upsert_vault(conn: &Connection, v: &Vault) -> rusqlite::Result<usize> {
             v.rev,
             v.created_by.to_string(),
             v.created_at,
-            v.updated_at
+            v.updated_at,
+            v.policy.as_ref().and_then(|p| serde_json::to_string(p).ok())
         ],
     )
+}
+
+/// Role used for secrets on this device: an Editor of a vault whose team
+/// forbids revealing secrets keeps none, like a Use-only member.
+fn secret_role(v: &Vault, role: VaultRole) -> VaultRole {
+    match &v.policy {
+        Some(p) if !p.reveal_allowed && role.can_read_secrets() && role != VaultRole::Manager => {
+            VaultRole::UseOnly
+        }
+        _ => role,
+    }
 }
 
 /// Adds a lost change to the per-vault count.
@@ -303,6 +316,53 @@ impl Store {
             Some(json) => serde_json::from_str(&json).unwrap_or_default(),
             None => Vec::new(),
         })
+    }
+
+    /// Vaults where this store may see secrets (role and team policy) but
+    /// still has rows whose secret was withheld: they need a fresh download.
+    pub async fn vaults_with_withheld_secrets(&self) -> Result<Vec<Id>> {
+        let vaults = self.local_vault_list().await?;
+        let roles = self.local_roles().await?;
+        let readable: Vec<Id> = vaults
+            .iter()
+            .filter(|v| {
+                let role = roles.get(&v.id).copied().unwrap_or(VaultRole::Unknown);
+                secret_role(v, role).can_read_secrets()
+            })
+            .map(|v| v.id)
+            .collect();
+        self.call(move |c, _| {
+            let mut out = Vec::new();
+            let mut stmt = c.prepare_cached(
+                "SELECT 1 FROM entities WHERE vault_id = ?1 AND secret_hidden = 1 AND deleted = 0 LIMIT 1",
+            )?;
+            for v in readable {
+                if stmt.exists([v.to_string()])? {
+                    out.push(v);
+                }
+            }
+            Ok(out)
+        })
+        .await
+    }
+
+    /// Effective team policy of a vault known locally (0.7 phase 4b; `None`:
+    /// no policy, or a server that does not send it).
+    pub async fn local_vault_policy(
+        &self,
+        vault: Id,
+    ) -> Result<Option<crate::access::VaultPolicy>> {
+        self.call(move |c, _| {
+            let s: Option<Option<String>> = c
+                .query_row(
+                    "SELECT policy FROM vaults WHERE id = ?1",
+                    [vault.to_string()],
+                    |r| r.get(0),
+                )
+                .optional()?;
+            Ok(s.flatten().and_then(|s| serde_json::from_str(&s).ok()))
+        })
+        .await
     }
 
     /// Settings of a vault known locally (Strict switch...).
@@ -485,11 +545,12 @@ impl Store {
                 )?;
             }
 
-            // 5. Vault metadata and roles.
+            // 5. Vault metadata and roles (`roles`: the role for secrets on
+            // this device, see `secret_role`).
             let mut roles: HashMap<Id, VaultRole> = HashMap::new();
             for v in &input.vaults {
                 let role = v.role.unwrap_or(VaultRole::Unknown);
-                roles.insert(v.id, role);
+                roles.insert(v.id, secret_role(v, role));
                 if let Err(e) = upsert_vault(&tx, v) {
                     tracing::warn!(vault = %v.id, error = %e, "could not save the vault metadata");
                 }
@@ -790,6 +851,7 @@ mod tests {
             owner_name: None,
             member_count: 0,
             item_counts: Default::default(),
+            policy: None,
         }
     }
 

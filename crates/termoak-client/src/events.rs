@@ -26,10 +26,15 @@ pub type SignerSlot = Arc<RwLock<Option<Arc<dyn SecurityKeySigner>>>>;
 /// Path of the events socket (with `features=security_keys` when this
 /// device can sign).
 pub fn events_path(can_sign: bool) -> String {
+    // `roles_v2,policies` (0.7 phase 4b): roles and policies as this core
+    // understands them (browsers cannot set headers on a WebSocket).
     if can_sign {
-        format!("/api/v1/events/ws?features={}", wire::FEATURE)
+        format!(
+            "/api/v1/events/ws?features=roles_v2,policies,{}",
+            wire::FEATURE
+        )
     } else {
-        "/api/v1/events/ws".to_string()
+        "/api/v1/events/ws?features=roles_v2,policies".to_string()
     }
 }
 

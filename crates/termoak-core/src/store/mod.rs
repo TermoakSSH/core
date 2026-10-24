@@ -12,6 +12,7 @@ mod entities;
 pub mod history;
 pub mod invites;
 mod local;
+pub mod security;
 pub mod sessions;
 pub mod teams;
 pub mod users;
@@ -49,6 +50,21 @@ struct Inner {
     access: vaults::AccessCache,
     /// Called after a commit that changed entities of these vaults.
     on_change: parking_lot::RwLock<Option<ChangeListener>>,
+    /// Server hook run after every [`Store::resolve_in`] (0.7 phase 4b).
+    resolve_hook: parking_lot::RwLock<Option<Arc<dyn ResolveHook>>>,
+}
+
+/// Server hook run by [`Store::resolve_in`] after a host and its jumps are
+/// resolved (docs-next/TEAMS-SECURITY.md §4.8, §5.4): access policies
+/// (approval windows), team certificates. An error refuses the resolution.
+pub trait ResolveHook: Send + Sync {
+    fn after_resolve<'a>(
+        &'a self,
+        access: &'a VaultAccess,
+        vault: Id,
+        purpose: SecretUse,
+        resolved: &'a mut crate::resolve::ResolvedHost,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<()>> + Send + 'a>>;
 }
 
 /// Listener of entity changes per vault (the server sends `vault/changed`
@@ -88,6 +104,7 @@ impl Store {
                 keys: vaults::Keyring::new(key),
                 access: Default::default(),
                 on_change: Default::default(),
+                resolve_hook: Default::default(),
             }),
         })
     }
@@ -100,6 +117,15 @@ impl Store {
     /// Sets the function called after entities of some vaults change.
     pub fn set_change_listener(&self, listener: Option<ChangeListener>) {
         *self.inner.on_change.write() = listener;
+    }
+
+    /// Sets the hook run after every [`Store::resolve_in`].
+    pub fn set_resolve_hook(&self, hook: Option<Arc<dyn ResolveHook>>) {
+        *self.inner.resolve_hook.write() = hook;
+    }
+
+    pub(crate) fn resolve_hook(&self) -> Option<Arc<dyn ResolveHook>> {
+        self.inner.resolve_hook.read().clone()
     }
 
     /// Tells the listener (if any) that these vaults changed.
@@ -625,6 +651,105 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE devices ADD COLUMN push_auth TEXT;
     ALTER TABLE devices ADD COLUMN push_prefs TEXT;
     "#,
+    // v13: teams security (0.7 phase 4b, docs-next/TEAMS-SECURITY.md §8).
+    // SSH certificate authorities held by the server (the private key
+    // sealed with the master key), the certificates they issued (serials
+    // for audit and the KRL), revoked public keys, access policies per
+    // host/group/vault, temporary access requests, team policies, member
+    // principals and, on clients, the effective vault policy from the
+    // server. Nothing existing is rewritten.
+    r#"
+    CREATE TABLE ssh_cas (
+        id            TEXT PRIMARY KEY,
+        owner_team_id TEXT,
+        owner_user_id TEXT,
+        kind          TEXT NOT NULL DEFAULT 'user',
+        algorithm     TEXT NOT NULL,
+        public_key    TEXT NOT NULL,
+        fingerprint   TEXT NOT NULL,
+        private_key   BLOB NOT NULL,
+        status        TEXT NOT NULL,
+        created_by    TEXT NOT NULL,
+        created_at    INTEGER NOT NULL,
+        retire_at     INTEGER,
+        retired_at    INTEGER,
+        CHECK ((owner_team_id IS NULL) <> (owner_user_id IS NULL))
+    );
+    CREATE INDEX ssh_cas_team ON ssh_cas(owner_team_id, status);
+    CREATE INDEX ssh_cas_user ON ssh_cas(owner_user_id, status);
+
+    CREATE TABLE ssh_certs (
+        serial          INTEGER PRIMARY KEY AUTOINCREMENT,
+        ca_id           TEXT NOT NULL,
+        user_id         TEXT NOT NULL,
+        vault_id        TEXT,
+        host_id         TEXT,
+        request_id      TEXT,
+        device_id       TEXT,
+        purpose         TEXT NOT NULL,
+        key_fingerprint TEXT NOT NULL,
+        key_id          TEXT NOT NULL,
+        principals      TEXT NOT NULL,
+        valid_after     INTEGER NOT NULL,
+        valid_before    INTEGER NOT NULL,
+        created_at      INTEGER NOT NULL,
+        revoked_at      INTEGER,
+        revoked_by      TEXT,
+        revoke_reason   TEXT
+    );
+    CREATE INDEX ssh_certs_ca ON ssh_certs(ca_id, valid_before);
+    CREATE INDEX ssh_certs_user ON ssh_certs(user_id, created_at);
+    CREATE INDEX ssh_certs_request ON ssh_certs(request_id);
+
+    CREATE TABLE ssh_revoked_keys (
+        owner_id    TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        public_key  TEXT NOT NULL,
+        revoked_by  TEXT NOT NULL,
+        revoked_at  INTEGER NOT NULL,
+        reason      TEXT,
+        PRIMARY KEY (owner_id, fingerprint)
+    );
+
+    CREATE TABLE access_policies (
+        id          TEXT PRIMARY KEY,
+        vault_id    TEXT NOT NULL,
+        target_kind TEXT NOT NULL,
+        target_id   TEXT NOT NULL,
+        policy      TEXT NOT NULL,
+        updated_by  TEXT NOT NULL,
+        updated_at  INTEGER NOT NULL,
+        UNIQUE (vault_id, target_kind, target_id)
+    );
+    CREATE INDEX access_policies_vault ON access_policies(vault_id);
+
+    CREATE TABLE access_requests (
+        id              TEXT PRIMARY KEY,
+        vault_id        TEXT NOT NULL,
+        target_kind     TEXT NOT NULL,
+        target_id       TEXT NOT NULL,
+        target_label    TEXT NOT NULL,
+        requester_id    TEXT NOT NULL,
+        reason          TEXT NOT NULL,
+        minutes         INTEGER NOT NULL,
+        status          TEXT NOT NULL,
+        created_at      INTEGER NOT NULL,
+        expires_at      INTEGER NOT NULL,
+        decided_by      TEXT,
+        decided_at      INTEGER,
+        decision_reason TEXT,
+        starts_at       INTEGER,
+        ends_at         INTEGER,
+        closed_at       INTEGER,
+        self_approved   INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX access_requests_vault ON access_requests(vault_id, status);
+    CREATE INDEX access_requests_requester ON access_requests(requester_id, status);
+
+    ALTER TABLE teams ADD COLUMN policy TEXT NOT NULL DEFAULT '{}';
+    ALTER TABLE team_members ADD COLUMN principal TEXT;
+    ALTER TABLE vaults ADD COLUMN policy TEXT;
+    "#,
 ];
 
 /// Schema version of the latest migration.
@@ -700,5 +825,44 @@ mod migration_tests {
             )
             .unwrap();
         assert_eq!(row, (0, 1234, 1234, "claude::x".to_string(), 5));
+    }
+
+    #[test]
+    fn v13_keeps_teams_and_vaults_as_they_were() {
+        let conn = Connection::open_in_memory().unwrap();
+        for (i, sql) in MIGRATIONS[..12].iter().enumerate() {
+            conn.execute_batch(&format!(
+                "BEGIN; {sql}; PRAGMA user_version = {}; COMMIT;",
+                i + 1
+            ))
+            .unwrap();
+        }
+        conn.execute_batch(
+            "INSERT INTO teams (id, name, created_by, created_at) VALUES ('t1', 'Ops', 'u1', 1);
+             INSERT INTO users (id, email, name, password_hash, created_at) VALUES ('u1', 'a@b', 'A', 'x', 1);
+             INSERT INTO team_members (team_id, user_id, role, added_at) VALUES ('t1', 'u1', 'owner', 1);
+             INSERT INTO vaults (id, kind, name, owner_team_id, team_member_role, created_by, created_at, updated_at)
+                 VALUES ('v1', 'team', 'Prod', 't1', 'use_only', 'u1', 1, 1);",
+        )
+        .unwrap();
+        migrate(&conn).unwrap();
+        let (policy, principal, vpolicy, role): (String, Option<String>, Option<String>, String) = conn
+            .query_row(
+                "SELECT t.policy, tm.principal, v.policy, v.team_member_role
+                 FROM teams t JOIN team_members tm ON tm.team_id = t.id JOIN vaults v ON v.owner_team_id = t.id",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            )
+            .unwrap();
+        assert_eq!(
+            (policy.as_str(), principal, vpolicy, role.as_str()),
+            ("{}", None, None, "use_only")
+        );
+        let p: crate::access::TeamPolicy = serde_json::from_str(&policy).unwrap();
+        assert_eq!(p, crate::access::TeamPolicy::default());
+        let v: i64 = conn
+            .pragma_query_value(None, "user_version", |r| r.get(0))
+            .unwrap();
+        assert_eq!(v, 13);
     }
 }

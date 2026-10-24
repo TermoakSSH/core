@@ -158,6 +158,12 @@ pub struct HostSettings {
     /// settings (copy them) so it is kept when they do not show it.
     #[uniffi(default)]
     pub network_id: Option<String>,
+    /// Authentication (0.7 phase 4b): `nil` (inherit, or the host's
+    /// password/key) or `"team_certificate"` (a short-lived certificate from
+    /// the vault's team CA, obtained by the engine when connecting). Keep
+    /// any other value you do not know, like `network_id`.
+    #[uniffi(default)]
+    pub auth: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, uniffi::Enum)]
@@ -228,6 +234,7 @@ impl From<cm::HostSettings> for HostSettings {
             record_sessions: s.record_sessions,
             proxy: s.proxy.map(Into::into),
             network_id: s.network_id.map(|i| i.to_string()),
+            auth: s.auth.map(|a| a.as_str().to_string()),
         }
     }
 }
@@ -257,6 +264,10 @@ impl TryFrom<HostSettings> for cm::HostSettings {
                 .map(TryInto::try_into)
                 .transpose()?,
             network_id: parse_opt_id(&s.network_id)?,
+            auth: s
+                .auth
+                .filter(|a| !a.trim().is_empty())
+                .map(|a| cm::HostAuth::parse(&a)),
         })
     }
 }
@@ -1275,6 +1286,9 @@ pub enum ItemAccess {
     /// Uses it (connect, run) but never sees its secrets nor changes it:
     /// hide reveal, copy password, export key and duplicate; show a lock.
     UseOnly,
+    /// Connects through the server or with team certificates only (0.7
+    /// phase 4b): like `UseOnly`, and no just-in-time credentials.
+    ConnectOnly,
     Unknown,
 }
 
@@ -1285,6 +1299,7 @@ impl From<termoak_client::ItemAccess> for ItemAccess {
             termoak_client::ItemAccess::Manager => ItemAccess::Manager,
             termoak_client::ItemAccess::Editor => ItemAccess::Editor,
             termoak_client::ItemAccess::UseOnly => ItemAccess::UseOnly,
+            termoak_client::ItemAccess::ConnectOnly => ItemAccess::ConnectOnly,
         }
     }
 }

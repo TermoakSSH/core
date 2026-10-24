@@ -419,6 +419,18 @@ impl ToolRuntime {
             .cloned()
     }
 
+    /// Whether the host a call targets (`input.host`) needs an approval for
+    /// every AI action (team policy, 0.7 phase 4b).
+    pub async fn always_confirm(&self, ctx: &ToolContext, input: &Value) -> bool {
+        match input.get("host").and_then(Value::as_str) {
+            Some(h) => self
+                .resolve_host(ctx, h)
+                .await
+                .is_ok_and(|e| e.always_confirm),
+            None => false,
+        }
+    }
+
     /// A host for the SSH tools: resolved, and refused with the reason when
     /// it is not SSH (Telnet) or cannot be used from here (Strict vault...).
     async fn ssh_host(&self, ctx: &ToolContext, reference: &str) -> Result<HostEntry, String> {

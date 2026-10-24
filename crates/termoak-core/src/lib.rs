@@ -2,6 +2,7 @@
 //! settings resolution. Shared by the server, the CLI, the desktop app and
 //! the mobile apps (through FFI).
 
+pub mod access;
 pub mod crypto;
 pub mod error;
 pub mod model;

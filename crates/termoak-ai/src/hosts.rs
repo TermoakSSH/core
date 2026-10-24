@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use serde::Serialize;
-use termoak_core::model::{Group, Host, Memory, SecretUpdate, Snippet, VaultRole};
+use termoak_core::model::{Group, Host, Memory, SecretUpdate, Snippet};
 use termoak_core::{Id, Store};
 use termoak_ssh::{Connection, ConnectionPool};
 
@@ -51,6 +51,10 @@ pub struct HostEntry {
     /// Why the AI cannot run commands or open files on it (a Strict vault,
     /// an account that is signed out...). `None`: it can.
     pub unavailable: Option<String>,
+    /// The team requires an approval for every AI action on it (team
+    /// policy `ai.approval = always`, 0.7 phase 4b).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub always_confirm: bool,
 }
 
 impl HostEntry {
@@ -73,6 +77,7 @@ impl HostEntry {
             source: None,
             use_only: false,
             unavailable: None,
+            always_confirm: false,
         }
     }
 
@@ -290,6 +295,10 @@ impl HostProvider for VaultHosts {
         };
         for rec in hosts {
             let vault = rec.meta.vault_id.unwrap_or(access.personal());
+            // The team does not allow the AI on its hosts: it never sees them.
+            if !access.ai_allowed(vault) {
+                continue;
+            }
             let settings = self
                 .store
                 .effective_settings_in(&access, vault, &rec.data)
@@ -306,7 +315,9 @@ impl HostProvider for VaultHosts {
                 protocol: h.protocol.as_str().to_string(),
                 via_jump: settings.jump_host_ids.is_some_and(|j| !j.is_empty()),
                 vault_id: Some(vault),
-                use_only: access.role(vault) == Some(VaultRole::UseOnly),
+                use_only: access.role(vault).is_some_and(|r| !r.can_read_secrets())
+                    || !access.can_reveal(vault),
+                always_confirm: access.ai_confirm.contains(&vault),
                 ..HostEntry::new(h.id, h.label, h.address)
             });
         }

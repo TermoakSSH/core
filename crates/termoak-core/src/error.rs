@@ -86,7 +86,7 @@ pub mod codes {
     pub const USE_ONLY_NEEDS_SERVER: &str = "use_only_needs_server";
     /// A session closed because its user lost access to the vault.
     pub const VAULT_ACCESS_REVOKED: &str = "vault_access_revoked";
-    /// Only `editor` and `use_only` can be granted.
+    /// Grantable roles: `connect_only`, `use_only`, `editor`, `manager`.
     pub const INVALID_ROLE: &str = "invalid_role";
     /// That user or team already has a grant on the vault.
     pub const MEMBER_EXISTS: &str = "member_exists";
@@ -120,6 +120,37 @@ pub mod codes {
     pub const SECURITY_KEY_UNSUPPORTED: &str = "security_key_unsupported";
     pub const SECURITY_KEY_INVALID: &str = "security_key_invalid";
     pub const SECURITY_KEY_FAILED: &str = "security_key_failed";
+    /// Teams security (docs-next/TEAMS-SECURITY.md §7).
+    /// Connect only members never get secrets, not even just in time.
+    pub const CONNECT_ONLY: &str = "connect_only";
+    /// The team forbids revealing or exporting secrets (Editors).
+    pub const SECRET_REVEAL_FORBIDDEN: &str = "secret_reveal_forbidden";
+    /// The host needs an approved access window (detail: target, policy).
+    pub const ACCESS_APPROVAL_REQUIRED: &str = "access_approval_required";
+    /// The host has access policies and the server cannot be reached (client).
+    pub const ACCESS_NEEDS_SERVER: &str = "access_needs_server";
+    pub const ACCESS_REQUEST_EXISTS: &str = "access_request_exists";
+    pub const ACCESS_REQUEST_NOT_NEEDED: &str = "access_request_not_needed";
+    pub const ACCESS_REQUEST_CLOSED: &str = "access_request_closed";
+    pub const ACCESS_DURATION_TOO_LONG: &str = "access_duration_too_long";
+    pub const SELF_APPROVAL_FORBIDDEN: &str = "self_approval_forbidden";
+    pub const NOT_AN_APPROVER: &str = "not_an_approver";
+    pub const CA_NOT_CONFIGURED: &str = "ca_not_configured";
+    pub const CA_EXISTS: &str = "ca_exists";
+    pub const CERTIFICATE_KEY_NOT_OWNED: &str = "certificate_key_not_owned";
+    pub const CERTIFICATE_PROOF_INVALID: &str = "certificate_proof_invalid";
+    pub const CERTIFICATE_NO_PRINCIPALS: &str = "certificate_no_principals";
+    /// The team requires 2FA (grace period over, or turning 2FA off).
+    pub const TEAM_2FA_REQUIRED: &str = "team_2fa_required";
+    /// Turning on "require 2FA" without 2FA yourself.
+    pub const POLICY_REQUIRES_2FA: &str = "policy_requires_2fa";
+    pub const AI_FORBIDDEN_BY_POLICY: &str = "ai_forbidden_by_policy";
+    pub const NETWORKS_FORBIDDEN_BY_POLICY: &str = "networks_forbidden_by_policy";
+    /// Recording is mandatory and this client does not record.
+    pub const RECORDING_REQUIRED: &str = "recording_required";
+    /// A session closed because its access window ended or was revoked.
+    pub const ACCESS_EXPIRED: &str = "access_expired";
+    pub const ACCESS_REVOKED: &str = "access_revoked";
 }
 
 pub type Result<T, E = CoreError> = std::result::Result<T, E>;

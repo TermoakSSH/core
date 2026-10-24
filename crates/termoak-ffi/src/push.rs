@@ -82,7 +82,7 @@ pub struct PushEvent {
 
 fn channel_of(kind: &str) -> &'static str {
     match kind {
-        "ai_approval" | "access_request" => "approvals",
+        "ai_approval" | "access_request" | "access_decided" => "approvals",
         "join_request" | "control_request" | "session_prompt" | "session_shared" => "sessions",
         "security_key_request" => "security_keys",
         "ai_finished" => "ai",

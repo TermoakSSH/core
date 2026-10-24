@@ -298,6 +298,7 @@ impl SyncEngine {
             ..Default::default()
         };
         let mut first = true;
+        let mut first_round_refetch = true;
         for _ in 0..MAX_ROUNDS {
             // Pending changes go up once; later rounds only page down.
             let changes = if first {
@@ -307,6 +308,14 @@ impl SyncEngine {
             };
             first = false;
             let pushed: Vec<(Id, i64)> = changes.iter().map(|r| (r.id, r.updated_at)).collect();
+            // A vault whose secrets were withheld (a team that forbade
+            // revealing them) and are visible again: download it again.
+            let refetch = if first_round_refetch {
+                self.store.vaults_with_withheld_secrets().await?
+            } else {
+                Vec::new()
+            };
+            first_round_refetch = false;
             let vaults = self
                 .store
                 .local_vaults()
@@ -314,7 +323,11 @@ impl SyncEngine {
                 .into_iter()
                 .map(|v| VaultCursor {
                     vault_id: v.vault_id,
-                    cursor: v.cursor,
+                    cursor: if refetch.contains(&v.vault_id) {
+                        0
+                    } else {
+                        v.cursor
+                    },
                     role: Some(v.role),
                 })
                 .collect();

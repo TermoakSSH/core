@@ -161,13 +161,20 @@ impl AiEngine {
             }
             McpCaller::User { owner, mode } => {
                 let effect = ToolRuntime::effect(name, &args);
-                match decide(*mode, name, effect) {
+                let ctx = ToolContext {
+                    owner: *owner,
+                    task_id: None,
+                    host_scope: None,
+                };
+                let mut verdict = decide(*mode, name, effect);
+                if verdict == Verdict::Allow
+                    && crate::policy::runs_on_host(name)
+                    && self.tools().always_confirm(&ctx, &args).await
+                {
+                    verdict = Verdict::NeedsApproval;
+                }
+                match verdict {
                     Verdict::Allow => {
-                        let ctx = ToolContext {
-                            owner: *owner,
-                            task_id: None,
-                            host_scope: None,
-                        };
                         let out = self.tools().execute(&ctx, name, &args).await;
                         let _ = self
                             .store_ref()
