@@ -322,6 +322,44 @@ impl TermoakCore {
         .await
     }
 
+    /// Downloads the recording (asciicast v2, `.cast`) of a session in a vault
+    /// you manage (`vault_recordings`: server sessions and recordings
+    /// uploaded by the apps) to `local_path`; audited by the server
+    /// (`recording.download`). Returns the number of bytes. `cancel` stops
+    /// it (teams security, 0.7 phase 4d).
+    #[uniffi::method(default(cancel))]
+    pub async fn download_vault_recording(
+        &self,
+        vault_id: String,
+        session_id: String,
+        local_path: String,
+        listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
+    ) -> Result<u64> {
+        let vault = parse_id(&vault_id)?;
+        let id = parse_id(&session_id)?;
+        self.with_api(move |api| async move {
+            let part = part_of(&local_path);
+            cancellable(
+                cancel,
+                async {
+                    Ok(api
+                        .download_to(
+                            &format!("/api/v1/vaults/{vault}/recordings/{id}"),
+                            &PathBuf::from(&local_path),
+                            progress(listener),
+                        )
+                        .await?)
+                },
+                || async move {
+                    let _ = tokio::fs::remove_file(part).await;
+                },
+            )
+            .await
+        })
+        .await
+    }
+
     /// Downloads the recording (asciicast v2, `.cast`) of a server session to
     /// `local_path`. Returns the number of bytes. `cancel` stops it.
     #[uniffi::method(default(cancel))]
@@ -466,6 +504,22 @@ impl AccountHandle {
     ) -> Result<u64> {
         self.core()
             .server_sftp_write(host_id, path, data, Some(self.id()))
+            .await
+    }
+
+    /// Downloads the recording of a session in a vault this account
+    /// manages (teams security, 0.7 phase 4d).
+    #[uniffi::method(default(cancel))]
+    pub async fn download_vault_recording(
+        &self,
+        vault_id: String,
+        session_id: String,
+        local_path: String,
+        listener: Option<Arc<dyn TransferListener>>,
+        cancel: Option<Arc<TransferHandle>>,
+    ) -> Result<u64> {
+        self.core()
+            .download_vault_recording(vault_id, session_id, local_path, listener, cancel)
             .await
     }
 

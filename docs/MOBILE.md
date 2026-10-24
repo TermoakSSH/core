@@ -363,7 +363,14 @@ anything (older servers answer `NotFound`).
 - **Mandatory recording**: terminals to hosts whose policy records are
   recorded by the engine and uploaded when they close (`uploadRecording`
   exists for apps that record by themselves); managers list them with
-  `vaultRecordings`.
+  `vaultRecordings` and download one with `downloadVaultRecording(vaultId,
+  sessionId, localPath, listener, cancel)` (asciicast v2; 0.7.0-next.9).
+- **Events**: on every `access_request` event call `forgetAccess()` on the
+  account's handle (0.7.0-next.9): the engine forgets its cached host
+  answers (30 s) and team certificates, so the next connection asks the
+  server again; read the request lists again (events carry the bare
+  request without `can_decide`) and ask `hostAccess` again for the hosts
+  on screen.
 - New error codes: `connect_only`, `secret_reveal_forbidden`,
   `access_approval_required`, `access_needs_server`, `ca_not_configured`,
   `certificate_*`, `team_2fa_required`, `policy_requires_2fa`,

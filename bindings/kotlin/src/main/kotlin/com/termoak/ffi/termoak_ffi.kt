@@ -1174,6 +1174,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_download_recording(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_download_vault_recording(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_delete(
@@ -1217,6 +1219,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_deny_access_request(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_disable_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_forget_access(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_host_access(
     ): Int
@@ -1692,6 +1696,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_download_recording(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_download_vault_recording(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_delete(
@@ -1851,6 +1857,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_deny_access_request(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_disable_ca(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_forget_access(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_host_access(
     ): Int
@@ -2159,6 +2167,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_download_vault_recording(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_chmod(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`mode`: Int,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_server_sftp_delete(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`recursive`: Byte,
@@ -2203,6 +2213,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_disable_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`confirm`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_forget_access(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_accounthandle_host_access(`ptr`: Long,`hostId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_my_certificates(`ptr`: Long,
@@ -2789,6 +2801,8 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_termoakcore_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_download_vault_recording(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_chmod(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`mode`: Int,`accountId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_server_sftp_delete(`ptr`: Long,`hostId`: RustBuffer.ByValue,`path`: RustBuffer.ByValue,`recursive`: Byte,`accountId`: RustBuffer.ByValue,
@@ -2949,6 +2963,8 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_disable_ca(`ptr`: Long,`teamId`: RustBuffer.ByValue,`confirm`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_forget_access(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_termoak_ffi_fn_method_termoakcore_host_access(`ptr`: Long,`hostId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_my_certificates(`ptr`: Long,
@@ -3687,6 +3703,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() and 0xFFFF) != 2181) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_download_vault_recording() and 0xFFFF) != 23102) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod() and 0xFFFF) != 12218) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -3751,6 +3770,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_disable_ca() and 0xFFFF) != 53380) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_forget_access() and 0xFFFF) != 20731) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_host_access() and 0xFFFF) != 23384) {
@@ -4464,6 +4486,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() and 0xFFFF) != 47334) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_download_vault_recording() and 0xFFFF) != 14776) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod() and 0xFFFF) != 48309) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4702,6 +4727,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_disable_ca() and 0xFFFF) != 39205) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_forget_access() and 0xFFFF) != 17608) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_host_access() and 0xFFFF) != 51725) {
@@ -5706,6 +5734,12 @@ public interface AccountHandleInterface {
      */
     suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
     
+    /**
+     * Downloads the recording of a session in a vault this account
+     * manages (teams security, 0.7 phase 4d).
+     */
+    suspend fun `downloadVaultRecording`(`vaultId`: kotlin.String, `sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
     suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt)
     
     suspend fun `serverSftpDelete`(`hostId`: kotlin.String, `path`: kotlin.String, `recursive`: kotlin.Boolean)
@@ -5749,6 +5783,14 @@ public interface AccountHandleInterface {
     suspend fun `denyAccessRequest`(`requestId`: kotlin.String, `reason`: kotlin.String?): AccessRequestInfo
     
     suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String)
+    
+    /**
+     * Forgets the engine's cached answers about hosts (`host_access`) and
+     * its team certificates for this account: call it on every
+     * `access_request` event (a window opened, ended or was revoked), as
+     * the desktop does. The next connection asks the server again.
+     */
+    fun `forgetAccess`()
     
     suspend fun `hostAccess`(`hostId`: kotlin.String): HostAccessInfo
     
@@ -7647,6 +7689,36 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
     }
 
     
+    /**
+     * Downloads the recording of a session in a vault this account
+     * manages (teams security, 0.7 phase 4d).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `downloadVaultRecording`(`vaultId`: kotlin.String, `sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_download_vault_recording(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
     @Throws(TermoakException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt) {
@@ -8171,6 +8243,24 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         TermoakException.ErrorHandler,
     )
     }
+
+    
+    /**
+     * Forgets the engine's cached answers about hosts (`host_access`) and
+     * its team certificates for this account: call it on every
+     * `access_request` event (a window opened, ended or was revoked), as
+     * the desktop does. The next connection asks the server again.
+     */override fun `forgetAccess`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_forget_access(
+        it,
+        _status)
+}
+    }
+    
+    
 
     
     @Throws(TermoakException::class)
@@ -17903,6 +17993,15 @@ public interface TermoakCoreInterface {
     suspend fun `downloadRecording`(`sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
     
     /**
+     * Downloads the recording (asciicast v2, `.cast`) of a session in a vault
+     * you manage (`vault_recordings`: server sessions and recordings
+     * uploaded by the apps) to `local_path`; audited by the server
+     * (`recording.download`). Returns the number of bytes. `cancel` stops
+     * it (teams security, 0.7 phase 4d).
+     */
+    suspend fun `downloadVaultRecording`(`vaultId`: kotlin.String, `sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle? = null): kotlin.ULong
+    
+    /**
      * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
      */
     suspend fun `serverSftpChmod`(`hostId`: kotlin.String, `path`: kotlin.String, `mode`: kotlin.UInt, `accountId`: kotlin.String? = null)
@@ -18391,6 +18490,12 @@ public interface TermoakCoreInterface {
      * `confirm`: the team's name (`personal` for your own CA).
      */
     suspend fun `disableCa`(`teamId`: kotlin.String?, `confirm`: kotlin.String)
+    
+    /**
+     * Forgets the cached host answers and team certificates of the current
+     * (or bound) account; see `AccountHandle::forget_access`.
+     */
+    fun `forgetAccess`()
     
     /**
      * What you can do with a host now (mode, window, pending request,
@@ -20454,6 +20559,39 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
             UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_download_recording(
                 uniffiHandle,
                 
+        FfiConverterString.lower(`sessionId`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalTypeTransferListener.lower(`listener`),
+        FfiConverterOptionalTypeTransferHandle.lower(`cancel`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Downloads the recording (asciicast v2, `.cast`) of a session in a vault
+     * you manage (`vault_recordings`: server sessions and recordings
+     * uploaded by the apps) to `local_path`; audited by the server
+     * (`recording.download`). Returns the number of bytes. `cancel` stops
+     * it (teams security, 0.7 phase 4d).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `downloadVaultRecording`(`vaultId`: kotlin.String, `sessionId`: kotlin.String, `localPath`: kotlin.String, `listener`: TransferListener?, `cancel`: TransferHandle?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_download_vault_recording(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
         FfiConverterString.lower(`sessionId`),
         FfiConverterString.lower(`localPath`),
         FfiConverterOptionalTypeTransferListener.lower(`listener`),
@@ -22628,6 +22766,22 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         TermoakException.ErrorHandler,
     )
     }
+
+    
+    /**
+     * Forgets the cached host answers and team certificates of the current
+     * (or bound) account; see `AccountHandle::forget_access`.
+     */override fun `forgetAccess`()
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_forget_access(
+        it,
+        _status)
+}
+    }
+    
+    
 
     
     /**

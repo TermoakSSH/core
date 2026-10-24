@@ -1218,6 +1218,14 @@ impl TermoakCore {
         .await
     }
 
+    /// Forgets the cached host answers and team certificates of the current
+    /// (or bound) account; see `AccountHandle::forget_access`.
+    pub fn forget_access(&self) {
+        if let Ok(acc) = self.account_now() {
+            acc.forget_access();
+        }
+    }
+
     /// Recorded sessions of a vault (managers).
     pub async fn vault_recordings(&self, vault_id: String) -> Result<Vec<VaultRecording>> {
         let id = parse_id(&vault_id)?;
@@ -1465,6 +1473,14 @@ impl AccountHandle {
 
     pub async fn vault_recordings(&self, vault_id: String) -> Result<Vec<VaultRecording>> {
         self.core().vault_recordings(vault_id).await
+    }
+
+    /// Forgets the engine's cached answers about hosts (`host_access`) and
+    /// its team certificates for this account: call it on every
+    /// `access_request` event (a window opened, ended or was revoked), as
+    /// the desktop does. The next connection asks the server again.
+    pub fn forget_access(&self) {
+        self.core().forget_access();
     }
 }
 

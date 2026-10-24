@@ -883,3 +883,50 @@ impl AuthHandler for NoAuth {
         None
     }
 }
+
+#[test]
+fn vault_recordings_download_and_forget_access() {
+    const VAULT: &str = "0190a3a4-7b1c-7cc0-9c1b-6d5f3e2a1b11";
+    const SESSION: &str = "0190a3a4-7b1c-7cc0-9c1b-6d5f3e2a1b22";
+    let cast = b"{\"version\":2,\"width\":80,\"height\":24}\n[0.5,\"o\",\"hi\"]\n".to_vec();
+    let body = cast.clone();
+    let fake = fake_server(move |r| {
+        Some(match (r.method.as_str(), r.path.as_str()) {
+            ("GET", p) if p == format!("/api/v1/vaults/{VAULT}/recordings/{SESSION}") => {
+                Resp::Bytes(body.clone())
+            }
+            _ => return None,
+        })
+    });
+    let (dir, core) = signed_in(&fake);
+    let acc = core.account(core.current_account().unwrap().id).unwrap();
+    // An asciicast is not one JSON document: it is streamed to a file, not read with api_request.
+    let local = dir.path().join("rec.cast");
+    let n = block_on(acc.download_vault_recording(
+        VAULT.into(),
+        SESSION.into(),
+        local.to_string_lossy().into_owned(),
+        None,
+        None,
+    ))
+    .unwrap();
+    assert_eq!(n as usize, cast.len());
+    assert_eq!(std::fs::read(&local).unwrap(), cast);
+    fake.last(
+        "GET",
+        &format!("/api/v1/vaults/{VAULT}/recordings/{SESSION}"),
+    );
+    assert!(matches!(
+        block_on(acc.download_vault_recording(
+            "x".into(),
+            SESSION.into(),
+            "/tmp/x".into(),
+            None,
+            None
+        )),
+        Err(TermoakError::Invalid(_))
+    ));
+    // Forgetting the cached host answers and certificates never fails.
+    acc.forget_access();
+    core.forget_access();
+}

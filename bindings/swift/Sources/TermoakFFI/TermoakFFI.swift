@@ -895,6 +895,12 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
      */
     func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
     
+    /**
+     * Downloads the recording of a session in a vault this account
+     * manages (teams security, 0.7 phase 4d).
+     */
+    func downloadVaultRecording(vaultId: String, sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
     func serverSftpChmod(hostId: String, path: String, mode: UInt32) async throws 
     
     func serverSftpDelete(hostId: String, path: String, recursive: Bool) async throws 
@@ -938,6 +944,14 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
     func denyAccessRequest(requestId: String, reason: String?) async throws  -> AccessRequestInfo
     
     func disableCa(teamId: String?, confirm: String) async throws 
+    
+    /**
+     * Forgets the engine's cached answers about hosts (`host_access`) and
+     * its team certificates for this account: call it on every
+     * `access_request` event (a window opened, ended or was revoked), as
+     * the desktop does. The next connection asks the server again.
+     */
+    func forgetAccess() 
     
     func hostAccess(hostId: String) async throws  -> HostAccessInfo
     
@@ -2279,6 +2293,26 @@ open func downloadRecording(sessionId: String, localPath: String, listener: Tran
         )
 }
     
+    /**
+     * Downloads the recording of a session in a vault this account
+     * manages (teams security, 0.7 phase 4d).
+     */
+open func downloadVaultRecording(vaultId: String, sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_download_vault_recording(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterString.lower(sessionId),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
 open func serverSftpChmod(hostId: String, path: String, mode: UInt32)async throws   {
     return
         try  await uniffiRustCallAsync(
@@ -2629,6 +2663,20 @@ open func disableCa(teamId: String?, confirm: String)async throws   {
             liftFunc: { $0 },
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+    
+    /**
+     * Forgets the engine's cached answers about hosts (`host_access`) and
+     * its team certificates for this account: call it on every
+     * `access_request` event (a window opened, ended or was revoked), as
+     * the desktop does. The next connection asks the server again.
+     */
+open func forgetAccess()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_accounthandle_forget_access(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
 }
     
 open func hostAccess(hostId: String)async throws  -> HostAccessInfo  {
@@ -9277,6 +9325,15 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func downloadRecording(sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
     
     /**
+     * Downloads the recording (asciicast v2, `.cast`) of a session in a vault
+     * you manage (`vault_recordings`: server sessions and recordings
+     * uploaded by the apps) to `local_path`; audited by the server
+     * (`recording.download`). Returns the number of bytes. `cancel` stops
+     * it (teams security, 0.7 phase 4d).
+     */
+    func downloadVaultRecording(vaultId: String, sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle?) async throws  -> UInt64
+    
+    /**
      * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
      */
     func serverSftpChmod(hostId: String, path: String, mode: UInt32, accountId: String?) async throws 
@@ -9765,6 +9822,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * `confirm`: the team's name (`personal` for your own CA).
      */
     func disableCa(teamId: String?, confirm: String) async throws 
+    
+    /**
+     * Forgets the cached host answers and team certificates of the current
+     * (or bound) account; see `AccountHandle::forget_access`.
+     */
+    func forgetAccess() 
     
     /**
      * What you can do with a host now (mode, window, pending request,
@@ -11346,6 +11409,29 @@ open func downloadRecording(sessionId: String, localPath: String, listener: Tran
 }
     
     /**
+     * Downloads the recording (asciicast v2, `.cast`) of a session in a vault
+     * you manage (`vault_recordings`: server sessions and recordings
+     * uploaded by the apps) to `local_path`; audited by the server
+     * (`recording.download`). Returns the number of bytes. `cancel` stops
+     * it (teams security, 0.7 phase 4d).
+     */
+open func downloadVaultRecording(vaultId: String, sessionId: String, localPath: String, listener: TransferListener?, cancel: TransferHandle? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_download_vault_recording(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterString.lower(sessionId),FfiConverterString.lower(localPath),FfiConverterOptionTypeTransferListener.lower(listener),FfiConverterOptionTypeTransferHandle.lower(cancel)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Changes the permissions of a remote file (e.g. `0o644`, `0o755`).
      */
 open func serverSftpChmod(hostId: String, path: String, mode: UInt32, accountId: String? = nil)async throws   {
@@ -12908,6 +12994,18 @@ open func disableCa(teamId: String?, confirm: String)async throws   {
             liftFunc: { $0 },
             errorHandler: FfiConverterTypeTermoakError_lift
         )
+}
+    
+    /**
+     * Forgets the cached host answers and team certificates of the current
+     * (or bound) account; see `AccountHandle::forget_access`.
+     */
+open func forgetAccess()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_termoakcore_forget_access(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
 }
     
     /**
@@ -39169,6 +39267,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() != 2181) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_download_vault_recording() != 23102) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_server_sftp_chmod() != 12218) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -39233,6 +39334,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_disable_ca() != 53380) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_forget_access() != 20731) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_host_access() != 23384) {
@@ -39946,6 +40050,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() != 47334) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_download_vault_recording() != 14776) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_server_sftp_chmod() != 48309) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -40184,6 +40291,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_disable_ca() != 39205) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_forget_access() != 17608) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_host_access() != 51725) {
