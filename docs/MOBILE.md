@@ -43,8 +43,9 @@ vault, SSH, sync and the server client are Rust.
 - **Notifications.** While the app is open, `subscribeEvents` (WebSocket
   `/api/v1/events/ws`) reports pending approvals, finished tasks and sessions
   shared with you in real time. While it is closed, the server sends push
-  notifications (APNs and FCM) for the same events: see
-  [Push notifications](#push-notifications).
+  notifications for the same events (UnifiedPush/Web Push on Android with no
+  Google services, APNs on iOS; FCM still works for builds that have it):
+  see [Push notifications](#push-notifications).
 
 ## What is in this repository
 
@@ -202,6 +203,8 @@ not matter: the bindings are the same.
 | `completeCommand(hostId, os, line, limit)`, `recordCommand`, `clearCommandHistory` | Command autocomplete |
 | `SshSession.detectOsInfo()` → `RemoteOs` | Host OS with version and package manager |
 | `registerPushToken(platform, token, sandbox)`, `unregisterPushToken`, `sendTestPush` | Push notifications (APNs and FCM) |
+| `registerWebPush(endpoint, p256dh, auth)`, `pushStatus()`, `setPushPreferences(prefs)` | Push without Firebase (0.7): a UnifiedPush endpoint with its Web Push keys; registration, server capabilities (`serverWebpush`, `serverApns`, `vapidPublicKey`) and which kinds this device wants |
+| `parsePushPayload(text)` → `PushEvent`, `pushKinds()`, `webpushGenerateKeys()`, `webpushDecrypt(keys, body)` | Free functions: what to show for a received notification (kind, `category` Approval/SecurityKey/Info/Resolved, title, body, ids in `data`, `tag` and `notificationId` to replace or withdraw it, `channel`, `expired`) and Web Push keys for receivers without their own library |
 | `serverSftpHome/List/Stat/Download/Upload/Read/Write/Mkdir/Rename/Delete/Chmod`, `downloadRecording` | Files and recordings through the server (also Strict hosts and hosts only the server reaches), streamed with progress; `Read`/`Write` in memory for viewers and editors |
 | `listServerSessions/openServerSession/attachServerSession/closeServerSession` | Persistent sessions |
 | `ServerSession.ownerName`, `sessionActivity(sessionId)` | Who shares a session with you (in `shared`); who typed in a recorded session of yours and when (`SessionActivity.periods`, consecutive marks already merged; `nil`/`null` if it was not recorded) |
@@ -600,11 +603,67 @@ the sessions shared with it.
 ### Push notifications
 
 The server notifies you even when the app is closed: AI approvals, finished
-tasks, sessions shared with you, pending questions in your sessions and new
-teams (see [DEPLOYMENT.md](https://github.com/TermoakSSH/server/blob/main/docs/DEPLOYMENT.md#push-notifications) to set it up).
+tasks, sessions shared with you, pending questions in your sessions, join
+and keyboard requests, security key requests (0.7), new teams and, from 0.7
+phase 4b, temporary access requests. Design and payload format:
+docs-next/PUSH.md in the planning repository; server setup in
+[DEPLOYMENT.md](https://github.com/TermoakSSH/server/blob/main/docs/DEPLOYMENT.md#push-notifications).
+
+Rules for every app:
+
+- **One registration per account** (each server notifies its own events):
+  on Android one UnifiedPush instance per account, on iOS the same APNs
+  token on every signed-in account. Unregister the account being signed out.
+- **Read what arrives with `parsePushPayload`** (the decrypted Web Push
+  message, the APNs `userInfo` as JSON, or FCM's data map). It gives a
+  `PushEvent`; never show anything when `expired` is true, and for
+  `category == .resolved` remove the notification with that `tag` /
+  `notificationId` (the request was answered elsewhere or timed out).
+- **Approvals** (`Approval`: `ai_approval`, `join_request`,
+  `control_request`, `access_request`) offer Approve / Deny, but both only
+  **open the app's own confirmation** (after the app lock): never decide
+  from the notification.
+- **Security keys** (`SecurityKey`, `security_key_request`): a connection
+  made by the server waits for a key and no device of yours that can sign
+  was online. Do **not** connect in the background when the push arrives
+  (a background answer would be `no_device` and end the request). When the
+  user opens the notification, start the engine (security key handler set)
+  and the events socket with `features=security_keys`: the server sends the
+  waiting request to sockets that connect while it waits, and the usual
+  sheet appears. `expires_at` says until when.
+- The server stays quiet while the device has the events socket open (the
+  app shows events itself), unless `PushPreferences.whenOnline`.
+- The texts are generic unless the server runs with `[push] detailed`; the
+  ids in `data` are for fetching the details over the API.
+
+Android with UnifiedPush (the connector library makes the Web Push keys and
+decrypts; no Google services):
+
+```kotlin
+// PushService : org.unifiedpush.android.connector.PushService
+override fun onNewEndpoint(endpoint: PushEndpoint, instance: String) {
+    val keys = endpoint.pubKeySet ?: return          // Web Push keys
+    scope.launch {
+        accounts.handle(instance)?.registerWebPush(endpoint.url, keys.pubKey, keys.auth)
+    }
+}
+override fun onMessage(message: PushMessage, instance: String) {
+    val ev = runCatching { parsePushPayload(message.content.decodeToString()) }.getOrNull() ?: return
+    when {
+        ev.expired -> {}
+        ev.category == PushCategory.RESOLVED -> notifications.cancel(ev.notificationId)
+        else -> notifications.show(instance, ev)    // channel = ev.channel
+    }
+}
+```
+
+`pushStatus()` says whether the server can send Web Push (`serverWebpush`;
+servers before 0.7 answer NotFound) and gives `vapidPublicKey` for
+distributors that ask for it (`UnifiedPush.register(..., vapid = key)`).
+
+iOS with APNs:
 
 ```swift
-// AppDelegate: after asking for permission with UNUserNotificationCenter.
 func application(_ app: UIApplication,
                  didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     let hex = deviceToken.map { String(format: "%02x", $0) }.joined()
@@ -614,43 +673,31 @@ func application(_ app: UIApplication,
         #else
         let sandbox = false
         #endif
-        _ = try? await core.registerPushToken(platform: .apns, token: hex, sandbox: sandbox)
+        for info in core.accounts() where info.status == .active {
+            let acc = try core.account(accountId: info.id)
+            // Only where the server has APNs (`serverApns`): harmless otherwise.
+            if (try? await acc.pushStatus())?.serverApns == true {
+                _ = try? await acc.registerPushToken(platform: .apns, token: hex, sandbox: sandbox)
+            }
+        }
     }
 }
 
-// When the notification is tapped: `userInfo["termoak"]` carries `type` and the ids.
-let data = response.notification.request.content.userInfo["termoak"] as? [String: String]
-if data?["type"] == "ai_approval", let task = data?["task_id"] { openApproval(task) }
-```
-
-```kotlin
-// FirebaseMessagingService
-override fun onNewToken(token: String) {
-    scope.launch { core.registerPushToken(PushPlatform.FCM, token, false) }
-}
-override fun onMessageReceived(msg: RemoteMessage) {
-    when (msg.data["type"]) {
-        "ai_approval" -> openApproval(msg.data["task_id"]!!)
-        "session_shared" -> openSession(msg.data["session_id"]!!)
-        "join_request", "control_request" -> openSession(msg.data["session_id"]!!)
-    }
+// A notification or a background push (`content-available`):
+let json = String(data: try JSONSerialization.data(withJSONObject: userInfo), encoding: .utf8)!
+let ev = try parsePushPayload(text: json)
+if ev.category == .resolved {
+    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [ev.tag])
 }
 ```
 
-On Android, create the `termoak` notification channel. Call
-`unregisterPushToken()` when signing out. `sendTestPush()` helps check the
-setup.
+APNs alerts carry `aps.category` `TERMOAK_APPROVAL` or
+`TERMOAK_SECURITY_KEY` (register those categories with their actions) and
+`apns-collapse-id` = the tag. Old builds with Firebase: `registerPushToken(
+PushPlatform.FCM, token, false)` still works where the server has FCM.
 
-With several accounts, register the same system token on **every**
-signed-in account (each server notifies its own events), and unregister it
-from the account being signed out:
-
-```swift
-for info in core.accounts() where info.status == .active {
-    _ = try? await core.account(accountId: info.id)
-        .registerPushToken(platform: .apns, token: hex, sandbox: sandbox)
-}
-```
+`sendTestPush()` helps check the setup (5 a minute). `setPushPreferences`
+turns kinds off for this device (`pushKinds()` lists them).
 
 The other account calls of `TermoakCore` (`currentUser`, `setLocale`,
 two-step verification, teams) work on the current account; the same calls

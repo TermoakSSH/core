@@ -615,6 +615,16 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE ai_approvals ADD COLUMN preview TEXT;
     "#,
+    // v12: push without Firebase (0.7). A device registers a Web Push
+    // endpoint (UnifiedPush distributors, browsers): `push_platform =
+    // 'webpush'`, the endpoint URL in `push_token` and its keys (`p256dh`,
+    // `auth`, base64url). `push_prefs`: which notifications it wants (JSON,
+    // NULL = all), kept when the registration goes away.
+    r#"
+    ALTER TABLE devices ADD COLUMN push_p256dh TEXT;
+    ALTER TABLE devices ADD COLUMN push_auth TEXT;
+    ALTER TABLE devices ADD COLUMN push_prefs TEXT;
+    "#,
 ];
 
 /// Schema version of the latest migration.

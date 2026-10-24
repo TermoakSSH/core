@@ -5,6 +5,7 @@
 pub mod crypto;
 pub mod error;
 pub mod model;
+pub mod push;
 pub mod qr;
 pub mod redact;
 pub mod resolve;
@@ -14,6 +15,7 @@ pub mod themes;
 pub mod time;
 pub mod totp;
 pub mod transfer;
+pub mod webpush;
 
 pub use error::{CoreError, Result};
 pub use model::*;

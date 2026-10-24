@@ -433,6 +433,16 @@ fn account_calls_per_account() {
                 Resp::Json(200, json!({"ok": true, "server_enabled": true}))
             }
             ("DELETE", "/api/v1/push/register") => Resp::Json(200, json!({"ok": true})),
+            ("GET", "/api/v1/push") => Resp::Json(
+                200,
+                json!({"registered": true, "platform": "webpush", "endpoint": "https://ntfy.example/upX?up=1",
+                       "preferences": {"kinds": {"ai_finished": false}, "when_online": false},
+                       "server": {"webpush": true, "apns": false, "fcm": false, "vapid_public_key": "BKey"},
+                       "kinds": ["ai_approval", "ai_finished"]}),
+            ),
+            ("PUT", "/api/v1/push/preferences") => {
+                Resp::Json(200, json!({"preferences": r.json()}))
+            }
             ("GET", "/api/v1/teams") => Resp::Json(200, json!([team])),
             ("GET", p) if p.ends_with("/invites") => Resp::Json(
                 200,
@@ -481,6 +491,38 @@ fn account_calls_per_account() {
     );
     block_on(acc.unregister_push_token()).unwrap();
     fake.last("DELETE", "/api/v1/push/register");
+    // UnifiedPush: the endpoint with its Web Push keys.
+    let keys = webpush_generate_keys();
+    assert!(
+        block_on(acc.register_web_push(
+            " https://ntfy.example/upX?up=1 ".into(),
+            keys.p256dh.clone(),
+            keys.auth.clone()
+        ))
+        .unwrap()
+    );
+    assert_eq!(
+        fake.last("POST", "/api/v1/push/register").json(),
+        json!({"platform": "webpush", "endpoint": "https://ntfy.example/upX?up=1",
+               "keys": {"p256dh": keys.p256dh, "auth": keys.auth}})
+    );
+    assert!(
+        block_on(acc.register_web_push("x".into(), keys.p256dh.clone(), keys.auth.clone()))
+            .is_err()
+    );
+    let st = block_on(acc.push_status()).unwrap();
+    assert!(st.registered && st.server_webpush);
+    assert_eq!(st.platform.as_deref(), Some("webpush"));
+    assert!(!st.preferences.kinds["ai_finished"]);
+    assert!(st.preferences.kinds["ai_approval"]);
+    let mut prefs = st.preferences.clone();
+    prefs.kinds.insert("team_added".into(), false);
+    prefs.when_online = true;
+    let saved = block_on(acc.set_push_preferences(prefs)).unwrap();
+    assert!(!saved.kinds["team_added"] && saved.when_online);
+    let sent = fake.last("PUT", "/api/v1/push/preferences").json();
+    assert_eq!(sent["kinds"]["team_added"], false);
+    assert_eq!(sent["when_online"], true);
     let teams = block_on(acc.list_teams()).unwrap();
     assert_eq!(teams[0].role, Some(TeamRole::Owner));
 

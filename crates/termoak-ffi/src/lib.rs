@@ -56,6 +56,7 @@ mod models;
 mod names;
 mod palette;
 mod probe;
+mod push;
 mod redact;
 mod remote;
 mod runtime;
@@ -82,6 +83,7 @@ pub use models::*;
 pub use names::*;
 pub use palette::*;
 pub use probe::{HostProbe, HostReach, ProbeSkip};
+pub use push::*;
 pub use redact::{contains_secrets, redact_secrets};
 pub use remote::{
     EventSubscription, LinkInvite, ServerEventListener, ServerTerminalEvent, ServerTerminalHandle,

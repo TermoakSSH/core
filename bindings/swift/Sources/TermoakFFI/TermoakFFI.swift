@@ -703,11 +703,20 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
     
     func listTeams() async throws  -> [Team]
     
+    func pushStatus() async throws  -> PushStatus
+    
     /**
      * Enables notifications of this account on this device (call it for
      * every signed-in account, with the same system token).
      */
     func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool) async throws  -> Bool
+    
+    /**
+     * Enables notifications of this account through a UnifiedPush endpoint
+     * (one endpoint per account: register one distributor instance per
+     * account).
+     */
+    func registerWebPush(endpoint: String, p256dh: String, auth: String) async throws  -> Bool
     
     func removeTeamMember(teamId: String, userId: String) async throws 
     
@@ -723,6 +732,8 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
      * Saves this account's preferred language (BCP 47) on its server.
      */
     func setLocale(locale: String) async throws  -> ServerUser
+    
+    func setPushPreferences(preferences: PushPreferences) async throws  -> PushPreferences
     
     func setTeamMemberRole(teamId: String, userId: String, role: TeamRole) async throws  -> [TeamMember]
     
@@ -1154,6 +1165,22 @@ open func listTeams()async throws  -> [Team]  {
         )
 }
     
+open func pushStatus()async throws  -> PushStatus  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_push_status(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypePushStatus_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
     /**
      * Enables notifications of this account on this device (call it for
      * every signed-in account, with the same system token).
@@ -1164,6 +1191,27 @@ open func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(
                         self.uniffiCloneHandle(),FfiConverterTypePushPlatform_lower(platform),FfiConverterString.lower(token),FfiConverterBool.lower(sandbox)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Enables notifications of this account through a UnifiedPush endpoint
+     * (one endpoint per account: register one distributor instance per
+     * account).
+     */
+open func registerWebPush(endpoint: String, p256dh: String, auth: String)async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_register_web_push(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(endpoint),FfiConverterString.lower(p256dh),FfiConverterString.lower(auth)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
@@ -1269,6 +1317,22 @@ open func setLocale(locale: String)async throws  -> ServerUser  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeServerUser_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setPushPreferences(preferences: PushPreferences)async throws  -> PushPreferences  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_push_preferences(
+                        self.uniffiCloneHandle(),FfiConverterTypePushPreferences_lower(preferences)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypePushPreferences_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -8433,6 +8497,13 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func listTeams() async throws  -> [Team]
     
     /**
+     * This device's notifications on the server: registration,
+     * preferences and what the server can send (servers before 0.7 answer
+     * NotFound).
+     */
+    func pushStatus() async throws  -> PushStatus
+    
+    /**
      * Enables notifications on this device with the token the system gives
      * (on iOS, the `deviceToken` in hex; on Android, the Firebase token).
      * `sandbox` = iOS app built for development. Returns whether the server
@@ -8440,6 +8511,17 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * token.
      */
     func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool) async throws  -> Bool
+    
+    /**
+     * Enables notifications on this device through a UnifiedPush
+     * distributor (ntfy, NextPush...) or any Web Push endpoint: the
+     * endpoint URL the distributor gave and the Web Push keys of the
+     * subscription (`p256dh`, `auth`, base64url). Returns whether the
+     * server can send Web Push (servers before 0.7 refuse the call: check
+     * `push_status().server_webpush`). Call it every time the distributor
+     * gives a new endpoint.
+     */
+    func registerWebPush(endpoint: String, p256dh: String, auth: String) async throws  -> Bool
     
     /**
      * Removes a member (they immediately lose access to the sessions shared
@@ -8476,6 +8558,12 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * [`server_locales`](crate::server_locales)). Returns the updated user.
      */
     func setLocale(locale: String) async throws  -> ServerUser
+    
+    /**
+     * Chooses which notifications this device gets from the server.
+     * Returns the saved preferences (every kind listed).
+     */
+    func setPushPreferences(preferences: PushPreferences) async throws  -> PushPreferences
     
     /**
      * Changes a member's role. Returns the updated members.
@@ -9790,6 +9878,27 @@ open func listTeams()async throws  -> [Team]  {
 }
     
     /**
+     * This device's notifications on the server: registration,
+     * preferences and what the server can send (servers before 0.7 answer
+     * NotFound).
+     */
+open func pushStatus()async throws  -> PushStatus  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_push_status(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypePushStatus_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
      * Enables notifications on this device with the token the system gives
      * (on iOS, the `deviceToken` in hex; on Android, the Firebase token).
      * `sandbox` = iOS app built for development. Returns whether the server
@@ -9802,6 +9911,31 @@ open func registerPushToken(platform: PushPlatform, token: String, sandbox: Bool
             rustFutureFunc: {
                 uniffi_termoak_ffi_fn_method_termoakcore_register_push_token(
                         self.uniffiCloneHandle(),FfiConverterTypePushPlatform_lower(platform),FfiConverterString.lower(token),FfiConverterBool.lower(sandbox)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Enables notifications on this device through a UnifiedPush
+     * distributor (ntfy, NextPush...) or any Web Push endpoint: the
+     * endpoint URL the distributor gave and the Web Push keys of the
+     * subscription (`p256dh`, `auth`, base64url). Returns whether the
+     * server can send Web Push (servers before 0.7 refuse the call: check
+     * `push_status().server_webpush`). Call it every time the distributor
+     * gives a new endpoint.
+     */
+open func registerWebPush(endpoint: String, p256dh: String, auth: String)async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_register_web_push(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(endpoint),FfiConverterString.lower(p256dh),FfiConverterString.lower(auth)
                 )
             },
             pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
@@ -9928,6 +10062,26 @@ open func setLocale(locale: String)async throws  -> ServerUser  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeServerUser_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Chooses which notifications this device gets from the server.
+     * Returns the saved preferences (every kind listed).
+     */
+open func setPushPreferences(preferences: PushPreferences)async throws  -> PushPreferences  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_set_push_preferences(
+                        self.uniffiCloneHandle(),FfiConverterTypePushPreferences_lower(preferences)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypePushPreferences_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -19486,6 +19640,349 @@ public func FfiConverterTypePromptField_lower(_ value: PromptField) -> RustBuffe
 
 
 /**
+ * A received notification, ready to show.
+ */
+public struct PushEvent: Equatable, Hashable {
+    /**
+     * `ai_approval`, `ai_finished`, `session_shared`, `session_prompt`,
+     * `join_request`, `control_request`, `team_added`,
+     * `security_key_request`, `access_request`, `test` or `resolved`.
+     */
+    public var kind: String
+    public var category: PushCategory
+    /**
+     * Texts in the account's language (empty for `resolved`).
+     */
+    public var title: String
+    public var body: String
+    /**
+     * Ids for the app: `task_id`, `approval_id`, `session_id`,
+     * `participant`, `prompt_id`, `team_id`, `request_id`...
+     */
+    public var data: [String: String]
+    /**
+     * The server's `instance_id` and the account's user id it is for (when
+     * the server sent them).
+     */
+    public var server: String?
+    public var user: String?
+    public var sentAt: Int64
+    public var expiresAt: Int64?
+    /**
+     * The request it announces already expired: do not show it.
+     */
+    public var expired: Bool
+    /**
+     * Replaces (or, `Resolved`, removes) the notification with the same
+     * tag: the collapse key, else `<kind>-<sent_at>`.
+     */
+    public var tag: String
+    /**
+     * A stable positive number from `tag` (Android's notification id).
+     */
+    public var notificationId: Int32
+    /**
+     * Suggested notification channel / thread: `approvals`, `sessions`,
+     * `security_keys`, `ai` or `general`.
+     */
+    public var channel: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * `ai_approval`, `ai_finished`, `session_shared`, `session_prompt`,
+         * `join_request`, `control_request`, `team_added`,
+         * `security_key_request`, `access_request`, `test` or `resolved`.
+         */kind: String, category: PushCategory, 
+        /**
+         * Texts in the account's language (empty for `resolved`).
+         */title: String, body: String, 
+        /**
+         * Ids for the app: `task_id`, `approval_id`, `session_id`,
+         * `participant`, `prompt_id`, `team_id`, `request_id`...
+         */data: [String: String], 
+        /**
+         * The server's `instance_id` and the account's user id it is for (when
+         * the server sent them).
+         */server: String?, user: String?, sentAt: Int64, expiresAt: Int64?, 
+        /**
+         * The request it announces already expired: do not show it.
+         */expired: Bool, 
+        /**
+         * Replaces (or, `Resolved`, removes) the notification with the same
+         * tag: the collapse key, else `<kind>-<sent_at>`.
+         */tag: String, 
+        /**
+         * A stable positive number from `tag` (Android's notification id).
+         */notificationId: Int32, 
+        /**
+         * Suggested notification channel / thread: `approvals`, `sessions`,
+         * `security_keys`, `ai` or `general`.
+         */channel: String) {
+        self.kind = kind
+        self.category = category
+        self.title = title
+        self.body = body
+        self.data = data
+        self.server = server
+        self.user = user
+        self.sentAt = sentAt
+        self.expiresAt = expiresAt
+        self.expired = expired
+        self.tag = tag
+        self.notificationId = notificationId
+        self.channel = channel
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PushEvent: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePushEvent: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PushEvent {
+        return
+            try PushEvent(
+                kind: FfiConverterString.read(from: &buf), 
+                category: FfiConverterTypePushCategory.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                body: FfiConverterString.read(from: &buf), 
+                data: FfiConverterDictionaryStringString.read(from: &buf), 
+                server: FfiConverterOptionString.read(from: &buf), 
+                user: FfiConverterOptionString.read(from: &buf), 
+                sentAt: FfiConverterInt64.read(from: &buf), 
+                expiresAt: FfiConverterOptionInt64.read(from: &buf), 
+                expired: FfiConverterBool.read(from: &buf), 
+                tag: FfiConverterString.read(from: &buf), 
+                notificationId: FfiConverterInt32.read(from: &buf), 
+                channel: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PushEvent, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterTypePushCategory.write(value.category, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.body, into: &buf)
+        FfiConverterDictionaryStringString.write(value.data, into: &buf)
+        FfiConverterOptionString.write(value.server, into: &buf)
+        FfiConverterOptionString.write(value.user, into: &buf)
+        FfiConverterInt64.write(value.sentAt, into: &buf)
+        FfiConverterOptionInt64.write(value.expiresAt, into: &buf)
+        FfiConverterBool.write(value.expired, into: &buf)
+        FfiConverterString.write(value.tag, into: &buf)
+        FfiConverterInt32.write(value.notificationId, into: &buf)
+        FfiConverterString.write(value.channel, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushEvent_lift(_ buf: RustBuffer) throws -> PushEvent {
+    return try FfiConverterTypePushEvent.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushEvent_lower(_ value: PushEvent) -> RustBuffer {
+    return FfiConverterTypePushEvent.lower(value)
+}
+
+
+/**
+ * Which notifications this device wants from an account's server.
+ */
+public struct PushPreferences: Equatable, Hashable {
+    /**
+     * Per kind ([`push_kinds`]); a kind not listed is on.
+     */
+    public var kinds: [String: Bool]
+    /**
+     * Also notify while the app has the events socket open (by default the
+     * server is quiet then: the app already shows the event).
+     */
+    public var whenOnline: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Per kind ([`push_kinds`]); a kind not listed is on.
+         */kinds: [String: Bool], 
+        /**
+         * Also notify while the app has the events socket open (by default the
+         * server is quiet then: the app already shows the event).
+         */whenOnline: Bool) {
+        self.kinds = kinds
+        self.whenOnline = whenOnline
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PushPreferences: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePushPreferences: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PushPreferences {
+        return
+            try PushPreferences(
+                kinds: FfiConverterDictionaryStringBool.read(from: &buf), 
+                whenOnline: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PushPreferences, into buf: inout [UInt8]) {
+        FfiConverterDictionaryStringBool.write(value.kinds, into: &buf)
+        FfiConverterBool.write(value.whenOnline, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushPreferences_lift(_ buf: RustBuffer) throws -> PushPreferences {
+    return try FfiConverterTypePushPreferences.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushPreferences_lower(_ value: PushPreferences) -> RustBuffer {
+    return FfiConverterTypePushPreferences.lower(value)
+}
+
+
+/**
+ * This device's notifications on one account's server.
+ */
+public struct PushStatus: Equatable, Hashable {
+    /**
+     * This device is registered (`platform`: `webpush`, `apns` or `fcm`).
+     */
+    public var registered: Bool
+    public var platform: String?
+    /**
+     * The registered UnifiedPush endpoint (APNs/FCM tokens are not shown).
+     */
+    public var endpoint: String?
+    public var preferences: PushPreferences
+    /**
+     * What the server can send: Web Push (UnifiedPush), APNs, FCM.
+     */
+    public var serverWebpush: Bool
+    public var serverApns: Bool
+    public var serverFcm: Bool
+    /**
+     * The server's VAPID public key (base64url): some UnifiedPush
+     * distributors ask for it when registering.
+     */
+    public var vapidPublicKey: String?
+    public var kinds: [String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * This device is registered (`platform`: `webpush`, `apns` or `fcm`).
+         */registered: Bool, platform: String?, 
+        /**
+         * The registered UnifiedPush endpoint (APNs/FCM tokens are not shown).
+         */endpoint: String?, preferences: PushPreferences, 
+        /**
+         * What the server can send: Web Push (UnifiedPush), APNs, FCM.
+         */serverWebpush: Bool, serverApns: Bool, serverFcm: Bool, 
+        /**
+         * The server's VAPID public key (base64url): some UnifiedPush
+         * distributors ask for it when registering.
+         */vapidPublicKey: String?, kinds: [String]) {
+        self.registered = registered
+        self.platform = platform
+        self.endpoint = endpoint
+        self.preferences = preferences
+        self.serverWebpush = serverWebpush
+        self.serverApns = serverApns
+        self.serverFcm = serverFcm
+        self.vapidPublicKey = vapidPublicKey
+        self.kinds = kinds
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PushStatus: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePushStatus: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PushStatus {
+        return
+            try PushStatus(
+                registered: FfiConverterBool.read(from: &buf), 
+                platform: FfiConverterOptionString.read(from: &buf), 
+                endpoint: FfiConverterOptionString.read(from: &buf), 
+                preferences: FfiConverterTypePushPreferences.read(from: &buf), 
+                serverWebpush: FfiConverterBool.read(from: &buf), 
+                serverApns: FfiConverterBool.read(from: &buf), 
+                serverFcm: FfiConverterBool.read(from: &buf), 
+                vapidPublicKey: FfiConverterOptionString.read(from: &buf), 
+                kinds: FfiConverterSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PushStatus, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.registered, into: &buf)
+        FfiConverterOptionString.write(value.platform, into: &buf)
+        FfiConverterOptionString.write(value.endpoint, into: &buf)
+        FfiConverterTypePushPreferences.write(value.preferences, into: &buf)
+        FfiConverterBool.write(value.serverWebpush, into: &buf)
+        FfiConverterBool.write(value.serverApns, into: &buf)
+        FfiConverterBool.write(value.serverFcm, into: &buf)
+        FfiConverterOptionString.write(value.vapidPublicKey, into: &buf)
+        FfiConverterSequenceString.write(value.kinds, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushStatus_lift(_ buf: RustBuffer) throws -> PushStatus {
+    return try FfiConverterTypePushStatus.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushStatus_lower(_ value: PushStatus) -> RustBuffer {
+    return FfiConverterTypePushStatus.lower(value)
+}
+
+
+/**
  * QR code as a matrix of modules (`true` = dark), row by row.
  */
 public struct QrCode: Equatable, Hashable {
@@ -25282,6 +25779,68 @@ public func FfiConverterTypeVaultRef_lower(_ value: VaultRef) -> RustBuffer {
 
 
 /**
+ * A receiver's Web Push keys: keep `private_key` on the device; give the
+ * server `p256dh` and `auth` with the endpoint.
+ */
+public struct WebPushKeys: Equatable, Hashable {
+    public var privateKey: String
+    public var p256dh: String
+    public var auth: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(privateKey: String, p256dh: String, auth: String) {
+        self.privateKey = privateKey
+        self.p256dh = p256dh
+        self.auth = auth
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension WebPushKeys: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeWebPushKeys: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> WebPushKeys {
+        return
+            try WebPushKeys(
+                privateKey: FfiConverterString.read(from: &buf), 
+                p256dh: FfiConverterString.read(from: &buf), 
+                auth: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: WebPushKeys, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.privateKey, into: &buf)
+        FfiConverterString.write(value.p256dh, into: &buf)
+        FfiConverterString.write(value.auth, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebPushKeys_lift(_ buf: RustBuffer) throws -> WebPushKeys {
+    return try FfiConverterTypeWebPushKeys.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeWebPushKeys_lower(_ value: WebPushKeys) -> RustBuffer {
+    return FfiConverterTypeWebPushKeys.lower(value)
+}
+
+
+/**
  * A WireGuard peer (the other end of the tunnel).
  */
 public struct WireguardPeer: Equatable, Hashable {
@@ -27856,6 +28415,105 @@ public func FfiConverterTypeProxyKind_lift(_ buf: RustBuffer) throws -> ProxyKin
 #endif
 public func FfiConverterTypeProxyKind_lower(_ value: ProxyKind) -> RustBuffer {
     return FfiConverterTypeProxyKind.lower(value)
+}
+
+
+
+/**
+ * What a notification asks for.
+ */
+
+public enum PushCategory: Equatable, Hashable {
+    
+    /**
+     * Approve / Deny: each action opens the app's own confirmation (never
+     * decide from the notification itself, and never while the app lock is
+     * on).
+     */
+    case approval
+    /**
+     * Open the app so it connects the events socket and answers the
+     * waiting security key request (`request_id`) before `expires_at`.
+     */
+    case securityKey
+    /**
+     * Open the right screen.
+     */
+    case info
+    /**
+     * Remove the notification with this `tag` (answered elsewhere or
+     * expired). Show nothing.
+     */
+    case resolved
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension PushCategory: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePushCategory: FfiConverterRustBuffer {
+    typealias SwiftType = PushCategory
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PushCategory {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .approval
+        
+        case 2: return .securityKey
+        
+        case 3: return .info
+        
+        case 4: return .resolved
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: PushCategory, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .approval:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .securityKey:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .info:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .resolved:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushCategory_lift(_ buf: RustBuffer) throws -> PushCategory {
+    return try FfiConverterTypePushCategory.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePushCategory_lower(_ value: PushCategory) -> RustBuffer {
+    return FfiConverterTypePushCategory.lower(value)
 }
 
 
@@ -33666,6 +34324,32 @@ fileprivate struct FfiConverterSequenceSequenceString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterDictionaryStringBool: FfiConverterRustBuffer {
+    public static func write(_ value: [String: Bool], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for (key, value) in value {
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterBool.write(value, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String: Bool] {
+        let len: Int32 = try readInt(&buf)
+        var dict = [String: Bool]()
+        dict.reserveCapacity(Int(len))
+        for _ in 0..<len {
+            let key = try FfiConverterString.read(from: &buf)
+            let value = try FfiConverterBool.read(from: &buf)
+            dict[key] = value
+        }
+        return dict
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterDictionaryStringString: FfiConverterRustBuffer {
     public static func write(_ value: [String: String], into buf: inout [UInt8]) {
         let len = Int32(value.count)
@@ -34013,6 +34697,53 @@ public func paletteRemember(recent: [String], key: String) -> [String]  {
     uniffi_termoak_ffi_fn_func_palette_remember(
         FfiConverterSequenceString.lower(recent),
         FfiConverterString.lower(key),uniffiCallStatus
+    )
+})
+}
+/**
+ * Reads a push notification's content: the decrypted Web Push message
+ * (UnifiedPush), an APNs `userInfo` serialized as JSON (`{"aps": …,
+ * "termoak": {…}}`), the `termoak` dictionary alone or FCM's data map.
+ */
+public func parsePushPayload(text: String)throws  -> PushEvent  {
+    return try  FfiConverterTypePushEvent_lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_parse_push_payload(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * The kinds of notification a device can turn on and off.
+ */
+public func pushKinds() -> [String]  {
+    return try!  FfiConverterSequenceString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_push_kinds(uniffiCallStatus
+    )
+})
+}
+/**
+ * Decrypts a Web Push message (`aes128gcm`) with keys from
+ * [`webpush_generate_keys`].
+ */
+public func webpushDecrypt(keys: WebPushKeys, body: Data)throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_webpush_decrypt(
+        FfiConverterTypeWebPushKeys_lower(keys),
+        FfiConverterData.lower(body),uniffiCallStatus
+    )
+})
+}
+/**
+ * New Web Push keys (for receivers that do not have their own; the
+ * UnifiedPush connector library makes and uses its own).
+ */
+public func webpushGenerateKeys() -> WebPushKeys  {
+    return try!  FfiConverterTypeWebPushKeys_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_webpush_generate_keys(uniffiCallStatus
     )
 })
 }
@@ -34525,6 +35256,18 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_palette_remember() != 11346) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_parse_push_payload() != 56090) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_push_kinds() != 29362) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_webpush_decrypt() != 50909) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_webpush_generate_keys() != 49845) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_contains_secrets() != 47455) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -34654,7 +35397,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_list_teams() != 9049) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_push_status() != 2645) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token() != 7086) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_register_web_push() != 39739) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member() != 51806) {
@@ -34673,6 +35422,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_set_locale() != 15974) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_push_preferences() != 8165) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role() != 33822) {
@@ -35392,7 +36144,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_termoakcore_list_teams() != 28097) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_push_status() != 18954) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_register_push_token() != 64213) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_register_web_push() != 61308) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_member() != 35592) {
@@ -35411,6 +36169,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_set_locale() != 29873) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_push_preferences() != 23387) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_set_team_member_role() != 33844) {

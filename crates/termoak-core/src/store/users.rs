@@ -99,12 +99,32 @@ impl ClientInfo {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PushTarget {
     pub device_id: Id,
-    /// `apns` or `fcm`.
+    /// `apns`, `fcm` or `webpush`.
     pub platform: String,
+    /// The APNs/FCM token, or the Web Push endpoint URL.
     pub token: String,
     /// Sandbox APNs (apps built in development mode).
     pub sandbox: bool,
+    /// Web Push: the device's public key and auth secret (base64url).
+    pub p256dh: Option<String>,
+    pub auth: Option<String>,
+    /// Which notifications the device wants.
+    pub prefs: crate::push::Preferences,
 }
+
+/// A device's push registration (`GET /push`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PushRegistration {
+    /// `apns`, `fcm` or `webpush`; `None` when not registered.
+    pub platform: Option<String>,
+    /// The Web Push endpoint (`None` for APNs/FCM: tokens are not shown).
+    pub endpoint: Option<String>,
+    pub sandbox: bool,
+    pub prefs: crate::push::Preferences,
+}
+
+/// Longest Web Push endpoint accepted.
+pub const PUSH_ENDPOINT_MAX: usize = 2048;
 
 fn map_device(r: &rusqlite::Row<'_>) -> rusqlite::Result<Device> {
     Ok(Device {
@@ -518,7 +538,7 @@ impl Store {
         let (platform, token) = (platform.to_string(), token.trim().to_string());
         if !matches!(platform.as_str(), "apns" | "fcm") {
             return Err(CoreError::Invalid(
-                "invalid notification platform (apns or fcm)".into(),
+                "invalid notification platform (apns, fcm or webpush)".into(),
             ));
         }
         if token.is_empty() || token.len() > 4096 || token.chars().any(char::is_whitespace) {
@@ -526,12 +546,14 @@ impl Store {
         }
         self.call(move |c, _| {
             c.execute(
-                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0
+                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0,
+                        push_p256dh = NULL, push_auth = NULL
                  WHERE push_token = ?1 AND id != ?2",
                 params![token, device_id.to_string()],
             )?;
             let n = c.execute(
-                "UPDATE devices SET push_platform = ?2, push_token = ?3, push_sandbox = ?4 WHERE id = ?1",
+                "UPDATE devices SET push_platform = ?2, push_token = ?3, push_sandbox = ?4,
+                        push_p256dh = NULL, push_auth = NULL WHERE id = ?1",
                 params![device_id.to_string(), platform, token, sandbox as i64],
             )?;
             if n == 0 {
@@ -542,11 +564,113 @@ impl Store {
         .await
     }
 
+    /// Stores a device's Web Push endpoint (a UnifiedPush distributor or a
+    /// browser) with its keys. The same endpoint is removed from any other
+    /// device. The URL and the keys are checked here; whether the server may
+    /// call that URL is the server's decision.
+    pub async fn set_webpush(
+        &self,
+        device_id: Id,
+        endpoint: &str,
+        p256dh: &str,
+        auth: &str,
+    ) -> Result<()> {
+        let endpoint = endpoint.trim().to_string();
+        if endpoint.len() > PUSH_ENDPOINT_MAX
+            || endpoint
+                .chars()
+                .any(|c| c.is_whitespace() || c.is_control())
+            || !(endpoint.starts_with("https://") || endpoint.starts_with("http://"))
+            || crate::webpush::origin(&endpoint).is_none()
+        {
+            return Err(CoreError::Invalid(
+                "invalid push endpoint (an http(s) URL)".into(),
+            ));
+        }
+        crate::webpush::validate_keys(p256dh, auth)?;
+        let (p256dh, auth) = (
+            p256dh.trim().trim_end_matches('=').to_string(),
+            auth.trim().trim_end_matches('=').to_string(),
+        );
+        self.call(move |c, _| {
+            c.execute(
+                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0,
+                        push_p256dh = NULL, push_auth = NULL
+                 WHERE push_token = ?1 AND id != ?2",
+                params![endpoint, device_id.to_string()],
+            )?;
+            let n = c.execute(
+                "UPDATE devices SET push_platform = 'webpush', push_token = ?2, push_sandbox = 0,
+                        push_p256dh = ?3, push_auth = ?4 WHERE id = ?1",
+                params![device_id.to_string(), endpoint, p256dh, auth],
+            )?;
+            if n == 0 {
+                return Err(CoreError::NotFound(format!("device {device_id}")));
+            }
+            Ok(())
+        })
+        .await
+    }
+
+    /// A device's push registration and preferences.
+    pub async fn push_registration(&self, device_id: Id) -> Result<PushRegistration> {
+        self.call(move |c, _| {
+            let row = c
+                .query_row(
+                    "SELECT push_platform, push_token, push_sandbox, push_prefs FROM devices WHERE id = ?1",
+                    [device_id.to_string()],
+                    |r| {
+                        Ok((
+                            r.get::<_, Option<String>>(0)?,
+                            r.get::<_, Option<String>>(1)?,
+                            r.get::<_, Option<i64>>(2)?.unwrap_or(0) != 0,
+                            r.get::<_, Option<String>>(3)?,
+                        ))
+                    },
+                )
+                .optional()?
+                .ok_or_else(|| CoreError::NotFound(format!("device {device_id}")))?;
+            let (platform, token, sandbox, prefs) = row;
+            let platform = platform.filter(|_| token.is_some());
+            Ok(PushRegistration {
+                endpoint: token.filter(|_| platform.as_deref() == Some("webpush")),
+                platform,
+                sandbox,
+                prefs: crate::push::Preferences::from_json(prefs.as_deref()),
+            })
+        })
+        .await
+    }
+
+    /// Saves which notifications a device wants.
+    pub async fn set_push_prefs(
+        &self,
+        device_id: Id,
+        prefs: &crate::push::Preferences,
+    ) -> Result<crate::push::Preferences> {
+        prefs.validate()?;
+        let prefs = prefs.clone().normalized();
+        let json = prefs.to_json();
+        self.call(move |c, _| {
+            let n = c.execute(
+                "UPDATE devices SET push_prefs = ?2 WHERE id = ?1",
+                params![device_id.to_string(), json],
+            )?;
+            if n == 0 {
+                return Err(CoreError::NotFound(format!("device {device_id}")));
+            }
+            Ok(())
+        })
+        .await?;
+        Ok(prefs)
+    }
+
     /// Stops sending notifications to a device.
     pub async fn clear_push_token(&self, device_id: Id) -> Result<()> {
         self.call(move |c, _| {
             c.execute(
-                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0 WHERE id = ?1",
+                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0,
+                        push_p256dh = NULL, push_auth = NULL WHERE id = ?1",
                 [device_id.to_string()],
             )?;
             Ok(())
@@ -559,7 +683,8 @@ impl Store {
         let token = token.to_string();
         self.call(move |c, _| {
             c.execute(
-                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0
+                "UPDATE devices SET push_platform = NULL, push_token = NULL, push_sandbox = 0,
+                        push_p256dh = NULL, push_auth = NULL
                  WHERE push_token = ?1",
                 [token],
             )?;
@@ -572,7 +697,8 @@ impl Store {
     pub async fn push_targets(&self, user_id: Id) -> Result<Vec<PushTarget>> {
         self.call(move |c, _| {
             let mut stmt = c.prepare(
-                "SELECT id, push_platform, push_token, push_sandbox FROM devices
+                "SELECT id, push_platform, push_token, push_sandbox, push_p256dh, push_auth, push_prefs
+                 FROM devices
                  WHERE user_id = ?1 AND push_token IS NOT NULL AND refresh_expires_at > ?2",
             )?;
             let rows = stmt.query_map(params![user_id.to_string(), now_ms()], |r| {
@@ -581,6 +707,9 @@ impl Store {
                     platform: r.get(1)?,
                     token: r.get(2)?,
                     sandbox: r.get::<_, i64>(3)? != 0,
+                    p256dh: r.get(4)?,
+                    auth: r.get(5)?,
+                    prefs: crate::push::Preferences::from_json(r.get::<_, Option<String>>(6)?.as_deref()),
                 })
             })?;
             Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
@@ -1266,5 +1395,122 @@ mod tests {
             vec![rotated.device_id]
         );
         assert!(store.list_devices(user.id).await.unwrap().is_empty());
+    }
+}
+
+#[cfg(test)]
+mod push_tests {
+    use super::*;
+    use crate::push::Preferences;
+    use crate::webpush::ReceiverKeys;
+
+    #[tokio::test]
+    async fn web_push_registrations_and_preferences() {
+        let store = crate::store::test_store();
+        let u = store
+            .create_user("p@example.test", "P", "long-password", false)
+            .await
+            .unwrap();
+        let ttl = TokenTtl::default();
+        let a = store
+            .issue_device(u.id, "Phone", "android", ttl)
+            .await
+            .unwrap();
+        let b = store
+            .issue_device(u.id, "Tablet", "android", ttl)
+            .await
+            .unwrap();
+        let keys = ReceiverKeys::generate();
+        let url = "https://ntfy.example.org/upAbC123?up=1";
+        // Bad endpoints and keys.
+        for bad in [
+            "ftp://x/y",
+            "https://",
+            "https://a b/c",
+            "https://u@h/x",
+            "notaurl",
+        ] {
+            assert!(
+                store
+                    .set_webpush(a.device_id, bad, &keys.p256dh(), &keys.auth())
+                    .await
+                    .is_err(),
+                "{bad}"
+            );
+        }
+        assert!(
+            store
+                .set_webpush(a.device_id, url, &keys.auth(), &keys.auth())
+                .await
+                .is_err()
+        );
+        let long = format!("https://h/{}", "x".repeat(PUSH_ENDPOINT_MAX));
+        assert!(
+            store
+                .set_webpush(a.device_id, &long, &keys.p256dh(), &keys.auth())
+                .await
+                .is_err()
+        );
+        // Registered, then moved to another device (same endpoint).
+        store
+            .set_webpush(a.device_id, url, &keys.p256dh(), &keys.auth())
+            .await
+            .unwrap();
+        let t = store.push_targets(u.id).await.unwrap();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].platform, "webpush");
+        assert_eq!(t[0].token, url);
+        assert_eq!(t[0].p256dh.as_deref(), Some(keys.p256dh().as_str()));
+        assert_eq!(t[0].prefs, Preferences::default());
+        let reg = store.push_registration(a.device_id).await.unwrap();
+        assert_eq!(reg.platform.as_deref(), Some("webpush"));
+        assert_eq!(reg.endpoint.as_deref(), Some(url));
+        store
+            .set_webpush(b.device_id, url, &keys.p256dh(), &keys.auth())
+            .await
+            .unwrap();
+        let t = store.push_targets(u.id).await.unwrap();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].device_id, b.device_id);
+        assert_eq!(
+            store.push_registration(a.device_id).await.unwrap().platform,
+            None
+        );
+        // An APNs token replaces the keys; tokens are never shown.
+        store
+            .set_push_token(b.device_id, "apns", "abc", true)
+            .await
+            .unwrap();
+        let t = store.push_targets(u.id).await.unwrap();
+        assert_eq!(
+            (t[0].platform.as_str(), t[0].p256dh.clone()),
+            ("apns", None)
+        );
+        let reg = store.push_registration(b.device_id).await.unwrap();
+        assert_eq!(
+            (reg.platform.as_deref(), reg.endpoint, reg.sandbox),
+            (Some("apns"), None, true)
+        );
+        // Preferences survive unregistering; unknown kinds are refused.
+        let mut p = Preferences::default();
+        p.kinds.insert("ai_finished".into(), false);
+        p.when_online = true;
+        let saved = store.set_push_prefs(b.device_id, &p).await.unwrap();
+        assert_eq!(saved, p);
+        p.kinds.insert("nope".into(), true);
+        assert!(store.set_push_prefs(b.device_id, &p).await.is_err());
+        store.clear_push_token(b.device_id).await.unwrap();
+        assert!(store.push_targets(u.id).await.unwrap().is_empty());
+        let reg = store.push_registration(b.device_id).await.unwrap();
+        assert_eq!(reg.platform, None);
+        assert!(!reg.prefs.allows("ai_finished"));
+        assert!(reg.prefs.when_online);
+        // A 404/410 forgets the endpoint.
+        store
+            .set_webpush(a.device_id, url, &keys.p256dh(), &keys.auth())
+            .await
+            .unwrap();
+        store.forget_push_token(url).await.unwrap();
+        assert!(store.push_targets(u.id).await.unwrap().is_empty());
     }
 }

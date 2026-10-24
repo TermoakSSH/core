@@ -1546,7 +1546,7 @@ pub struct Device {
     pub last_seen_at: i64,
     pub access_expires_at: i64,
     pub refresh_expires_at: i64,
-    /// Receives push notifications (`apns` or `fcm`), if enabled.
+    /// Receives push notifications (`apns`, `fcm` or `webpush`), if enabled.
     #[serde(default)]
     pub push: Option<String>,
     /// Last IP address the device was used from (updated at most once a

@@ -497,9 +497,19 @@ uint64_t uniffi_termoak_ffi_fn_method_accounthandle_list_team_members(uint64_t p
 uint64_t uniffi_termoak_ffi_fn_method_accounthandle_list_teams(uint64_t ptr
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_PUSH_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_PUSH_STATUS
+uint64_t uniffi_termoak_ffi_fn_method_accounthandle_push_status(uint64_t ptr
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_REGISTER_PUSH_TOKEN
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_REGISTER_PUSH_TOKEN
 uint64_t uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(uint64_t ptr, RustBuffer platform, RustBuffer token, int8_t sandbox
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_REGISTER_WEB_PUSH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_REGISTER_WEB_PUSH
+uint64_t uniffi_termoak_ffi_fn_method_accounthandle_register_web_push(uint64_t ptr, RustBuffer endpoint, RustBuffer p256dh, RustBuffer auth
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_REMOVE_TEAM_MEMBER
@@ -530,6 +540,11 @@ uint64_t uniffi_termoak_ffi_fn_method_accounthandle_send_test_push(uint64_t ptr
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_SET_LOCALE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_SET_LOCALE
 uint64_t uniffi_termoak_ffi_fn_method_accounthandle_set_locale(uint64_t ptr, RustBuffer locale
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_SET_PUSH_PREFERENCES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_SET_PUSH_PREFERENCES
+uint64_t uniffi_termoak_ffi_fn_method_accounthandle_set_push_preferences(uint64_t ptr, RustBuffer preferences
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_SET_TEAM_MEMBER_ROLE
@@ -2009,9 +2024,19 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_list_team_members(uint64_t ptr
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_list_teams(uint64_t ptr
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PUSH_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_PUSH_STATUS
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_push_status(uint64_t ptr
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REGISTER_PUSH_TOKEN
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REGISTER_PUSH_TOKEN
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_register_push_token(uint64_t ptr, RustBuffer platform, RustBuffer token, int8_t sandbox
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REGISTER_WEB_PUSH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REGISTER_WEB_PUSH
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_register_web_push(uint64_t ptr, RustBuffer endpoint, RustBuffer p256dh, RustBuffer auth
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_REMOVE_TEAM_MEMBER
@@ -2042,6 +2067,11 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_send_test_push(uint64_t ptr
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_LOCALE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_LOCALE
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_set_locale(uint64_t ptr, RustBuffer locale
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_PUSH_PREFERENCES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_PUSH_PREFERENCES
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_set_push_preferences(uint64_t ptr, RustBuffer preferences
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_SET_TEAM_MEMBER_ROLE
@@ -2875,6 +2905,28 @@ RustBuffer uniffi_termoak_ffi_fn_func_palette_rank(RustBuffer query, RustBuffer 
 RustBuffer uniffi_termoak_ffi_fn_func_palette_remember(RustBuffer recent, RustBuffer key, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PARSE_PUSH_PAYLOAD
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PARSE_PUSH_PAYLOAD
+RustBuffer uniffi_termoak_ffi_fn_func_parse_push_payload(RustBuffer text, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PUSH_KINDS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_PUSH_KINDS
+RustBuffer uniffi_termoak_ffi_fn_func_push_kinds(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_WEBPUSH_DECRYPT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_WEBPUSH_DECRYPT
+RustBuffer uniffi_termoak_ffi_fn_func_webpush_decrypt(RustBuffer keys, RustBuffer body, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_WEBPUSH_GENERATE_KEYS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_WEBPUSH_GENERATE_KEYS
+RustBuffer uniffi_termoak_ffi_fn_func_webpush_generate_keys(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTAINS_SECRETS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_CONTAINS_SECRETS
 int8_t uniffi_termoak_ffi_fn_func_contains_secrets(RustBuffer text, RustCallStatus *_Nonnull out_status
@@ -3413,6 +3465,30 @@ uint16_t uniffi_termoak_ffi_checksum_func_palette_remember(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PARSE_PUSH_PAYLOAD
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PARSE_PUSH_PAYLOAD
+uint16_t uniffi_termoak_ffi_checksum_func_parse_push_payload(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PUSH_KINDS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_PUSH_KINDS
+uint16_t uniffi_termoak_ffi_checksum_func_push_kinds(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_WEBPUSH_DECRYPT
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_WEBPUSH_DECRYPT
+uint16_t uniffi_termoak_ffi_checksum_func_webpush_decrypt(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_WEBPUSH_GENERATE_KEYS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_WEBPUSH_GENERATE_KEYS
+uint16_t uniffi_termoak_ffi_checksum_func_webpush_generate_keys(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTAINS_SECRETS
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_CONTAINS_SECRETS
 uint16_t uniffi_termoak_ffi_checksum_func_contains_secrets(void
@@ -3671,9 +3747,21 @@ uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_list_teams(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_PUSH_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_PUSH_STATUS
+uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_push_status(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_REGISTER_PUSH_TOKEN
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_REGISTER_PUSH_TOKEN
 uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_REGISTER_WEB_PUSH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_REGISTER_WEB_PUSH
+uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_register_web_push(void
     
 );
 #endif
@@ -3710,6 +3798,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_send_test_push(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_SET_LOCALE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_SET_LOCALE
 uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_set_locale(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_SET_PUSH_PREFERENCES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_SET_PUSH_PREFERENCES
+uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_set_push_preferences(void
     
 );
 #endif
@@ -5147,9 +5241,21 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_list_teams(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PUSH_STATUS
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_PUSH_STATUS
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_push_status(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REGISTER_PUSH_TOKEN
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REGISTER_PUSH_TOKEN
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_register_push_token(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REGISTER_WEB_PUSH
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_REGISTER_WEB_PUSH
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_register_web_push(void
     
 );
 #endif
@@ -5186,6 +5292,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_LOCALE
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_LOCALE
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_set_locale(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_PUSH_PREFERENCES
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_SET_PUSH_PREFERENCES
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_set_push_preferences(void
     
 );
 #endif

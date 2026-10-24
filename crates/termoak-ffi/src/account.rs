@@ -640,6 +640,52 @@ impl TermoakCore {
         .await
     }
 
+    /// Enables notifications on this device through a UnifiedPush
+    /// distributor (ntfy, NextPush...) or any Web Push endpoint: the
+    /// endpoint URL the distributor gave and the Web Push keys of the
+    /// subscription (`p256dh`, `auth`, base64url). Returns whether the
+    /// server can send Web Push (servers before 0.7 refuse the call: check
+    /// `push_status().server_webpush`). Call it every time the distributor
+    /// gives a new endpoint.
+    pub async fn register_web_push(
+        &self,
+        endpoint: String,
+        p256dh: String,
+        auth: String,
+    ) -> Result<bool> {
+        let body = crate::push::web_push_body(&endpoint, &p256dh, &auth)?;
+        self.with_api(move |api| async move {
+            let v: Value = api.post("/api/v1/push/register", &body).await?;
+            Ok(v["server_enabled"].as_bool().unwrap_or(false))
+        })
+        .await
+    }
+
+    /// This device's notifications on the server: registration,
+    /// preferences and what the server can send (servers before 0.7 answer
+    /// NotFound).
+    pub async fn push_status(&self) -> Result<crate::push::PushStatus> {
+        self.with_api(|api| async move {
+            let v: Value = api.get("/api/v1/push").await?;
+            Ok(crate::push::status_from(&v))
+        })
+        .await
+    }
+
+    /// Chooses which notifications this device gets from the server.
+    /// Returns the saved preferences (every kind listed).
+    pub async fn set_push_preferences(
+        &self,
+        preferences: crate::push::PushPreferences,
+    ) -> Result<crate::push::PushPreferences> {
+        let body = crate::push::prefs_body(preferences)?;
+        self.with_api(move |api| async move {
+            let v: Value = api.put("/api/v1/push/preferences", &body).await?;
+            Ok(crate::push::status_from(&json!({"preferences": v["preferences"]})).preferences)
+        })
+        .await
+    }
+
     // ----- Teams -----
 
     /// Teams you belong to (all of them, if you are an admin).
@@ -1131,6 +1177,29 @@ impl AccountHandle {
 
     pub async fn send_test_push(&self) -> Result<()> {
         self.core().send_test_push().await
+    }
+
+    /// Enables notifications of this account through a UnifiedPush endpoint
+    /// (one endpoint per account: register one distributor instance per
+    /// account).
+    pub async fn register_web_push(
+        &self,
+        endpoint: String,
+        p256dh: String,
+        auth: String,
+    ) -> Result<bool> {
+        self.core().register_web_push(endpoint, p256dh, auth).await
+    }
+
+    pub async fn push_status(&self) -> Result<crate::push::PushStatus> {
+        self.core().push_status().await
+    }
+
+    pub async fn set_push_preferences(
+        &self,
+        preferences: crate::push::PushPreferences,
+    ) -> Result<crate::push::PushPreferences> {
+        self.core().set_push_preferences(preferences).await
     }
 
     pub async fn list_teams(&self) -> Result<Vec<Team>> {

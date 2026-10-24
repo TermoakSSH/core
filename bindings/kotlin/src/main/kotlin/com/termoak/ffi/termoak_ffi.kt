@@ -952,6 +952,14 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_palette_remember(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_parse_push_payload(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_push_kinds(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_webpush_decrypt(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_webpush_generate_keys(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_contains_secrets(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_redact_secrets(
@@ -1038,7 +1046,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_list_teams(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_push_status(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_register_web_push(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member(
     ): Int
@@ -1051,6 +1063,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_send_test_push(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_locale(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_push_preferences(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role(
     ): Int
@@ -1530,7 +1544,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_list_teams(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_push_status(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_register_push_token(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_register_web_push(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_member(
     ): Int
@@ -1543,6 +1561,8 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_send_test_push(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_locale(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_push_preferences(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_team_member_role(
     ): Int
@@ -1903,7 +1923,11 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_list_teams(`ptr`: Long,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_push_status(`ptr`: Long,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_register_push_token(`ptr`: Long,`platform`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`sandbox`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_register_web_push(`ptr`: Long,`endpoint`: RustBuffer.ByValue,`p256dh`: RustBuffer.ByValue,`auth`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_remove_team_member(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,
     ): Long
@@ -1916,6 +1940,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_accounthandle_send_test_push(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_set_locale(`ptr`: Long,`locale`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_push_preferences(`ptr`: Long,`preferences`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_set_team_member_role(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
     ): Long
@@ -2507,7 +2533,11 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_list_teams(`ptr`: Long,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_push_status(`ptr`: Long,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_register_push_token(`ptr`: Long,`platform`: RustBuffer.ByValue,`token`: RustBuffer.ByValue,`sandbox`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_register_web_push(`ptr`: Long,`endpoint`: RustBuffer.ByValue,`p256dh`: RustBuffer.ByValue,`auth`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_remove_team_member(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,
     ): Long
@@ -2520,6 +2550,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_send_test_push(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_set_locale(`ptr`: Long,`locale`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_push_preferences(`ptr`: Long,`preferences`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_set_team_member_role(`ptr`: Long,`teamId`: RustBuffer.ByValue,`userId`: RustBuffer.ByValue,`role`: RustBuffer.ByValue,
     ): Long
@@ -2853,6 +2885,14 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_palette_remember(`recent`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_parse_push_payload(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_push_kinds(uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_webpush_decrypt(`keys`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_webpush_generate_keys(uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_contains_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_redact_secrets(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -3094,6 +3134,18 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_palette_remember() and 0xFFFF) != 11346) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_func_parse_push_payload() and 0xFFFF) != 56090) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_push_kinds() and 0xFFFF) != 29362) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_webpush_decrypt() and 0xFFFF) != 50909) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_webpush_generate_keys() and 0xFFFF) != 49845) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_func_contains_secrets() and 0xFFFF) != 47455) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -3223,7 +3275,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_list_teams() and 0xFFFF) != 9049) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_push_status() and 0xFFFF) != 2645) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_register_push_token() and 0xFFFF) != 7086) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_register_web_push() and 0xFFFF) != 39739) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_member() and 0xFFFF) != 51806) {
@@ -3242,6 +3300,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_locale() and 0xFFFF) != 15974) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_push_preferences() and 0xFFFF) != 8165) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_team_member_role() and 0xFFFF) != 33822) {
@@ -3961,7 +4022,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_list_teams() and 0xFFFF) != 28097) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_push_status() and 0xFFFF) != 18954) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_register_push_token() and 0xFFFF) != 64213) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_register_web_push() and 0xFFFF) != 61308) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_member() and 0xFFFF) != 35592) {
@@ -3980,6 +4047,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_locale() and 0xFFFF) != 29873) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_push_preferences() and 0xFFFF) != 23387) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_team_member_role() and 0xFFFF) != 33844) {
@@ -5059,11 +5129,20 @@ public interface AccountHandleInterface {
     
     suspend fun `listTeams`(): List<Team>
     
+    suspend fun `pushStatus`(): PushStatus
+    
     /**
      * Enables notifications of this account on this device (call it for
      * every signed-in account, with the same system token).
      */
     suspend fun `registerPushToken`(`platform`: PushPlatform, `token`: kotlin.String, `sandbox`: kotlin.Boolean): kotlin.Boolean
+    
+    /**
+     * Enables notifications of this account through a UnifiedPush endpoint
+     * (one endpoint per account: register one distributor instance per
+     * account).
+     */
+    suspend fun `registerWebPush`(`endpoint`: kotlin.String, `p256dh`: kotlin.String, `auth`: kotlin.String): kotlin.Boolean
     
     suspend fun `removeTeamMember`(`teamId`: kotlin.String, `userId`: kotlin.String)
     
@@ -5079,6 +5158,8 @@ public interface AccountHandleInterface {
      * Saves this account's preferred language (BCP 47) on its server.
      */
     suspend fun `setLocale`(`locale`: kotlin.String): ServerUser
+    
+    suspend fun `setPushPreferences`(`preferences`: PushPreferences): PushPreferences
     
     suspend fun `setTeamMemberRole`(`teamId`: kotlin.String, `userId`: kotlin.String, `role`: TeamRole): List<TeamMember>
     
@@ -5639,6 +5720,27 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
     }
 
     
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `pushStatus`() : PushStatus {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_push_status(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypePushStatus.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
     /**
      * Enables notifications of this account on this device (call it for
      * every signed-in account, with the same system token).
@@ -5654,6 +5756,35 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         FfiConverterTypePushPlatform.lower(`platform`),
         FfiConverterString.lower(`token`),
         FfiConverterBoolean.lower(`sandbox`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Enables notifications of this account through a UnifiedPush endpoint
+     * (one endpoint per account: register one distributor instance per
+     * account).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `registerWebPush`(`endpoint`: kotlin.String, `p256dh`: kotlin.String, `auth`: kotlin.String) : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_register_web_push(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`endpoint`),
+        FfiConverterString.lower(`p256dh`),
+        FfiConverterString.lower(`auth`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
@@ -5803,6 +5934,28 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeServerUser.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setPushPreferences`(`preferences`: PushPreferences) : PushPreferences {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_push_preferences(
+                uniffiHandle,
+                
+        FfiConverterTypePushPreferences.lower(`preferences`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypePushPreferences.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -16392,6 +16545,13 @@ public interface TermoakCoreInterface {
     suspend fun `listTeams`(): List<Team>
     
     /**
+     * This device's notifications on the server: registration,
+     * preferences and what the server can send (servers before 0.7 answer
+     * NotFound).
+     */
+    suspend fun `pushStatus`(): PushStatus
+    
+    /**
      * Enables notifications on this device with the token the system gives
      * (on iOS, the `deviceToken` in hex; on Android, the Firebase token).
      * `sandbox` = iOS app built for development. Returns whether the server
@@ -16399,6 +16559,17 @@ public interface TermoakCoreInterface {
      * token.
      */
     suspend fun `registerPushToken`(`platform`: PushPlatform, `token`: kotlin.String, `sandbox`: kotlin.Boolean): kotlin.Boolean
+    
+    /**
+     * Enables notifications on this device through a UnifiedPush
+     * distributor (ntfy, NextPush...) or any Web Push endpoint: the
+     * endpoint URL the distributor gave and the Web Push keys of the
+     * subscription (`p256dh`, `auth`, base64url). Returns whether the
+     * server can send Web Push (servers before 0.7 refuse the call: check
+     * `push_status().server_webpush`). Call it every time the distributor
+     * gives a new endpoint.
+     */
+    suspend fun `registerWebPush`(`endpoint`: kotlin.String, `p256dh`: kotlin.String, `auth`: kotlin.String): kotlin.Boolean
     
     /**
      * Removes a member (they immediately lose access to the sessions shared
@@ -16435,6 +16606,12 @@ public interface TermoakCoreInterface {
      * [`server_locales`](crate::server_locales)). Returns the updated user.
      */
     suspend fun `setLocale`(`locale`: kotlin.String): ServerUser
+    
+    /**
+     * Chooses which notifications this device gets from the server.
+     * Returns the saved preferences (every kind listed).
+     */
+    suspend fun `setPushPreferences`(`preferences`: PushPreferences): PushPreferences
     
     /**
      * Changes a member's role. Returns the updated members.
@@ -17944,6 +18121,32 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
 
     
     /**
+     * This device's notifications on the server: registration,
+     * preferences and what the server can send (servers before 0.7 answer
+     * NotFound).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `pushStatus`() : PushStatus {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_push_status(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypePushStatus.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
      * Enables notifications on this device with the token the system gives
      * (on iOS, the `deviceToken` in hex; on Android, the Firebase token).
      * `sandbox` = iOS app built for development. Returns whether the server
@@ -17961,6 +18164,39 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         FfiConverterTypePushPlatform.lower(`platform`),
         FfiConverterString.lower(`token`),
         FfiConverterBoolean.lower(`sandbox`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Enables notifications on this device through a UnifiedPush
+     * distributor (ntfy, NextPush...) or any Web Push endpoint: the
+     * endpoint URL the distributor gave and the Web Push keys of the
+     * subscription (`p256dh`, `auth`, base64url). Returns whether the
+     * server can send Web Push (servers before 0.7 refuse the call: check
+     * `push_status().server_webpush`). Call it every time the distributor
+     * gives a new endpoint.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `registerWebPush`(`endpoint`: kotlin.String, `p256dh`: kotlin.String, `auth`: kotlin.String) : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_register_web_push(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`endpoint`),
+        FfiConverterString.lower(`p256dh`),
+        FfiConverterString.lower(`auth`),
             )
         },
         { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
@@ -18131,6 +18367,32 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeServerUser.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Chooses which notifications this device gets from the server.
+     * Returns the saved preferences (every kind listed).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setPushPreferences`(`preferences`: PushPreferences) : PushPreferences {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_push_preferences(
+                uniffiHandle,
+                
+        FfiConverterTypePushPreferences.lower(`preferences`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypePushPreferences.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -27297,6 +27559,269 @@ public object FfiConverterTypePromptField: FfiConverterRustBuffer<PromptField> {
 
 
 /**
+ * A received notification, ready to show.
+ */
+data class PushEvent (
+    /**
+     * `ai_approval`, `ai_finished`, `session_shared`, `session_prompt`,
+     * `join_request`, `control_request`, `team_added`,
+     * `security_key_request`, `access_request`, `test` or `resolved`.
+     */
+    var `kind`: kotlin.String
+    , 
+    var `category`: PushCategory
+    , 
+    /**
+     * Texts in the account's language (empty for `resolved`).
+     */
+    var `title`: kotlin.String
+    , 
+    var `body`: kotlin.String
+    , 
+    /**
+     * Ids for the app: `task_id`, `approval_id`, `session_id`,
+     * `participant`, `prompt_id`, `team_id`, `request_id`...
+     */
+    var `data`: Map<kotlin.String, kotlin.String>
+    , 
+    /**
+     * The server's `instance_id` and the account's user id it is for (when
+     * the server sent them).
+     */
+    var `server`: kotlin.String?
+    , 
+    var `user`: kotlin.String?
+    , 
+    var `sentAt`: kotlin.Long
+    , 
+    var `expiresAt`: kotlin.Long?
+    , 
+    /**
+     * The request it announces already expired: do not show it.
+     */
+    var `expired`: kotlin.Boolean
+    , 
+    /**
+     * Replaces (or, `Resolved`, removes) the notification with the same
+     * tag: the collapse key, else `<kind>-<sent_at>`.
+     */
+    var `tag`: kotlin.String
+    , 
+    /**
+     * A stable positive number from `tag` (Android's notification id).
+     */
+    var `notificationId`: kotlin.Int
+    , 
+    /**
+     * Suggested notification channel / thread: `approvals`, `sessions`,
+     * `security_keys`, `ai` or `general`.
+     */
+    var `channel`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePushEvent: FfiConverterRustBuffer<PushEvent> {
+    override fun read(buf: ByteBuffer): PushEvent {
+        return PushEvent(
+            FfiConverterString.read(buf),
+            FfiConverterTypePushCategory.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterMapStringString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterInt.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PushEvent) = (
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterTypePushCategory.allocationSize(value.`category`) +
+            FfiConverterString.allocationSize(value.`title`) +
+            FfiConverterString.allocationSize(value.`body`) +
+            FfiConverterMapStringString.allocationSize(value.`data`) +
+            FfiConverterOptionalString.allocationSize(value.`server`) +
+            FfiConverterOptionalString.allocationSize(value.`user`) +
+            FfiConverterLong.allocationSize(value.`sentAt`) +
+            FfiConverterOptionalLong.allocationSize(value.`expiresAt`) +
+            FfiConverterBoolean.allocationSize(value.`expired`) +
+            FfiConverterString.allocationSize(value.`tag`) +
+            FfiConverterInt.allocationSize(value.`notificationId`) +
+            FfiConverterString.allocationSize(value.`channel`)
+    )
+
+    override fun write(value: PushEvent, buf: ByteBuffer) {
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterTypePushCategory.write(value.`category`, buf)
+            FfiConverterString.write(value.`title`, buf)
+            FfiConverterString.write(value.`body`, buf)
+            FfiConverterMapStringString.write(value.`data`, buf)
+            FfiConverterOptionalString.write(value.`server`, buf)
+            FfiConverterOptionalString.write(value.`user`, buf)
+            FfiConverterLong.write(value.`sentAt`, buf)
+            FfiConverterOptionalLong.write(value.`expiresAt`, buf)
+            FfiConverterBoolean.write(value.`expired`, buf)
+            FfiConverterString.write(value.`tag`, buf)
+            FfiConverterInt.write(value.`notificationId`, buf)
+            FfiConverterString.write(value.`channel`, buf)
+    }
+}
+
+
+
+/**
+ * Which notifications this device wants from an account's server.
+ */
+data class PushPreferences (
+    /**
+     * Per kind ([`push_kinds`]); a kind not listed is on.
+     */
+    var `kinds`: Map<kotlin.String, kotlin.Boolean>
+    , 
+    /**
+     * Also notify while the app has the events socket open (by default the
+     * server is quiet then: the app already shows the event).
+     */
+    var `whenOnline`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePushPreferences: FfiConverterRustBuffer<PushPreferences> {
+    override fun read(buf: ByteBuffer): PushPreferences {
+        return PushPreferences(
+            FfiConverterMapStringBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PushPreferences) = (
+            FfiConverterMapStringBoolean.allocationSize(value.`kinds`) +
+            FfiConverterBoolean.allocationSize(value.`whenOnline`)
+    )
+
+    override fun write(value: PushPreferences, buf: ByteBuffer) {
+            FfiConverterMapStringBoolean.write(value.`kinds`, buf)
+            FfiConverterBoolean.write(value.`whenOnline`, buf)
+    }
+}
+
+
+
+/**
+ * This device's notifications on one account's server.
+ */
+data class PushStatus (
+    /**
+     * This device is registered (`platform`: `webpush`, `apns` or `fcm`).
+     */
+    var `registered`: kotlin.Boolean
+    , 
+    var `platform`: kotlin.String?
+    , 
+    /**
+     * The registered UnifiedPush endpoint (APNs/FCM tokens are not shown).
+     */
+    var `endpoint`: kotlin.String?
+    , 
+    var `preferences`: PushPreferences
+    , 
+    /**
+     * What the server can send: Web Push (UnifiedPush), APNs, FCM.
+     */
+    var `serverWebpush`: kotlin.Boolean
+    , 
+    var `serverApns`: kotlin.Boolean
+    , 
+    var `serverFcm`: kotlin.Boolean
+    , 
+    /**
+     * The server's VAPID public key (base64url): some UnifiedPush
+     * distributors ask for it when registering.
+     */
+    var `vapidPublicKey`: kotlin.String?
+    , 
+    var `kinds`: List<kotlin.String>
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePushStatus: FfiConverterRustBuffer<PushStatus> {
+    override fun read(buf: ByteBuffer): PushStatus {
+        return PushStatus(
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterTypePushPreferences.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: PushStatus) = (
+            FfiConverterBoolean.allocationSize(value.`registered`) +
+            FfiConverterOptionalString.allocationSize(value.`platform`) +
+            FfiConverterOptionalString.allocationSize(value.`endpoint`) +
+            FfiConverterTypePushPreferences.allocationSize(value.`preferences`) +
+            FfiConverterBoolean.allocationSize(value.`serverWebpush`) +
+            FfiConverterBoolean.allocationSize(value.`serverApns`) +
+            FfiConverterBoolean.allocationSize(value.`serverFcm`) +
+            FfiConverterOptionalString.allocationSize(value.`vapidPublicKey`) +
+            FfiConverterSequenceString.allocationSize(value.`kinds`)
+    )
+
+    override fun write(value: PushStatus, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`registered`, buf)
+            FfiConverterOptionalString.write(value.`platform`, buf)
+            FfiConverterOptionalString.write(value.`endpoint`, buf)
+            FfiConverterTypePushPreferences.write(value.`preferences`, buf)
+            FfiConverterBoolean.write(value.`serverWebpush`, buf)
+            FfiConverterBoolean.write(value.`serverApns`, buf)
+            FfiConverterBoolean.write(value.`serverFcm`, buf)
+            FfiConverterOptionalString.write(value.`vapidPublicKey`, buf)
+            FfiConverterSequenceString.write(value.`kinds`, buf)
+    }
+}
+
+
+
+/**
  * QR code as a matrix of modules (`true` = dark), row by row.
  */
 data class QrCode (
@@ -31774,6 +32299,53 @@ public object FfiConverterTypeVaultRef: FfiConverterRustBuffer<VaultRef> {
 
 
 /**
+ * A receiver's Web Push keys: keep `private_key` on the device; give the
+ * server `p256dh` and `auth` with the endpoint.
+ */
+data class WebPushKeys (
+    var `privateKey`: kotlin.String
+    , 
+    var `p256dh`: kotlin.String
+    , 
+    var `auth`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeWebPushKeys: FfiConverterRustBuffer<WebPushKeys> {
+    override fun read(buf: ByteBuffer): WebPushKeys {
+        return WebPushKeys(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: WebPushKeys) = (
+            FfiConverterString.allocationSize(value.`privateKey`) +
+            FfiConverterString.allocationSize(value.`p256dh`) +
+            FfiConverterString.allocationSize(value.`auth`)
+    )
+
+    override fun write(value: WebPushKeys, buf: ByteBuffer) {
+            FfiConverterString.write(value.`privateKey`, buf)
+            FfiConverterString.write(value.`p256dh`, buf)
+            FfiConverterString.write(value.`auth`, buf)
+    }
+}
+
+
+
+/**
  * A WireGuard peer (the other end of the tunnel).
  */
 data class WireguardPeer (
@@ -33345,6 +33917,63 @@ public object FfiConverterTypeProxyKind: FfiConverterRustBuffer<ProxyKind> {
     override fun allocationSize(value: ProxyKind) = 4UL
 
     override fun write(value: ProxyKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * What a notification asks for.
+ */
+
+enum class PushCategory {
+    
+    /**
+     * Approve / Deny: each action opens the app's own confirmation (never
+     * decide from the notification itself, and never while the app lock is
+     * on).
+     */
+    APPROVAL,
+    /**
+     * Open the app so it connects the events socket and answers the
+     * waiting security key request (`request_id`) before `expires_at`.
+     */
+    SECURITY_KEY,
+    /**
+     * Open the right screen.
+     */
+    INFO,
+    /**
+     * Remove the notification with this `tag` (answered elsewhere or
+     * expired). Show nothing.
+     */
+    RESOLVED;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypePushCategory: FfiConverterRustBuffer<PushCategory> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        PushCategory.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: PushCategory) = 4UL
+
+    override fun write(value: PushCategory, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -39822,6 +40451,45 @@ public object FfiConverterSequenceSequenceString: FfiConverterRustBuffer<List<Li
 /**
  * @suppress
  */
+public object FfiConverterMapStringBoolean: FfiConverterRustBuffer<Map<kotlin.String, kotlin.Boolean>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.Boolean> {
+        val len = buf.getInt()
+        return buildMap<kotlin.String, kotlin.Boolean>(len) {
+            repeat(len) {
+                val k = FfiConverterString.read(buf)
+                val v = FfiConverterBoolean.read(buf)
+                this[k] = v
+            }
+        }
+    }
+
+    override fun allocationSize(value: Map<kotlin.String, kotlin.Boolean>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren = value.map { (k, v) ->
+            FfiConverterString.allocationSize(k) +
+            FfiConverterBoolean.allocationSize(v)
+        }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(value: Map<kotlin.String, kotlin.Boolean>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.forEach { (k, v) ->
+            FfiConverterString.write(k, buf)
+            FfiConverterBoolean.write(v, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.String, kotlin.String>> {
     override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.String> {
         val len = buf.getInt()
@@ -40197,6 +40865,67 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
         
         FfiConverterSequenceString.lower(`recent`),
         FfiConverterString.lower(`key`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Reads a push notification's content: the decrypted Web Push message
+         * (UnifiedPush), an APNs `userInfo` serialized as JSON (`{"aps": …,
+         * "termoak": {…}}`), the `termoak` dictionary alone or FCM's data map.
+         */
+    @Throws(TermoakException::class) fun `parsePushPayload`(`text`: kotlin.String): PushEvent {
+            return FfiConverterTypePushEvent.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_parse_push_payload(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The kinds of notification a device can turn on and off.
+         */ fun `pushKinds`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_push_kinds(
+    
+        _status)
+}
+    )
+    }
+    
+
+        /**
+         * Decrypts a Web Push message (`aes128gcm`) with keys from
+         * [`webpush_generate_keys`].
+         */
+    @Throws(TermoakException::class) fun `webpushDecrypt`(`keys`: WebPushKeys, `body`: kotlin.ByteArray): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_webpush_decrypt(
+    
+        
+        FfiConverterTypeWebPushKeys.lower(`keys`),
+        FfiConverterByteArray.lower(`body`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * New Web Push keys (for receivers that do not have their own; the
+         * UnifiedPush connector library makes and uses its own).
+         */ fun `webpushGenerateKeys`(): WebPushKeys {
+            return FfiConverterTypeWebPushKeys.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_webpush_generate_keys(
+    
+        _status)
 }
     )
     }
