@@ -30,11 +30,11 @@ pub fn events_path(can_sign: bool) -> String {
     // understands them (browsers cannot set headers on a WebSocket).
     if can_sign {
         format!(
-            "/api/v1/events/ws?features=roles_v2,policies,{}",
+            "/api/v1/events/ws?features=roles_v2,policies,e2ee,{}",
             wire::FEATURE
         )
     } else {
-        "/api/v1/events/ws?features=roles_v2,policies".to_string()
+        "/api/v1/events/ws?features=roles_v2,policies,e2ee".to_string()
     }
 }
 

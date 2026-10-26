@@ -1,0 +1,68 @@
+{
+  "about": "End-to-end encrypted vault test vectors (docs/E2EE-SSO-AUDIT.md §2.2). Every implementation (core, web) must reproduce each output from its inputs (the fixed nonces and ephemeral keys are for these vectors only) and open each blob. Binary values are hex unless the name ends in _b64 (standard base64 with padding). Blobs: version byte 1, then [nonce 12 | ciphertext+tag] (AES-256-GCM) or [enc 32 | ciphertext+tag] (HPKE base mode, DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, AES-256-GCM, RFC 9180). AAD and HPKE info are the UTF-8 strings given.",
+  "pairing": {
+    "aad": "termoak:e2ee:pairing:0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000d1",
+    "code": "959310",
+    "device_private": "7171717171717171717171717171717171717171717171717171717171717171",
+    "device_public_b64": "q08ZeZj8xWzG7WjB2TGvm7Ui7AB0PhgfczCRXfSqMXY=",
+    "ephemeral_private": "e0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
+    "info": "termoak e2ee v1 pairing",
+    "pairing_id": "0192d3a0-0000-7000-8000-0000000000d1",
+    "plaintext": "0192d3a00000700080000000000000b1a8abababababababababababababababababababababababababababababab6b",
+    "sealed_b64": "AXNoRdVOh94J1rsRSqcELFCkoBW9mQHRoAJvWVZTOhUZ+tXdGfJCvEva1L1vr15nww9IMDUJF19l2SrdT4tNtzhBRHTgoghytfDHR8yNJbgd3B1FeIyY32PKo0HvlciRaA=="
+  },
+  "passphrase_seal": {
+    "aad": "termoak:e2ee:uk:0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000b1:passphrase",
+    "kek": "0d1a3c6523c8f06e4e0af9c515aa5b5448cfebd6838f2d52c3d8b6ef8ddc3c2e",
+    "nonce": "101112131415161718191a1b",
+    "params": {
+      "alg": "argon2id",
+      "m": 65536,
+      "p": 1,
+      "salt": "AAECAwQFBgcICQoLDA0ODw==",
+      "t": 3
+    },
+    "passphrase": "correct horse battery staple",
+    "sealed_b64": "ARAREhMUFRYXGBkaG7TGppKK5F4zXsngq+wWwt3noa6gpOluJ9WPRxDQQMzSTPubqUpqnfIxHGcaYulEBQ=="
+  },
+  "recovery_key": {
+    "display": "AAIS-EM2E-KVTH-PCEZ-VK54-ZXPO-74AB-CIRT-IRKW-M54I-TGVL-XTG5-537U-O46R",
+    "kek_hkdf": {
+      "info": "0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000b1",
+      "kek": "37d77c9040df5913213975b5b955fee8c7b644fdd89f8e9bf5a94f4fe6c588be",
+      "salt": "termoak:e2ee:recovery:v1"
+    },
+    "raw": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+  },
+  "recovery_seal": {
+    "aad": "termoak:e2ee:uk:0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000b1:recovery",
+    "nonce": "202122232425262728292a2b",
+    "sealed_b64": "ASAhIiMkJSYnKCkqKza6I2PBIVJBGN8/nuZoU5PILq3C98Qg09pT1CsYyZb19Wil+kDlFGjlEzFUDmdEvw=="
+  },
+  "secret": {
+    "aad": "termoak:e2ee:secret:0192d3a0-0000-7000-8000-0000000000a1:2:host:0192d3a0-0000-7000-8000-0000000000c1",
+    "blob_b64": "ATAxMjM0NTY3ODk6OzlkjOWKdobOy2E/RZ707K86hZneckIXxLbtuFmLLKzhchj9GfWJuj2WTTEpnxhjqc3wI8oFm3WxI6JJpA==",
+    "entity_id": "0192d3a0-0000-7000-8000-0000000000c1",
+    "kind": "host",
+    "nonce": "303132333435363738393a3b",
+    "plaintext": "{\"password\":\"hunter2\",\"proxy_password\":null}",
+    "vault_id": "0192d3a0-0000-7000-8000-0000000000a1",
+    "version": 2
+  },
+  "user_key": {
+    "fingerprint": "bd73 81ea b08d 2d62 675c 27c7 9e99 8215",
+    "key_id": "0192d3a0-0000-7000-8000-0000000000b1",
+    "private": "a8abababababababababababababababababababababababababababababab6b",
+    "public_b64": "43EthRoOXXm4McXjSrIrQaGYFx3iCbi4+sojoRxiSFk=",
+    "user_id": "0192d3a0-0000-7000-8000-000000000001"
+  },
+  "vault_key_wrap": {
+    "aad": "termoak:e2ee:vk:0192d3a0-0000-7000-8000-0000000000a1:2:0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000b1",
+    "ephemeral_private": "c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf",
+    "info": "termoak e2ee v1 vault key",
+    "vault_id": "0192d3a0-0000-7000-8000-0000000000a1",
+    "vault_key": "5ec2e75ec2e75ec2e75ec2e75ec2e75ec2e75ec2e75ec2e75ec2e75ec2e75ec2",
+    "version": 2,
+    "wrapped_b64": "AdwsyjHo5Du9kd/35HXMozR+tHgQfVvXZaukrkoww11EHbETp5KO6HaW3/EkPTViFCLFSaLs+DO3f6yd4DyJb4qAlvWPpvbIBihC5w7wvqlZ"
+  }
+}

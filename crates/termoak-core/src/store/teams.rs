@@ -211,6 +211,17 @@ impl Store {
                 [team_id.to_string()],
             )?;
             delete_team_vaults(&tx, &team_id.to_string())?;
+            // SSO and audit sinks of the team (0.7 phase 5a); its audit
+            // entries stay until their retention ends.
+            for sql in [
+                "DELETE FROM team_sso WHERE team_id = ?1",
+                "DELETE FROM team_domains WHERE team_id = ?1",
+                "DELETE FROM sso_identities WHERE team_id = ?1",
+                "DELETE FROM sso_flows WHERE team_id = ?1",
+                "DELETE FROM audit_sinks WHERE team_id = ?1",
+            ] {
+                tx.execute(sql, [team_id.to_string()])?;
+            }
             let n = tx.execute("DELETE FROM teams WHERE id = ?1", [team_id.to_string()])?;
             if n == 0 {
                 return Err(CoreError::NotFound(format!("team {team_id}")));

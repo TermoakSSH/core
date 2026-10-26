@@ -6,7 +6,8 @@
 
 mod ai;
 pub mod ai_keys;
-mod audit;
+pub mod audit;
+pub mod e2ee;
 pub mod email_tokens;
 mod entities;
 pub mod history;
@@ -14,6 +15,7 @@ pub mod invites;
 mod local;
 pub mod security;
 pub mod sessions;
+pub mod sso;
 pub mod teams;
 pub mod users;
 pub mod vaults;
@@ -29,7 +31,7 @@ pub use entities::{
     ApplyReport, SyncRejection, SyncWarning, VaultChange, VaultChanges, keep_omitted_fields,
     references,
 };
-pub use local::{DirtySummary, LocalItem, LocalVault, SyncV2Applied, SyncV2Apply};
+pub use local::{DirtySummary, LocalItem, LocalVault, SealedRow, SyncV2Applied, SyncV2Apply};
 pub use vaults::{
     NewVault, SecretUse, VaultAccess, VaultGrantee, VaultPatch, VaultTransfer, VaultTransferResult,
 };
@@ -750,6 +752,124 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE team_members ADD COLUMN principal TEXT;
     ALTER TABLE vaults ADD COLUMN policy TEXT;
     "#,
+    // v14 (0.7 phase 5a, docs/E2EE-SSO-AUDIT.md): end-to-end encrypted
+    // vaults, SSO/OIDC for teams, extended audit. Nothing existing changes
+    // meaning: every vault stays server-managed until a manager converts
+    // it, and no account needs SSO until a team enforces it.
+    r#"
+    -- E2EE: the secret of this row is a client's sealed blob (the server
+    -- never opens it; a client keeps it like this while locked).
+    ALTER TABLE entities ADD COLUMN e2ee INTEGER NOT NULL DEFAULT 0;
+    CREATE INDEX user_keys_user ON user_keys(user_id, revoked_at);
+    -- Copies of a user's private key sealed with their E2EE passphrase or
+    -- recovery key (opaque to the server).
+    CREATE TABLE user_key_seals (
+        key_id     TEXT NOT NULL REFERENCES user_keys(id) ON DELETE CASCADE,
+        kind       TEXT NOT NULL,              -- passphrase | recovery
+        params     TEXT,                       -- Argon2id parameters (JSON)
+        sealed     TEXT NOT NULL,              -- base64
+        created_at INTEGER NOT NULL,
+        PRIMARY KEY (key_id, kind)
+    );
+    -- A new device asking an unlocked one for the user key.
+    CREATE TABLE e2ee_pairings (
+        id          TEXT PRIMARY KEY,
+        user_id     TEXT NOT NULL,
+        device_id   TEXT NOT NULL,
+        device_name TEXT NOT NULL,
+        public_key  TEXT NOT NULL,
+        status      TEXT NOT NULL,             -- pending | approved | denied
+        sealed      TEXT,
+        approved_by TEXT,                      -- device id
+        created_at  INTEGER NOT NULL,
+        expires_at  INTEGER NOT NULL
+    );
+    CREATE INDEX e2ee_pairings_user ON e2ee_pairings(user_id, status);
+
+    -- SSO / OIDC per team.
+    CREATE TABLE team_sso (
+        team_id       TEXT PRIMARY KEY,
+        config        TEXT NOT NULL,           -- SsoConfig (JSON, no secret)
+        client_secret BLOB,                    -- sealed with the master key
+        updated_by    TEXT NOT NULL,
+        updated_at    INTEGER NOT NULL
+    );
+    CREATE TABLE team_domains (
+        domain      TEXT PRIMARY KEY COLLATE NOCASE,
+        team_id     TEXT NOT NULL,
+        token       TEXT NOT NULL,             -- DNS TXT termoak-verify=<token>
+        verified_at INTEGER,
+        verified_by TEXT,                      -- dns | admin:<user id>
+        created_by  TEXT NOT NULL,
+        created_at  INTEGER NOT NULL,
+        checked_at  INTEGER,
+        last_error  TEXT
+    );
+    CREATE INDEX team_domains_team ON team_domains(team_id);
+    CREATE TABLE sso_identities (
+        issuer        TEXT NOT NULL,
+        subject       TEXT NOT NULL,
+        user_id       TEXT NOT NULL,
+        team_id       TEXT NOT NULL,
+        email         TEXT NOT NULL,
+        created_at    INTEGER NOT NULL,
+        last_login_at INTEGER,
+        PRIMARY KEY (issuer, subject)
+    );
+    CREATE INDEX sso_identities_user ON sso_identities(user_id);
+    CREATE TABLE sso_flows (
+        id               TEXT PRIMARY KEY,
+        state            TEXT NOT NULL UNIQUE,
+        team_id          TEXT NOT NULL,
+        link_user        TEXT,                 -- linking from a signed-in account
+        nonce            TEXT NOT NULL,
+        verifier         TEXT NOT NULL,        -- PKCE verifier towards the IdP
+        redirect_uri     TEXT NOT NULL,        -- the app's callback
+        client_state     TEXT,
+        client_challenge TEXT NOT NULL,        -- PKCE of the app towards this server
+        device_name      TEXT NOT NULL,
+        platform         TEXT NOT NULL,
+        status           TEXT NOT NULL,        -- started | done | failed | used
+        code_hash        TEXT,
+        user_id          TEXT,
+        error            TEXT,
+        attempts         INTEGER NOT NULL DEFAULT 0,
+        created_at       INTEGER NOT NULL,
+        expires_at       INTEGER NOT NULL
+    );
+    CREATE INDEX sso_flows_code ON sso_flows(code_hash);
+    ALTER TABLE users ADD COLUMN sso_only INTEGER NOT NULL DEFAULT 0;
+
+    -- Extended audit.
+    ALTER TABLE audit_log ADD COLUMN team_id TEXT;
+    CREATE INDEX audit_team ON audit_log(team_id, id);
+    CREATE INDEX audit_action ON audit_log(action, id);
+    CREATE INDEX audit_created ON audit_log(created_at);
+    UPDATE audit_log SET team_id = (SELECT owner_team_id FROM vaults WHERE vaults.id = audit_log.vault_id)
+        WHERE vault_id IS NOT NULL;
+    UPDATE audit_log SET team_id = target
+        WHERE team_id IS NULL AND target IN (SELECT id FROM teams);
+    ALTER TABLE teams ADD COLUMN audit_retention_days INTEGER;
+    CREATE TABLE audit_sinks (
+        id              TEXT PRIMARY KEY,
+        team_id         TEXT,                  -- NULL: the whole server (admins)
+        kind            TEXT NOT NULL,         -- webhook | syslog
+        name            TEXT NOT NULL,
+        config          TEXT NOT NULL,         -- JSON (no secret)
+        secret          BLOB,                  -- webhook signing secret, sealed
+        actions         TEXT NOT NULL DEFAULT '[]',
+        enabled         INTEGER NOT NULL DEFAULT 1,
+        cursor          INTEGER NOT NULL,      -- last audit_log.id delivered
+        failures        INTEGER NOT NULL DEFAULT 0,
+        last_error      TEXT,
+        last_attempt_at INTEGER,
+        last_success_at INTEGER,
+        created_by      TEXT NOT NULL,
+        created_at      INTEGER NOT NULL,
+        updated_at      INTEGER NOT NULL
+    );
+    CREATE INDEX audit_sinks_team ON audit_sinks(team_id);
+    "#,
 ];
 
 /// Schema version of the latest migration.
@@ -863,6 +983,54 @@ mod migration_tests {
         let v: i64 = conn
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(v, 13);
+        assert_eq!(v, MIGRATIONS.len() as i64);
+    }
+
+    #[test]
+    fn v14_backfills_audit_teams_and_keeps_vaults_server_managed() {
+        let conn = Connection::open_in_memory().unwrap();
+        for (i, sql) in MIGRATIONS[..13].iter().enumerate() {
+            conn.execute_batch(&format!(
+                "BEGIN; {sql}; PRAGMA user_version = {}; COMMIT;",
+                i + 1
+            ))
+            .unwrap();
+        }
+        conn.execute_batch(
+            "INSERT INTO teams (id, name, created_by, created_at) VALUES ('t1', 'Ops', 'u1', 1);
+             INSERT INTO users (id, email, name, password_hash, created_at) VALUES ('u1', 'a@b', 'A', 'x', 1);
+             INSERT INTO vaults (id, kind, name, owner_team_id, created_by, created_at, updated_at)
+                 VALUES ('v1', 'team', 'Prod', 't1', 'u1', 1, 1);
+             INSERT INTO entities (id, owner_id, kind, data, secret, rev, updated_at, vault_id, key_version)
+                 VALUES ('e1', 'u1', 'host', '{}', x'01', 1, 1, 'v1', 1);
+             INSERT INTO audit_log (owner_id, actor, action, target, created_at, vault_id)
+                 VALUES ('u1', 'user:u1', 'secret.reveal', 'e1', 1, 'v1');
+             INSERT INTO audit_log (owner_id, actor, action, target, created_at)
+                 VALUES ('u1', 'user:u1', 'team.policy', 't1', 2);
+             INSERT INTO audit_log (owner_id, actor, action, target, created_at)
+                 VALUES ('u1', 'user:u1', 'auth.login', 'd1', 3);",
+        )
+        .unwrap();
+        migrate(&conn).unwrap();
+        let teams: Vec<Option<String>> = conn
+            .prepare("SELECT team_id FROM audit_log ORDER BY id")
+            .unwrap()
+            .query_map([], |r| r.get(0))
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap();
+        assert_eq!(teams, vec![Some("t1".into()), Some("t1".into()), None]);
+        let (mode, e2ee): (String, i64) = conn
+            .query_row(
+                "SELECT v.crypto_mode, e.e2ee FROM vaults v JOIN entities e ON e.vault_id = v.id",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!((mode.as_str(), e2ee), ("server", 0));
+        let sso_only: i64 = conn
+            .query_row("SELECT sso_only FROM users", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(sso_only, 0);
     }
 }

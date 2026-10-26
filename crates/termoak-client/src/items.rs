@@ -542,6 +542,8 @@ impl Workspace {
             .await?;
         if acc.can_reveal(vault).await? {
             self.team_certificates(&acc, &mut resolved).await?;
+            // End-to-end encrypted secrets still sealed here (0.7 phase 5a).
+            crate::e2ee::check_unlocked(&resolved)?;
             return Ok(resolved);
         }
         let role = acc.role(vault).await?;

@@ -151,6 +151,46 @@ pub mod codes {
     /// A session closed because its access window ended or was revoked.
     pub const ACCESS_EXPIRED: &str = "access_expired";
     pub const ACCESS_REVOKED: &str = "access_revoked";
+
+    // End-to-end encrypted vaults (0.7 phase 5a, docs/E2EE-SSO-AUDIT.md §2).
+    /// The secret is end-to-end encrypted and this device (or the server)
+    /// does not have the vault key: unlock E2EE on the device.
+    pub const E2EE_LOCKED: &str = "e2ee_locked";
+    pub const E2EE_DECRYPT_FAILED: &str = "e2ee_decrypt_failed";
+    pub const E2EE_PASSPHRASE_INVALID: &str = "e2ee_passphrase_invalid";
+    pub const E2EE_PASSPHRASE_TOO_SHORT: &str = "e2ee_passphrase_too_short";
+    pub const E2EE_RECOVERY_KEY_INVALID: &str = "e2ee_recovery_key_invalid";
+    /// A sealed private key opened but does not match the published key.
+    pub const E2EE_KEY_MISMATCH: &str = "e2ee_key_mismatch";
+    /// The user has no E2EE key yet (set it up first).
+    pub const E2EE_NOT_SET_UP: &str = "e2ee_not_set_up";
+    pub const E2EE_KEY_EXISTS: &str = "e2ee_key_exists";
+    /// A plaintext secret sent for an end-to-end encrypted vault.
+    pub const E2EE_PLAINTEXT_REJECTED: &str = "e2ee_plaintext_rejected";
+    /// A secret sealed with an older vault key version (re-encrypt it).
+    pub const E2EE_KEY_OUTDATED: &str = "e2ee_key_outdated";
+    /// The server cannot do this for an end-to-end encrypted vault
+    /// (reveal, just-in-time credentials, server-side copies...).
+    pub const E2EE_VAULT: &str = "e2ee_vault";
+    /// A server session/test/exec needs secrets of an E2EE vault: send them
+    /// for this session (`unlock`).
+    pub const E2EE_UNLOCK_REQUIRED: &str = "e2ee_unlock_required";
+    /// An enable/rotate/disable payload does not cover every secret or
+    /// every member that must get the key.
+    pub const E2EE_INCOMPLETE: &str = "e2ee_incomplete";
+    pub const E2EE_NOT_ENABLED: &str = "e2ee_not_enabled";
+    pub const E2EE_ALREADY_ENABLED: &str = "e2ee_already_enabled";
+    /// Only clients that declare `e2ee` can use this vault.
+    pub const E2EE_CLIENT_REQUIRED: &str = "e2ee_client_required";
+    /// A wrap for someone who may not have the vault key, or for an old
+    /// public key.
+    pub const E2EE_WRAP_INVALID: &str = "e2ee_wrap_invalid";
+    pub const E2EE_PAIRING_CLOSED: &str = "e2ee_pairing_closed";
+    // SSO (0.7 phase 5a, docs/E2EE-SSO-AUDIT.md §3).
+    /// Another team verified (or recently claimed) this domain.
+    pub const SSO_DOMAIN_TAKEN: &str = "sso_domain_taken";
+    /// The vault key changed meanwhile (`from_version` is old): reload.
+    pub const E2EE_STALE: &str = "e2ee_stale";
 }
 
 pub type Result<T, E = CoreError> = std::result::Result<T, E>;

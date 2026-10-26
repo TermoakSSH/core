@@ -4,12 +4,14 @@
 
 pub mod access;
 pub mod crypto;
+pub mod e2ee;
 pub mod error;
 pub mod model;
 pub mod push;
 pub mod qr;
 pub mod redact;
 pub mod resolve;
+pub mod sso;
 pub mod store;
 pub mod template;
 pub mod themes;

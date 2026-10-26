@@ -137,6 +137,11 @@ pub struct SyncReport {
     /// Items removed because they left their vault.
     pub removed: usize,
     pub discarded: Vec<DiscardedChanges>,
+    /// Local changes with secrets of end-to-end encrypted vaults that wait
+    /// for this device to be unlocked (0.7 phase 5a).
+    pub e2ee_waiting: usize,
+    /// Secrets of end-to-end encrypted vaults still sealed on this device.
+    pub e2ee_locked: usize,
     pub vaults_added: Vec<VaultRef>,
     pub vaults_lost: Vec<VaultRef>,
     /// Rejected changes kept locally (still pending).
@@ -297,16 +302,27 @@ impl SyncEngine {
             protocol: "v2",
             ..Default::default()
         };
+        // End-to-end encrypted vaults (0.7 phase 5a): the user key if this
+        // device is unlocked, and the vault keys it opens.
+        let user_key = crate::e2ee::stored_user_key(&self.store, personal).await?;
+        let mut keys = crate::e2ee::VaultKeys::from_vaults(
+            &self.store.local_vault_list().await?,
+            personal,
+            user_key.as_ref(),
+        );
         let mut first = true;
         let mut first_round_refetch = true;
         for _ in 0..MAX_ROUNDS {
             // Pending changes go up once; later rounds only page down.
-            let changes = if first {
+            let mut changes = if first {
                 self.store.dirty_records_v2().await?
             } else {
                 Vec::new()
             };
             first = false;
+            // Secrets of E2EE vaults go sealed; those of vaults locked here
+            // wait (they stay dirty).
+            report.e2ee_waiting += keys.seal_outgoing(&mut changes, personal);
             let pushed: Vec<(Id, i64)> = changes.iter().map(|r| (r.id, r.updated_at)).collect();
             // A vault whose secrets were withheld (a team that forbade
             // revealing them) and are visible again: download it again.
@@ -331,7 +347,7 @@ impl SyncEngine {
                     role: Some(v.role),
                 })
                 .collect();
-            let resp = self
+            let mut resp = self
                 .api
                 .sync_v2(&SyncV2Request {
                     vaults,
@@ -340,6 +356,8 @@ impl SyncEngine {
                     kinds: known_kinds(),
                 })
                 .await?;
+            keys = crate::e2ee::VaultKeys::from_vaults(&resp.vaults, personal, user_key.as_ref());
+            keys.open_incoming(&mut resp.changes);
             report.pushed += pushed.len();
             report.rev = report
                 .rev
@@ -389,6 +407,12 @@ impl SyncEngine {
                 break;
             }
         }
+        // Secrets kept sealed that this device can open now (a wrap that
+        // just arrived, an unlock while offline).
+        if user_key.is_some() {
+            crate::e2ee::open_stored(&self.store, personal).await?;
+        }
+        report.e2ee_locked = crate::e2ee::locked_count(&self.store).await?;
         // The personal vault is never "new" to the user, and nothing is new
         // on the first sync of a store.
         if fresh {

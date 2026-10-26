@@ -153,6 +153,7 @@ fn hop(port: u16, private_key: &str, certificate: Option<String>) -> ResolvedHos
         startup_script: None,
         network: None,
         group_name: None,
+        e2ee_locked: false,
     }
 }
 

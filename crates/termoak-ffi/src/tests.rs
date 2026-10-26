@@ -38,6 +38,7 @@ fn host(label: &str, address: &str) -> SshHost {
         vault_id: None,
         access: None,
         secret_hidden: false,
+        e2ee_locked: false,
     }
 }
 
@@ -286,6 +287,7 @@ fn identities_snippets_forwards_and_memories() {
                 vault_id: None,
                 access: None,
                 secret_hidden: false,
+                e2ee_locked: false,
             },
             set("secret"),
         )

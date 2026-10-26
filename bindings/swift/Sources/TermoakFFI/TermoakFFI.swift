@@ -890,6 +890,74 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
      */
     func saveRunbook(taskId: String, vaultId: String?, name: String?) async throws  -> Snippet
     
+    func addTeamDomain(teamId: String, domain: String) async throws  -> TeamDomainInfo
+    
+    func auditExport(scope: AuditScope, query: AuditQuery, format: String, localPath: String, id: String?) async throws  -> UInt64
+    
+    func auditSearch(scope: AuditScope, query: AuditQuery, id: String?) async throws  -> [AuditEvent]
+    
+    func auditSinks(scope: AuditScope, id: String?) async throws  -> [AuditSinkInfo]
+    
+    func createAuditSink(scope: AuditScope, sink: AuditSinkInput, id: String?) async throws  -> AuditSinkCreated
+    
+    func deleteAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws 
+    
+    func deleteTeamSso(teamId: String) async throws 
+    
+    func e2eeAddMembers(vaultId: String, userIds: [String]?) async throws  -> UInt32
+    
+    func e2eeDisableVault(vaultId: String) async throws 
+    
+    func e2eeEnableVault(vaultId: String, include: [String]?) async throws  -> UInt32
+    
+    func e2eeLock() async throws 
+    
+    func e2eeNewRecoveryKey() async throws  -> String
+    
+    func e2eePairingDecide(pairingId: String, approve: Bool) async throws 
+    
+    func e2eePairingFinish(pairingId: String) async throws  -> UInt64?
+    
+    func e2eePairingStart() async throws  -> E2eePairingStart
+    
+    func e2eePairings() async throws  -> [E2eePairingRequest]
+    
+    func e2eePendingMembers(vaultId: String) async throws  -> [E2eeMember]
+    
+    func e2eeRotateVault(vaultId: String) async throws  -> UInt32
+    
+    func e2eeSetPassphrase(passphrase: String) async throws 
+    
+    func e2eeSetup(passphrase: String?) async throws  -> E2eeSetupResult
+    
+    func e2eeStatus() async throws  -> E2eeStatus
+    
+    func e2eeUnlockWithPassphrase(passphrase: String) async throws  -> UInt64
+    
+    func e2eeUnlockWithRecoveryKey(recoveryKey: String) async throws  -> UInt64
+    
+    func e2eeVaultState(vaultId: String) async throws  -> E2eeVaultState
+    
+    func openServerSessionUnlocked(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?) async throws  -> ServerSession
+    
+    func removeTeamDomain(teamId: String, domain: String) async throws 
+    
+    func setTeamAuditRetention(teamId: String, days: UInt32?) async throws  -> UInt32?
+    
+    func setTeamSso(teamId: String, settings: SsoSettings, clientSecret: String?) async throws  -> SsoSettings
+    
+    func teamAuditRetention(teamId: String) async throws  -> UInt32?
+    
+    func teamDomains(teamId: String) async throws  -> [TeamDomainInfo]
+    
+    func teamSso(teamId: String) async throws  -> SsoSettings?
+    
+    func testAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws  -> AuditSinkTest
+    
+    func updateAuditSink(scope: AuditScope, sinkId: String, id: String?, name: String?, actions: [String]?, enabled: Bool?) async throws  -> AuditSinkInfo
+    
+    func verifyTeamDomain(teamId: String, domain: String) async throws  -> TeamDomainInfo
+    
     /**
      * Downloads the recording of one of this account's server sessions.
      */
@@ -2270,6 +2338,550 @@ open func saveRunbook(taskId: String, vaultId: String? = nil, name: String? = ni
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeSnippet_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func addTeamDomain(teamId: String, domain: String)async throws  -> TeamDomainInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_add_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamDomainInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func auditExport(scope: AuditScope, query: AuditQuery, format: String, localPath: String, id: String? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_audit_export(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditQuery_lower(query),FfiConverterString.lower(format),FfiConverterString.lower(localPath),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func auditSearch(scope: AuditScope, query: AuditQuery, id: String? = nil)async throws  -> [AuditEvent]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_audit_search(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditQuery_lower(query),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAuditEvent.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func auditSinks(scope: AuditScope, id: String? = nil)async throws  -> [AuditSinkInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_audit_sinks(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAuditSinkInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func createAuditSink(scope: AuditScope, sink: AuditSinkInput, id: String? = nil)async throws  -> AuditSinkCreated  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_create_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditSinkInput_lower(sink),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkCreated_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_delete_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteTeamSso(teamId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_delete_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeAddMembers(vaultId: String, userIds: [String]? = nil)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_add_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterOptionSequenceString.lower(userIds)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeDisableVault(vaultId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_disable_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeEnableVault(vaultId: String, include: [String]? = nil)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_enable_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterOptionSequenceString.lower(include)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeLock()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_lock(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeNewRecoveryKey()async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_new_recovery_key(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eePairingDecide(pairingId: String, approve: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_decide(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pairingId),FfiConverterBool.lower(approve)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eePairingFinish(pairingId: String)async throws  -> UInt64?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_finish(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pairingId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eePairingStart()async throws  -> E2eePairingStart  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_start(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eePairingStart_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eePairings()async throws  -> [E2eePairingRequest]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairings(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeE2eePairingRequest.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eePendingMembers(vaultId: String)async throws  -> [E2eeMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pending_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeE2eeMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeRotateVault(vaultId: String)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeSetPassphrase(passphrase: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_set_passphrase(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeSetup(passphrase: String? = nil)async throws  -> E2eeSetupResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_setup(
+                        self.uniffiCloneHandle(),FfiConverterOptionString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeSetupResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeStatus()async throws  -> E2eeStatus  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_status(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeStatus_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeUnlockWithPassphrase(passphrase: String)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_passphrase(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeUnlockWithRecoveryKey(recoveryKey: String)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_recovery_key(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(recoveryKey)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeVaultState(vaultId: String)async throws  -> E2eeVaultState  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_vault_state(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeVaultState_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func openServerSessionUnlocked(hostId: String, cols: UInt32, rows: UInt32, title: String? = nil, record: Bool? = nil)async throws  -> ServerSession  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_open_server_session_unlocked(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterOptionString.lower(title),FfiConverterOptionBool.lower(record)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerSession_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func removeTeamDomain(teamId: String, domain: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_remove_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setTeamAuditRetention(teamId: String, days: UInt32?)async throws  -> UInt32?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_team_audit_retention(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterOptionUInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setTeamSso(teamId: String, settings: SsoSettings, clientSecret: String? = nil)async throws  -> SsoSettings  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_set_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterTypeSsoSettings_lower(settings),FfiConverterOptionString.lower(clientSecret)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSsoSettings_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func teamAuditRetention(teamId: String)async throws  -> UInt32?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_team_audit_retention(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func teamDomains(teamId: String)async throws  -> [TeamDomainInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_team_domains(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeamDomainInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func teamSso(teamId: String)async throws  -> SsoSettings?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeSsoSettings.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func testAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)async throws  -> AuditSinkTest  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_test_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkTest_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func updateAuditSink(scope: AuditScope, sinkId: String, id: String? = nil, name: String? = nil, actions: [String]? = nil, enabled: Bool? = nil)async throws  -> AuditSinkInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_update_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id),FfiConverterOptionString.lower(name),FfiConverterOptionSequenceString.lower(actions),FfiConverterOptionBool.lower(enabled)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func verifyTeamDomain(teamId: String, domain: String)async throws  -> TeamDomainInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_verify_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamDomainInfo_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -7653,6 +8265,161 @@ public func FfiConverterTypeSshSession_lower(_ value: SshSession) -> UInt64 {
 
 
 /**
+ * A desktop or CLI single sign-on waiting for the browser.
+ */
+public protocol SsoLoopbackProtocol: AnyObject, Sendable {
+    
+    /**
+     * The flow (open `authorize_url` in the browser).
+     */
+    func flow()  -> SsoFlow
+    
+    /**
+     * Waits for the browser (at most `timeout_secs`) and returns the
+     * callback URL for `sso_complete`. Once.
+     */
+    func waitCallback(timeoutSecs: UInt32) async throws  -> String
+    
+}
+/**
+ * A desktop or CLI single sign-on waiting for the browser.
+ */
+open class SsoLoopback: SsoLoopbackProtocol, @unchecked Sendable {
+    fileprivate let handle: UInt64
+
+    /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public struct NoHandle {
+        public init() {}
+    }
+
+    // TODO: We'd like this to be `private` but for Swifty reasons,
+    // we can't implement `FfiConverter` without making this `required` and we can't
+    // make it `required` without making it `public`.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    required public init(unsafeFromHandle handle: UInt64) {
+        self.handle = handle
+    }
+
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noHandle: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing handle the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public init(noHandle: NoHandle) {
+        self.handle = 0
+    }
+
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { uniffi_termoak_ffi_fn_clone_ssoloopback(self.handle, $0) }
+    }
+    // No primary constructor declared for this class.
+
+    deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
+        try! rustCall { uniffi_termoak_ffi_fn_free_ssoloopback(handle, $0) }
+    }
+
+    
+
+    
+    /**
+     * The flow (open `authorize_url` in the browser).
+     */
+open func flow() -> SsoFlow  {
+    return try!  FfiConverterTypeSsoFlow_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_method_ssoloopback_flow(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Waits for the browser (at most `timeout_secs`) and returns the
+     * callback URL for `sso_complete`. Once.
+     */
+open func waitCallback(timeoutSecs: UInt32)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_ssoloopback_wait_callback(
+                        self.uniffiCloneHandle(),FfiConverterUInt32.lower(timeoutSecs)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+
+    
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoLoopback: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = SsoLoopback
+
+    public static func lift(_ handle: UInt64) throws -> SsoLoopback {
+        return SsoLoopback(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: SsoLoopback) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoLoopback {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: SsoLoopback, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoLoopback_lift(_ handle: UInt64) throws -> SsoLoopback {
+    return try FfiConverterTypeSsoLoopback.lift(handle)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoLoopback_lower(_ value: SsoLoopback) -> UInt64 {
+    return FfiConverterTypeSsoLoopback.lower(value)
+}
+
+
+
+
+
+
+/**
  * Open local terminal, over SSH or Telnet. It is closed with
  * [`TerminalHandle::close_terminal`] or when dropped. The
  * `TerminalListener` is retained until the terminal closes.
@@ -9317,6 +10084,201 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
      * or start with a space are not saved. Returns whether it was saved.
      */
     func recordCommand(hostId: String, command: String) throws  -> Bool
+    
+    /**
+     * Claims a domain: create the TXT record it shows, then verify.
+     */
+    func addTeamDomain(teamId: String, domain: String) async throws  -> TeamDomainInfo
+    
+    /**
+     * Downloads the matching entries to `local_path` (`format`: `csv`,
+     * `json` or `ndjson`). Returns the bytes written.
+     */
+    func auditExport(scope: AuditScope, query: AuditQuery, format: String, localPath: String, id: String?) async throws  -> UInt64
+    
+    /**
+     * Audit entries matching `query`, newest first. `id`: the vault or
+     * team for those scopes.
+     */
+    func auditSearch(scope: AuditScope, query: AuditQuery, id: String?) async throws  -> [AuditEvent]
+    
+    /**
+     * SIEM sinks of a team (`scope` `Team` with `id`) or of the server.
+     */
+    func auditSinks(scope: AuditScope, id: String?) async throws  -> [AuditSinkInfo]
+    
+    func createAuditSink(scope: AuditScope, sink: AuditSinkInput, id: String?) async throws  -> AuditSinkCreated
+    
+    func deleteAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws 
+    
+    func deleteTeamSso(teamId: String) async throws 
+    
+    /**
+     * Gives a vault's key to waiting members (`user_ids`, or all).
+     */
+    func e2eeAddMembers(vaultId: String, userIds: [String]?) async throws  -> UInt32
+    
+    /**
+     * Turns end-to-end encryption off (this device sends the secrets to
+     * the server, which can read them again).
+     */
+    func e2eeDisableVault(vaultId: String) async throws 
+    
+    /**
+     * Turns end-to-end encryption on for a vault you manage: its secrets
+     * are sealed on this device and the server can no longer read them.
+     * `include`: members (user ids from `e2ee_vault_state().recipients`)
+     * who get the key now; `None`: all of them. Server sessions, the
+     * server AI and just-in-time credentials stop using its secrets.
+     */
+    func e2eeEnableVault(vaultId: String, include: [String]?) async throws  -> UInt32
+    
+    /**
+     * Locks this device (forgets the key and the opened secrets of E2EE
+     * vaults; unlock again to use them).
+     */
+    func e2eeLock() async throws 
+    
+    /**
+     * Replaces the recovery key (shown once; the old one stops working).
+     */
+    func e2eeNewRecoveryKey() async throws  -> String
+    
+    /**
+     * Unlocked device: approve (only if the codes match) or deny.
+     */
+    func e2eePairingDecide(pairingId: String, approve: Bool) async throws 
+    
+    /**
+     * New device: `Some(opened secrets)` once approved (this device is
+     * unlocked), `None` while it waits.
+     */
+    func e2eePairingFinish(pairingId: String) async throws  -> UInt64?
+    
+    /**
+     * New device: asks your unlocked devices for the key. Show the code;
+     * then call `e2ee_pairing_finish` (after the `e2ee` `pairing` event,
+     * or every few seconds).
+     */
+    func e2eePairingStart() async throws  -> E2eePairingStart
+    
+    /**
+     * Unlocked device: your devices waiting for approval.
+     */
+    func e2eePairings() async throws  -> [E2eePairingRequest]
+    
+    /**
+     * Members waiting for a vault's key, with their fingerprints.
+     */
+    func e2eePendingMembers(vaultId: String) async throws  -> [E2eeMember]
+    
+    /**
+     * Rotates a vault's key (after someone lost access: `rekey_needed`).
+     */
+    func e2eeRotateVault(vaultId: String) async throws  -> UInt32
+    
+    /**
+     * Sets or changes the E2EE passphrase (unlocked devices).
+     */
+    func e2eeSetPassphrase(passphrase: String) async throws 
+    
+    /**
+     * Sets up end-to-end encryption for the account (once): a key for this
+     * device, a recovery key (shown once) and, optionally, a passphrase
+     * (at least 8 characters) to unlock other devices. Never the login
+     * password: the server sees that one.
+     */
+    func e2eeSetup(passphrase: String?) async throws  -> E2eeSetupResult
+    
+    /**
+     * End-to-end encryption of the account on this device.
+     */
+    func e2eeStatus() async throws  -> E2eeStatus
+    
+    /**
+     * Unlocks this device with the E2EE passphrase. Returns how many
+     * stored secrets it opened; sync afterwards.
+     */
+    func e2eeUnlockWithPassphrase(passphrase: String) async throws  -> UInt64
+    
+    /**
+     * Unlocks this device with the recovery key.
+     */
+    func e2eeUnlockWithRecoveryKey(recoveryKey: String) async throws  -> UInt64
+    
+    /**
+     * What turning E2EE on (or rotating) covers in a vault.
+     */
+    func e2eeVaultState(vaultId: String) async throws  -> E2eeVaultState
+    
+    /**
+     * Opens a server session to a host of an E2EE vault, sending its
+     * credentials (resolved on this device) for this one session: the
+     * server uses them to connect and does not keep them. Ask first ("The
+     * server will use this host's password for this session").
+     */
+    func openServerSessionUnlocked(hostId: String, cols: UInt32, rows: UInt32, title: String?, record: Bool?) async throws  -> ServerSession
+    
+    func removeTeamDomain(teamId: String, domain: String) async throws 
+    
+    func setTeamAuditRetention(teamId: String, days: UInt32?) async throws  -> UInt32?
+    
+    /**
+     * Saves a team's SSO settings. `client_secret`: `None` keeps the
+     * stored one, `Some("")` removes it.
+     */
+    func setTeamSso(teamId: String, settings: SsoSettings, clientSecret: String?) async throws  -> SsoSettings
+    
+    /**
+     * Finishes a single sign-on with the URL the browser came back to:
+     * the account is signed in (and becomes current). With two-step
+     * verification it fails with `TotpRequired`: call again with the code.
+     */
+    func ssoComplete(flow: SsoFlow, callbackUrl: String, totpCode: String?) async throws  -> AccountInfo
+    
+    /**
+     * Whether `email` signs in through its team's SSO on `server` (before
+     * showing the password field).
+     */
+    func ssoDiscover(server: ServerChoice, email: String) async throws  -> SsoHint
+    
+    /**
+     * Starts a single sign-on: open `authorize_url` in the system browser;
+     * it comes back to `redirect_uri` (default `termoak://sso`; desktop
+     * apps use `sso_start_loopback`). `email` finds the team by its
+     * verified domain, `team_id` names it.
+     */
+    func ssoStart(server: ServerChoice, email: String?, teamId: String?, redirectUri: String?) async throws  -> SsoFlow
+    
+    /**
+     * Desktop and CLI: starts a single sign-on whose browser comes back to
+     * a loopback listener of this process.
+     */
+    func ssoStartLoopback(server: ServerChoice, email: String?, teamId: String?) async throws  -> SsoLoopback
+    
+    /**
+     * How long a team keeps its audit (`None`: the server's default).
+     */
+    func teamAuditRetention(teamId: String) async throws  -> UInt32?
+    
+    func teamDomains(teamId: String) async throws  -> [TeamDomainInfo]
+    
+    /**
+     * A team's SSO settings (`None`: not configured).
+     */
+    func teamSso(teamId: String) async throws  -> SsoSettings?
+    
+    func testAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws  -> AuditSinkTest
+    
+    /**
+     * Turns a sink on or off, renames it or changes its actions.
+     */
+    func updateAuditSink(scope: AuditScope, sinkId: String, id: String?, name: String?, actions: [String]?, enabled: Bool?) async throws  -> AuditSinkInfo
+    
+    /**
+     * Checks the TXT record now.
+     */
+    func verifyTeamDomain(teamId: String, domain: String) async throws  -> TeamDomainInfo
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
@@ -11386,6 +12348,733 @@ open func recordCommand(hostId: String, command: String)throws  -> Bool  {
         FfiConverterString.lower(command),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * Claims a domain: create the TXT record it shows, then verify.
+     */
+open func addTeamDomain(teamId: String, domain: String)async throws  -> TeamDomainInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_add_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamDomainInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Downloads the matching entries to `local_path` (`format`: `csv`,
+     * `json` or `ndjson`). Returns the bytes written.
+     */
+open func auditExport(scope: AuditScope, query: AuditQuery, format: String, localPath: String, id: String? = nil)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_audit_export(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditQuery_lower(query),FfiConverterString.lower(format),FfiConverterString.lower(localPath),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Audit entries matching `query`, newest first. `id`: the vault or
+     * team for those scopes.
+     */
+open func auditSearch(scope: AuditScope, query: AuditQuery, id: String? = nil)async throws  -> [AuditEvent]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_audit_search(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditQuery_lower(query),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAuditEvent.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * SIEM sinks of a team (`scope` `Team` with `id`) or of the server.
+     */
+open func auditSinks(scope: AuditScope, id: String? = nil)async throws  -> [AuditSinkInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_audit_sinks(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeAuditSinkInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func createAuditSink(scope: AuditScope, sink: AuditSinkInput, id: String? = nil)async throws  -> AuditSinkCreated  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_create_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterTypeAuditSinkInput_lower(sink),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkCreated_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_delete_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func deleteTeamSso(teamId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_delete_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Gives a vault's key to waiting members (`user_ids`, or all).
+     */
+open func e2eeAddMembers(vaultId: String, userIds: [String]? = nil)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_add_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterOptionSequenceString.lower(userIds)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Turns end-to-end encryption off (this device sends the secrets to
+     * the server, which can read them again).
+     */
+open func e2eeDisableVault(vaultId: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_disable_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Turns end-to-end encryption on for a vault you manage: its secrets
+     * are sealed on this device and the server can no longer read them.
+     * `include`: members (user ids from `e2ee_vault_state().recipients`)
+     * who get the key now; `None`: all of them. Server sessions, the
+     * server AI and just-in-time credentials stop using its secrets.
+     */
+open func e2eeEnableVault(vaultId: String, include: [String]? = nil)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_enable_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId),FfiConverterOptionSequenceString.lower(include)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Locks this device (forgets the key and the opened secrets of E2EE
+     * vaults; unlock again to use them).
+     */
+open func e2eeLock()async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_lock(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Replaces the recovery key (shown once; the old one stops working).
+     */
+open func e2eeNewRecoveryKey()async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_new_recovery_key(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Unlocked device: approve (only if the codes match) or deny.
+     */
+open func e2eePairingDecide(pairingId: String, approve: Bool)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_decide(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pairingId),FfiConverterBool.lower(approve)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * New device: `Some(opened secrets)` once approved (this device is
+     * unlocked), `None` while it waits.
+     */
+open func e2eePairingFinish(pairingId: String)async throws  -> UInt64?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_finish(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(pairingId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * New device: asks your unlocked devices for the key. Show the code;
+     * then call `e2ee_pairing_finish` (after the `e2ee` `pairing` event,
+     * or every few seconds).
+     */
+open func e2eePairingStart()async throws  -> E2eePairingStart  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_start(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eePairingStart_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Unlocked device: your devices waiting for approval.
+     */
+open func e2eePairings()async throws  -> [E2eePairingRequest]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairings(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeE2eePairingRequest.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Members waiting for a vault's key, with their fingerprints.
+     */
+open func e2eePendingMembers(vaultId: String)async throws  -> [E2eeMember]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pending_members(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeE2eeMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Rotates a vault's key (after someone lost access: `rekey_needed`).
+     */
+open func e2eeRotateVault(vaultId: String)async throws  -> UInt32  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_vault(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u32,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u32,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u32,
+            liftFunc: FfiConverterUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Sets or changes the E2EE passphrase (unlocked devices).
+     */
+open func e2eeSetPassphrase(passphrase: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_set_passphrase(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Sets up end-to-end encryption for the account (once): a key for this
+     * device, a recovery key (shown once) and, optionally, a passphrase
+     * (at least 8 characters) to unlock other devices. Never the login
+     * password: the server sees that one.
+     */
+open func e2eeSetup(passphrase: String? = nil)async throws  -> E2eeSetupResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_setup(
+                        self.uniffiCloneHandle(),FfiConverterOptionString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeSetupResult_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * End-to-end encryption of the account on this device.
+     */
+open func e2eeStatus()async throws  -> E2eeStatus  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_status(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeStatus_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Unlocks this device with the E2EE passphrase. Returns how many
+     * stored secrets it opened; sync afterwards.
+     */
+open func e2eeUnlockWithPassphrase(passphrase: String)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_passphrase(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Unlocks this device with the recovery key.
+     */
+open func e2eeUnlockWithRecoveryKey(recoveryKey: String)async throws  -> UInt64  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_recovery_key(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(recoveryKey)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterUInt64.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * What turning E2EE on (or rotating) covers in a vault.
+     */
+open func e2eeVaultState(vaultId: String)async throws  -> E2eeVaultState  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_vault_state(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(vaultId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeVaultState_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Opens a server session to a host of an E2EE vault, sending its
+     * credentials (resolved on this device) for this one session: the
+     * server uses them to connect and does not keep them. Ask first ("The
+     * server will use this host's password for this session").
+     */
+open func openServerSessionUnlocked(hostId: String, cols: UInt32, rows: UInt32, title: String? = nil, record: Bool? = nil)async throws  -> ServerSession  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_open_server_session_unlocked(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterUInt32.lower(cols),FfiConverterUInt32.lower(rows),FfiConverterOptionString.lower(title),FfiConverterOptionBool.lower(record)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeServerSession_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func removeTeamDomain(teamId: String, domain: String)async throws   {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_remove_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_void,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_void,
+            freeFunc: ffi_termoak_ffi_rust_future_free_void,
+            liftFunc: { $0 },
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func setTeamAuditRetention(teamId: String, days: UInt32?)async throws  -> UInt32?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_set_team_audit_retention(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterOptionUInt32.lower(days)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Saves a team's SSO settings. `client_secret`: `None` keeps the
+     * stored one, `Some("")` removes it.
+     */
+open func setTeamSso(teamId: String, settings: SsoSettings, clientSecret: String? = nil)async throws  -> SsoSettings  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_set_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterTypeSsoSettings_lower(settings),FfiConverterOptionString.lower(clientSecret)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSsoSettings_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Finishes a single sign-on with the URL the browser came back to:
+     * the account is signed in (and becomes current). With two-step
+     * verification it fails with `TotpRequired`: call again with the code.
+     */
+open func ssoComplete(flow: SsoFlow, callbackUrl: String, totpCode: String? = nil)async throws  -> AccountInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sso_complete(
+                        self.uniffiCloneHandle(),FfiConverterTypeSsoFlow_lower(flow),FfiConverterString.lower(callbackUrl),FfiConverterOptionString.lower(totpCode)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAccountInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Whether `email` signs in through its team's SSO on `server` (before
+     * showing the password field).
+     */
+open func ssoDiscover(server: ServerChoice, email: String)async throws  -> SsoHint  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sso_discover(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterString.lower(email)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSsoHint_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Starts a single sign-on: open `authorize_url` in the system browser;
+     * it comes back to `redirect_uri` (default `termoak://sso`; desktop
+     * apps use `sso_start_loopback`). `email` finds the team by its
+     * verified domain, `team_id` names it.
+     */
+open func ssoStart(server: ServerChoice, email: String? = nil, teamId: String? = nil, redirectUri: String? = nil)async throws  -> SsoFlow  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sso_start(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterOptionString.lower(email),FfiConverterOptionString.lower(teamId),FfiConverterOptionString.lower(redirectUri)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeSsoFlow_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Desktop and CLI: starts a single sign-on whose browser comes back to
+     * a loopback listener of this process.
+     */
+open func ssoStartLoopback(server: ServerChoice, email: String? = nil, teamId: String? = nil)async throws  -> SsoLoopback  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_sso_start_loopback(
+                        self.uniffiCloneHandle(),FfiConverterTypeServerChoice_lower(server),FfiConverterOptionString.lower(email),FfiConverterOptionString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_u64,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_u64,
+            freeFunc: ffi_termoak_ffi_rust_future_free_u64,
+            liftFunc: FfiConverterTypeSsoLoopback_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * How long a team keeps its audit (`None`: the server's default).
+     */
+open func teamAuditRetention(teamId: String)async throws  -> UInt32?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_team_audit_retention(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionUInt32.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func teamDomains(teamId: String)async throws  -> [TeamDomainInfo]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_team_domains(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceTypeTeamDomainInfo.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * A team's SSO settings (`None`: not configured).
+     */
+open func teamSso(teamId: String)async throws  -> SsoSettings?  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_team_sso(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterOptionTypeSsoSettings.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func testAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)async throws  -> AuditSinkTest  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_test_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkTest_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Turns a sink on or off, renames it or changes its actions.
+     */
+open func updateAuditSink(scope: AuditScope, sinkId: String, id: String? = nil, name: String? = nil, actions: [String]? = nil, enabled: Bool? = nil)async throws  -> AuditSinkInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_update_audit_sink(
+                        self.uniffiCloneHandle(),FfiConverterTypeAuditScope_lower(scope),FfiConverterString.lower(sinkId),FfiConverterOptionString.lower(id),FfiConverterOptionString.lower(name),FfiConverterOptionSequenceString.lower(actions),FfiConverterOptionBool.lower(enabled)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeAuditSinkInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Checks the TXT record now.
+     */
+open func verifyTeamDomain(teamId: String, domain: String)async throws  -> TeamDomainInfo  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_verify_team_domain(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(teamId),FfiConverterString.lower(domain)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeTeamDomainInfo_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
 }
     
     /**
@@ -17173,6 +18862,14 @@ public struct AuditEvent: Equatable, Hashable {
      */
     public var detailJson: String
     public var createdAt: Int64
+    /**
+     * Vault the entry is about.
+     */
+    public var vaultId: String?
+    /**
+     * Team the entry belongs to (0.7 phase 5a).
+     */
+    public var teamId: String?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -17185,7 +18882,13 @@ public struct AuditEvent: Equatable, Hashable {
          */actor: String, action: String, target: String?, 
         /**
          * Details as JSON.
-         */detailJson: String, createdAt: Int64) {
+         */detailJson: String, createdAt: Int64, 
+        /**
+         * Vault the entry is about.
+         */vaultId: String? = nil, 
+        /**
+         * Team the entry belongs to (0.7 phase 5a).
+         */teamId: String? = nil) {
         self.id = id
         self.ownerId = ownerId
         self.actor = actor
@@ -17193,6 +18896,8 @@ public struct AuditEvent: Equatable, Hashable {
         self.target = target
         self.detailJson = detailJson
         self.createdAt = createdAt
+        self.vaultId = vaultId
+        self.teamId = teamId
     }
 
     
@@ -17217,7 +18922,9 @@ public struct FfiConverterTypeAuditEvent: FfiConverterRustBuffer {
                 action: FfiConverterString.read(from: &buf), 
                 target: FfiConverterOptionString.read(from: &buf), 
                 detailJson: FfiConverterString.read(from: &buf), 
-                createdAt: FfiConverterInt64.read(from: &buf)
+                createdAt: FfiConverterInt64.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf)
         )
     }
 
@@ -17229,6 +18936,8 @@ public struct FfiConverterTypeAuditEvent: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.target, into: &buf)
         FfiConverterString.write(value.detailJson, into: &buf)
         FfiConverterInt64.write(value.createdAt, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
     }
 }
 
@@ -17245,6 +18954,426 @@ public func FfiConverterTypeAuditEvent_lift(_ buf: RustBuffer) throws -> AuditEv
 #endif
 public func FfiConverterTypeAuditEvent_lower(_ value: AuditEvent) -> RustBuffer {
     return FfiConverterTypeAuditEvent.lower(value)
+}
+
+
+/**
+ * Filters of an audit search (all optional).
+ */
+public struct AuditQuery: Equatable, Hashable {
+    /**
+     * Comma-separated actions; `access.*` is a prefix.
+     */
+    public var action: String?
+    public var actor: String?
+    public var vaultId: String?
+    public var target: String?
+    /**
+     * ms since the epoch.
+     */
+    public var since: Int64?
+    public var until: Int64?
+    /**
+     * Text anywhere in the entry.
+     */
+    public var text: String?
+    public var before: Int64?
+    public var limit: UInt32?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * Comma-separated actions; `access.*` is a prefix.
+         */action: String? = nil, actor: String? = nil, vaultId: String? = nil, target: String? = nil, 
+        /**
+         * ms since the epoch.
+         */since: Int64? = nil, until: Int64? = nil, 
+        /**
+         * Text anywhere in the entry.
+         */text: String? = nil, before: Int64? = nil, limit: UInt32? = nil) {
+        self.action = action
+        self.actor = actor
+        self.vaultId = vaultId
+        self.target = target
+        self.since = since
+        self.until = until
+        self.text = text
+        self.before = before
+        self.limit = limit
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuditQuery: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditQuery: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditQuery {
+        return
+            try AuditQuery(
+                action: FfiConverterOptionString.read(from: &buf), 
+                actor: FfiConverterOptionString.read(from: &buf), 
+                vaultId: FfiConverterOptionString.read(from: &buf), 
+                target: FfiConverterOptionString.read(from: &buf), 
+                since: FfiConverterOptionInt64.read(from: &buf), 
+                until: FfiConverterOptionInt64.read(from: &buf), 
+                text: FfiConverterOptionString.read(from: &buf), 
+                before: FfiConverterOptionInt64.read(from: &buf), 
+                limit: FfiConverterOptionUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuditQuery, into buf: inout [UInt8]) {
+        FfiConverterOptionString.write(value.action, into: &buf)
+        FfiConverterOptionString.write(value.actor, into: &buf)
+        FfiConverterOptionString.write(value.vaultId, into: &buf)
+        FfiConverterOptionString.write(value.target, into: &buf)
+        FfiConverterOptionInt64.write(value.since, into: &buf)
+        FfiConverterOptionInt64.write(value.until, into: &buf)
+        FfiConverterOptionString.write(value.text, into: &buf)
+        FfiConverterOptionInt64.write(value.before, into: &buf)
+        FfiConverterOptionUInt32.write(value.limit, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditQuery_lift(_ buf: RustBuffer) throws -> AuditQuery {
+    return try FfiConverterTypeAuditQuery.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditQuery_lower(_ value: AuditQuery) -> RustBuffer {
+    return FfiConverterTypeAuditQuery.lower(value)
+}
+
+
+/**
+ * A created sink and, for webhooks, its signing secret (shown once).
+ */
+public struct AuditSinkCreated: Equatable, Hashable {
+    public var sink: AuditSinkInfo
+    public var secret: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(sink: AuditSinkInfo, secret: String?) {
+        self.sink = sink
+        self.secret = secret
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuditSinkCreated: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditSinkCreated: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditSinkCreated {
+        return
+            try AuditSinkCreated(
+                sink: FfiConverterTypeAuditSinkInfo.read(from: &buf), 
+                secret: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuditSinkCreated, into buf: inout [UInt8]) {
+        FfiConverterTypeAuditSinkInfo.write(value.sink, into: &buf)
+        FfiConverterOptionString.write(value.secret, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkCreated_lift(_ buf: RustBuffer) throws -> AuditSinkCreated {
+    return try FfiConverterTypeAuditSinkCreated.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkCreated_lower(_ value: AuditSinkCreated) -> RustBuffer {
+    return FfiConverterTypeAuditSinkCreated.lower(value)
+}
+
+
+/**
+ * An audit sink (SIEM).
+ */
+public struct AuditSinkInfo: Equatable, Hashable {
+    public var id: String
+    /**
+     * `webhook` or `syslog`.
+     */
+    public var kind: String
+    public var name: String
+    /**
+     * Webhook URL.
+     */
+    public var url: String?
+    /**
+     * Syslog host, port and `tls`/`tcp`.
+     */
+    public var host: String?
+    public var port: UInt16?
+    public var transport: String?
+    public var actions: [String]
+    public var enabled: Bool
+    public var failures: Int64
+    public var lastError: String?
+    public var lastSuccessAt: Int64?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, 
+        /**
+         * `webhook` or `syslog`.
+         */kind: String, name: String, 
+        /**
+         * Webhook URL.
+         */url: String?, 
+        /**
+         * Syslog host, port and `tls`/`tcp`.
+         */host: String?, port: UInt16?, transport: String?, actions: [String], enabled: Bool, failures: Int64, lastError: String?, lastSuccessAt: Int64?) {
+        self.id = id
+        self.kind = kind
+        self.name = name
+        self.url = url
+        self.host = host
+        self.port = port
+        self.transport = transport
+        self.actions = actions
+        self.enabled = enabled
+        self.failures = failures
+        self.lastError = lastError
+        self.lastSuccessAt = lastSuccessAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuditSinkInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditSinkInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditSinkInfo {
+        return
+            try AuditSinkInfo(
+                id: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                url: FfiConverterOptionString.read(from: &buf), 
+                host: FfiConverterOptionString.read(from: &buf), 
+                port: FfiConverterOptionUInt16.read(from: &buf), 
+                transport: FfiConverterOptionString.read(from: &buf), 
+                actions: FfiConverterSequenceString.read(from: &buf), 
+                enabled: FfiConverterBool.read(from: &buf), 
+                failures: FfiConverterInt64.read(from: &buf), 
+                lastError: FfiConverterOptionString.read(from: &buf), 
+                lastSuccessAt: FfiConverterOptionInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuditSinkInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.url, into: &buf)
+        FfiConverterOptionString.write(value.host, into: &buf)
+        FfiConverterOptionUInt16.write(value.port, into: &buf)
+        FfiConverterOptionString.write(value.transport, into: &buf)
+        FfiConverterSequenceString.write(value.actions, into: &buf)
+        FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterInt64.write(value.failures, into: &buf)
+        FfiConverterOptionString.write(value.lastError, into: &buf)
+        FfiConverterOptionInt64.write(value.lastSuccessAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkInfo_lift(_ buf: RustBuffer) throws -> AuditSinkInfo {
+    return try FfiConverterTypeAuditSinkInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkInfo_lower(_ value: AuditSinkInfo) -> RustBuffer {
+    return FfiConverterTypeAuditSinkInfo.lower(value)
+}
+
+
+/**
+ * A new sink: `kind` `webhook` (with `url`) or `syslog` (with `host`,
+ * `port`, `transport` `tls`/`tcp` and optionally `ca_pem`).
+ */
+public struct AuditSinkInput: Equatable, Hashable {
+    public var kind: String
+    public var name: String
+    public var url: String?
+    public var host: String?
+    public var port: UInt16?
+    public var transport: String?
+    public var caPem: String?
+    /**
+     * Action patterns (`access.*`); empty: every entry.
+     */
+    public var actions: [String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(kind: String, name: String, url: String? = nil, host: String? = nil, port: UInt16? = nil, transport: String? = nil, caPem: String? = nil, 
+        /**
+         * Action patterns (`access.*`); empty: every entry.
+         */actions: [String] = []) {
+        self.kind = kind
+        self.name = name
+        self.url = url
+        self.host = host
+        self.port = port
+        self.transport = transport
+        self.caPem = caPem
+        self.actions = actions
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuditSinkInput: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditSinkInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditSinkInput {
+        return
+            try AuditSinkInput(
+                kind: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                url: FfiConverterOptionString.read(from: &buf), 
+                host: FfiConverterOptionString.read(from: &buf), 
+                port: FfiConverterOptionUInt16.read(from: &buf), 
+                transport: FfiConverterOptionString.read(from: &buf), 
+                caPem: FfiConverterOptionString.read(from: &buf), 
+                actions: FfiConverterSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuditSinkInput, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.url, into: &buf)
+        FfiConverterOptionString.write(value.host, into: &buf)
+        FfiConverterOptionUInt16.write(value.port, into: &buf)
+        FfiConverterOptionString.write(value.transport, into: &buf)
+        FfiConverterOptionString.write(value.caPem, into: &buf)
+        FfiConverterSequenceString.write(value.actions, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkInput_lift(_ buf: RustBuffer) throws -> AuditSinkInput {
+    return try FfiConverterTypeAuditSinkInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkInput_lower(_ value: AuditSinkInput) -> RustBuffer {
+    return FfiConverterTypeAuditSinkInput.lower(value)
+}
+
+
+/**
+ * The result of a test delivery.
+ */
+public struct AuditSinkTest: Equatable, Hashable {
+    public var ok: Bool
+    public var error: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(ok: Bool, error: String?) {
+        self.ok = ok
+        self.error = error
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension AuditSinkTest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditSinkTest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditSinkTest {
+        return
+            try AuditSinkTest(
+                ok: FfiConverterBool.read(from: &buf), 
+                error: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: AuditSinkTest, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.ok, into: &buf)
+        FfiConverterOptionString.write(value.error, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkTest_lift(_ buf: RustBuffer) throws -> AuditSinkTest {
+    return try FfiConverterTypeAuditSinkTest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditSinkTest_lower(_ value: AuditSinkTest) -> RustBuffer {
+    return FfiConverterTypeAuditSinkTest.lower(value)
 }
 
 
@@ -18719,6 +20848,554 @@ public func FfiConverterTypeDiscardedChanges_lift(_ buf: RustBuffer) throws -> D
 #endif
 public func FfiConverterTypeDiscardedChanges_lower(_ value: DiscardedChanges) -> RustBuffer {
     return FfiConverterTypeDiscardedChanges.lower(value)
+}
+
+
+/**
+ * Your published E2EE key.
+ */
+public struct E2eeKeyInfo: Equatable, Hashable {
+    public var id: String
+    /**
+     * Compare it with other devices or members (eight groups of four).
+     */
+    public var fingerprint: String
+    public var createdAt: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, 
+        /**
+         * Compare it with other devices or members (eight groups of four).
+         */fingerprint: String, createdAt: Int64) {
+        self.id = id
+        self.fingerprint = fingerprint
+        self.createdAt = createdAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeKeyInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeKeyInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeKeyInfo {
+        return
+            try E2eeKeyInfo(
+                id: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf), 
+                createdAt: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeKeyInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
+        FfiConverterInt64.write(value.createdAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeKeyInfo_lift(_ buf: RustBuffer) throws -> E2eeKeyInfo {
+    return try FfiConverterTypeE2eeKeyInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeKeyInfo_lower(_ value: E2eeKeyInfo) -> RustBuffer {
+    return FfiConverterTypeE2eeKeyInfo.lower(value)
+}
+
+
+/**
+ * A member's E2EE key (to give them a vault key).
+ */
+public struct E2eeMember: Equatable, Hashable {
+    public var userId: String
+    public var email: String
+    public var name: String
+    /**
+     * Empty when they have no E2EE key yet.
+     */
+    public var fingerprint: String
+    /**
+     * This device gave them a key before and their key changed since: ask
+     * them before going on.
+     */
+    public var keyChanged: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(userId: String, email: String, name: String, 
+        /**
+         * Empty when they have no E2EE key yet.
+         */fingerprint: String, 
+        /**
+         * This device gave them a key before and their key changed since: ask
+         * them before going on.
+         */keyChanged: Bool) {
+        self.userId = userId
+        self.email = email
+        self.name = name
+        self.fingerprint = fingerprint
+        self.keyChanged = keyChanged
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeMember: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeMember: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeMember {
+        return
+            try E2eeMember(
+                userId: FfiConverterString.read(from: &buf), 
+                email: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                fingerprint: FfiConverterString.read(from: &buf), 
+                keyChanged: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeMember, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.userId, into: &buf)
+        FfiConverterString.write(value.email, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.fingerprint, into: &buf)
+        FfiConverterBool.write(value.keyChanged, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeMember_lift(_ buf: RustBuffer) throws -> E2eeMember {
+    return try FfiConverterTypeE2eeMember.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeMember_lower(_ value: E2eeMember) -> RustBuffer {
+    return FfiConverterTypeE2eeMember.lower(value)
+}
+
+
+/**
+ * One of your devices asking for your E2EE key (`e2ee_pairings`).
+ */
+public struct E2eePairingRequest: Equatable, Hashable {
+    public var id: String
+    public var deviceName: String
+    /**
+     * Approve only if the new device shows the same code.
+     */
+    public var code: String
+    public var createdAt: Int64
+    public var expiresAt: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, deviceName: String, 
+        /**
+         * Approve only if the new device shows the same code.
+         */code: String, createdAt: Int64, expiresAt: Int64) {
+        self.id = id
+        self.deviceName = deviceName
+        self.code = code
+        self.createdAt = createdAt
+        self.expiresAt = expiresAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eePairingRequest: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eePairingRequest: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eePairingRequest {
+        return
+            try E2eePairingRequest(
+                id: FfiConverterString.read(from: &buf), 
+                deviceName: FfiConverterString.read(from: &buf), 
+                code: FfiConverterString.read(from: &buf), 
+                createdAt: FfiConverterInt64.read(from: &buf), 
+                expiresAt: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eePairingRequest, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.deviceName, into: &buf)
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterInt64.write(value.createdAt, into: &buf)
+        FfiConverterInt64.write(value.expiresAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eePairingRequest_lift(_ buf: RustBuffer) throws -> E2eePairingRequest {
+    return try FfiConverterTypeE2eePairingRequest.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eePairingRequest_lower(_ value: E2eePairingRequest) -> RustBuffer {
+    return FfiConverterTypeE2eePairingRequest.lower(value)
+}
+
+
+/**
+ * A new device waiting for another one (`e2ee_pairing_start`).
+ */
+public struct E2eePairingStart: Equatable, Hashable {
+    public var id: String
+    /**
+     * Six digits: the approving device shows the same.
+     */
+    public var code: String
+    public var expiresAt: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, 
+        /**
+         * Six digits: the approving device shows the same.
+         */code: String, expiresAt: Int64) {
+        self.id = id
+        self.code = code
+        self.expiresAt = expiresAt
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eePairingStart: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eePairingStart: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eePairingStart {
+        return
+            try E2eePairingStart(
+                id: FfiConverterString.read(from: &buf), 
+                code: FfiConverterString.read(from: &buf), 
+                expiresAt: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eePairingStart, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.code, into: &buf)
+        FfiConverterInt64.write(value.expiresAt, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eePairingStart_lift(_ buf: RustBuffer) throws -> E2eePairingStart {
+    return try FfiConverterTypeE2eePairingStart.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eePairingStart_lower(_ value: E2eePairingStart) -> RustBuffer {
+    return FfiConverterTypeE2eePairingStart.lower(value)
+}
+
+
+/**
+ * What `e2ee_setup` creates. Show `recovery_key` once and ask the person to
+ * keep it safe: it is the way back if every device is lost.
+ */
+public struct E2eeSetupResult: Equatable, Hashable {
+    public var key: E2eeKeyInfo
+    public var recoveryKey: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(key: E2eeKeyInfo, recoveryKey: String) {
+        self.key = key
+        self.recoveryKey = recoveryKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeSetupResult: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeSetupResult: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeSetupResult {
+        return
+            try E2eeSetupResult(
+                key: FfiConverterTypeE2eeKeyInfo.read(from: &buf), 
+                recoveryKey: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeSetupResult, into buf: inout [UInt8]) {
+        FfiConverterTypeE2eeKeyInfo.write(value.key, into: &buf)
+        FfiConverterString.write(value.recoveryKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeSetupResult_lift(_ buf: RustBuffer) throws -> E2eeSetupResult {
+    return try FfiConverterTypeE2eeSetupResult.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeSetupResult_lower(_ value: E2eeSetupResult) -> RustBuffer {
+    return FfiConverterTypeE2eeSetupResult.lower(value)
+}
+
+
+/**
+ * End-to-end encryption of the account on this device.
+ */
+public struct E2eeStatus: Equatable, Hashable {
+    /**
+     * The account has an E2EE key (set up on some device).
+     */
+    public var setUp: Bool
+    /**
+     * This device holds it (it can open E2EE vaults it has wraps for).
+     */
+    public var unlocked: Bool
+    public var key: E2eeKeyInfo?
+    /**
+     * An E2EE passphrase can unlock new devices.
+     */
+    public var hasPassphrase: Bool
+    public var hasRecoveryKey: Bool
+    /**
+     * Devices of yours waiting for approval (`e2ee_pairings`).
+     */
+    public var pendingPairings: UInt32
+    /**
+     * Secrets of E2EE vaults still sealed on this device.
+     */
+    public var lockedSecrets: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(
+        /**
+         * The account has an E2EE key (set up on some device).
+         */setUp: Bool, 
+        /**
+         * This device holds it (it can open E2EE vaults it has wraps for).
+         */unlocked: Bool, key: E2eeKeyInfo?, 
+        /**
+         * An E2EE passphrase can unlock new devices.
+         */hasPassphrase: Bool, hasRecoveryKey: Bool, 
+        /**
+         * Devices of yours waiting for approval (`e2ee_pairings`).
+         */pendingPairings: UInt32, 
+        /**
+         * Secrets of E2EE vaults still sealed on this device.
+         */lockedSecrets: UInt64) {
+        self.setUp = setUp
+        self.unlocked = unlocked
+        self.key = key
+        self.hasPassphrase = hasPassphrase
+        self.hasRecoveryKey = hasRecoveryKey
+        self.pendingPairings = pendingPairings
+        self.lockedSecrets = lockedSecrets
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeStatus: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeStatus: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeStatus {
+        return
+            try E2eeStatus(
+                setUp: FfiConverterBool.read(from: &buf), 
+                unlocked: FfiConverterBool.read(from: &buf), 
+                key: FfiConverterOptionTypeE2eeKeyInfo.read(from: &buf), 
+                hasPassphrase: FfiConverterBool.read(from: &buf), 
+                hasRecoveryKey: FfiConverterBool.read(from: &buf), 
+                pendingPairings: FfiConverterUInt32.read(from: &buf), 
+                lockedSecrets: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeStatus, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.setUp, into: &buf)
+        FfiConverterBool.write(value.unlocked, into: &buf)
+        FfiConverterOptionTypeE2eeKeyInfo.write(value.key, into: &buf)
+        FfiConverterBool.write(value.hasPassphrase, into: &buf)
+        FfiConverterBool.write(value.hasRecoveryKey, into: &buf)
+        FfiConverterUInt32.write(value.pendingPairings, into: &buf)
+        FfiConverterUInt64.write(value.lockedSecrets, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeStatus_lift(_ buf: RustBuffer) throws -> E2eeStatus {
+    return try FfiConverterTypeE2eeStatus.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeStatus_lower(_ value: E2eeStatus) -> RustBuffer {
+    return FfiConverterTypeE2eeStatus.lower(value)
+}
+
+
+/**
+ * What turning E2EE on (or rotating) covers (`e2ee_vault_state`).
+ */
+public struct E2eeVaultState: Equatable, Hashable {
+    public var e2ee: Bool
+    public var keyVersion: UInt32
+    /**
+     * Members who may hold the key and have an E2EE key.
+     */
+    public var recipients: [E2eeMember]
+    /**
+     * Members who may hold the key but have not set up E2EE.
+     */
+    public var withoutKey: [E2eeMember]
+    /**
+     * Items with a secret that will be sealed on this device.
+     */
+    public var items: UInt32
+    public var rekeyNeeded: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(e2ee: Bool, keyVersion: UInt32, 
+        /**
+         * Members who may hold the key and have an E2EE key.
+         */recipients: [E2eeMember], 
+        /**
+         * Members who may hold the key but have not set up E2EE.
+         */withoutKey: [E2eeMember], 
+        /**
+         * Items with a secret that will be sealed on this device.
+         */items: UInt32, rekeyNeeded: Bool) {
+        self.e2ee = e2ee
+        self.keyVersion = keyVersion
+        self.recipients = recipients
+        self.withoutKey = withoutKey
+        self.items = items
+        self.rekeyNeeded = rekeyNeeded
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeVaultState: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeVaultState: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeVaultState {
+        return
+            try E2eeVaultState(
+                e2ee: FfiConverterBool.read(from: &buf), 
+                keyVersion: FfiConverterUInt32.read(from: &buf), 
+                recipients: FfiConverterSequenceTypeE2eeMember.read(from: &buf), 
+                withoutKey: FfiConverterSequenceTypeE2eeMember.read(from: &buf), 
+                items: FfiConverterUInt32.read(from: &buf), 
+                rekeyNeeded: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeVaultState, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.e2ee, into: &buf)
+        FfiConverterUInt32.write(value.keyVersion, into: &buf)
+        FfiConverterSequenceTypeE2eeMember.write(value.recipients, into: &buf)
+        FfiConverterSequenceTypeE2eeMember.write(value.withoutKey, into: &buf)
+        FfiConverterUInt32.write(value.items, into: &buf)
+        FfiConverterBool.write(value.rekeyNeeded, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeVaultState_lift(_ buf: RustBuffer) throws -> E2eeVaultState {
+    return try FfiConverterTypeE2eeVaultState.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeVaultState_lower(_ value: E2eeVaultState) -> RustBuffer {
+    return FfiConverterTypeE2eeVaultState.lower(value)
 }
 
 
@@ -26085,6 +28762,11 @@ public struct SshHost: Equatable, Hashable {
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     public var secretHidden: Bool
+    /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    public var e2eeLocked: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -26134,7 +28816,11 @@ public struct SshHost: Equatable, Hashable {
          */access: ItemAccess? = nil, 
         /**
          * Read-only: a secret exists but you cannot see it (Use-only vault).
-         */secretHidden: Bool = false) {
+         */secretHidden: Bool = false, 
+        /**
+         * Read-only: the secret is end-to-end encrypted and this device has
+         * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+         */e2eeLocked: Bool = false) {
         self.id = id
         self.label = label
         self.address = address
@@ -26155,6 +28841,7 @@ public struct SshHost: Equatable, Hashable {
         self.vaultId = vaultId
         self.access = access
         self.secretHidden = secretHidden
+        self.e2eeLocked = e2eeLocked
     }
 
     
@@ -26192,7 +28879,8 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
                 accountId: FfiConverterOptionString.read(from: &buf), 
                 vaultId: FfiConverterOptionString.read(from: &buf), 
                 access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
-                secretHidden: FfiConverterBool.read(from: &buf)
+                secretHidden: FfiConverterBool.read(from: &buf), 
+                e2eeLocked: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -26217,6 +28905,7 @@ public struct FfiConverterTypeSshHost: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.vaultId, into: &buf)
         FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
         FfiConverterBool.write(value.secretHidden, into: &buf)
+        FfiConverterBool.write(value.e2eeLocked, into: &buf)
     }
 }
 
@@ -26273,6 +28962,11 @@ public struct SshIdentity: Equatable, Hashable {
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     public var secretHidden: Bool
+    /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    public var e2eeLocked: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -26298,7 +28992,11 @@ public struct SshIdentity: Equatable, Hashable {
          */access: ItemAccess? = nil, 
         /**
          * Read-only: a secret exists but you cannot see it (Use-only vault).
-         */secretHidden: Bool = false) {
+         */secretHidden: Bool = false, 
+        /**
+         * Read-only: the secret is end-to-end encrypted and this device has
+         * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+         */e2eeLocked: Bool = false) {
         self.id = id
         self.label = label
         self.username = username
@@ -26310,6 +29008,7 @@ public struct SshIdentity: Equatable, Hashable {
         self.vaultId = vaultId
         self.access = access
         self.secretHidden = secretHidden
+        self.e2eeLocked = e2eeLocked
     }
 
     
@@ -26338,7 +29037,8 @@ public struct FfiConverterTypeSshIdentity: FfiConverterRustBuffer {
                 accountId: FfiConverterOptionString.read(from: &buf), 
                 vaultId: FfiConverterOptionString.read(from: &buf), 
                 access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
-                secretHidden: FfiConverterBool.read(from: &buf)
+                secretHidden: FfiConverterBool.read(from: &buf), 
+                e2eeLocked: FfiConverterBool.read(from: &buf)
         )
     }
 
@@ -26354,6 +29054,7 @@ public struct FfiConverterTypeSshIdentity: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.vaultId, into: &buf)
         FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
         FfiConverterBool.write(value.secretHidden, into: &buf)
+        FfiConverterBool.write(value.e2eeLocked, into: &buf)
     }
 }
 
@@ -26430,6 +29131,11 @@ public struct SshKey: Equatable, Hashable {
      */
     public var secretHidden: Bool
     /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    public var e2eeLocked: Bool
+    /**
      * Read-only: FIDO2 security key details (sk keys; also derived for
      * sk keys imported by older apps). See docs/SSH-PRO.md.
      */
@@ -26476,6 +29182,10 @@ public struct SshKey: Equatable, Hashable {
          * Read-only: a secret exists but you cannot see it (Use-only vault).
          */secretHidden: Bool = false, 
         /**
+         * Read-only: the secret is end-to-end encrypted and this device has
+         * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+         */e2eeLocked: Bool = false, 
+        /**
          * Read-only: FIDO2 security key details (sk keys; also derived for
          * sk keys imported by older apps). See docs/SSH-PRO.md.
          */securityKey: SecurityKeyInfo? = nil) {
@@ -26494,6 +29204,7 @@ public struct SshKey: Equatable, Hashable {
         self.vaultId = vaultId
         self.access = access
         self.secretHidden = secretHidden
+        self.e2eeLocked = e2eeLocked
         self.securityKey = securityKey
     }
 
@@ -26528,6 +29239,7 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
                 vaultId: FfiConverterOptionString.read(from: &buf), 
                 access: FfiConverterOptionTypeItemAccess.read(from: &buf), 
                 secretHidden: FfiConverterBool.read(from: &buf), 
+                e2eeLocked: FfiConverterBool.read(from: &buf), 
                 securityKey: FfiConverterOptionTypeSecurityKeyInfo.read(from: &buf)
         )
     }
@@ -26548,6 +29260,7 @@ public struct FfiConverterTypeSshKey: FfiConverterRustBuffer {
         FfiConverterOptionString.write(value.vaultId, into: &buf)
         FfiConverterOptionTypeItemAccess.write(value.access, into: &buf)
         FfiConverterBool.write(value.secretHidden, into: &buf)
+        FfiConverterBool.write(value.e2eeLocked, into: &buf)
         FfiConverterOptionTypeSecurityKeyInfo.write(value.securityKey, into: &buf)
     }
 }
@@ -26565,6 +29278,275 @@ public func FfiConverterTypeSshKey_lift(_ buf: RustBuffer) throws -> SshKey {
 #endif
 public func FfiConverterTypeSshKey_lower(_ value: SshKey) -> RustBuffer {
     return FfiConverterTypeSshKey.lower(value)
+}
+
+
+/**
+ * A single sign-on in progress: open `authorize_url` in the system
+ * browser (Custom Tab, `ASWebAuthenticationSession`); keep the rest for
+ * `sso_complete`.
+ */
+public struct SsoFlow: Equatable, Hashable {
+    public var authorizeUrl: String
+    public var serverUrl: String
+    public var state: String
+    public var verifier: String
+    public var redirectUri: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(authorizeUrl: String, serverUrl: String, state: String, verifier: String, redirectUri: String) {
+        self.authorizeUrl = authorizeUrl
+        self.serverUrl = serverUrl
+        self.state = state
+        self.verifier = verifier
+        self.redirectUri = redirectUri
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SsoFlow: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoFlow: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoFlow {
+        return
+            try SsoFlow(
+                authorizeUrl: FfiConverterString.read(from: &buf), 
+                serverUrl: FfiConverterString.read(from: &buf), 
+                state: FfiConverterString.read(from: &buf), 
+                verifier: FfiConverterString.read(from: &buf), 
+                redirectUri: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SsoFlow, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.authorizeUrl, into: &buf)
+        FfiConverterString.write(value.serverUrl, into: &buf)
+        FfiConverterString.write(value.state, into: &buf)
+        FfiConverterString.write(value.verifier, into: &buf)
+        FfiConverterString.write(value.redirectUri, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoFlow_lift(_ buf: RustBuffer) throws -> SsoFlow {
+    return try FfiConverterTypeSsoFlow.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoFlow_lower(_ value: SsoFlow) -> RustBuffer {
+    return FfiConverterTypeSsoFlow.lower(value)
+}
+
+
+/**
+ * Whether an email signs in through its team's SSO (`sso_discover`).
+ */
+public struct SsoHint: Equatable, Hashable {
+    public var sso: Bool
+    /**
+     * Password sign-in is refused for this email: only offer SSO.
+     */
+    public var enforced: Bool
+    public var teamId: String?
+    public var teamName: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(sso: Bool, 
+        /**
+         * Password sign-in is refused for this email: only offer SSO.
+         */enforced: Bool, teamId: String?, teamName: String?) {
+        self.sso = sso
+        self.enforced = enforced
+        self.teamId = teamId
+        self.teamName = teamName
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SsoHint: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoHint: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoHint {
+        return
+            try SsoHint(
+                sso: FfiConverterBool.read(from: &buf), 
+                enforced: FfiConverterBool.read(from: &buf), 
+                teamId: FfiConverterOptionString.read(from: &buf), 
+                teamName: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SsoHint, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.sso, into: &buf)
+        FfiConverterBool.write(value.enforced, into: &buf)
+        FfiConverterOptionString.write(value.teamId, into: &buf)
+        FfiConverterOptionString.write(value.teamName, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoHint_lift(_ buf: RustBuffer) throws -> SsoHint {
+    return try FfiConverterTypeSsoHint.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoHint_lower(_ value: SsoHint) -> RustBuffer {
+    return FfiConverterTypeSsoHint.lower(value)
+}
+
+
+/**
+ * A team's SSO settings (team owners and admins).
+ */
+public struct SsoSettings: Equatable, Hashable {
+    public var enabled: Bool
+    /**
+     * `google`, `microsoft`, `keycloak`, `authentik` or `generic`.
+     */
+    public var preset: String
+    public var issuer: String
+    public var tenant: String?
+    public var clientId: String
+    public var scopes: [String]
+    public var emailClaim: String?
+    public var requireEmailVerified: Bool
+    public var enforce: Bool
+    public var ownerPasswordAllowed: Bool
+    public var autoCreate: Bool
+    public var autoJoin: Bool
+    public var satisfies2fa: Bool
+    /**
+     * Read-only: a client secret is stored.
+     */
+    public var hasClientSecret: Bool
+    /**
+     * Read-only: the URL to register at the identity provider.
+     */
+    public var redirectUri: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(enabled: Bool, 
+        /**
+         * `google`, `microsoft`, `keycloak`, `authentik` or `generic`.
+         */preset: String, issuer: String, tenant: String?, clientId: String, scopes: [String], emailClaim: String?, requireEmailVerified: Bool, enforce: Bool, ownerPasswordAllowed: Bool, autoCreate: Bool, autoJoin: Bool, satisfies2fa: Bool, 
+        /**
+         * Read-only: a client secret is stored.
+         */hasClientSecret: Bool = false, 
+        /**
+         * Read-only: the URL to register at the identity provider.
+         */redirectUri: String = "") {
+        self.enabled = enabled
+        self.preset = preset
+        self.issuer = issuer
+        self.tenant = tenant
+        self.clientId = clientId
+        self.scopes = scopes
+        self.emailClaim = emailClaim
+        self.requireEmailVerified = requireEmailVerified
+        self.enforce = enforce
+        self.ownerPasswordAllowed = ownerPasswordAllowed
+        self.autoCreate = autoCreate
+        self.autoJoin = autoJoin
+        self.satisfies2fa = satisfies2fa
+        self.hasClientSecret = hasClientSecret
+        self.redirectUri = redirectUri
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SsoSettings: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSsoSettings: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SsoSettings {
+        return
+            try SsoSettings(
+                enabled: FfiConverterBool.read(from: &buf), 
+                preset: FfiConverterString.read(from: &buf), 
+                issuer: FfiConverterString.read(from: &buf), 
+                tenant: FfiConverterOptionString.read(from: &buf), 
+                clientId: FfiConverterString.read(from: &buf), 
+                scopes: FfiConverterSequenceString.read(from: &buf), 
+                emailClaim: FfiConverterOptionString.read(from: &buf), 
+                requireEmailVerified: FfiConverterBool.read(from: &buf), 
+                enforce: FfiConverterBool.read(from: &buf), 
+                ownerPasswordAllowed: FfiConverterBool.read(from: &buf), 
+                autoCreate: FfiConverterBool.read(from: &buf), 
+                autoJoin: FfiConverterBool.read(from: &buf), 
+                satisfies2fa: FfiConverterBool.read(from: &buf), 
+                hasClientSecret: FfiConverterBool.read(from: &buf), 
+                redirectUri: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SsoSettings, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.enabled, into: &buf)
+        FfiConverterString.write(value.preset, into: &buf)
+        FfiConverterString.write(value.issuer, into: &buf)
+        FfiConverterOptionString.write(value.tenant, into: &buf)
+        FfiConverterString.write(value.clientId, into: &buf)
+        FfiConverterSequenceString.write(value.scopes, into: &buf)
+        FfiConverterOptionString.write(value.emailClaim, into: &buf)
+        FfiConverterBool.write(value.requireEmailVerified, into: &buf)
+        FfiConverterBool.write(value.enforce, into: &buf)
+        FfiConverterBool.write(value.ownerPasswordAllowed, into: &buf)
+        FfiConverterBool.write(value.autoCreate, into: &buf)
+        FfiConverterBool.write(value.autoJoin, into: &buf)
+        FfiConverterBool.write(value.satisfies2fa, into: &buf)
+        FfiConverterBool.write(value.hasClientSecret, into: &buf)
+        FfiConverterString.write(value.redirectUri, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoSettings_lift(_ buf: RustBuffer) throws -> SsoSettings {
+    return try FfiConverterTypeSsoSettings.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSsoSettings_lower(_ value: SsoSettings) -> RustBuffer {
+    return FfiConverterTypeSsoSettings.lower(value)
 }
 
 
@@ -26610,6 +29592,15 @@ public struct SyncReport: Equatable, Hashable {
      * `v2` (vaults) or `legacy`.
      */
     public var `protocol`: String
+    /**
+     * Local changes with secrets of E2EE vaults waiting for this device
+     * to be unlocked (0.7 phase 5a).
+     */
+    public var e2eeWaiting: UInt64
+    /**
+     * Secrets of E2EE vaults still sealed on this device: offer "Unlock".
+     */
+    public var e2eeLocked: UInt64
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -26640,7 +29631,14 @@ public struct SyncReport: Equatable, Hashable {
          */vaultsLost: [VaultRef] = [], 
         /**
          * `v2` (vaults) or `legacy`.
-         */`protocol`: String = "") {
+         */`protocol`: String = "", 
+        /**
+         * Local changes with secrets of E2EE vaults waiting for this device
+         * to be unlocked (0.7 phase 5a).
+         */e2eeWaiting: UInt64 = UInt64(0), 
+        /**
+         * Secrets of E2EE vaults still sealed on this device: offer "Unlock".
+         */e2eeLocked: UInt64 = UInt64(0)) {
         self.pushed = pushed
         self.pulled = pulled
         self.rev = rev
@@ -26650,6 +29648,8 @@ public struct SyncReport: Equatable, Hashable {
         self.vaultsAdded = vaultsAdded
         self.vaultsLost = vaultsLost
         self.`protocol` = `protocol`
+        self.e2eeWaiting = e2eeWaiting
+        self.e2eeLocked = e2eeLocked
     }
 
     
@@ -26676,7 +29676,9 @@ public struct FfiConverterTypeSyncReport: FfiConverterRustBuffer {
                 discarded: FfiConverterSequenceTypeDiscardedChanges.read(from: &buf), 
                 vaultsAdded: FfiConverterSequenceTypeVaultRef.read(from: &buf), 
                 vaultsLost: FfiConverterSequenceTypeVaultRef.read(from: &buf), 
-                protocol: FfiConverterString.read(from: &buf)
+                protocol: FfiConverterString.read(from: &buf), 
+                e2eeWaiting: FfiConverterUInt64.read(from: &buf), 
+                e2eeLocked: FfiConverterUInt64.read(from: &buf)
         )
     }
 
@@ -26690,6 +29692,8 @@ public struct FfiConverterTypeSyncReport: FfiConverterRustBuffer {
         FfiConverterSequenceTypeVaultRef.write(value.vaultsAdded, into: &buf)
         FfiConverterSequenceTypeVaultRef.write(value.vaultsLost, into: &buf)
         FfiConverterString.write(value.`protocol`, into: &buf)
+        FfiConverterUInt64.write(value.e2eeWaiting, into: &buf)
+        FfiConverterUInt64.write(value.e2eeLocked, into: &buf)
     }
 }
 
@@ -27042,6 +30046,85 @@ public func FfiConverterTypeTeamComplianceMember_lift(_ buf: RustBuffer) throws 
 #endif
 public func FfiConverterTypeTeamComplianceMember_lower(_ value: TeamComplianceMember) -> RustBuffer {
     return FfiConverterTypeTeamComplianceMember.lower(value)
+}
+
+
+/**
+ * A domain of a team and its DNS proof.
+ */
+public struct TeamDomainInfo: Equatable, Hashable {
+    public var domain: String
+    /**
+     * TXT record to create.
+     */
+    public var recordName: String
+    public var recordValue: String
+    public var verified: Bool
+    public var verifiedAt: Int64?
+    public var lastError: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(domain: String, 
+        /**
+         * TXT record to create.
+         */recordName: String, recordValue: String, verified: Bool, verifiedAt: Int64?, lastError: String?) {
+        self.domain = domain
+        self.recordName = recordName
+        self.recordValue = recordValue
+        self.verified = verified
+        self.verifiedAt = verifiedAt
+        self.lastError = lastError
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension TeamDomainInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeTeamDomainInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TeamDomainInfo {
+        return
+            try TeamDomainInfo(
+                domain: FfiConverterString.read(from: &buf), 
+                recordName: FfiConverterString.read(from: &buf), 
+                recordValue: FfiConverterString.read(from: &buf), 
+                verified: FfiConverterBool.read(from: &buf), 
+                verifiedAt: FfiConverterOptionInt64.read(from: &buf), 
+                lastError: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: TeamDomainInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.domain, into: &buf)
+        FfiConverterString.write(value.recordName, into: &buf)
+        FfiConverterString.write(value.recordValue, into: &buf)
+        FfiConverterBool.write(value.verified, into: &buf)
+        FfiConverterOptionInt64.write(value.verifiedAt, into: &buf)
+        FfiConverterOptionString.write(value.lastError, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTeamDomainInfo_lift(_ buf: RustBuffer) throws -> TeamDomainInfo {
+    return try FfiConverterTypeTeamDomainInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeTeamDomainInfo_lower(_ value: TeamDomainInfo) -> RustBuffer {
+    return FfiConverterTypeTeamDomainInfo.lower(value)
 }
 
 
@@ -28068,6 +31151,111 @@ public func FfiConverterTypeVaultChanges_lower(_ value: VaultChanges) -> RustBuf
 
 
 /**
+ * An E2EE vault as you see it (`VaultInfo.e2ee`).
+ */
+public struct VaultE2eeInfo: Equatable, Hashable {
+    public var keyVersion: UInt32
+    /**
+     * Your role and the team's policy let you hold the key.
+     */
+    public var mayHoldKey: Bool
+    /**
+     * The server has your wrap of the key (this device opens it once
+     * unlocked).
+     */
+    public var hasWrap: Bool
+    /**
+     * Someone lost access: rotate the key (`e2ee_rotate_vault`).
+     */
+    public var rekeyNeeded: Bool
+    /**
+     * Members waiting for you to give them the key (`e2ee_pending_members`).
+     */
+    public var pendingMembers: UInt32
+    /**
+     * Members who may hold the key but have not set up E2EE.
+     */
+    public var membersWithoutKey: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(keyVersion: UInt32, 
+        /**
+         * Your role and the team's policy let you hold the key.
+         */mayHoldKey: Bool, 
+        /**
+         * The server has your wrap of the key (this device opens it once
+         * unlocked).
+         */hasWrap: Bool, 
+        /**
+         * Someone lost access: rotate the key (`e2ee_rotate_vault`).
+         */rekeyNeeded: Bool, 
+        /**
+         * Members waiting for you to give them the key (`e2ee_pending_members`).
+         */pendingMembers: UInt32, 
+        /**
+         * Members who may hold the key but have not set up E2EE.
+         */membersWithoutKey: Int64) {
+        self.keyVersion = keyVersion
+        self.mayHoldKey = mayHoldKey
+        self.hasWrap = hasWrap
+        self.rekeyNeeded = rekeyNeeded
+        self.pendingMembers = pendingMembers
+        self.membersWithoutKey = membersWithoutKey
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension VaultE2eeInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeVaultE2eeInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> VaultE2eeInfo {
+        return
+            try VaultE2eeInfo(
+                keyVersion: FfiConverterUInt32.read(from: &buf), 
+                mayHoldKey: FfiConverterBool.read(from: &buf), 
+                hasWrap: FfiConverterBool.read(from: &buf), 
+                rekeyNeeded: FfiConverterBool.read(from: &buf), 
+                pendingMembers: FfiConverterUInt32.read(from: &buf), 
+                membersWithoutKey: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: VaultE2eeInfo, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.keyVersion, into: &buf)
+        FfiConverterBool.write(value.mayHoldKey, into: &buf)
+        FfiConverterBool.write(value.hasWrap, into: &buf)
+        FfiConverterBool.write(value.rekeyNeeded, into: &buf)
+        FfiConverterUInt32.write(value.pendingMembers, into: &buf)
+        FfiConverterInt64.write(value.membersWithoutKey, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultE2eeInfo_lift(_ buf: RustBuffer) throws -> VaultE2eeInfo {
+    return try FfiConverterTypeVaultE2eeInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeVaultE2eeInfo_lower(_ value: VaultE2eeInfo) -> RustBuffer {
+    return FfiConverterTypeVaultE2eeInfo.lower(value)
+}
+
+
+/**
  * A vault of an account.
  */
 public struct VaultInfo: Equatable, Hashable {
@@ -28109,6 +31297,11 @@ public struct VaultInfo: Equatable, Hashable {
      * no policy, or an older server). Hide what it forbids.
      */
     public var policy: VaultPolicyInfo?
+    /**
+     * End-to-end encrypted vault (0.7 phase 5a; `None`: the server keeps
+     * its key). With `e2ee`, server sessions need `open_server_session_unlocked`.
+     */
+    public var e2ee: VaultE2eeInfo?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -28134,7 +31327,11 @@ public struct VaultInfo: Equatable, Hashable {
         /**
          * What the team's policies mean for you here (0.7 phase 4b; `None`:
          * no policy, or an older server). Hide what it forbids.
-         */policy: VaultPolicyInfo?) {
+         */policy: VaultPolicyInfo?, 
+        /**
+         * End-to-end encrypted vault (0.7 phase 5a; `None`: the server keeps
+         * its key). With `e2ee`, server sessions need `open_server_session_unlocked`.
+         */e2ee: VaultE2eeInfo? = nil) {
         self.id = id
         self.accountId = accountId
         self.name = name
@@ -28151,6 +31348,7 @@ public struct VaultInfo: Equatable, Hashable {
         self.strict = strict
         self.teamMemberRole = teamMemberRole
         self.policy = policy
+        self.e2ee = e2ee
     }
 
     
@@ -28184,7 +31382,8 @@ public struct FfiConverterTypeVaultInfo: FfiConverterRustBuffer {
                 hostCount: FfiConverterInt64.read(from: &buf), 
                 strict: FfiConverterBool.read(from: &buf), 
                 teamMemberRole: FfiConverterOptionTypeVaultRole.read(from: &buf), 
-                policy: FfiConverterOptionTypeVaultPolicyInfo.read(from: &buf)
+                policy: FfiConverterOptionTypeVaultPolicyInfo.read(from: &buf), 
+                e2ee: FfiConverterOptionTypeVaultE2eeInfo.read(from: &buf)
         )
     }
 
@@ -28205,6 +31404,7 @@ public struct FfiConverterTypeVaultInfo: FfiConverterRustBuffer {
         FfiConverterBool.write(value.strict, into: &buf)
         FfiConverterOptionTypeVaultRole.write(value.teamMemberRole, into: &buf)
         FfiConverterOptionTypeVaultPolicyInfo.write(value.policy, into: &buf)
+        FfiConverterOptionTypeVaultE2eeInfo.write(value.e2ee, into: &buf)
     }
 }
 
@@ -29687,6 +32887,89 @@ public func FfiConverterTypeAiTaskStatus_lift(_ buf: RustBuffer) throws -> AiTas
 #endif
 public func FfiConverterTypeAiTaskStatus_lower(_ value: AiTaskStatus) -> RustBuffer {
     return FfiConverterTypeAiTaskStatus.lower(value)
+}
+
+
+
+/**
+ * Whose audit log.
+ */
+
+public enum AuditScope: Equatable, Hashable {
+    
+    case me
+    case vault
+    case team
+    case server
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AuditScope: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAuditScope: FfiConverterRustBuffer {
+    typealias SwiftType = AuditScope
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AuditScope {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .me
+        
+        case 2: return .vault
+        
+        case 3: return .team
+        
+        case 4: return .server
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AuditScope, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .me:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .vault:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .team:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .server:
+            writeInt(&buf, Int32(4))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditScope_lift(_ buf: RustBuffer) throws -> AuditScope {
+    return try FfiConverterTypeAuditScope.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAuditScope_lower(_ value: AuditScope) -> RustBuffer {
+    return FfiConverterTypeAuditScope.lower(value)
 }
 
 
@@ -34212,6 +37495,21 @@ enum TermoakError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
      */
     case SecurityKey(message: String)
     
+    /**
+     * End-to-end encrypted secrets this device (or the server) cannot open
+     * (0.7 phase 5a): `apiError.code` is `e2ee_locked` (unlock E2EE on this
+     * device: passphrase, recovery key or another device) or
+     * `e2ee_unlock_required` (a server session needs the host's
+     * credentials: `open_server_session_unlocked`).
+     */
+    case E2eeLocked(message: String)
+    
+    /**
+     * The email's team signs in through single sign-on only
+     * (`sso_required`): start `sso_start` instead of the password.
+     */
+    case SsoRequired(message: String)
+    
 
     
 
@@ -34357,6 +37655,14 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             message: try FfiConverterString.read(from: &buf)
         )
         
+        case 30: return .E2eeLocked(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 31: return .SsoRequired(
+            message: try FfiConverterString.read(from: &buf)
+        )
+        
 
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -34426,6 +37732,10 @@ public struct FfiConverterTypeTermoakError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(28))
         case .SecurityKey(_ /* message is ignored*/):
             writeInt(&buf, Int32(29))
+        case .E2eeLocked(_ /* message is ignored*/):
+            writeInt(&buf, Int32(30))
+        case .SsoRequired(_ /* message is ignored*/):
+            writeInt(&buf, Int32(31))
 
         
         }
@@ -35493,6 +38803,30 @@ fileprivate struct FfiConverterOptionTypeCsvMapping: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeE2eeKeyInfo: FfiConverterRustBuffer {
+    typealias SwiftType = E2eeKeyInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeE2eeKeyInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeE2eeKeyInfo.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeHostProxy: FfiConverterRustBuffer {
     typealias SwiftType = HostProxy?
 
@@ -35757,6 +39091,30 @@ fileprivate struct FfiConverterOptionTypeSnippetContext: FfiConverterRustBuffer 
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeSsoSettings: FfiConverterRustBuffer {
+    typealias SwiftType = SsoSettings?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeSsoSettings.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeSsoSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTailscaleSettings: FfiConverterRustBuffer {
     typealias SwiftType = TailscaleSettings?
 
@@ -35773,6 +39131,30 @@ fileprivate struct FfiConverterOptionTypeTailscaleSettings: FfiConverterRustBuff
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeTailscaleSettings.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeVaultE2eeInfo: FfiConverterRustBuffer {
+    typealias SwiftType = VaultE2eeInfo?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeVaultE2eeInfo.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeVaultE2eeInfo.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -36616,6 +39998,31 @@ fileprivate struct FfiConverterSequenceTypeAuditEvent: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeAuditSinkInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [AuditSinkInfo]
+
+    public static func write(_ value: [AuditSinkInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeAuditSinkInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [AuditSinkInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [AuditSinkInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeAuditSinkInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeAuthorPeriod: FfiConverterRustBuffer {
     typealias SwiftType = [AuthorPeriod]
 
@@ -36833,6 +40240,56 @@ fileprivate struct FfiConverterSequenceTypeDiscardedChanges: FfiConverterRustBuf
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeDiscardedChanges.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeE2eeMember: FfiConverterRustBuffer {
+    typealias SwiftType = [E2eeMember]
+
+    public static func write(_ value: [E2eeMember], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeE2eeMember.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [E2eeMember] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [E2eeMember]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeE2eeMember.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeE2eePairingRequest: FfiConverterRustBuffer {
+    typealias SwiftType = [E2eePairingRequest]
+
+    public static func write(_ value: [E2eePairingRequest], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeE2eePairingRequest.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [E2eePairingRequest] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [E2eePairingRequest]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeE2eePairingRequest.read(from: &buf))
         }
         return seq
     }
@@ -37716,6 +41173,31 @@ fileprivate struct FfiConverterSequenceTypeTeamComplianceMember: FfiConverterRus
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeTeamDomainInfo: FfiConverterRustBuffer {
+    typealias SwiftType = [TeamDomainInfo]
+
+    public static func write(_ value: [TeamDomainInfo], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeTeamDomainInfo.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [TeamDomainInfo] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [TeamDomainInfo]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeTeamDomainInfo.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer {
     typealias SwiftType = [TeamMember]
 
@@ -38170,6 +41652,29 @@ public func qrCode(text: String) -> QrCode?  {
     return try!  FfiConverterOptionTypeQrCode.lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_func_qr_code(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * The fingerprint of an E2EE public key (base64), as members compare it.
+ */
+public func e2eeFingerprint(publicKey: String)throws  -> String  {
+    return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeTermoakError_lift) {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_e2ee_fingerprint(
+        FfiConverterString.lower(publicKey),uniffiCallStatus
+    )
+})
+}
+/**
+ * Whether `text` is a well-formed recovery key (its check digits match):
+ * for live feedback while the person types it.
+ */
+public func e2eeRecoveryKeyValid(text: String) -> Bool  {
+    return try!  FfiConverterBool.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(
         FfiConverterString.lower(text),uniffiCallStatus
     )
 })
@@ -38892,6 +42397,12 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_qr_code() != 59982) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_func_e2ee_fingerprint() != 64275) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() != 62772) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_func_api_error_info() != 40019) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -39264,6 +42775,108 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook() != 55951) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_add_team_domain() != 51073) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_audit_export() != 5170) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_audit_search() != 18593) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_audit_sinks() != 38378) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_create_audit_sink() != 11472) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_delete_audit_sink() != 50663) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_delete_team_sso() != 21178) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_add_members() != 22213) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_disable_vault() != 18728) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_enable_vault() != 15375) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_lock() != 45079) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_new_recovery_key() != 29912) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_decide() != 11869) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_finish() != 6296) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_start() != 2488) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairings() != 21020) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members() != 56655) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault() != 37157) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_set_passphrase() != 50085) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_setup() != 18812) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_status() != 59126) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_passphrase() != 32113) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_recovery_key() != 17134) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_vault_state() != 12345) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_open_server_session_unlocked() != 40526) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_domain() != 36954) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_team_audit_retention() != 45270) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_set_team_sso() != 25316) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_team_audit_retention() != 45624) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_team_domains() != 7993) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_team_sso() != 45837) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink() != 2654) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink() != 14785) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_verify_team_domain() != 40243) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() != 2181) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -39400,6 +43013,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_authhandler_on_prompt() != 35175) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_ssoloopback_flow() != 20296) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_ssoloopback_wait_callback() != 2301) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed() != 35638) {
@@ -40045,6 +43664,120 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_record_command() != 5544) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_add_team_domain() != 45227) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_audit_export() != 59675) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_audit_search() != 36181) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_audit_sinks() != 12706) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_create_audit_sink() != 48738) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_audit_sink() != 3129) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_delete_team_sso() != 44590) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_add_members() != 639) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_disable_vault() != 51477) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_enable_vault() != 35330) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_lock() != 20780) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_new_recovery_key() != 46374) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_decide() != 3716) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_finish() != 57979) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_start() != 40748) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairings() != 41925) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members() != 58629) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault() != 37223) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_set_passphrase() != 36615) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_setup() != 1243) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_status() != 54273) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_passphrase() != 60856) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_recovery_key() != 47360) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_vault_state() != 27523) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session_unlocked() != 9904) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_domain() != 33336) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_team_audit_retention() != 9582) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_set_team_sso() != 50887) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sso_complete() != 25952) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sso_discover() != 21799) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sso_start() != 33159) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_sso_start_loopback() != 35769) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_team_audit_retention() != 32318) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_team_domains() != 20479) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_team_sso() != 18306) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink() != 6419) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink() != 30404) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_verify_team_domain() != 14560) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() != 47334) {

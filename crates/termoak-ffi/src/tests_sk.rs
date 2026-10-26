@@ -310,6 +310,7 @@ fn security_keys_through_the_ffi() {
         vault_id: None,
         access: None,
         secret_hidden: false,
+        e2ee_locked: false,
     };
     h.settings.port = Some(sshd.port.into());
     h.settings.username = Some(user);
@@ -488,6 +489,7 @@ fn snippets_with_variables_through_the_ffi() {
         vault_id: None,
         access: None,
         secret_hidden: false,
+        e2ee_locked: false,
     };
     h.settings.username = Some("root".into());
     h.settings.port = Some(2222);

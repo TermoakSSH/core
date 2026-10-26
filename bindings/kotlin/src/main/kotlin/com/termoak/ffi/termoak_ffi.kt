@@ -924,6 +924,10 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_qr_code(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_e2ee_fingerprint(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_api_error_info(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_detect_import_format(
@@ -1172,6 +1176,74 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_add_team_domain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_audit_export(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_audit_search(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_audit_sinks(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_create_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_delete_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_delete_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_add_members(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_disable_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_enable_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_lock(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_new_recovery_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_decide(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_finish(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_start(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairings(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_set_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_setup(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_status(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_recovery_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_vault_state(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_open_server_session_unlocked(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_domain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_team_audit_retention(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_set_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_audit_retention(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_domains(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_verify_team_domain(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_download_recording(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_download_vault_recording(
@@ -1263,6 +1335,10 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_authhandler_on_host_key(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_authhandler_on_prompt(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_ssoloopback_flow(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_ssoloopback_wait_callback(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed(
     ): Int
@@ -1693,6 +1769,82 @@ internal object IntegrityCheckingUniffiLib {
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_import_ssh_config_file(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_record_command(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_add_team_domain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_audit_export(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_audit_search(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_audit_sinks(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_create_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_delete_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_add_members(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_disable_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_enable_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_lock(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_new_recovery_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_decide(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_finish(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_start(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairings(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_set_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_setup(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_status(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_recovery_key(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_vault_state(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session_unlocked(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_domain(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_team_audit_retention(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_set_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_sso_complete(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_sso_discover(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_sso_start(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_sso_start_loopback(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_audit_retention(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_domains(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_team_sso(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_verify_team_domain(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_download_recording(
     ): Int
@@ -2165,6 +2317,74 @@ internal object UniffiLib {
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_save_runbook(`ptr`: Long,`taskId`: RustBuffer.ByValue,`vaultId`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,
     ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_add_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_audit_export(`ptr`: Long,`scope`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,`format`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_audit_search(`ptr`: Long,`scope`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_audit_sinks(`ptr`: Long,`scope`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_create_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sink`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_delete_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_delete_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_add_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`userIds`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_disable_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_enable_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`include`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_lock(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_new_recovery_key(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_decide(`ptr`: Long,`pairingId`: RustBuffer.ByValue,`approve`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_finish(`ptr`: Long,`pairingId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_start(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairings(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pending_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_set_passphrase(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_setup(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_status(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_passphrase(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_recovery_key(`ptr`: Long,`recoveryKey`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_vault_state(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_open_server_session_unlocked(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`title`: RustBuffer.ByValue,`record`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_remove_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_team_audit_retention(`ptr`: Long,`teamId`: RustBuffer.ByValue,`days`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_set_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,`settings`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_audit_retention(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_domains(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_test_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_update_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`actions`: RustBuffer.ByValue,`enabled`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_verify_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_download_vault_recording(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
@@ -2269,6 +2489,14 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_method_authhandler_on_prompt(`ptr`: Long,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_clone_ssoloopback(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_termoak_ffi_fn_free_ssoloopback(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_termoak_ffi_fn_method_ssoloopback_flow(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_method_ssoloopback_wait_callback(`ptr`: Long,`timeoutSecs`: Int,
+    ): Long
     external fun uniffi_termoak_ffi_fn_clone_hostkeychangehandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_termoak_ffi_fn_free_hostkeychangehandler(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -2799,6 +3027,82 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_method_termoakcore_record_command(`ptr`: Long,`hostId`: RustBuffer.ByValue,`command`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_add_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_audit_export(`ptr`: Long,`scope`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,`format`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_audit_search(`ptr`: Long,`scope`: RustBuffer.ByValue,`query`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_audit_sinks(`ptr`: Long,`scope`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_create_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sink`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_delete_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_add_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`userIds`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_disable_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_enable_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`include`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_lock(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_new_recovery_key(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_decide(`ptr`: Long,`pairingId`: RustBuffer.ByValue,`approve`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_finish(`ptr`: Long,`pairingId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_start(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairings(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pending_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_set_passphrase(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_setup(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_status(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_passphrase(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_recovery_key(`ptr`: Long,`recoveryKey`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_vault_state(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_open_server_session_unlocked(`ptr`: Long,`hostId`: RustBuffer.ByValue,`cols`: Int,`rows`: Int,`title`: RustBuffer.ByValue,`record`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_remove_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_team_audit_retention(`ptr`: Long,`teamId`: RustBuffer.ByValue,`days`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_set_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,`settings`: RustBuffer.ByValue,`clientSecret`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_sso_complete(`ptr`: Long,`flow`: RustBuffer.ByValue,`callbackUrl`: RustBuffer.ByValue,`totpCode`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_sso_discover(`ptr`: Long,`server`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_sso_start(`ptr`: Long,`server`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`teamId`: RustBuffer.ByValue,`redirectUri`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_sso_start_loopback(`ptr`: Long,`server`: RustBuffer.ByValue,`email`: RustBuffer.ByValue,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_audit_retention(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_domains(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_test_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_update_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`actions`: RustBuffer.ByValue,`enabled`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_verify_team_domain(`ptr`: Long,`teamId`: RustBuffer.ByValue,`domain`: RustBuffer.ByValue,
+    ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_download_recording(`ptr`: Long,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_download_vault_recording(`ptr`: Long,`vaultId`: RustBuffer.ByValue,`sessionId`: RustBuffer.ByValue,`localPath`: RustBuffer.ByValue,`listener`: RustBuffer.ByValue,`cancel`: RustBuffer.ByValue,
@@ -3091,6 +3395,10 @@ internal object UniffiLib {
     ): Byte
     external fun uniffi_termoak_ffi_fn_func_qr_code(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_e2ee_fingerprint(`publicKey`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Byte
     external fun uniffi_termoak_ffi_fn_func_api_error_info(`errorMessage`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_detect_import_format(`data`: RustBuffer.ByValue,`fileName`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -3326,6 +3634,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_qr_code() and 0xFFFF) != 59982) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_fingerprint() and 0xFFFF) != 64275) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() and 0xFFFF) != 62772) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_api_error_info() and 0xFFFF) != 40019) {
@@ -3700,6 +4014,108 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_save_runbook() and 0xFFFF) != 55951) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_add_team_domain() and 0xFFFF) != 51073) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_audit_export() and 0xFFFF) != 5170) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_audit_search() and 0xFFFF) != 18593) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_audit_sinks() and 0xFFFF) != 38378) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_create_audit_sink() and 0xFFFF) != 11472) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_delete_audit_sink() and 0xFFFF) != 50663) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_delete_team_sso() and 0xFFFF) != 21178) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_add_members() and 0xFFFF) != 22213) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_disable_vault() and 0xFFFF) != 18728) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_enable_vault() and 0xFFFF) != 15375) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_lock() and 0xFFFF) != 45079) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_new_recovery_key() and 0xFFFF) != 29912) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_decide() and 0xFFFF) != 11869) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_finish() and 0xFFFF) != 6296) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairing_start() and 0xFFFF) != 2488) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pairings() and 0xFFFF) != 21020) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members() and 0xFFFF) != 56655) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault() and 0xFFFF) != 37157) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_set_passphrase() and 0xFFFF) != 50085) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_setup() and 0xFFFF) != 18812) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_status() and 0xFFFF) != 59126) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_passphrase() and 0xFFFF) != 32113) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_unlock_with_recovery_key() and 0xFFFF) != 17134) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_vault_state() and 0xFFFF) != 12345) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_open_server_session_unlocked() and 0xFFFF) != 40526) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_remove_team_domain() and 0xFFFF) != 36954) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_team_audit_retention() and 0xFFFF) != 45270) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_set_team_sso() and 0xFFFF) != 25316) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_audit_retention() and 0xFFFF) != 45624) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_domains() and 0xFFFF) != 7993) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_team_sso() and 0xFFFF) != 45837) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink() and 0xFFFF) != 2654) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink() and 0xFFFF) != 14785) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_verify_team_domain() and 0xFFFF) != 40243) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_download_recording() and 0xFFFF) != 2181) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -3836,6 +4252,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_authhandler_on_prompt() and 0xFFFF) != 35175) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_ssoloopback_flow() and 0xFFFF) != 20296) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_ssoloopback_wait_callback() and 0xFFFF) != 2301) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_hostkeychangehandler_on_host_key_changed() and 0xFFFF) != 35638) {
@@ -4481,6 +4903,120 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_record_command() and 0xFFFF) != 5544) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_add_team_domain() and 0xFFFF) != 45227) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_audit_export() and 0xFFFF) != 59675) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_audit_search() and 0xFFFF) != 36181) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_audit_sinks() and 0xFFFF) != 12706) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_create_audit_sink() and 0xFFFF) != 48738) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_audit_sink() and 0xFFFF) != 3129) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_delete_team_sso() and 0xFFFF) != 44590) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_add_members() and 0xFFFF) != 639) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_disable_vault() and 0xFFFF) != 51477) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_enable_vault() and 0xFFFF) != 35330) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_lock() and 0xFFFF) != 20780) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_new_recovery_key() and 0xFFFF) != 46374) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_decide() and 0xFFFF) != 3716) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_finish() and 0xFFFF) != 57979) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairing_start() and 0xFFFF) != 40748) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pairings() and 0xFFFF) != 41925) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members() and 0xFFFF) != 58629) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault() and 0xFFFF) != 37223) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_set_passphrase() and 0xFFFF) != 36615) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_setup() and 0xFFFF) != 1243) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_status() and 0xFFFF) != 54273) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_passphrase() and 0xFFFF) != 60856) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_unlock_with_recovery_key() and 0xFFFF) != 47360) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_vault_state() and 0xFFFF) != 27523) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_open_server_session_unlocked() and 0xFFFF) != 9904) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_remove_team_domain() and 0xFFFF) != 33336) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_team_audit_retention() and 0xFFFF) != 9582) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_set_team_sso() and 0xFFFF) != 50887) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sso_complete() and 0xFFFF) != 25952) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sso_discover() and 0xFFFF) != 21799) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sso_start() and 0xFFFF) != 33159) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_sso_start_loopback() and 0xFFFF) != 35769) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_audit_retention() and 0xFFFF) != 32318) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_domains() and 0xFFFF) != 20479) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_team_sso() and 0xFFFF) != 18306) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink() and 0xFFFF) != 6419) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink() and 0xFFFF) != 30404) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_verify_team_domain() and 0xFFFF) != 14560) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_download_recording() and 0xFFFF) != 47334) {
@@ -5728,6 +6264,74 @@ public interface AccountHandleInterface {
      * See [`TermoakCore::save_runbook`].
      */
     suspend fun `saveRunbook`(`taskId`: kotlin.String, `vaultId`: kotlin.String? = null, `name`: kotlin.String? = null): Snippet
+    
+    suspend fun `addTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String): TeamDomainInfo
+    
+    suspend fun `auditExport`(`scope`: AuditScope, `query`: AuditQuery, `format`: kotlin.String, `localPath`: kotlin.String, `id`: kotlin.String? = null): kotlin.ULong
+    
+    suspend fun `auditSearch`(`scope`: AuditScope, `query`: AuditQuery, `id`: kotlin.String? = null): List<AuditEvent>
+    
+    suspend fun `auditSinks`(`scope`: AuditScope, `id`: kotlin.String? = null): List<AuditSinkInfo>
+    
+    suspend fun `createAuditSink`(`scope`: AuditScope, `sink`: AuditSinkInput, `id`: kotlin.String? = null): AuditSinkCreated
+    
+    suspend fun `deleteAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null)
+    
+    suspend fun `deleteTeamSso`(`teamId`: kotlin.String)
+    
+    suspend fun `e2eeAddMembers`(`vaultId`: kotlin.String, `userIds`: List<kotlin.String>? = null): kotlin.UInt
+    
+    suspend fun `e2eeDisableVault`(`vaultId`: kotlin.String)
+    
+    suspend fun `e2eeEnableVault`(`vaultId`: kotlin.String, `include`: List<kotlin.String>? = null): kotlin.UInt
+    
+    suspend fun `e2eeLock`()
+    
+    suspend fun `e2eeNewRecoveryKey`(): kotlin.String
+    
+    suspend fun `e2eePairingDecide`(`pairingId`: kotlin.String, `approve`: kotlin.Boolean)
+    
+    suspend fun `e2eePairingFinish`(`pairingId`: kotlin.String): kotlin.ULong?
+    
+    suspend fun `e2eePairingStart`(): E2eePairingStart
+    
+    suspend fun `e2eePairings`(): List<E2eePairingRequest>
+    
+    suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String): List<E2eeMember>
+    
+    suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String): kotlin.UInt
+    
+    suspend fun `e2eeSetPassphrase`(`passphrase`: kotlin.String)
+    
+    suspend fun `e2eeSetup`(`passphrase`: kotlin.String? = null): E2eeSetupResult
+    
+    suspend fun `e2eeStatus`(): E2eeStatus
+    
+    suspend fun `e2eeUnlockWithPassphrase`(`passphrase`: kotlin.String): kotlin.ULong
+    
+    suspend fun `e2eeUnlockWithRecoveryKey`(`recoveryKey`: kotlin.String): kotlin.ULong
+    
+    suspend fun `e2eeVaultState`(`vaultId`: kotlin.String): E2eeVaultState
+    
+    suspend fun `openServerSessionUnlocked`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `title`: kotlin.String? = null, `record`: kotlin.Boolean? = null): ServerSession
+    
+    suspend fun `removeTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String)
+    
+    suspend fun `setTeamAuditRetention`(`teamId`: kotlin.String, `days`: kotlin.UInt?): kotlin.UInt?
+    
+    suspend fun `setTeamSso`(`teamId`: kotlin.String, `settings`: SsoSettings, `clientSecret`: kotlin.String? = null): SsoSettings
+    
+    suspend fun `teamAuditRetention`(`teamId`: kotlin.String): kotlin.UInt?
+    
+    suspend fun `teamDomains`(`teamId`: kotlin.String): List<TeamDomainInfo>
+    
+    suspend fun `teamSso`(`teamId`: kotlin.String): SsoSettings?
+    
+    suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null): AuditSinkTest
+    
+    suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null, `name`: kotlin.String? = null, `actions`: List<kotlin.String>? = null, `enabled`: kotlin.Boolean? = null): AuditSinkInfo
+    
+    suspend fun `verifyTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String): TeamDomainInfo
     
     /**
      * Downloads the recording of one of this account's server sessions.
@@ -7655,6 +8259,787 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeSnippet.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) : TeamDomainInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_add_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamDomainInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditExport`(`scope`: AuditScope, `query`: AuditQuery, `format`: kotlin.String, `localPath`: kotlin.String, `id`: kotlin.String?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_audit_export(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditQuery.lower(`query`),
+        FfiConverterString.lower(`format`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditSearch`(`scope`: AuditScope, `query`: AuditQuery, `id`: kotlin.String?) : List<AuditEvent> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_audit_search(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditQuery.lower(`query`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAuditEvent.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditSinks`(`scope`: AuditScope, `id`: kotlin.String?) : List<AuditSinkInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_audit_sinks(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAuditSinkInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createAuditSink`(`scope`: AuditScope, `sink`: AuditSinkInput, `id`: kotlin.String?) : AuditSinkCreated {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_create_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditSinkInput.lower(`sink`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkCreated.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_delete_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteTeamSso`(`teamId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_delete_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeAddMembers`(`vaultId`: kotlin.String, `userIds`: List<kotlin.String>?) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_add_members(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterOptionalSequenceString.lower(`userIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeDisableVault`(`vaultId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_disable_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeEnableVault`(`vaultId`: kotlin.String, `include`: List<kotlin.String>?) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_enable_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterOptionalSequenceString.lower(`include`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeLock`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_lock(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeNewRecoveryKey`() : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_new_recovery_key(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingDecide`(`pairingId`: kotlin.String, `approve`: kotlin.Boolean) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_decide(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`pairingId`),
+        FfiConverterBoolean.lower(`approve`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingFinish`(`pairingId`: kotlin.String) : kotlin.ULong? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_finish(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`pairingId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingStart`() : E2eePairingStart {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairing_start(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eePairingStart.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairings`() : List<E2eePairingRequest> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairings(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeE2eePairingRequest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String) : List<E2eeMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pending_members(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeE2eeMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeSetPassphrase`(`passphrase`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_set_passphrase(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeSetup`(`passphrase`: kotlin.String?) : E2eeSetupResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_setup(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeSetupResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeStatus`() : E2eeStatus {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_status(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeStatus.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeUnlockWithPassphrase`(`passphrase`: kotlin.String) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_passphrase(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeUnlockWithRecoveryKey`(`recoveryKey`: kotlin.String) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_unlock_with_recovery_key(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`recoveryKey`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeVaultState`(`vaultId`: kotlin.String) : E2eeVaultState {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_vault_state(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeVaultState.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `openServerSessionUnlocked`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `title`: kotlin.String?, `record`: kotlin.Boolean?) : ServerSession {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_open_server_session_unlocked(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterUInt.lower(`cols`),
+        FfiConverterUInt.lower(`rows`),
+        FfiConverterOptionalString.lower(`title`),
+        FfiConverterOptionalBoolean.lower(`record`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeServerSession.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_remove_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamAuditRetention`(`teamId`: kotlin.String, `days`: kotlin.UInt?) : kotlin.UInt? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_team_audit_retention(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterOptionalUInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamSso`(`teamId`: kotlin.String, `settings`: SsoSettings, `clientSecret`: kotlin.String?) : SsoSettings {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_set_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterTypeSsoSettings.lower(`settings`),
+        FfiConverterOptionalString.lower(`clientSecret`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSsoSettings.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamAuditRetention`(`teamId`: kotlin.String) : kotlin.UInt? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_audit_retention(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamDomains`(`teamId`: kotlin.String) : List<TeamDomainInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_domains(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamDomainInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamSso`(`teamId`: kotlin.String) : SsoSettings? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalTypeSsoSettings.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?) : AuditSinkTest {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_test_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkTest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?, `name`: kotlin.String?, `actions`: List<kotlin.String>?, `enabled`: kotlin.Boolean?) : AuditSinkInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_update_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+        FfiConverterOptionalString.lower(`name`),
+        FfiConverterOptionalSequenceString.lower(`actions`),
+        FfiConverterOptionalBoolean.lower(`enabled`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `verifyTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) : TeamDomainInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_verify_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamDomainInfo.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -15782,6 +17167,305 @@ public object FfiConverterTypeSshSession: FfiConverter<SshSession, Long> {
 
 
 /**
+ * A desktop or CLI single sign-on waiting for the browser.
+ */
+public interface SsoLoopbackInterface {
+    
+    /**
+     * The flow (open `authorize_url` in the browser).
+     */
+    fun `flow`(): SsoFlow
+    
+    /**
+     * Waits for the browser (at most `timeout_secs`) and returns the
+     * callback URL for `sso_complete`. Once.
+     */
+    suspend fun `waitCallback`(`timeoutSecs`: kotlin.UInt): kotlin.String
+    
+    companion object
+}
+
+/**
+ * A desktop or CLI single sign-on waiting for the browser.
+ */
+open class SsoLoopback: Disposable, AutoCloseable, SsoLoopbackInterface
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_termoak_ffi_fn_free_ssoloopback(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_termoak_ffi_fn_clone_ssoloopback(handle, status)
+        }
+    }
+
+    
+    /**
+     * The flow (open `authorize_url` in the browser).
+     */override fun `flow`(): SsoFlow {
+            return FfiConverterTypeSsoFlow.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_method_ssoloopback_flow(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Waits for the browser (at most `timeout_secs`) and returns the
+     * callback URL for `sso_complete`. Once.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `waitCallback`(`timeoutSecs`: kotlin.UInt) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_ssoloopback_wait_callback(
+                uniffiHandle,
+                
+        FfiConverterUInt.lower(`timeoutSecs`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSsoLoopback: FfiConverter<SsoLoopback, Long> {
+    override fun lower(value: SsoLoopback): Long {
+        return value.uniffiCloneHandle()
+    }
+
+    override fun lift(value: Long): SsoLoopback {
+        return SsoLoopback(UniffiWithHandle, value)
+    }
+
+    override fun read(buf: ByteBuffer): SsoLoopback {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: SsoLoopback) = 8UL
+
+    override fun write(value: SsoLoopback, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
  * Open local terminal, over SSH or Telnet. It is closed with
  * [`TerminalHandle::close_terminal`] or when dropped. The
  * `TerminalListener` is retained until the terminal closes.
@@ -17985,6 +19669,201 @@ public interface TermoakCoreInterface {
      * or start with a space are not saved. Returns whether it was saved.
      */
     fun `recordCommand`(`hostId`: kotlin.String, `command`: kotlin.String): kotlin.Boolean
+    
+    /**
+     * Claims a domain: create the TXT record it shows, then verify.
+     */
+    suspend fun `addTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String): TeamDomainInfo
+    
+    /**
+     * Downloads the matching entries to `local_path` (`format`: `csv`,
+     * `json` or `ndjson`). Returns the bytes written.
+     */
+    suspend fun `auditExport`(`scope`: AuditScope, `query`: AuditQuery, `format`: kotlin.String, `localPath`: kotlin.String, `id`: kotlin.String? = null): kotlin.ULong
+    
+    /**
+     * Audit entries matching `query`, newest first. `id`: the vault or
+     * team for those scopes.
+     */
+    suspend fun `auditSearch`(`scope`: AuditScope, `query`: AuditQuery, `id`: kotlin.String? = null): List<AuditEvent>
+    
+    /**
+     * SIEM sinks of a team (`scope` `Team` with `id`) or of the server.
+     */
+    suspend fun `auditSinks`(`scope`: AuditScope, `id`: kotlin.String? = null): List<AuditSinkInfo>
+    
+    suspend fun `createAuditSink`(`scope`: AuditScope, `sink`: AuditSinkInput, `id`: kotlin.String? = null): AuditSinkCreated
+    
+    suspend fun `deleteAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null)
+    
+    suspend fun `deleteTeamSso`(`teamId`: kotlin.String)
+    
+    /**
+     * Gives a vault's key to waiting members (`user_ids`, or all).
+     */
+    suspend fun `e2eeAddMembers`(`vaultId`: kotlin.String, `userIds`: List<kotlin.String>? = null): kotlin.UInt
+    
+    /**
+     * Turns end-to-end encryption off (this device sends the secrets to
+     * the server, which can read them again).
+     */
+    suspend fun `e2eeDisableVault`(`vaultId`: kotlin.String)
+    
+    /**
+     * Turns end-to-end encryption on for a vault you manage: its secrets
+     * are sealed on this device and the server can no longer read them.
+     * `include`: members (user ids from `e2ee_vault_state().recipients`)
+     * who get the key now; `None`: all of them. Server sessions, the
+     * server AI and just-in-time credentials stop using its secrets.
+     */
+    suspend fun `e2eeEnableVault`(`vaultId`: kotlin.String, `include`: List<kotlin.String>? = null): kotlin.UInt
+    
+    /**
+     * Locks this device (forgets the key and the opened secrets of E2EE
+     * vaults; unlock again to use them).
+     */
+    suspend fun `e2eeLock`()
+    
+    /**
+     * Replaces the recovery key (shown once; the old one stops working).
+     */
+    suspend fun `e2eeNewRecoveryKey`(): kotlin.String
+    
+    /**
+     * Unlocked device: approve (only if the codes match) or deny.
+     */
+    suspend fun `e2eePairingDecide`(`pairingId`: kotlin.String, `approve`: kotlin.Boolean)
+    
+    /**
+     * New device: `Some(opened secrets)` once approved (this device is
+     * unlocked), `None` while it waits.
+     */
+    suspend fun `e2eePairingFinish`(`pairingId`: kotlin.String): kotlin.ULong?
+    
+    /**
+     * New device: asks your unlocked devices for the key. Show the code;
+     * then call `e2ee_pairing_finish` (after the `e2ee` `pairing` event,
+     * or every few seconds).
+     */
+    suspend fun `e2eePairingStart`(): E2eePairingStart
+    
+    /**
+     * Unlocked device: your devices waiting for approval.
+     */
+    suspend fun `e2eePairings`(): List<E2eePairingRequest>
+    
+    /**
+     * Members waiting for a vault's key, with their fingerprints.
+     */
+    suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String): List<E2eeMember>
+    
+    /**
+     * Rotates a vault's key (after someone lost access: `rekey_needed`).
+     */
+    suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String): kotlin.UInt
+    
+    /**
+     * Sets or changes the E2EE passphrase (unlocked devices).
+     */
+    suspend fun `e2eeSetPassphrase`(`passphrase`: kotlin.String)
+    
+    /**
+     * Sets up end-to-end encryption for the account (once): a key for this
+     * device, a recovery key (shown once) and, optionally, a passphrase
+     * (at least 8 characters) to unlock other devices. Never the login
+     * password: the server sees that one.
+     */
+    suspend fun `e2eeSetup`(`passphrase`: kotlin.String? = null): E2eeSetupResult
+    
+    /**
+     * End-to-end encryption of the account on this device.
+     */
+    suspend fun `e2eeStatus`(): E2eeStatus
+    
+    /**
+     * Unlocks this device with the E2EE passphrase. Returns how many
+     * stored secrets it opened; sync afterwards.
+     */
+    suspend fun `e2eeUnlockWithPassphrase`(`passphrase`: kotlin.String): kotlin.ULong
+    
+    /**
+     * Unlocks this device with the recovery key.
+     */
+    suspend fun `e2eeUnlockWithRecoveryKey`(`recoveryKey`: kotlin.String): kotlin.ULong
+    
+    /**
+     * What turning E2EE on (or rotating) covers in a vault.
+     */
+    suspend fun `e2eeVaultState`(`vaultId`: kotlin.String): E2eeVaultState
+    
+    /**
+     * Opens a server session to a host of an E2EE vault, sending its
+     * credentials (resolved on this device) for this one session: the
+     * server uses them to connect and does not keep them. Ask first ("The
+     * server will use this host's password for this session").
+     */
+    suspend fun `openServerSessionUnlocked`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `title`: kotlin.String? = null, `record`: kotlin.Boolean? = null): ServerSession
+    
+    suspend fun `removeTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String)
+    
+    suspend fun `setTeamAuditRetention`(`teamId`: kotlin.String, `days`: kotlin.UInt?): kotlin.UInt?
+    
+    /**
+     * Saves a team's SSO settings. `client_secret`: `None` keeps the
+     * stored one, `Some("")` removes it.
+     */
+    suspend fun `setTeamSso`(`teamId`: kotlin.String, `settings`: SsoSettings, `clientSecret`: kotlin.String? = null): SsoSettings
+    
+    /**
+     * Finishes a single sign-on with the URL the browser came back to:
+     * the account is signed in (and becomes current). With two-step
+     * verification it fails with `TotpRequired`: call again with the code.
+     */
+    suspend fun `ssoComplete`(`flow`: SsoFlow, `callbackUrl`: kotlin.String, `totpCode`: kotlin.String? = null): AccountInfo
+    
+    /**
+     * Whether `email` signs in through its team's SSO on `server` (before
+     * showing the password field).
+     */
+    suspend fun `ssoDiscover`(`server`: ServerChoice, `email`: kotlin.String): SsoHint
+    
+    /**
+     * Starts a single sign-on: open `authorize_url` in the system browser;
+     * it comes back to `redirect_uri` (default `termoak://sso`; desktop
+     * apps use `sso_start_loopback`). `email` finds the team by its
+     * verified domain, `team_id` names it.
+     */
+    suspend fun `ssoStart`(`server`: ServerChoice, `email`: kotlin.String? = null, `teamId`: kotlin.String? = null, `redirectUri`: kotlin.String? = null): SsoFlow
+    
+    /**
+     * Desktop and CLI: starts a single sign-on whose browser comes back to
+     * a loopback listener of this process.
+     */
+    suspend fun `ssoStartLoopback`(`server`: ServerChoice, `email`: kotlin.String? = null, `teamId`: kotlin.String? = null): SsoLoopback
+    
+    /**
+     * How long a team keeps its audit (`None`: the server's default).
+     */
+    suspend fun `teamAuditRetention`(`teamId`: kotlin.String): kotlin.UInt?
+    
+    suspend fun `teamDomains`(`teamId`: kotlin.String): List<TeamDomainInfo>
+    
+    /**
+     * A team's SSO settings (`None`: not configured).
+     */
+    suspend fun `teamSso`(`teamId`: kotlin.String): SsoSettings?
+    
+    suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null): AuditSinkTest
+    
+    /**
+     * Turns a sink on or off, renames it or changes its actions.
+     */
+    suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null, `name`: kotlin.String? = null, `actions`: List<kotlin.String>? = null, `enabled`: kotlin.Boolean? = null): AuditSinkInfo
+    
+    /**
+     * Checks the TXT record now.
+     */
+    suspend fun `verifyTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String): TeamDomainInfo
     
     /**
      * Downloads the recording (asciicast v2, `.cast`) of a server session to
@@ -20545,6 +22424,1002 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
     )
     }
     
+
+    
+    /**
+     * Claims a domain: create the TXT record it shows, then verify.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) : TeamDomainInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_add_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamDomainInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Downloads the matching entries to `local_path` (`format`: `csv`,
+     * `json` or `ndjson`). Returns the bytes written.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditExport`(`scope`: AuditScope, `query`: AuditQuery, `format`: kotlin.String, `localPath`: kotlin.String, `id`: kotlin.String?) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_audit_export(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditQuery.lower(`query`),
+        FfiConverterString.lower(`format`),
+        FfiConverterString.lower(`localPath`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Audit entries matching `query`, newest first. `id`: the vault or
+     * team for those scopes.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditSearch`(`scope`: AuditScope, `query`: AuditQuery, `id`: kotlin.String?) : List<AuditEvent> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_audit_search(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditQuery.lower(`query`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAuditEvent.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * SIEM sinks of a team (`scope` `Team` with `id`) or of the server.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `auditSinks`(`scope`: AuditScope, `id`: kotlin.String?) : List<AuditSinkInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_audit_sinks(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeAuditSinkInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `createAuditSink`(`scope`: AuditScope, `sink`: AuditSinkInput, `id`: kotlin.String?) : AuditSinkCreated {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_create_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterTypeAuditSinkInput.lower(`sink`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkCreated.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_delete_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteTeamSso`(`teamId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_delete_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Gives a vault's key to waiting members (`user_ids`, or all).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeAddMembers`(`vaultId`: kotlin.String, `userIds`: List<kotlin.String>?) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_add_members(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterOptionalSequenceString.lower(`userIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Turns end-to-end encryption off (this device sends the secrets to
+     * the server, which can read them again).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeDisableVault`(`vaultId`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_disable_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Turns end-to-end encryption on for a vault you manage: its secrets
+     * are sealed on this device and the server can no longer read them.
+     * `include`: members (user ids from `e2ee_vault_state().recipients`)
+     * who get the key now; `None`: all of them. Server sessions, the
+     * server AI and just-in-time credentials stop using its secrets.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeEnableVault`(`vaultId`: kotlin.String, `include`: List<kotlin.String>?) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_enable_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+        FfiConverterOptionalSequenceString.lower(`include`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Locks this device (forgets the key and the opened secrets of E2EE
+     * vaults; unlock again to use them).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeLock`() {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_lock(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Replaces the recovery key (shown once; the old one stops working).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeNewRecoveryKey`() : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_new_recovery_key(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Unlocked device: approve (only if the codes match) or deny.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingDecide`(`pairingId`: kotlin.String, `approve`: kotlin.Boolean) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_decide(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`pairingId`),
+        FfiConverterBoolean.lower(`approve`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * New device: `Some(opened secrets)` once approved (this device is
+     * unlocked), `None` while it waits.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingFinish`(`pairingId`: kotlin.String) : kotlin.ULong? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_finish(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`pairingId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * New device: asks your unlocked devices for the key. Show the code;
+     * then call `e2ee_pairing_finish` (after the `e2ee` `pairing` event,
+     * or every few seconds).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairingStart`() : E2eePairingStart {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairing_start(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eePairingStart.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Unlocked device: your devices waiting for approval.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePairings`() : List<E2eePairingRequest> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairings(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeE2eePairingRequest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Members waiting for a vault's key, with their fingerprints.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String) : List<E2eeMember> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pending_members(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeE2eeMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Rotates a vault's key (after someone lost access: `rekey_needed`).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String) : kotlin.UInt {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_vault(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sets or changes the E2EE passphrase (unlocked devices).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeSetPassphrase`(`passphrase`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_set_passphrase(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Sets up end-to-end encryption for the account (once): a key for this
+     * device, a recovery key (shown once) and, optionally, a passphrase
+     * (at least 8 characters) to unlock other devices. Never the login
+     * password: the server sees that one.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeSetup`(`passphrase`: kotlin.String?) : E2eeSetupResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_setup(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeSetupResult.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * End-to-end encryption of the account on this device.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeStatus`() : E2eeStatus {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_status(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeStatus.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Unlocks this device with the E2EE passphrase. Returns how many
+     * stored secrets it opened; sync afterwards.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeUnlockWithPassphrase`(`passphrase`: kotlin.String) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_passphrase(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Unlocks this device with the recovery key.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeUnlockWithRecoveryKey`(`recoveryKey`: kotlin.String) : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_unlock_with_recovery_key(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`recoveryKey`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * What turning E2EE on (or rotating) covers in a vault.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeVaultState`(`vaultId`: kotlin.String) : E2eeVaultState {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_vault_state(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`vaultId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeVaultState.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Opens a server session to a host of an E2EE vault, sending its
+     * credentials (resolved on this device) for this one session: the
+     * server uses them to connect and does not keep them. Ask first ("The
+     * server will use this host's password for this session").
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `openServerSessionUnlocked`(`hostId`: kotlin.String, `cols`: kotlin.UInt, `rows`: kotlin.UInt, `title`: kotlin.String?, `record`: kotlin.Boolean?) : ServerSession {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_open_server_session_unlocked(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterUInt.lower(`cols`),
+        FfiConverterUInt.lower(`rows`),
+        FfiConverterOptionalString.lower(`title`),
+        FfiConverterOptionalBoolean.lower(`record`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeServerSession.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_remove_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_void(future) },
+        // lift function
+        { },
+        
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamAuditRetention`(`teamId`: kotlin.String, `days`: kotlin.UInt?) : kotlin.UInt? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_team_audit_retention(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterOptionalUInt.lower(`days`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Saves a team's SSO settings. `client_secret`: `None` keeps the
+     * stored one, `Some("")` removes it.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `setTeamSso`(`teamId`: kotlin.String, `settings`: SsoSettings, `clientSecret`: kotlin.String?) : SsoSettings {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_set_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterTypeSsoSettings.lower(`settings`),
+        FfiConverterOptionalString.lower(`clientSecret`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSsoSettings.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Finishes a single sign-on with the URL the browser came back to:
+     * the account is signed in (and becomes current). With two-step
+     * verification it fails with `TotpRequired`: call again with the code.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `ssoComplete`(`flow`: SsoFlow, `callbackUrl`: kotlin.String, `totpCode`: kotlin.String?) : AccountInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_sso_complete(
+                uniffiHandle,
+                
+        FfiConverterTypeSsoFlow.lower(`flow`),
+        FfiConverterString.lower(`callbackUrl`),
+        FfiConverterOptionalString.lower(`totpCode`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAccountInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Whether `email` signs in through its team's SSO on `server` (before
+     * showing the password field).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `ssoDiscover`(`server`: ServerChoice, `email`: kotlin.String) : SsoHint {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_sso_discover(
+                uniffiHandle,
+                
+        FfiConverterTypeServerChoice.lower(`server`),
+        FfiConverterString.lower(`email`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSsoHint.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Starts a single sign-on: open `authorize_url` in the system browser;
+     * it comes back to `redirect_uri` (default `termoak://sso`; desktop
+     * apps use `sso_start_loopback`). `email` finds the team by its
+     * verified domain, `team_id` names it.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `ssoStart`(`server`: ServerChoice, `email`: kotlin.String?, `teamId`: kotlin.String?, `redirectUri`: kotlin.String?) : SsoFlow {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_sso_start(
+                uniffiHandle,
+                
+        FfiConverterTypeServerChoice.lower(`server`),
+        FfiConverterOptionalString.lower(`email`),
+        FfiConverterOptionalString.lower(`teamId`),
+        FfiConverterOptionalString.lower(`redirectUri`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeSsoFlow.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Desktop and CLI: starts a single sign-on whose browser comes back to
+     * a loopback listener of this process.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `ssoStartLoopback`(`server`: ServerChoice, `email`: kotlin.String?, `teamId`: kotlin.String?) : SsoLoopback {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_sso_start_loopback(
+                uniffiHandle,
+                
+        FfiConverterTypeServerChoice.lower(`server`),
+        FfiConverterOptionalString.lower(`email`),
+        FfiConverterOptionalString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterTypeSsoLoopback.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * How long a team keeps its audit (`None`: the server's default).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamAuditRetention`(`teamId`: kotlin.String) : kotlin.UInt? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_audit_retention(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalUInt.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamDomains`(`teamId`: kotlin.String) : List<TeamDomainInfo> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_domains(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeTeamDomainInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * A team's SSO settings (`None`: not configured).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `teamSso`(`teamId`: kotlin.String) : SsoSettings? {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_team_sso(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalTypeSsoSettings.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?) : AuditSinkTest {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_test_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkTest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Turns a sink on or off, renames it or changes its actions.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String?, `name`: kotlin.String?, `actions`: List<kotlin.String>?, `enabled`: kotlin.Boolean?) : AuditSinkInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_update_audit_sink(
+                uniffiHandle,
+                
+        FfiConverterTypeAuditScope.lower(`scope`),
+        FfiConverterString.lower(`sinkId`),
+        FfiConverterOptionalString.lower(`id`),
+        FfiConverterOptionalString.lower(`name`),
+        FfiConverterOptionalSequenceString.lower(`actions`),
+        FfiConverterOptionalBoolean.lower(`enabled`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeAuditSinkInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Checks the TXT record now.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `verifyTeamDomain`(`teamId`: kotlin.String, `domain`: kotlin.String) : TeamDomainInfo {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_verify_team_domain(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`teamId`),
+        FfiConverterString.lower(`domain`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeTeamDomainInfo.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
 
     
     /**
@@ -26882,6 +29757,16 @@ data class AuditEvent (
     var `detailJson`: kotlin.String
     , 
     var `createdAt`: kotlin.Long
+    , 
+    /**
+     * Vault the entry is about.
+     */
+    var `vaultId`: kotlin.String? = null 
+    , 
+    /**
+     * Team the entry belongs to (0.7 phase 5a).
+     */
+    var `teamId`: kotlin.String? = null 
     
 ){
     
@@ -26905,6 +29790,8 @@ public object FfiConverterTypeAuditEvent: FfiConverterRustBuffer<AuditEvent> {
             FfiConverterOptionalString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
@@ -26915,7 +29802,9 @@ public object FfiConverterTypeAuditEvent: FfiConverterRustBuffer<AuditEvent> {
             FfiConverterString.allocationSize(value.`action`) +
             FfiConverterOptionalString.allocationSize(value.`target`) +
             FfiConverterString.allocationSize(value.`detailJson`) +
-            FfiConverterLong.allocationSize(value.`createdAt`)
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterOptionalString.allocationSize(value.`teamId`)
     )
 
     override fun write(value: AuditEvent, buf: ByteBuffer) {
@@ -26926,6 +29815,350 @@ public object FfiConverterTypeAuditEvent: FfiConverterRustBuffer<AuditEvent> {
             FfiConverterOptionalString.write(value.`target`, buf)
             FfiConverterString.write(value.`detailJson`, buf)
             FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterOptionalString.write(value.`teamId`, buf)
+    }
+}
+
+
+
+/**
+ * Filters of an audit search (all optional).
+ */
+data class AuditQuery (
+    /**
+     * Comma-separated actions; `access.*` is a prefix.
+     */
+    var `action`: kotlin.String? = null 
+    , 
+    var `actor`: kotlin.String? = null 
+    , 
+    var `vaultId`: kotlin.String? = null 
+    , 
+    var `target`: kotlin.String? = null 
+    , 
+    /**
+     * ms since the epoch.
+     */
+    var `since`: kotlin.Long? = null 
+    , 
+    var `until`: kotlin.Long? = null 
+    , 
+    /**
+     * Text anywhere in the entry.
+     */
+    var `text`: kotlin.String? = null 
+    , 
+    var `before`: kotlin.Long? = null 
+    , 
+    var `limit`: kotlin.UInt? = null 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditQuery: FfiConverterRustBuffer<AuditQuery> {
+    override fun read(buf: ByteBuffer): AuditQuery {
+        return AuditQuery(
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuditQuery) = (
+            FfiConverterOptionalString.allocationSize(value.`action`) +
+            FfiConverterOptionalString.allocationSize(value.`actor`) +
+            FfiConverterOptionalString.allocationSize(value.`vaultId`) +
+            FfiConverterOptionalString.allocationSize(value.`target`) +
+            FfiConverterOptionalLong.allocationSize(value.`since`) +
+            FfiConverterOptionalLong.allocationSize(value.`until`) +
+            FfiConverterOptionalString.allocationSize(value.`text`) +
+            FfiConverterOptionalLong.allocationSize(value.`before`) +
+            FfiConverterOptionalUInt.allocationSize(value.`limit`)
+    )
+
+    override fun write(value: AuditQuery, buf: ByteBuffer) {
+            FfiConverterOptionalString.write(value.`action`, buf)
+            FfiConverterOptionalString.write(value.`actor`, buf)
+            FfiConverterOptionalString.write(value.`vaultId`, buf)
+            FfiConverterOptionalString.write(value.`target`, buf)
+            FfiConverterOptionalLong.write(value.`since`, buf)
+            FfiConverterOptionalLong.write(value.`until`, buf)
+            FfiConverterOptionalString.write(value.`text`, buf)
+            FfiConverterOptionalLong.write(value.`before`, buf)
+            FfiConverterOptionalUInt.write(value.`limit`, buf)
+    }
+}
+
+
+
+/**
+ * A created sink and, for webhooks, its signing secret (shown once).
+ */
+data class AuditSinkCreated (
+    var `sink`: AuditSinkInfo
+    , 
+    var `secret`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditSinkCreated: FfiConverterRustBuffer<AuditSinkCreated> {
+    override fun read(buf: ByteBuffer): AuditSinkCreated {
+        return AuditSinkCreated(
+            FfiConverterTypeAuditSinkInfo.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuditSinkCreated) = (
+            FfiConverterTypeAuditSinkInfo.allocationSize(value.`sink`) +
+            FfiConverterOptionalString.allocationSize(value.`secret`)
+    )
+
+    override fun write(value: AuditSinkCreated, buf: ByteBuffer) {
+            FfiConverterTypeAuditSinkInfo.write(value.`sink`, buf)
+            FfiConverterOptionalString.write(value.`secret`, buf)
+    }
+}
+
+
+
+/**
+ * An audit sink (SIEM).
+ */
+data class AuditSinkInfo (
+    var `id`: kotlin.String
+    , 
+    /**
+     * `webhook` or `syslog`.
+     */
+    var `kind`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    /**
+     * Webhook URL.
+     */
+    var `url`: kotlin.String?
+    , 
+    /**
+     * Syslog host, port and `tls`/`tcp`.
+     */
+    var `host`: kotlin.String?
+    , 
+    var `port`: kotlin.UShort?
+    , 
+    var `transport`: kotlin.String?
+    , 
+    var `actions`: List<kotlin.String>
+    , 
+    var `enabled`: kotlin.Boolean
+    , 
+    var `failures`: kotlin.Long
+    , 
+    var `lastError`: kotlin.String?
+    , 
+    var `lastSuccessAt`: kotlin.Long?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditSinkInfo: FfiConverterRustBuffer<AuditSinkInfo> {
+    override fun read(buf: ByteBuffer): AuditSinkInfo {
+        return AuditSinkInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalUShort.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuditSinkInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`url`) +
+            FfiConverterOptionalString.allocationSize(value.`host`) +
+            FfiConverterOptionalUShort.allocationSize(value.`port`) +
+            FfiConverterOptionalString.allocationSize(value.`transport`) +
+            FfiConverterSequenceString.allocationSize(value.`actions`) +
+            FfiConverterBoolean.allocationSize(value.`enabled`) +
+            FfiConverterLong.allocationSize(value.`failures`) +
+            FfiConverterOptionalString.allocationSize(value.`lastError`) +
+            FfiConverterOptionalLong.allocationSize(value.`lastSuccessAt`)
+    )
+
+    override fun write(value: AuditSinkInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`url`, buf)
+            FfiConverterOptionalString.write(value.`host`, buf)
+            FfiConverterOptionalUShort.write(value.`port`, buf)
+            FfiConverterOptionalString.write(value.`transport`, buf)
+            FfiConverterSequenceString.write(value.`actions`, buf)
+            FfiConverterBoolean.write(value.`enabled`, buf)
+            FfiConverterLong.write(value.`failures`, buf)
+            FfiConverterOptionalString.write(value.`lastError`, buf)
+            FfiConverterOptionalLong.write(value.`lastSuccessAt`, buf)
+    }
+}
+
+
+
+/**
+ * A new sink: `kind` `webhook` (with `url`) or `syslog` (with `host`,
+ * `port`, `transport` `tls`/`tcp` and optionally `ca_pem`).
+ */
+data class AuditSinkInput (
+    var `kind`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    var `url`: kotlin.String? = null 
+    , 
+    var `host`: kotlin.String? = null 
+    , 
+    var `port`: kotlin.UShort? = null 
+    , 
+    var `transport`: kotlin.String? = null 
+    , 
+    var `caPem`: kotlin.String? = null 
+    , 
+    /**
+     * Action patterns (`access.*`); empty: every entry.
+     */
+    var `actions`: List<kotlin.String> = listOf() 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditSinkInput: FfiConverterRustBuffer<AuditSinkInput> {
+    override fun read(buf: ByteBuffer): AuditSinkInput {
+        return AuditSinkInput(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalUShort.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterSequenceString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuditSinkInput) = (
+            FfiConverterString.allocationSize(value.`kind`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`url`) +
+            FfiConverterOptionalString.allocationSize(value.`host`) +
+            FfiConverterOptionalUShort.allocationSize(value.`port`) +
+            FfiConverterOptionalString.allocationSize(value.`transport`) +
+            FfiConverterOptionalString.allocationSize(value.`caPem`) +
+            FfiConverterSequenceString.allocationSize(value.`actions`)
+    )
+
+    override fun write(value: AuditSinkInput, buf: ByteBuffer) {
+            FfiConverterString.write(value.`kind`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterOptionalString.write(value.`url`, buf)
+            FfiConverterOptionalString.write(value.`host`, buf)
+            FfiConverterOptionalUShort.write(value.`port`, buf)
+            FfiConverterOptionalString.write(value.`transport`, buf)
+            FfiConverterOptionalString.write(value.`caPem`, buf)
+            FfiConverterSequenceString.write(value.`actions`, buf)
+    }
+}
+
+
+
+/**
+ * The result of a test delivery.
+ */
+data class AuditSinkTest (
+    var `ok`: kotlin.Boolean
+    , 
+    var `error`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditSinkTest: FfiConverterRustBuffer<AuditSinkTest> {
+    override fun read(buf: ByteBuffer): AuditSinkTest {
+        return AuditSinkTest(
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: AuditSinkTest) = (
+            FfiConverterBoolean.allocationSize(value.`ok`) +
+            FfiConverterOptionalString.allocationSize(value.`error`)
+    )
+
+    override fun write(value: AuditSinkTest, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`ok`, buf)
+            FfiConverterOptionalString.write(value.`error`, buf)
     }
 }
 
@@ -28034,6 +31267,419 @@ public object FfiConverterTypeDiscardedChanges: FfiConverterRustBuffer<Discarded
             FfiConverterString.write(value.`vaultId`, buf)
             FfiConverterString.write(value.`vaultName`, buf)
             FfiConverterULong.write(value.`count`, buf)
+    }
+}
+
+
+
+/**
+ * Your published E2EE key.
+ */
+data class E2eeKeyInfo (
+    var `id`: kotlin.String
+    , 
+    /**
+     * Compare it with other devices or members (eight groups of four).
+     */
+    var `fingerprint`: kotlin.String
+    , 
+    var `createdAt`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeKeyInfo: FfiConverterRustBuffer<E2eeKeyInfo> {
+    override fun read(buf: ByteBuffer): E2eeKeyInfo {
+        return E2eeKeyInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeKeyInfo) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`fingerprint`) +
+            FfiConverterLong.allocationSize(value.`createdAt`)
+    )
+
+    override fun write(value: E2eeKeyInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`fingerprint`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+    }
+}
+
+
+
+/**
+ * A member's E2EE key (to give them a vault key).
+ */
+data class E2eeMember (
+    var `userId`: kotlin.String
+    , 
+    var `email`: kotlin.String
+    , 
+    var `name`: kotlin.String
+    , 
+    /**
+     * Empty when they have no E2EE key yet.
+     */
+    var `fingerprint`: kotlin.String
+    , 
+    /**
+     * This device gave them a key before and their key changed since: ask
+     * them before going on.
+     */
+    var `keyChanged`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeMember: FfiConverterRustBuffer<E2eeMember> {
+    override fun read(buf: ByteBuffer): E2eeMember {
+        return E2eeMember(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeMember) = (
+            FfiConverterString.allocationSize(value.`userId`) +
+            FfiConverterString.allocationSize(value.`email`) +
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`fingerprint`) +
+            FfiConverterBoolean.allocationSize(value.`keyChanged`)
+    )
+
+    override fun write(value: E2eeMember, buf: ByteBuffer) {
+            FfiConverterString.write(value.`userId`, buf)
+            FfiConverterString.write(value.`email`, buf)
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`fingerprint`, buf)
+            FfiConverterBoolean.write(value.`keyChanged`, buf)
+    }
+}
+
+
+
+/**
+ * One of your devices asking for your E2EE key (`e2ee_pairings`).
+ */
+data class E2eePairingRequest (
+    var `id`: kotlin.String
+    , 
+    var `deviceName`: kotlin.String
+    , 
+    /**
+     * Approve only if the new device shows the same code.
+     */
+    var `code`: kotlin.String
+    , 
+    var `createdAt`: kotlin.Long
+    , 
+    var `expiresAt`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eePairingRequest: FfiConverterRustBuffer<E2eePairingRequest> {
+    override fun read(buf: ByteBuffer): E2eePairingRequest {
+        return E2eePairingRequest(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eePairingRequest) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`deviceName`) +
+            FfiConverterString.allocationSize(value.`code`) +
+            FfiConverterLong.allocationSize(value.`createdAt`) +
+            FfiConverterLong.allocationSize(value.`expiresAt`)
+    )
+
+    override fun write(value: E2eePairingRequest, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`deviceName`, buf)
+            FfiConverterString.write(value.`code`, buf)
+            FfiConverterLong.write(value.`createdAt`, buf)
+            FfiConverterLong.write(value.`expiresAt`, buf)
+    }
+}
+
+
+
+/**
+ * A new device waiting for another one (`e2ee_pairing_start`).
+ */
+data class E2eePairingStart (
+    var `id`: kotlin.String
+    , 
+    /**
+     * Six digits: the approving device shows the same.
+     */
+    var `code`: kotlin.String
+    , 
+    var `expiresAt`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eePairingStart: FfiConverterRustBuffer<E2eePairingStart> {
+    override fun read(buf: ByteBuffer): E2eePairingStart {
+        return E2eePairingStart(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eePairingStart) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`code`) +
+            FfiConverterLong.allocationSize(value.`expiresAt`)
+    )
+
+    override fun write(value: E2eePairingStart, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`code`, buf)
+            FfiConverterLong.write(value.`expiresAt`, buf)
+    }
+}
+
+
+
+/**
+ * What `e2ee_setup` creates. Show `recovery_key` once and ask the person to
+ * keep it safe: it is the way back if every device is lost.
+ */
+data class E2eeSetupResult (
+    var `key`: E2eeKeyInfo
+    , 
+    var `recoveryKey`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeSetupResult: FfiConverterRustBuffer<E2eeSetupResult> {
+    override fun read(buf: ByteBuffer): E2eeSetupResult {
+        return E2eeSetupResult(
+            FfiConverterTypeE2eeKeyInfo.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeSetupResult) = (
+            FfiConverterTypeE2eeKeyInfo.allocationSize(value.`key`) +
+            FfiConverterString.allocationSize(value.`recoveryKey`)
+    )
+
+    override fun write(value: E2eeSetupResult, buf: ByteBuffer) {
+            FfiConverterTypeE2eeKeyInfo.write(value.`key`, buf)
+            FfiConverterString.write(value.`recoveryKey`, buf)
+    }
+}
+
+
+
+/**
+ * End-to-end encryption of the account on this device.
+ */
+data class E2eeStatus (
+    /**
+     * The account has an E2EE key (set up on some device).
+     */
+    var `setUp`: kotlin.Boolean
+    , 
+    /**
+     * This device holds it (it can open E2EE vaults it has wraps for).
+     */
+    var `unlocked`: kotlin.Boolean
+    , 
+    var `key`: E2eeKeyInfo?
+    , 
+    /**
+     * An E2EE passphrase can unlock new devices.
+     */
+    var `hasPassphrase`: kotlin.Boolean
+    , 
+    var `hasRecoveryKey`: kotlin.Boolean
+    , 
+    /**
+     * Devices of yours waiting for approval (`e2ee_pairings`).
+     */
+    var `pendingPairings`: kotlin.UInt
+    , 
+    /**
+     * Secrets of E2EE vaults still sealed on this device.
+     */
+    var `lockedSecrets`: kotlin.ULong
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeStatus: FfiConverterRustBuffer<E2eeStatus> {
+    override fun read(buf: ByteBuffer): E2eeStatus {
+        return E2eeStatus(
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalTypeE2eeKeyInfo.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeStatus) = (
+            FfiConverterBoolean.allocationSize(value.`setUp`) +
+            FfiConverterBoolean.allocationSize(value.`unlocked`) +
+            FfiConverterOptionalTypeE2eeKeyInfo.allocationSize(value.`key`) +
+            FfiConverterBoolean.allocationSize(value.`hasPassphrase`) +
+            FfiConverterBoolean.allocationSize(value.`hasRecoveryKey`) +
+            FfiConverterUInt.allocationSize(value.`pendingPairings`) +
+            FfiConverterULong.allocationSize(value.`lockedSecrets`)
+    )
+
+    override fun write(value: E2eeStatus, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`setUp`, buf)
+            FfiConverterBoolean.write(value.`unlocked`, buf)
+            FfiConverterOptionalTypeE2eeKeyInfo.write(value.`key`, buf)
+            FfiConverterBoolean.write(value.`hasPassphrase`, buf)
+            FfiConverterBoolean.write(value.`hasRecoveryKey`, buf)
+            FfiConverterUInt.write(value.`pendingPairings`, buf)
+            FfiConverterULong.write(value.`lockedSecrets`, buf)
+    }
+}
+
+
+
+/**
+ * What turning E2EE on (or rotating) covers (`e2ee_vault_state`).
+ */
+data class E2eeVaultState (
+    var `e2ee`: kotlin.Boolean
+    , 
+    var `keyVersion`: kotlin.UInt
+    , 
+    /**
+     * Members who may hold the key and have an E2EE key.
+     */
+    var `recipients`: List<E2eeMember>
+    , 
+    /**
+     * Members who may hold the key but have not set up E2EE.
+     */
+    var `withoutKey`: List<E2eeMember>
+    , 
+    /**
+     * Items with a secret that will be sealed on this device.
+     */
+    var `items`: kotlin.UInt
+    , 
+    var `rekeyNeeded`: kotlin.Boolean
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeVaultState: FfiConverterRustBuffer<E2eeVaultState> {
+    override fun read(buf: ByteBuffer): E2eeVaultState {
+        return E2eeVaultState(
+            FfiConverterBoolean.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterSequenceTypeE2eeMember.read(buf),
+            FfiConverterSequenceTypeE2eeMember.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeVaultState) = (
+            FfiConverterBoolean.allocationSize(value.`e2ee`) +
+            FfiConverterUInt.allocationSize(value.`keyVersion`) +
+            FfiConverterSequenceTypeE2eeMember.allocationSize(value.`recipients`) +
+            FfiConverterSequenceTypeE2eeMember.allocationSize(value.`withoutKey`) +
+            FfiConverterUInt.allocationSize(value.`items`) +
+            FfiConverterBoolean.allocationSize(value.`rekeyNeeded`)
+    )
+
+    override fun write(value: E2eeVaultState, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`e2ee`, buf)
+            FfiConverterUInt.write(value.`keyVersion`, buf)
+            FfiConverterSequenceTypeE2eeMember.write(value.`recipients`, buf)
+            FfiConverterSequenceTypeE2eeMember.write(value.`withoutKey`, buf)
+            FfiConverterUInt.write(value.`items`, buf)
+            FfiConverterBoolean.write(value.`rekeyNeeded`, buf)
     }
 }
 
@@ -33766,6 +37412,12 @@ data class SshHost (
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     var `secretHidden`: kotlin.Boolean = false 
+    , 
+    /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    var `e2eeLocked`: kotlin.Boolean = false 
     
 ){
     
@@ -33802,6 +37454,7 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeItemAccess.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
@@ -33825,7 +37478,8 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.allocationSize(value.`accountId`) +
             FfiConverterOptionalString.allocationSize(value.`vaultId`) +
             FfiConverterOptionalTypeItemAccess.allocationSize(value.`access`) +
-            FfiConverterBoolean.allocationSize(value.`secretHidden`)
+            FfiConverterBoolean.allocationSize(value.`secretHidden`) +
+            FfiConverterBoolean.allocationSize(value.`e2eeLocked`)
     )
 
     override fun write(value: SshHost, buf: ByteBuffer) {
@@ -33849,6 +37503,7 @@ public object FfiConverterTypeSshHost: FfiConverterRustBuffer<SshHost> {
             FfiConverterOptionalString.write(value.`vaultId`, buf)
             FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
             FfiConverterBoolean.write(value.`secretHidden`, buf)
+            FfiConverterBoolean.write(value.`e2eeLocked`, buf)
     }
 }
 
@@ -33901,6 +37556,12 @@ data class SshIdentity (
      * Read-only: a secret exists but you cannot see it (Use-only vault).
      */
     var `secretHidden`: kotlin.Boolean = false 
+    , 
+    /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    var `e2eeLocked`: kotlin.Boolean = false 
     
 ){
     
@@ -33928,6 +37589,7 @@ public object FfiConverterTypeSshIdentity: FfiConverterRustBuffer<SshIdentity> {
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeItemAccess.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
@@ -33942,7 +37604,8 @@ public object FfiConverterTypeSshIdentity: FfiConverterRustBuffer<SshIdentity> {
             FfiConverterOptionalString.allocationSize(value.`accountId`) +
             FfiConverterOptionalString.allocationSize(value.`vaultId`) +
             FfiConverterOptionalTypeItemAccess.allocationSize(value.`access`) +
-            FfiConverterBoolean.allocationSize(value.`secretHidden`)
+            FfiConverterBoolean.allocationSize(value.`secretHidden`) +
+            FfiConverterBoolean.allocationSize(value.`e2eeLocked`)
     )
 
     override fun write(value: SshIdentity, buf: ByteBuffer) {
@@ -33957,6 +37620,7 @@ public object FfiConverterTypeSshIdentity: FfiConverterRustBuffer<SshIdentity> {
             FfiConverterOptionalString.write(value.`vaultId`, buf)
             FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
             FfiConverterBoolean.write(value.`secretHidden`, buf)
+            FfiConverterBoolean.write(value.`e2eeLocked`, buf)
     }
 }
 
@@ -34034,6 +37698,12 @@ data class SshKey (
     var `secretHidden`: kotlin.Boolean = false 
     , 
     /**
+     * Read-only: the secret is end-to-end encrypted and this device has
+     * not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+     */
+    var `e2eeLocked`: kotlin.Boolean = false 
+    , 
+    /**
      * Read-only: FIDO2 security key details (sk keys; also derived for
      * sk keys imported by older apps). See docs/SSH-PRO.md.
      */
@@ -34069,6 +37739,7 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeItemAccess.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
             FfiConverterOptionalTypeSecurityKeyInfo.read(buf),
         )
     }
@@ -34089,6 +37760,7 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.allocationSize(value.`vaultId`) +
             FfiConverterOptionalTypeItemAccess.allocationSize(value.`access`) +
             FfiConverterBoolean.allocationSize(value.`secretHidden`) +
+            FfiConverterBoolean.allocationSize(value.`e2eeLocked`) +
             FfiConverterOptionalTypeSecurityKeyInfo.allocationSize(value.`securityKey`)
     )
 
@@ -34108,7 +37780,235 @@ public object FfiConverterTypeSshKey: FfiConverterRustBuffer<SshKey> {
             FfiConverterOptionalString.write(value.`vaultId`, buf)
             FfiConverterOptionalTypeItemAccess.write(value.`access`, buf)
             FfiConverterBoolean.write(value.`secretHidden`, buf)
+            FfiConverterBoolean.write(value.`e2eeLocked`, buf)
             FfiConverterOptionalTypeSecurityKeyInfo.write(value.`securityKey`, buf)
+    }
+}
+
+
+
+/**
+ * A single sign-on in progress: open `authorize_url` in the system
+ * browser (Custom Tab, `ASWebAuthenticationSession`); keep the rest for
+ * `sso_complete`.
+ */
+data class SsoFlow (
+    var `authorizeUrl`: kotlin.String
+    , 
+    var `serverUrl`: kotlin.String
+    , 
+    var `state`: kotlin.String
+    , 
+    var `verifier`: kotlin.String
+    , 
+    var `redirectUri`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSsoFlow: FfiConverterRustBuffer<SsoFlow> {
+    override fun read(buf: ByteBuffer): SsoFlow {
+        return SsoFlow(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SsoFlow) = (
+            FfiConverterString.allocationSize(value.`authorizeUrl`) +
+            FfiConverterString.allocationSize(value.`serverUrl`) +
+            FfiConverterString.allocationSize(value.`state`) +
+            FfiConverterString.allocationSize(value.`verifier`) +
+            FfiConverterString.allocationSize(value.`redirectUri`)
+    )
+
+    override fun write(value: SsoFlow, buf: ByteBuffer) {
+            FfiConverterString.write(value.`authorizeUrl`, buf)
+            FfiConverterString.write(value.`serverUrl`, buf)
+            FfiConverterString.write(value.`state`, buf)
+            FfiConverterString.write(value.`verifier`, buf)
+            FfiConverterString.write(value.`redirectUri`, buf)
+    }
+}
+
+
+
+/**
+ * Whether an email signs in through its team's SSO (`sso_discover`).
+ */
+data class SsoHint (
+    var `sso`: kotlin.Boolean
+    , 
+    /**
+     * Password sign-in is refused for this email: only offer SSO.
+     */
+    var `enforced`: kotlin.Boolean
+    , 
+    var `teamId`: kotlin.String?
+    , 
+    var `teamName`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSsoHint: FfiConverterRustBuffer<SsoHint> {
+    override fun read(buf: ByteBuffer): SsoHint {
+        return SsoHint(
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SsoHint) = (
+            FfiConverterBoolean.allocationSize(value.`sso`) +
+            FfiConverterBoolean.allocationSize(value.`enforced`) +
+            FfiConverterOptionalString.allocationSize(value.`teamId`) +
+            FfiConverterOptionalString.allocationSize(value.`teamName`)
+    )
+
+    override fun write(value: SsoHint, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`sso`, buf)
+            FfiConverterBoolean.write(value.`enforced`, buf)
+            FfiConverterOptionalString.write(value.`teamId`, buf)
+            FfiConverterOptionalString.write(value.`teamName`, buf)
+    }
+}
+
+
+
+/**
+ * A team's SSO settings (team owners and admins).
+ */
+data class SsoSettings (
+    var `enabled`: kotlin.Boolean
+    , 
+    /**
+     * `google`, `microsoft`, `keycloak`, `authentik` or `generic`.
+     */
+    var `preset`: kotlin.String
+    , 
+    var `issuer`: kotlin.String
+    , 
+    var `tenant`: kotlin.String?
+    , 
+    var `clientId`: kotlin.String
+    , 
+    var `scopes`: List<kotlin.String>
+    , 
+    var `emailClaim`: kotlin.String?
+    , 
+    var `requireEmailVerified`: kotlin.Boolean
+    , 
+    var `enforce`: kotlin.Boolean
+    , 
+    var `ownerPasswordAllowed`: kotlin.Boolean
+    , 
+    var `autoCreate`: kotlin.Boolean
+    , 
+    var `autoJoin`: kotlin.Boolean
+    , 
+    var `satisfies2fa`: kotlin.Boolean
+    , 
+    /**
+     * Read-only: a client secret is stored.
+     */
+    var `hasClientSecret`: kotlin.Boolean = false 
+    , 
+    /**
+     * Read-only: the URL to register at the identity provider.
+     */
+    var `redirectUri`: kotlin.String = "" 
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSsoSettings: FfiConverterRustBuffer<SsoSettings> {
+    override fun read(buf: ByteBuffer): SsoSettings {
+        return SsoSettings(
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SsoSettings) = (
+            FfiConverterBoolean.allocationSize(value.`enabled`) +
+            FfiConverterString.allocationSize(value.`preset`) +
+            FfiConverterString.allocationSize(value.`issuer`) +
+            FfiConverterOptionalString.allocationSize(value.`tenant`) +
+            FfiConverterString.allocationSize(value.`clientId`) +
+            FfiConverterSequenceString.allocationSize(value.`scopes`) +
+            FfiConverterOptionalString.allocationSize(value.`emailClaim`) +
+            FfiConverterBoolean.allocationSize(value.`requireEmailVerified`) +
+            FfiConverterBoolean.allocationSize(value.`enforce`) +
+            FfiConverterBoolean.allocationSize(value.`ownerPasswordAllowed`) +
+            FfiConverterBoolean.allocationSize(value.`autoCreate`) +
+            FfiConverterBoolean.allocationSize(value.`autoJoin`) +
+            FfiConverterBoolean.allocationSize(value.`satisfies2fa`) +
+            FfiConverterBoolean.allocationSize(value.`hasClientSecret`) +
+            FfiConverterString.allocationSize(value.`redirectUri`)
+    )
+
+    override fun write(value: SsoSettings, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`enabled`, buf)
+            FfiConverterString.write(value.`preset`, buf)
+            FfiConverterString.write(value.`issuer`, buf)
+            FfiConverterOptionalString.write(value.`tenant`, buf)
+            FfiConverterString.write(value.`clientId`, buf)
+            FfiConverterSequenceString.write(value.`scopes`, buf)
+            FfiConverterOptionalString.write(value.`emailClaim`, buf)
+            FfiConverterBoolean.write(value.`requireEmailVerified`, buf)
+            FfiConverterBoolean.write(value.`enforce`, buf)
+            FfiConverterBoolean.write(value.`ownerPasswordAllowed`, buf)
+            FfiConverterBoolean.write(value.`autoCreate`, buf)
+            FfiConverterBoolean.write(value.`autoJoin`, buf)
+            FfiConverterBoolean.write(value.`satisfies2fa`, buf)
+            FfiConverterBoolean.write(value.`hasClientSecret`, buf)
+            FfiConverterString.write(value.`redirectUri`, buf)
     }
 }
 
@@ -34164,6 +38064,17 @@ data class SyncReport (
      * `v2` (vaults) or `legacy`.
      */
     var `protocol`: kotlin.String = "" 
+    , 
+    /**
+     * Local changes with secrets of E2EE vaults waiting for this device
+     * to be unlocked (0.7 phase 5a).
+     */
+    var `e2eeWaiting`: kotlin.ULong = 0UL 
+    , 
+    /**
+     * Secrets of E2EE vaults still sealed on this device: offer "Unlock".
+     */
+    var `e2eeLocked`: kotlin.ULong = 0UL 
     
 ){
     
@@ -34189,6 +38100,8 @@ public object FfiConverterTypeSyncReport: FfiConverterRustBuffer<SyncReport> {
             FfiConverterSequenceTypeVaultRef.read(buf),
             FfiConverterSequenceTypeVaultRef.read(buf),
             FfiConverterString.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
         )
     }
 
@@ -34201,7 +38114,9 @@ public object FfiConverterTypeSyncReport: FfiConverterRustBuffer<SyncReport> {
             FfiConverterSequenceTypeDiscardedChanges.allocationSize(value.`discarded`) +
             FfiConverterSequenceTypeVaultRef.allocationSize(value.`vaultsAdded`) +
             FfiConverterSequenceTypeVaultRef.allocationSize(value.`vaultsLost`) +
-            FfiConverterString.allocationSize(value.`protocol`)
+            FfiConverterString.allocationSize(value.`protocol`) +
+            FfiConverterULong.allocationSize(value.`e2eeWaiting`) +
+            FfiConverterULong.allocationSize(value.`e2eeLocked`)
     )
 
     override fun write(value: SyncReport, buf: ByteBuffer) {
@@ -34214,6 +38129,8 @@ public object FfiConverterTypeSyncReport: FfiConverterRustBuffer<SyncReport> {
             FfiConverterSequenceTypeVaultRef.write(value.`vaultsAdded`, buf)
             FfiConverterSequenceTypeVaultRef.write(value.`vaultsLost`, buf)
             FfiConverterString.write(value.`protocol`, buf)
+            FfiConverterULong.write(value.`e2eeWaiting`, buf)
+            FfiConverterULong.write(value.`e2eeLocked`, buf)
     }
 }
 
@@ -34471,6 +38388,70 @@ public object FfiConverterTypeTeamComplianceMember: FfiConverterRustBuffer<TeamC
             FfiConverterOptionalLong.write(value.`deadline`, buf)
             FfiConverterBoolean.write(value.`blocked`, buf)
             FfiConverterOptionalString.write(value.`principal`, buf)
+    }
+}
+
+
+
+/**
+ * A domain of a team and its DNS proof.
+ */
+data class TeamDomainInfo (
+    var `domain`: kotlin.String
+    , 
+    /**
+     * TXT record to create.
+     */
+    var `recordName`: kotlin.String
+    , 
+    var `recordValue`: kotlin.String
+    , 
+    var `verified`: kotlin.Boolean
+    , 
+    var `verifiedAt`: kotlin.Long?
+    , 
+    var `lastError`: kotlin.String?
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTeamDomainInfo: FfiConverterRustBuffer<TeamDomainInfo> {
+    override fun read(buf: ByteBuffer): TeamDomainInfo {
+        return TeamDomainInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: TeamDomainInfo) = (
+            FfiConverterString.allocationSize(value.`domain`) +
+            FfiConverterString.allocationSize(value.`recordName`) +
+            FfiConverterString.allocationSize(value.`recordValue`) +
+            FfiConverterBoolean.allocationSize(value.`verified`) +
+            FfiConverterOptionalLong.allocationSize(value.`verifiedAt`) +
+            FfiConverterOptionalString.allocationSize(value.`lastError`)
+    )
+
+    override fun write(value: TeamDomainInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`domain`, buf)
+            FfiConverterString.write(value.`recordName`, buf)
+            FfiConverterString.write(value.`recordValue`, buf)
+            FfiConverterBoolean.write(value.`verified`, buf)
+            FfiConverterOptionalLong.write(value.`verifiedAt`, buf)
+            FfiConverterOptionalString.write(value.`lastError`, buf)
     }
 }
 
@@ -35261,6 +39242,83 @@ public object FfiConverterTypeVaultChanges: FfiConverterRustBuffer<VaultChanges>
 
 
 /**
+ * An E2EE vault as you see it (`VaultInfo.e2ee`).
+ */
+data class VaultE2eeInfo (
+    var `keyVersion`: kotlin.UInt
+    , 
+    /**
+     * Your role and the team's policy let you hold the key.
+     */
+    var `mayHoldKey`: kotlin.Boolean
+    , 
+    /**
+     * The server has your wrap of the key (this device opens it once
+     * unlocked).
+     */
+    var `hasWrap`: kotlin.Boolean
+    , 
+    /**
+     * Someone lost access: rotate the key (`e2ee_rotate_vault`).
+     */
+    var `rekeyNeeded`: kotlin.Boolean
+    , 
+    /**
+     * Members waiting for you to give them the key (`e2ee_pending_members`).
+     */
+    var `pendingMembers`: kotlin.UInt
+    , 
+    /**
+     * Members who may hold the key but have not set up E2EE.
+     */
+    var `membersWithoutKey`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeVaultE2eeInfo: FfiConverterRustBuffer<VaultE2eeInfo> {
+    override fun read(buf: ByteBuffer): VaultE2eeInfo {
+        return VaultE2eeInfo(
+            FfiConverterUInt.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: VaultE2eeInfo) = (
+            FfiConverterUInt.allocationSize(value.`keyVersion`) +
+            FfiConverterBoolean.allocationSize(value.`mayHoldKey`) +
+            FfiConverterBoolean.allocationSize(value.`hasWrap`) +
+            FfiConverterBoolean.allocationSize(value.`rekeyNeeded`) +
+            FfiConverterUInt.allocationSize(value.`pendingMembers`) +
+            FfiConverterLong.allocationSize(value.`membersWithoutKey`)
+    )
+
+    override fun write(value: VaultE2eeInfo, buf: ByteBuffer) {
+            FfiConverterUInt.write(value.`keyVersion`, buf)
+            FfiConverterBoolean.write(value.`mayHoldKey`, buf)
+            FfiConverterBoolean.write(value.`hasWrap`, buf)
+            FfiConverterBoolean.write(value.`rekeyNeeded`, buf)
+            FfiConverterUInt.write(value.`pendingMembers`, buf)
+            FfiConverterLong.write(value.`membersWithoutKey`, buf)
+    }
+}
+
+
+
+/**
  * A vault of an account.
  */
 data class VaultInfo (
@@ -35317,6 +39375,12 @@ data class VaultInfo (
      * no policy, or an older server). Hide what it forbids.
      */
     var `policy`: VaultPolicyInfo?
+    , 
+    /**
+     * End-to-end encrypted vault (0.7 phase 5a; `None`: the server keeps
+     * its key). With `e2ee`, server sessions need `open_server_session_unlocked`.
+     */
+    var `e2ee`: VaultE2eeInfo? = null 
     
 ){
     
@@ -35349,6 +39413,7 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterBoolean.read(buf),
             FfiConverterOptionalTypeVaultRole.read(buf),
             FfiConverterOptionalTypeVaultPolicyInfo.read(buf),
+            FfiConverterOptionalTypeVaultE2eeInfo.read(buf),
         )
     }
 
@@ -35368,7 +39433,8 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterLong.allocationSize(value.`hostCount`) +
             FfiConverterBoolean.allocationSize(value.`strict`) +
             FfiConverterOptionalTypeVaultRole.allocationSize(value.`teamMemberRole`) +
-            FfiConverterOptionalTypeVaultPolicyInfo.allocationSize(value.`policy`)
+            FfiConverterOptionalTypeVaultPolicyInfo.allocationSize(value.`policy`) +
+            FfiConverterOptionalTypeVaultE2eeInfo.allocationSize(value.`e2ee`)
     )
 
     override fun write(value: VaultInfo, buf: ByteBuffer) {
@@ -35388,6 +39454,7 @@ public object FfiConverterTypeVaultInfo: FfiConverterRustBuffer<VaultInfo> {
             FfiConverterBoolean.write(value.`strict`, buf)
             FfiConverterOptionalTypeVaultRole.write(value.`teamMemberRole`, buf)
             FfiConverterOptionalTypeVaultPolicyInfo.write(value.`policy`, buf)
+            FfiConverterOptionalTypeVaultE2eeInfo.write(value.`e2ee`, buf)
     }
 }
 
@@ -36368,6 +40435,47 @@ public object FfiConverterTypeAiTaskStatus: FfiConverterRustBuffer<AiTaskStatus>
     override fun allocationSize(value: AiTaskStatus) = 4UL
 
     override fun write(value: AiTaskStatus, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Whose audit log.
+ */
+
+enum class AuditScope {
+    
+    ME,
+    VAULT,
+    TEAM,
+    SERVER;
+
+    
+
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeAuditScope: FfiConverterRustBuffer<AuditScope> {
+    override fun read(buf: ByteBuffer) = try {
+        
+        AuditScope.entries[buf.getInt() - 1]
+        
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: AuditScope) = 4UL
+
+    override fun write(value: AuditScope, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -40400,6 +44508,21 @@ sealed class TermoakException(message: String): kotlin.Exception(message) {
      */
         class SecurityKey(message: String) : TermoakException(message)
         
+    /**
+     * End-to-end encrypted secrets this device (or the server) cannot open
+     * (0.7 phase 5a): `apiError.code` is `e2ee_locked` (unlock E2EE on this
+     * device: passphrase, recovery key or another device) or
+     * `e2ee_unlock_required` (a server session needs the host's
+     * credentials: `open_server_session_unlocked`).
+     */
+        class E2eeLocked(message: String) : TermoakException(message)
+        
+    /**
+     * The email's team signs in through single sign-on only
+     * (`sso_required`): start `sso_start` instead of the password.
+     */
+        class SsoRequired(message: String) : TermoakException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<TermoakException> {
         override fun lift(error_buf: RustBuffer.ByValue): TermoakException = FfiConverterTypeTermoakError.lift(error_buf)
@@ -40442,6 +44565,8 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             27 -> TermoakException.Cancelled(FfiConverterString.read(buf))
             28 -> TermoakException.NetworkUnavailable(FfiConverterString.read(buf))
             29 -> TermoakException.SecurityKey(FfiConverterString.read(buf))
+            30 -> TermoakException.E2eeLocked(FfiConverterString.read(buf))
+            31 -> TermoakException.SsoRequired(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -40567,6 +44692,14 @@ public object FfiConverterTypeTermoakError : FfiConverterRustBuffer<TermoakExcep
             }
             is TermoakException.SecurityKey -> {
                 buf.putInt(29)
+                Unit
+            }
+            is TermoakException.E2eeLocked -> {
+                buf.putInt(30)
+                Unit
+            }
+            is TermoakException.SsoRequired -> {
+                buf.putInt(31)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -41686,6 +45819,38 @@ public object FfiConverterOptionalTypeCsvMapping: FfiConverterRustBuffer<CsvMapp
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeE2eeKeyInfo: FfiConverterRustBuffer<E2eeKeyInfo?> {
+    override fun read(buf: ByteBuffer): E2eeKeyInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeE2eeKeyInfo.read(buf)
+    }
+
+    override fun allocationSize(value: E2eeKeyInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeE2eeKeyInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: E2eeKeyInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeE2eeKeyInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeHostProxy: FfiConverterRustBuffer<HostProxy?> {
     override fun read(buf: ByteBuffer): HostProxy? {
         if (buf.get().toInt() == 0) {
@@ -42038,6 +46203,38 @@ public object FfiConverterOptionalTypeSnippetContext: FfiConverterRustBuffer<Sni
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeSsoSettings: FfiConverterRustBuffer<SsoSettings?> {
+    override fun read(buf: ByteBuffer): SsoSettings? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeSsoSettings.read(buf)
+    }
+
+    override fun allocationSize(value: SsoSettings?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeSsoSettings.allocationSize(value)
+        }
+    }
+
+    override fun write(value: SsoSettings?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeSsoSettings.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeTailscaleSettings: FfiConverterRustBuffer<TailscaleSettings?> {
     override fun read(buf: ByteBuffer): TailscaleSettings? {
         if (buf.get().toInt() == 0) {
@@ -42060,6 +46257,38 @@ public object FfiConverterOptionalTypeTailscaleSettings: FfiConverterRustBuffer<
         } else {
             buf.put(1)
             FfiConverterTypeTailscaleSettings.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeVaultE2eeInfo: FfiConverterRustBuffer<VaultE2eeInfo?> {
+    override fun read(buf: ByteBuffer): VaultE2eeInfo? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeVaultE2eeInfo.read(buf)
+    }
+
+    override fun allocationSize(value: VaultE2eeInfo?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeVaultE2eeInfo.allocationSize(value)
+        }
+    }
+
+    override fun write(value: VaultE2eeInfo?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeVaultE2eeInfo.write(value, buf)
         }
     }
 }
@@ -43082,6 +47311,34 @@ public object FfiConverterSequenceTypeAuditEvent: FfiConverterRustBuffer<List<Au
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeAuditSinkInfo: FfiConverterRustBuffer<List<AuditSinkInfo>> {
+    override fun read(buf: ByteBuffer): List<AuditSinkInfo> {
+        val len = buf.getInt()
+        return List<AuditSinkInfo>(len) {
+            FfiConverterTypeAuditSinkInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<AuditSinkInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeAuditSinkInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<AuditSinkInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeAuditSinkInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeAuthorPeriod: FfiConverterRustBuffer<List<AuthorPeriod>> {
     override fun read(buf: ByteBuffer): List<AuthorPeriod> {
         val len = buf.getInt()
@@ -43324,6 +47581,62 @@ public object FfiConverterSequenceTypeDiscardedChanges: FfiConverterRustBuffer<L
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeDiscardedChanges.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeE2eeMember: FfiConverterRustBuffer<List<E2eeMember>> {
+    override fun read(buf: ByteBuffer): List<E2eeMember> {
+        val len = buf.getInt()
+        return List<E2eeMember>(len) {
+            FfiConverterTypeE2eeMember.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<E2eeMember>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeE2eeMember.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<E2eeMember>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeE2eeMember.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeE2eePairingRequest: FfiConverterRustBuffer<List<E2eePairingRequest>> {
+    override fun read(buf: ByteBuffer): List<E2eePairingRequest> {
+        val len = buf.getInt()
+        return List<E2eePairingRequest>(len) {
+            FfiConverterTypeE2eePairingRequest.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<E2eePairingRequest>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeE2eePairingRequest.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<E2eePairingRequest>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeE2eePairingRequest.write(it, buf)
         }
     }
 }
@@ -44314,6 +48627,34 @@ public object FfiConverterSequenceTypeTeamComplianceMember: FfiConverterRustBuff
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeTeamDomainInfo: FfiConverterRustBuffer<List<TeamDomainInfo>> {
+    override fun read(buf: ByteBuffer): List<TeamDomainInfo> {
+        val len = buf.getInt()
+        return List<TeamDomainInfo>(len) {
+            FfiConverterTypeTeamDomainInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TeamDomainInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTeamDomainInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<TeamDomainInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTeamDomainInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeTeamMember: FfiConverterRustBuffer<List<TeamMember>> {
     override fun read(buf: ByteBuffer): List<TeamMember> {
         val len = buf.getInt()
@@ -44798,6 +49139,36 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
             return FfiConverterOptionalTypeQrCode.lift(
     uniffiRustCall() { _status ->
     UniffiLib.uniffi_termoak_ffi_fn_func_qr_code(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The fingerprint of an E2EE public key (base64), as members compare it.
+         */
+    @Throws(TermoakException::class) fun `e2eeFingerprint`(`publicKey`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(TermoakException) { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_e2ee_fingerprint(
+    
+        
+        FfiConverterString.lower(`publicKey`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Whether `text` is a well-formed recovery key (its check digits match):
+         * for live feedback while the person types it.
+         */ fun `e2eeRecoveryKeyValid`(`text`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(
     
         
         FfiConverterString.lower(`text`),_status)

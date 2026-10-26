@@ -799,6 +799,7 @@ fn private_networks_live_in_accounts_and_hosts_keep_their_network() {
                 vault_id: None,
                 access: None,
                 secret_hidden: false,
+                e2ee_locked: false,
             },
             SecretChange::Keep,
         )

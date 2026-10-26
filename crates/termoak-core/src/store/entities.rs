@@ -17,6 +17,8 @@ use serde_json::Value;
 
 use super::vaults::{Keyring, SecretUse, VaultAccess};
 use super::{Store, next_rev, parse_id, parse_opt_id};
+use base64::Engine as _;
+
 use crate::error::{CoreError, Result, codes};
 use crate::model::{
     Entity, EntityKind, Record, RecordMeta, SecretUpdate, SyncMode, SyncRecord, VaultRole,
@@ -40,10 +42,12 @@ pub(super) struct Row {
     pub(super) updated_by: Option<Id>,
     pub(super) secret_hidden: bool,
     pub(super) kind: Option<EntityKind>,
+    /// The secret is a client's end-to-end encrypted blob (0.7 phase 5a).
+    pub(super) e2ee: bool,
 }
 
 pub(super) const COLUMNS: &str = "id, owner_id, data, secret, sync_mode, rev, updated_at, deleted, vault_id, \
-     key_version, updated_by, secret_hidden, kind";
+     key_version, updated_by, secret_hidden, kind, e2ee";
 
 pub(super) fn map_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
     Ok(Row {
@@ -60,6 +64,7 @@ pub(super) fn map_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
         updated_by: parse_opt_id(r.get(10)?)?,
         secret_hidden: r.get::<_, i64>(11)? != 0,
         kind: EntityKind::parse(&r.get::<_, String>(12)?),
+        e2ee: r.get::<_, i64>(13)? != 0,
     })
 }
 
@@ -83,6 +88,7 @@ impl Row {
             updated_by: self.updated_by,
             secret_hidden: self.secret_hidden
                 || (has_secret && role.is_some_and(|r| !r.can_read_secrets())),
+            e2ee_locked: self.e2ee && self.secret.is_some(),
         }
     }
 }
@@ -131,6 +137,61 @@ fn visible_row<T: Entity>(
     }
 }
 
+/// The error of a secret this store cannot open (end-to-end encrypted).
+pub(crate) fn e2ee_locked() -> CoreError {
+    CoreError::vault(
+        codes::E2EE_LOCKED,
+        "this secret is end-to-end encrypted: unlock the vault on your device",
+    )
+}
+
+fn plaintext_rejected() -> CoreError {
+    CoreError::vault(
+        codes::E2EE_PLAINTEXT_REJECTED,
+        "this vault is end-to-end encrypted: send the secret sealed (`sealed`)",
+    )
+}
+
+/// How a save writes the secret (server REST saves).
+enum SecretWrite {
+    Keep,
+    Clear,
+    /// Plaintext JSON, sealed by the store.
+    Plain(zeroize::Zeroizing<Vec<u8>>),
+    /// A client's E2EE blob and its vault key version.
+    Sealed(Vec<u8>, u32),
+}
+
+/// A sealed secret must be for an end-to-end encrypted vault and its
+/// current key version.
+pub(super) fn check_e2ee_version(conn: &Connection, vault: Id, version: u32) -> Result<()> {
+    let row: Option<(String, u32)> = conn
+        .query_row(
+            "SELECT crypto_mode, key_version FROM vaults WHERE id = ?1",
+            [vault.to_string()],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()?;
+    match row {
+        Some((mode, current)) if mode == "e2ee" => {
+            if version == current {
+                Ok(())
+            } else {
+                Err(CoreError::vault_detail(
+                    codes::E2EE_KEY_OUTDATED,
+                    "the secret is sealed with another key version of the vault",
+                    serde_json::json!({"key_version": current}),
+                ))
+            }
+        }
+        Some(_) => Err(CoreError::vault(
+            codes::E2EE_NOT_ENABLED,
+            "this vault is not end-to-end encrypted",
+        )),
+        None => Err(CoreError::vault(codes::VAULT_NOT_FOUND, "vault not found")),
+    }
+}
+
 pub(super) fn open_secret<S: serde::de::DeserializeOwned + Default>(
     conn: &Connection,
     keys: &Keyring,
@@ -139,6 +200,7 @@ pub(super) fn open_secret<S: serde::de::DeserializeOwned + Default>(
 ) -> Result<S> {
     match row.secret.as_deref() {
         None => Ok(S::default()),
+        Some(_) if row.e2ee => Err(e2ee_locked()),
         Some(blob) => {
             let plain = keys.open(conn, row.vault_id, row.key_version, kind, row.id, blob)?;
             Ok(serde_json::from_slice(&plain)?)
@@ -499,16 +561,18 @@ impl Store {
                 let mode = sync_mode
                     .or_else(|| existing.as_ref().map(|r| r.sync_mode))
                     .unwrap_or_default();
-                let (secret_blob, key_version) = match secret {
+                // A secret kept as it is stays end-to-end encrypted when it
+                // was (a client editing a locked E2EE item).
+                let (secret_blob, key_version, e2ee) = match secret {
                     SecretUpdate::Keep => existing
                         .as_ref()
-                        .map(|r| (r.secret.clone(), r.key_version))
-                        .unwrap_or((None, None)),
-                    SecretUpdate::Clear => (None, None),
+                        .map(|r| (r.secret.clone(), r.key_version, r.e2ee))
+                        .unwrap_or((None, None, false)),
+                    SecretUpdate::Clear => (None, None, false),
                     SecretUpdate::Set(s) => {
                         let json = zeroize::Zeroizing::new(serde_json::to_vec(&s)?);
                         let (b, v) = keys.seal(&tx, vault, T::KIND, id, &json)?;
-                        (Some(b), v)
+                        (Some(b), v, false)
                     }
                 };
                 let rev = next_rev(&tx)?;
@@ -516,12 +580,12 @@ impl Store {
                 let json = serde_json::to_string(&data)?;
                 tx.execute(
                     "INSERT INTO entities (id, owner_id, kind, data, secret, sync_mode, rev, updated_at,
-                                           deleted, dirty, vault_id, key_version)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, 1, ?9, ?10)
+                                           deleted, dirty, vault_id, key_version, e2ee)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, 1, ?9, ?10, ?11)
                      ON CONFLICT(id) DO UPDATE SET
                         data = excluded.data, secret = excluded.secret, sync_mode = excluded.sync_mode,
                         rev = excluded.rev, updated_at = excluded.updated_at, deleted = 0, dirty = 1,
-                        key_version = excluded.key_version, secret_hidden = 0",
+                        key_version = excluded.key_version, secret_hidden = 0, e2ee = excluded.e2ee",
                     params![
                         id.to_string(),
                         owner.to_string(),
@@ -532,7 +596,8 @@ impl Store {
                         rev,
                         now,
                         vault.map(|v| v.to_string()),
-                        key_version
+                        key_version,
+                        e2ee as i64
                     ],
                 )?;
                 tx.commit()?;
@@ -549,6 +614,7 @@ impl Store {
                             vault_id: vault,
                             updated_by: existing.and_then(|r| r.updated_by),
                             secret_hidden: false,
+                            e2ee_locked: e2ee && secret_blob.is_some(),
                         },
                     },
                     vault,
@@ -567,7 +633,7 @@ impl Store {
                 let row = owned_row::<T>(&tx, owner, id)?;
                 let rev = next_rev(&tx)?;
                 tx.execute(
-                    "UPDATE entities SET deleted = 1, secret = NULL, key_version = NULL, data = '{}',
+                    "UPDATE entities SET deleted = 1, secret = NULL, key_version = NULL, e2ee = 0, data = '{}',
                             rev = ?2, updated_at = ?3, dirty = 1, secret_hidden = 0
                      WHERE id = ?1",
                     params![id.to_string(), rev, now_ms()],
@@ -714,19 +780,19 @@ impl Store {
                         None => default_vault(&tx, owner)?,
                     },
                 };
-                let (secret_blob, key_version) = if rec.deleted {
-                    (None, None)
+                let (secret_blob, key_version, e2ee) = if rec.deleted {
+                    (None, None, false)
                 } else {
                     match &rec.secret {
                         None => existing
                             .as_ref()
-                            .map(|r| (r.secret.clone(), r.key_version))
-                            .unwrap_or((None, None)),
-                        Some(serde_json::Value::Null) => (None, None),
+                            .map(|r| (r.secret.clone(), r.key_version, r.e2ee))
+                            .unwrap_or((None, None, false)),
+                        Some(serde_json::Value::Null) => (None, None, false),
                         Some(v) => {
                             let json = zeroize::Zeroizing::new(serde_json::to_vec(v)?);
                             let (b, kv) = keys.seal(&tx, vault, rec.kind, rec.id, &json)?;
-                            (Some(b), kv)
+                            (Some(b), kv, false)
                         }
                     }
                 };
@@ -738,12 +804,12 @@ impl Store {
                 };
                 tx.execute(
                     "INSERT INTO entities (id, owner_id, kind, data, secret, sync_mode, rev, updated_at,
-                                           deleted, dirty, vault_id, key_version)
-                     VALUES (?1, ?2, ?3, ?4, ?5, 'synced', ?6, ?7, ?8, 0, ?9, ?10)
+                                           deleted, dirty, vault_id, key_version, e2ee)
+                     VALUES (?1, ?2, ?3, ?4, ?5, 'synced', ?6, ?7, ?8, 0, ?9, ?10, ?11)
                      ON CONFLICT(id) DO UPDATE SET
                         data = excluded.data, secret = excluded.secret, rev = excluded.rev,
                         updated_at = excluded.updated_at, deleted = excluded.deleted, dirty = 0,
-                        key_version = excluded.key_version",
+                        key_version = excluded.key_version, e2ee = excluded.e2ee",
                     params![
                         rec.id.to_string(),
                         owner.to_string(),
@@ -754,7 +820,8 @@ impl Store {
                         rec.updated_at,
                         rec.deleted as i64,
                         vault.map(|v| v.to_string()),
-                        key_version
+                        key_version,
+                        e2ee as i64
                     ],
                 )?;
                 rec.rev = rev;
@@ -845,8 +912,56 @@ impl Store {
         &self,
         access: &VaultAccess,
         vault: Id,
-        mut data: T,
+        data: T,
         secret: SecretUpdate<T::Secret>,
+        sync_mode: Option<SyncMode>,
+    ) -> Result<Record<T>> {
+        if let SecretUpdate::Set(sec) = &secret {
+            data.validate_secret(sec)?;
+        }
+        let write = match secret {
+            SecretUpdate::Keep => SecretWrite::Keep,
+            SecretUpdate::Clear => SecretWrite::Clear,
+            SecretUpdate::Set(s) => {
+                // End-to-end encrypted vaults only take sealed secrets
+                // (except private networks: the server joins them).
+                if access.is_e2ee(vault) && T::KIND != EntityKind::Network {
+                    return Err(plaintext_rejected());
+                }
+                SecretWrite::Plain(zeroize::Zeroizing::new(serde_json::to_vec(&s)?))
+            }
+        };
+        self.save_in_write(access, vault, data, write, sync_mode)
+            .await
+    }
+
+    /// [`save_in`](Self::save_in) with a secret sealed by a client for an
+    /// end-to-end encrypted vault (0.7 phase 5a): stored as it is.
+    pub async fn save_in_sealed<T: Entity>(
+        &self,
+        access: &VaultAccess,
+        vault: Id,
+        data: T,
+        sealed: crate::model::SealedSecret,
+        sync_mode: Option<SyncMode>,
+    ) -> Result<Record<T>> {
+        let blob = crate::e2ee::check_sealed_blob(&sealed.blob_b64)?;
+        self.save_in_write(
+            access,
+            vault,
+            data,
+            SecretWrite::Sealed(blob, sealed.key_version),
+            sync_mode,
+        )
+        .await
+    }
+
+    async fn save_in_write<T: Entity>(
+        &self,
+        access: &VaultAccess,
+        vault: Id,
+        mut data: T,
+        secret: SecretWrite,
         sync_mode: Option<SyncMode>,
     ) -> Result<Record<T>> {
         let role = access.require(vault, VaultRole::Editor)?;
@@ -858,9 +973,6 @@ impl Store {
         }
         data.validate()?;
         data.validate_edit()?;
-        if let SecretUpdate::Set(sec) = &secret {
-            data.validate_secret(sec)?;
-        }
         let access = access.clone();
         let actor = access.user;
         let rec = self
@@ -895,16 +1007,19 @@ impl Store {
                 let mode = sync_mode
                     .or_else(|| existing.as_ref().map(|r| r.sync_mode))
                     .unwrap_or_default();
-                let (secret_blob, key_version) = match secret {
-                    SecretUpdate::Keep => existing
+                let (secret_blob, key_version, e2ee) = match secret {
+                    SecretWrite::Keep => existing
                         .as_ref()
-                        .map(|r| (r.secret.clone(), r.key_version))
-                        .unwrap_or((None, None)),
-                    SecretUpdate::Clear => (None, None),
-                    SecretUpdate::Set(s) => {
-                        let json = zeroize::Zeroizing::new(serde_json::to_vec(&s)?);
+                        .map(|r| (r.secret.clone(), r.key_version, r.e2ee))
+                        .unwrap_or((None, None, false)),
+                    SecretWrite::Clear => (None, None, false),
+                    SecretWrite::Plain(json) => {
                         let (b, v) = keys.seal(&tx, Some(vault), T::KIND, id, &json)?;
-                        (Some(b), v)
+                        (Some(b), v, false)
+                    }
+                    SecretWrite::Sealed(blob, version) => {
+                        check_e2ee_version(&tx, vault, version)?;
+                        (Some(blob), Some(version), true)
                     }
                 };
                 let owner = existing.as_ref().map_or(actor, |r| r.owner_id);
@@ -912,13 +1027,13 @@ impl Store {
                 let now = now_ms();
                 tx.execute(
                     "INSERT INTO entities (id, owner_id, kind, data, secret, sync_mode, rev, updated_at,
-                                           deleted, dirty, vault_id, key_version, updated_by)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, 1, ?9, ?10, ?11)
+                                           deleted, dirty, vault_id, key_version, updated_by, e2ee)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, 1, ?9, ?10, ?11, ?12)
                      ON CONFLICT(id) DO UPDATE SET
                         data = excluded.data, secret = excluded.secret, sync_mode = excluded.sync_mode,
                         rev = excluded.rev, updated_at = excluded.updated_at, deleted = 0, dirty = 1,
                         vault_id = excluded.vault_id, key_version = excluded.key_version,
-                        updated_by = excluded.updated_by, secret_hidden = 0",
+                        updated_by = excluded.updated_by, secret_hidden = 0, e2ee = excluded.e2ee",
                     params![
                         id.to_string(),
                         owner.to_string(),
@@ -930,7 +1045,8 @@ impl Store {
                         now,
                         vault.to_string(),
                         key_version,
-                        actor.to_string()
+                        actor.to_string(),
+                        e2ee as i64
                     ],
                 )?;
                 tx.commit()?;
@@ -946,6 +1062,7 @@ impl Store {
                         vault_id: Some(vault),
                         updated_by: Some(actor),
                         secret_hidden: secret_blob.is_some() && !role.can_read_secrets(),
+                        e2ee_locked: e2ee && secret_blob.is_some(),
                     },
                 })
             })
@@ -964,7 +1081,7 @@ impl Store {
                 access.require(row.vault(), VaultRole::Editor)?;
                 let rev = next_rev(&tx)?;
                 tx.execute(
-                    "UPDATE entities SET deleted = 1, secret = NULL, key_version = NULL, data = '{}',
+                    "UPDATE entities SET deleted = 1, secret = NULL, key_version = NULL, e2ee = 0, data = '{}',
                             rev = ?2, updated_at = ?3, dirty = 1, updated_by = ?4, secret_hidden = 0
                      WHERE id = ?1",
                     params![id.to_string(), rev, now_ms(), access.user.to_string()],
@@ -1206,19 +1323,48 @@ impl Store {
                             });
                         }
                     }
-                    let (secret_blob, key_version) = if rec.deleted {
-                        (None, None)
+                    // Secrets of end-to-end encrypted vaults arrive sealed
+                    // (`sealed`) for the current key version; plaintext is
+                    // refused (private networks excepted: the server joins
+                    // them, so their secret stays server-managed).
+                    let e2ee_vault = access.is_e2ee(target);
+                    let (secret_blob, key_version, e2ee) = if rec.deleted {
+                        (None, None, false)
+                    } else if let Some(sealed) = &rec.sealed {
+                        let checked = if e2ee_vault && rec.kind != EntityKind::Network {
+                            crate::e2ee::check_sealed_blob(&sealed.blob_b64).and_then(|b| {
+                                check_e2ee_version(&tx, target, sealed.key_version).map(|_| b)
+                            })
+                        } else {
+                            Err(CoreError::vault(
+                                codes::E2EE_NOT_ENABLED,
+                                "this vault is not end-to-end encrypted",
+                            ))
+                        };
+                        match checked {
+                            Ok(blob) => (Some(blob), Some(sealed.key_version), true),
+                            Err(e) => {
+                                let code = e.vault_code().unwrap_or("invalid");
+                                reject(&mut report, rec.id, code, e.to_string());
+                                continue;
+                            }
+                        }
                     } else {
                         match &rec.secret {
                             None => existing
                                 .as_ref()
-                                .map(|r| (r.secret.clone(), r.key_version))
-                                .unwrap_or((None, None)),
-                            Some(Value::Null) => (None, None),
+                                .map(|r| (r.secret.clone(), r.key_version, r.e2ee))
+                                .unwrap_or((None, None, false)),
+                            Some(Value::Null) => (None, None, false),
+                            Some(_) if e2ee_vault && rec.kind != EntityKind::Network => {
+                                let e = plaintext_rejected();
+                                reject(&mut report, rec.id, codes::E2EE_PLAINTEXT_REJECTED, e.to_string());
+                                continue;
+                            }
                             Some(v) => {
                                 let json = zeroize::Zeroizing::new(serde_json::to_vec(v)?);
                                 let (b, kv) = keys.seal(&tx, Some(target), rec.kind, rec.id, &json)?;
-                                (Some(b), kv)
+                                (Some(b), kv, false)
                             }
                         }
                     };
@@ -1231,13 +1377,13 @@ impl Store {
                     tx.execute(
                         "INSERT INTO entities (id, owner_id, kind, data, secret, sync_mode, rev,
                                                updated_at, deleted, dirty, vault_id, key_version,
-                                               updated_by)
-                         VALUES (?1, ?2, ?3, ?4, ?5, 'synced', ?6, ?7, ?8, 0, ?9, ?10, ?11)
+                                               updated_by, e2ee)
+                         VALUES (?1, ?2, ?3, ?4, ?5, 'synced', ?6, ?7, ?8, 0, ?9, ?10, ?11, ?12)
                          ON CONFLICT(id) DO UPDATE SET
                             data = excluded.data, secret = excluded.secret, rev = excluded.rev,
                             updated_at = excluded.updated_at, deleted = excluded.deleted, dirty = 0,
                             vault_id = excluded.vault_id, key_version = excluded.key_version,
-                            updated_by = excluded.updated_by, sync_mode = 'synced'",
+                            updated_by = excluded.updated_by, sync_mode = 'synced', e2ee = excluded.e2ee",
                         params![
                             rec.id.to_string(),
                             existing.as_ref().map_or(actor, |r| r.owner_id).to_string(),
@@ -1249,13 +1395,15 @@ impl Store {
                             rec.deleted as i64,
                             target.to_string(),
                             key_version,
-                            actor.to_string()
+                            actor.to_string(),
+                            e2ee as i64
                         ],
                     )?;
                     vaults.insert(target);
                     report.accepted.push(rec.id);
                     rec.rev = rev;
                     rec.secret = None;
+                    rec.sealed = None;
                     rec.vault_id = Some(target);
                     report.applied.push(rec);
                 }
@@ -1426,6 +1574,7 @@ impl Store {
                 for cp in &plan.copies {
                     let row = load_row(&tx, cp.from)?
                         .ok_or_else(|| CoreError::NotFound(format!("item {}", cp.from)))?;
+                    check_e2ee_transfer(&tx, &row, target)?;
                     let with_secret = access
                         .authorize_secret(cp.from_vault, SecretUse::Reveal)
                         .is_ok();
@@ -1503,6 +1652,30 @@ impl Store {
     }
 }
 
+/// The server cannot reseal an end-to-end encrypted secret, nor seal one
+/// for an E2EE vault: such items with secrets are moved or copied by the
+/// clients (create sealed in the target, delete in the source).
+fn check_e2ee_transfer(conn: &Connection, row: &Row, target: Id) -> Result<()> {
+    if row.secret.is_none() || row.vault() == target || row.kind == Some(EntityKind::Network) {
+        return Ok(());
+    }
+    let target_e2ee: bool = conn
+        .query_row(
+            "SELECT crypto_mode = 'e2ee' FROM vaults WHERE id = ?1",
+            [target.to_string()],
+            |r| r.get(0),
+        )
+        .optional()?
+        .unwrap_or(false);
+    if row.e2ee || target_e2ee {
+        return Err(CoreError::vault(
+            codes::E2EE_VAULT,
+            "items with secrets move in or out of an end-to-end encrypted vault from your device",
+        ));
+    }
+    Ok(())
+}
+
 /// Moves one row to `target` inside a transaction (see
 /// [`Store::move_entities`]).
 fn move_row(
@@ -1520,6 +1693,7 @@ fn move_row(
     if from == target {
         return Ok(());
     }
+    check_e2ee_transfer(conn, row, target)?;
     depart(conn, from, row.id, kind)?;
     let (secret, key_version) = match &row.secret {
         Some(blob) => {
@@ -1574,6 +1748,32 @@ pub(super) fn row_to_sync(
     let kind = row
         .kind
         .ok_or_else(|| CoreError::Invalid("unknown kind".into()))?;
+    // End-to-end encrypted: the sealed blob travels as is (only to members
+    // who may read secrets; never decrypted here).
+    if row.e2ee && !row.deleted {
+        let sealed = match (&row.secret, with_secrets) {
+            (Some(blob), true) => Some(crate::model::SealedSecret {
+                key_version: row.key_version.unwrap_or(0),
+                blob_b64: base64::engine::general_purpose::STANDARD.encode(blob),
+            }),
+            _ => None,
+        };
+        let withheld = !with_secrets && row.secret.is_some();
+        return Ok(SyncRecord {
+            id: row.id,
+            kind,
+            data: serde_json::from_str(&row.data)?,
+            secret: None,
+            sync_mode: row.sync_mode,
+            updated_at: row.updated_at,
+            deleted: row.deleted,
+            rev: row.rev,
+            vault_id: if with_vault { Some(row.vault()) } else { None },
+            has_secret: withheld.then_some(true),
+            sealed,
+            base_rev: None,
+        });
+    }
     let secret = if with_secrets && !row.deleted {
         match row.secret.as_deref() {
             Some(blob) => {

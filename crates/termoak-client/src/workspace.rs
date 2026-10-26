@@ -464,6 +464,46 @@ impl Workspace {
         self.adopt(&url, auth).await
     }
 
+    /// Starts a single sign-on (0.7 phase 5a): the identity provider URL to
+    /// open in the system browser and what to keep for
+    /// [`sso_complete`](Self::sso_complete). `redirect_uri`: the app's
+    /// callback (`termoak://sso`, or a [`crate::sso::Loopback`] URL).
+    pub async fn sso_start(
+        &self,
+        server: ServerChoice,
+        email: Option<&str>,
+        team_id: Option<Id>,
+        redirect_uri: &str,
+    ) -> Result<(String, termoak_core::sso::SsoPending)> {
+        let url = server.url()?;
+        let api = ApiClient::new(&url)?;
+        let device = self.device_name().await?;
+        crate::sso::start(
+            &api,
+            email,
+            team_id,
+            redirect_uri,
+            &device,
+            &api::platform(),
+            false,
+        )
+        .await
+    }
+
+    /// Finishes a single sign-on with the callback URL the browser came
+    /// back to: signs the account in (a new account, or the same again).
+    pub async fn sso_complete(
+        &self,
+        pending: &termoak_core::sso::SsoPending,
+        callback_url: &str,
+        totp_code: Option<&str>,
+    ) -> Result<Arc<Account>> {
+        let code = crate::sso::code_from_callback(callback_url, pending)?;
+        let api = ApiClient::new(&pending.server_url)?;
+        let auth = crate::sso::exchange(&api, &code, pending, totp_code).await?;
+        self.adopt(&pending.server_url, auth).await
+    }
+
     /// Creates an account on a server (with an invitation code when its
     /// registration is closed). On servers that verify emails it stays
     /// `Unverified` until [`verify_account`](Self::verify_account).

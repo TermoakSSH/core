@@ -149,6 +149,7 @@ fn target(sshd: &Sshd, key: &KeyMaterial, certificate: Option<String>) -> Resolv
         startup_script: None,
         network: None,
         group_name: None,
+        e2ee_locked: false,
     }
 }
 

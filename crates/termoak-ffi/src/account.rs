@@ -375,6 +375,12 @@ pub struct AuditEvent {
     /// Details as JSON.
     pub detail_json: String,
     pub created_at: i64,
+    /// Vault the entry is about.
+    #[uniffi(default)]
+    pub vault_id: Option<String>,
+    /// Team the entry belongs to (0.7 phase 5a).
+    #[uniffi(default)]
+    pub team_id: Option<String>,
 }
 
 impl From<cm::AuditEntry> for AuditEvent {
@@ -387,6 +393,8 @@ impl From<cm::AuditEntry> for AuditEvent {
             target: e.target,
             detail_json: e.detail.to_string(),
             created_at: e.created_at,
+            vault_id: e.vault_id.map(|v| v.to_string()),
+            team_id: e.team_id.map(|t| t.to_string()),
         }
     }
 }

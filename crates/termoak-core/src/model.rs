@@ -179,6 +179,11 @@ pub struct RecordMeta {
     /// A secret exists but this member cannot see it (Use-only).
     #[serde(default)]
     pub secret_hidden: bool,
+    /// The secret is end-to-end encrypted and still sealed here (0.7
+    /// phase 5a): the vault is locked on this device (or this is the
+    /// server, which never opens it).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub e2ee_locked: bool,
 }
 
 /// Entity with its metadata.
@@ -1271,7 +1276,8 @@ pub struct SyncRecord {
     /// Set when `secret` is withheld (Use-only members): a secret exists.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub has_secret: Option<bool>,
-    /// Reserved for end-to-end encrypted vaults.
+    /// The secret of an end-to-end encrypted vault, sealed by a client
+    /// (instead of `secret`, which the server refuses for those vaults).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sealed: Option<SealedSecret>,
     /// Reserved: revision the client based its change on (conflict detection).
@@ -1279,8 +1285,8 @@ pub struct SyncRecord {
     pub base_rev: Option<i64>,
 }
 
-/// Secret sealed with a vault key by a client (end-to-end encrypted vaults;
-/// reserved, not used yet).
+/// Secret sealed with a vault key by a client (end-to-end encrypted
+/// vaults, 0.7 phase 5a): `crate::e2ee::encrypt_secret`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct SealedSecret {
@@ -1439,7 +1445,8 @@ pub enum VaultCrypto {
     /// The vault key is wrapped with the server master key.
     #[default]
     Server,
-    /// Reserved: end-to-end encrypted (seed phrase).
+    /// End-to-end encrypted (0.7 phase 5a): the vault key is wrapped for
+    /// each member's user key; the server cannot open the secrets.
     E2ee,
     #[serde(other)]
     Unknown,
@@ -1530,6 +1537,169 @@ pub struct Vault {
     /// only sent to clients that declare `policies`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub policy: Option<crate::access::VaultPolicy>,
+    /// End-to-end encryption state for you (0.7 phase 5a; only for E2EE
+    /// vaults, and only sent to clients that declare `e2ee`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub e2ee: Option<VaultE2ee>,
+}
+
+/// An end-to-end encrypted vault as one member sees it
+/// (docs/E2EE-SSO-AUDIT.md §2.4).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct VaultE2ee {
+    /// Current vault key version (secrets are sealed with it).
+    pub key_version: u32,
+    /// Your role and the team policy let you hold the vault key (Editors
+    /// who may reveal secrets, and Admins).
+    pub may_hold_key: bool,
+    /// The current vault key wrapped for your user key (HPKE, base64).
+    /// `None`: you may not hold it, you have no E2EE key yet, or nobody
+    /// has added your wrap yet.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wrap: Option<String>,
+    /// The user key `wrap` is for.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub key_id: Option<Uuid>,
+    /// Someone who held the key lost access: the next key holder online
+    /// must rotate the key (`POST /vaults/{id}/e2ee/rotate`).
+    #[serde(default)]
+    pub rekey_needed: bool,
+    /// Members who may hold the key and have an E2EE key but no wrap yet
+    /// (sent to key holders only, so they can add the wraps).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub pending: Vec<E2eeRecipient>,
+    /// Members who may hold the key but have not set up E2EE yet.
+    #[serde(default)]
+    pub without_key: i64,
+}
+
+/// A member's public E2EE key (to wrap a vault key for them).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeRecipient {
+    pub user_id: Uuid,
+    #[serde(default)]
+    pub email: String,
+    #[serde(default)]
+    pub name: String,
+    pub key_id: Uuid,
+    /// X25519 public key, base64.
+    pub public_key: String,
+    /// `crate::e2ee::fingerprint` of the public key.
+    pub fingerprint: String,
+}
+
+/// A user's published E2EE key.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct UserKeyInfo {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    /// `x25519`.
+    pub alg: String,
+    /// Base64.
+    pub public_key: String,
+    pub fingerprint: String,
+    pub created_at: i64,
+}
+
+/// Pairing of a new device that asks for the user key
+/// (docs/E2EE-SSO-AUDIT.md §2.5).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eePairing {
+    pub id: Uuid,
+    /// The device that asked.
+    pub device_id: Uuid,
+    pub device_name: String,
+    /// Its ephemeral X25519 public key, base64 (both devices derive the
+    /// six-digit code from it: `crate::e2ee::pairing_code`).
+    pub public_key: String,
+    /// `pending`, `approved`, `denied` or `expired`.
+    pub status: String,
+    /// The user key sealed for `public_key` (approved pairings, to the
+    /// device that asked only).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sealed: Option<String>,
+    pub created_at: i64,
+    pub expires_at: i64,
+}
+
+/// What converting or rotating an end-to-end encrypted vault must cover
+/// (`GET /vaults/{id}/e2ee`, managers and key holders).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeVaultState {
+    pub vault_id: Uuid,
+    pub crypto: VaultCrypto,
+    /// Current key version (server or E2EE key).
+    pub key_version: u32,
+    /// The version a conversion or rotation must use (in its AAD).
+    pub next_version: u32,
+    /// Members who may hold the vault key and have an E2EE key: every one
+    /// needs a wrap.
+    pub recipients: Vec<E2eeRecipient>,
+    /// Members who may hold the vault key but have no E2EE key yet: they
+    /// get it once they set E2EE up and a key holder adds their wrap.
+    pub without_key: Vec<E2eeMember>,
+    /// Items with a secret the payload must cover (private networks are
+    /// not listed: their secret stays with the server, which joins them).
+    pub items: Vec<E2eeItem>,
+    #[serde(default)]
+    pub rekey_needed: bool,
+}
+
+/// A member in [`E2eeVaultState::without_key`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeMember {
+    pub user_id: Uuid,
+    pub email: String,
+    pub name: String,
+}
+
+/// An item with a secret in [`E2eeVaultState::items`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeItem {
+    pub id: Uuid,
+    pub kind: EntityKind,
+    /// Key version of its current secret (`None`: server legacy format).
+    #[serde(default)]
+    pub key_version: Option<u32>,
+    /// Already end-to-end encrypted.
+    pub e2ee: bool,
+}
+
+/// A vault key wrapped for one member (enable, rotate, add wraps).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeWrap {
+    pub user_id: Uuid,
+    pub key_id: Uuid,
+    /// `crate::e2ee::wrap_vault_key`, base64.
+    pub wrapped: String,
+}
+
+/// An item's secret sealed with the new vault key (enable, rotate).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeSealedItem {
+    pub id: Uuid,
+    pub kind: EntityKind,
+    /// `crate::e2ee::encrypt_secret`, base64.
+    pub blob_b64: String,
+}
+
+/// An item's plaintext secret (turning end-to-end encryption off).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eePlainItem {
+    pub id: Uuid,
+    pub kind: EntityKind,
+    #[cfg_attr(feature = "openapi", schema(value_type = Object))]
+    pub secret: serde_json::Value,
 }
 
 /// Who a vault grant is for.
@@ -1592,6 +1762,10 @@ pub struct User {
     /// Preferred language (BCP 47, e.g. `en`, `es`); the server uses it for emails.
     #[serde(default = "default_locale")]
     pub locale: String,
+    /// Created by a team's single sign-on (0.7 phase 5a): no password of
+    /// its own until the person sets one; they sign in through SSO.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub sso_only: bool,
 }
 
 /// Default language.
@@ -1865,6 +2039,10 @@ pub struct AuditEntry {
     /// Vault the entry is about (vault and secret actions).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vault_id: Option<Uuid>,
+    /// Team the entry belongs to (team vaults and team actions; 0.7 phase
+    /// 5a): the team's audit, retention and sinks.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_id: Option<Uuid>,
 }
 
 fn non_empty(field: &str, value: &str) -> Result<()> {

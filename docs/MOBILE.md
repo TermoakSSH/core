@@ -376,6 +376,64 @@ anything (older servers answer `NotFound`).
   `certificate_*`, `team_2fa_required`, `policy_requires_2fa`,
   `recording_required` (see the design doc §7).
 
+### End-to-end encrypted vaults, SSO and audit (0.7 phase 5a)
+
+Design, formats and the UI checklists: `docs/E2EE-SSO-AUDIT.md` (identical
+in the workspace's `docs-next/` and the server's `docs/`). Check `/info`
+`features.e2ee`, `features.sso` and `features.audit_v2` first. Every call is
+on `TermoakCore` and `AccountHandle`.
+
+- **E2EE key of the account**: `e2eeStatus()` (`setUp`, `unlocked` on this
+  device, fingerprint, passphrase/recovery present, pending pairings,
+  `lockedSecrets`). `e2eeSetup(passphrase?)` returns the recovery key:
+  show it once (copy/share/print) and ask the person to keep it.
+  `e2eeUnlockWithPassphrase`, `e2eeUnlockWithRecoveryKey` (live check with
+  `e2eeRecoveryKeyValid(text)`), `e2eeLock`, `e2eeSetPassphrase`,
+  `e2eeNewRecoveryKey`. The engine keeps the user key in the account store
+  sealed with the device key (the Keystore/Keychain-protected one): nothing
+  for the app to store.
+- **Pairing**: the new device calls `e2eePairingStart()` and shows the code,
+  then `e2eePairingFinish(id)` after the `{"type": "e2ee", "event":
+  "pairing"}` event or every few seconds (`null` while waiting). Unlocked
+  devices list `e2eePairings()` (with the same code) and call
+  `e2eePairingDecide(id, approve)` only if the codes match.
+- **Vaults**: `VaultInfo.e2ee` (`VaultE2eeInfo`: `keyVersion`, `mayHoldKey`,
+  `hasWrap`, `rekeyNeeded`, `pendingMembers`, `membersWithoutKey`).
+  `e2eeVaultState(vaultId)` (recipients with fingerprints, members without
+  key, items), `e2eeEnableVault(vaultId, include?)`, `e2eeDisableVault`,
+  `e2eeRotateVault` (when `rekeyNeeded`), `e2eePendingMembers` (with
+  `keyChanged`) and `e2eeAddMembers(vaultId, userIds?)` after the person
+  compared fingerprints. Items carry `e2eeLocked`; a local connection to a
+  host whose secret is still sealed fails with `TermoakError.E2eeLocked`
+  (`apiError.code == "e2ee_locked"`): offer "Unlock". `SyncReport` has
+  `e2eeWaiting` (local edits waiting for an unlock) and `e2eeLocked`.
+- **Server sessions on E2EE hosts**: `openServerSession` fails with
+  `E2eeLocked` / `e2ee_unlock_required`; after asking the person, call
+  `openServerSessionUnlocked(hostId, cols, rows, title?, record?)`: the
+  engine resolves the host on the device and sends its credentials for that
+  session only.
+- **SSO**: on the email step `ssoDiscover(server, email)` (`sso`,
+  `enforced`, `teamName`). Mobile: `ssoStart(server, email)` → open
+  `flow.authorizeUrl` in a Custom Tab / `ASWebAuthenticationSession` with
+  the callback scheme `termoak` (redirect `termoak://sso`), then
+  `ssoComplete(flow, callbackUrl, totpCode?)` → `AccountInfo` (a second call
+  with the code after `TotpRequired`). Desktop: `ssoStartLoopback(server,
+  email)` → `SsoLoopback.flow()` / `waitCallback(timeoutSecs)` →
+  `ssoComplete`. `TermoakError.SsoRequired` (`sso_required`, details
+  `team_name`) from a password sign-in: switch to SSO. Team admins:
+  `teamSso`, `setTeamSso(teamId, SsoSettings, clientSecret?)`,
+  `deleteTeamSso`, `teamDomains`, `addTeamDomain` (shows the TXT record),
+  `verifyTeamDomain`, `removeTeamDomain`.
+- **Audit**: `auditSearch(scope, AuditQuery, id?)` (`AuditScope.Me|Vault|
+  Team|Server`; actions with `*` prefixes, actor, vault, target,
+  `since`/`until`, `text`, `before`, `limit`), `auditExport(scope, query,
+  "csv"|"json"|"ndjson", localPath, id?)`, `teamAuditRetention`,
+  `setTeamAuditRetention`, `auditSinks`, `createAuditSink`
+  (`AuditSinkInput`; webhooks return their secret once), `updateAuditSink`,
+  `deleteAuditSink`, `testAuditSink`. `AuditEvent` has `vaultId`, `teamId`.
+- New error variants: `E2eeLocked`, `SsoRequired`; codes in the design doc
+  §6.
+
 ## Swift
 
 ### Creating the core with the key in the Keychain

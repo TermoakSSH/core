@@ -187,6 +187,10 @@ pub struct VaultInfo {
     /// What the team's policies mean for you here (0.7 phase 4b; `None`:
     /// no policy, or an older server). Hide what it forbids.
     pub policy: Option<crate::teams_security::VaultPolicyInfo>,
+    /// End-to-end encrypted vault (0.7 phase 5a; `None`: the server keeps
+    /// its key). With `e2ee`, server sessions need `open_server_session_unlocked`.
+    #[uniffi(default)]
+    pub e2ee: Option<crate::e2ee_sso::VaultE2eeInfo>,
 }
 
 impl VaultInfo {
@@ -209,6 +213,19 @@ impl VaultInfo {
             strict: !v.settings.use_only_local,
             team_member_role: v.team_member_role.map(Into::into),
             policy: v.policy.as_ref().map(Into::into),
+            e2ee: (v.crypto == cm::VaultCrypto::E2ee).then(|| {
+                v.e2ee
+                    .as_ref()
+                    .map(Into::into)
+                    .unwrap_or(crate::e2ee_sso::VaultE2eeInfo {
+                        key_version: v.key_version,
+                        may_hold_key: false,
+                        has_wrap: false,
+                        rekey_needed: false,
+                        pending_members: 0,
+                        members_without_key: 0,
+                    })
+            }),
         }
     }
 }

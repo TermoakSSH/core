@@ -182,6 +182,7 @@ pub(crate) mod tests {
             startup_script: None,
             proxy: None,
             group_name: None,
+            e2ee_locked: false,
             network: network.map(|id| ResolvedNetwork {
                 network: Network {
                     id,

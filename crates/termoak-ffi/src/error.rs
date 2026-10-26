@@ -128,6 +128,17 @@ pub enum TermoakError {
     /// `security_key_invalid`, `security_key_failed`). See docs/SSH-PRO.md.
     #[error("{0}")]
     SecurityKey(String),
+    /// End-to-end encrypted secrets this device (or the server) cannot open
+    /// (0.7 phase 5a): `apiError.code` is `e2ee_locked` (unlock E2EE on this
+    /// device: passphrase, recovery key or another device) or
+    /// `e2ee_unlock_required` (a server session needs the host's
+    /// credentials: `open_server_session_unlocked`).
+    #[error("{0}")]
+    E2eeLocked(String),
+    /// The email's team signs in through single sign-on only
+    /// (`sso_required`): start `sso_start` instead of the password.
+    #[error("{0}")]
+    SsoRequired(String),
 }
 
 /// The structured part of an error: HTTP status, stable code and the
@@ -214,6 +225,8 @@ fn vault_code(code: &str, msg: String) -> Option<TermoakError> {
         codes::SECRET_HIDDEN => TermoakError::SecretHidden(msg),
         codes::USE_ONLY_STRICT => TermoakError::UseOnlyStrict(msg),
         codes::USE_ONLY_NEEDS_SERVER => TermoakError::UseOnlyNeedsServer(msg),
+        codes::E2EE_LOCKED | codes::E2EE_UNLOCK_REQUIRED => TermoakError::E2eeLocked(msg),
+        "sso_required" => TermoakError::SsoRequired(msg),
         _ => return None,
     })
 }

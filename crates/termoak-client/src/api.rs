@@ -215,10 +215,11 @@ pub struct ApiClient {
 pub const FEATURES_HEADER: &str = "x-termoak-features";
 
 /// The features of this core: `roles_v2` (Connect only / Admin roles),
-/// `policies` (`Vault.policy`), `certificates` (team certificates) and
+/// `policies` (`Vault.policy`), `certificates` (team certificates),
 /// `recording` (terminals of hosts with mandatory recording are recorded
-/// and uploaded).
-pub const CLIENT_FEATURES: &str = "roles_v2,policies,certificates,recording";
+/// and uploaded) and `e2ee` (end-to-end encrypted vaults: sealed secrets,
+/// 0.7 phase 5a; servers hide those vaults from clients without it).
+pub const CLIENT_FEATURES: &str = "roles_v2,policies,certificates,recording,e2ee";
 
 /// The client's WebSocket.
 pub type WsStream =
@@ -624,6 +625,11 @@ impl ApiClient {
             resp = send(self.refresh().await?, data).await?;
         }
         Self::parse(resp).await
+    }
+
+    /// Unauthenticated `GET` (SSO discovery...).
+    pub async fn get_public<T: DeserializeOwned>(&self, path: &str) -> Result<T> {
+        Self::parse(self.http.get(self.url(path)).send().await?).await
     }
 
     /// Unauthenticated `POST` (password recovery, email verification...).

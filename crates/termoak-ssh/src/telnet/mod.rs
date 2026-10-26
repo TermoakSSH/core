@@ -436,6 +436,7 @@ mod tests {
             proxy: None,
             network: None,
             group_name: None,
+            e2ee_locked: false,
         }
     }
 

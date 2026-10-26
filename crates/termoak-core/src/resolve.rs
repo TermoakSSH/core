@@ -59,6 +59,12 @@ pub struct ResolvedHost {
     /// Name of the host's group (snippet built-in `{{group}}`, 0.7).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub group_name: Option<String>,
+    /// Some secret of this hop (host, identity, key, network) is end-to-end
+    /// encrypted and could not be opened here (0.7 phase 5a): it resolved
+    /// without it. The server needs a per-session unlock (or a team
+    /// certificate); a client needs the vault unlocked.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub e2ee_locked: bool,
 }
 
 /// Private network ready to use (by the server's `termoak-netd`).
@@ -150,6 +156,12 @@ impl std::fmt::Debug for ResolvedHost {
 }
 
 impl ResolvedHost {
+    /// Whether this host or one of its jumps resolved without an end-to-end
+    /// encrypted secret.
+    pub fn any_e2ee_locked(&self) -> bool {
+        self.e2ee_locked || self.jumps.iter().any(|j| j.e2ee_locked)
+    }
+
     /// Wipes the credentials (password, private key, passphrase, proxy
     /// password) of the host and its jumps from memory: just-in-time
     /// credentials of Use-only items are dropped once the connection is
@@ -178,6 +190,88 @@ impl ResolvedHost {
         }
         for j in &mut self.jumps {
             j.zeroize_secrets();
+        }
+    }
+}
+
+/// Credentials a device sends for one server connection to a host of an
+/// end-to-end encrypted vault (per-session unlock). Kept in memory only
+/// and wiped on drop.
+#[derive(Clone, Default, Serialize, Deserialize, zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct E2eeUnlock {
+    /// The jumps and the host, each by id.
+    pub hops: Vec<UnlockHop>,
+}
+
+/// One hop of an [`E2eeUnlock`].
+#[derive(Clone, Default, Serialize, Deserialize, zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct UnlockHop {
+    #[zeroize(skip)]
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
+    pub host_id: Id,
+    #[serde(default)]
+    pub password: Option<String>,
+    #[serde(default)]
+    pub key: Option<UnlockKey>,
+    #[serde(default)]
+    pub proxy_password: Option<String>,
+}
+
+/// A private key of an [`UnlockHop`].
+#[derive(Clone, Default, Serialize, Deserialize, zeroize::Zeroize, zeroize::ZeroizeOnDrop)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
+pub struct UnlockKey {
+    pub private_key: String,
+    #[serde(default)]
+    pub passphrase: Option<String>,
+}
+
+impl std::fmt::Debug for E2eeUnlock {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("E2eeUnlock")
+            .field("hops", &self.hops.len())
+            .finish()
+    }
+}
+
+impl E2eeUnlock {
+    /// Fills the hops that resolved without their end-to-end encrypted
+    /// secret (only those: a server-readable credential is never replaced).
+    pub fn apply(&self, resolved: &mut ResolvedHost) {
+        let fill = |h: &mut ResolvedHost| {
+            if !h.e2ee_locked {
+                return;
+            }
+            let Some(u) = self.hops.iter().find(|u| u.host_id == h.host.id) else {
+                return;
+            };
+            if h.password.is_none() {
+                h.password = u.password.clone();
+            }
+            if h.key.is_none()
+                && let Some(k) = &u.key
+                && !k.private_key.trim().is_empty()
+            {
+                h.key = Some(ResolvedKey {
+                    id: h.host.id,
+                    label: "unlocked".into(),
+                    private_key: k.private_key.clone(),
+                    passphrase: k.passphrase.clone(),
+                    certificate: None,
+                    security_key: None,
+                });
+            }
+            if let Some(p) = h.proxy.as_mut()
+                && p.password.is_none()
+            {
+                p.password = u.proxy_password.clone();
+            }
+        };
+        fill(resolved);
+        for j in &mut resolved.jumps {
+            fill(j);
         }
     }
 }
@@ -309,6 +403,22 @@ impl Store {
         host_id: Id,
         purpose: SecretUse,
     ) -> Result<ResolvedHost> {
+        self.resolve_in_with(access, host_id, purpose, None).await
+    }
+
+    /// [`resolve_in`](Self::resolve_in) with the credentials a device sent
+    /// for this one connection (per-session unlock of an end-to-end
+    /// encrypted vault, docs/E2EE-SSO-AUDIT.md §2.6): they fill the hops
+    /// that resolved without their E2EE secret. A hop still without any
+    /// credential (and no team certificate from the hook) fails with
+    /// `e2ee_unlock_required` (`e2ee_vault` for just-in-time credentials).
+    pub async fn resolve_in_with(
+        &self,
+        access: &VaultAccess,
+        host_id: Id,
+        purpose: SecretUse,
+        unlock: Option<&E2eeUnlock>,
+    ) -> Result<ResolvedHost> {
         let vault = self.vault_of::<Host>(access, host_id).await?;
         access.authorize_secret(vault, purpose)?;
         let mut resolved = self
@@ -331,9 +441,28 @@ impl Store {
                 "the team does not allow private networks in this vault",
             ));
         }
+        if let Some(u) = unlock {
+            u.apply(&mut resolved);
+        }
         if let Some(hook) = self.resolve_hook() {
             hook.after_resolve(access, vault, purpose, &mut resolved)
                 .await?;
+        }
+        let missing = std::iter::once(&resolved)
+            .chain(resolved.jumps.iter())
+            .any(|h| h.e2ee_locked && h.password.is_none() && h.key.is_none());
+        if missing {
+            return Err(if purpose == SecretUse::Credentials {
+                CoreError::vault(
+                    crate::error::codes::E2EE_VAULT,
+                    "this vault is end-to-end encrypted: the server cannot hand out its secrets",
+                )
+            } else {
+                CoreError::vault(
+                    crate::error::codes::E2EE_UNLOCK_REQUIRED,
+                    "this host's credentials are end-to-end encrypted: send them for this session from an unlocked device",
+                )
+            });
         }
         Ok(resolved)
     }
@@ -377,11 +506,23 @@ impl Store {
             .await?
             .ok_or_else(|| CoreError::NotFound(format!("host {host_id}")))?;
         let settings = self.effective_scoped(scope, &host).await?;
-        let host_secret = self.scoped_secret::<Host>(scope, host_id, host_fb).await?;
+        // End-to-end encrypted secrets that cannot be opened here resolve
+        // as absent, and the hop says so (`e2ee_locked`).
+        let mut locked = false;
+        let host_secret = lenient(
+            self.scoped_secret::<Host>(scope, host_id, host_fb).await,
+            &mut locked,
+        )?;
 
         let identity = match settings.identity_id {
             Some(iid) => match self.scoped_get::<Identity>(scope, iid).await? {
-                Some((i, fb)) => Some((i, self.scoped_secret::<Identity>(scope, iid, fb).await?)),
+                Some((i, fb)) => Some((
+                    i,
+                    lenient(
+                        self.scoped_secret::<Identity>(scope, iid, fb).await,
+                        &mut locked,
+                    )?,
+                )),
                 None => None,
             },
             None => None,
@@ -421,7 +562,10 @@ impl Store {
                     .scoped_get::<SshKey>(scope, kid)
                     .await?
                     .ok_or_else(|| CoreError::NotFound(format!("key {kid}")))?;
-                let secret = self.scoped_secret::<SshKey>(scope, kid, fb).await?;
+                let secret = lenient(
+                    self.scoped_secret::<SshKey>(scope, kid, fb).await,
+                    &mut locked,
+                )?;
                 secret.private_key.map(|private_key| ResolvedKey {
                     id: kid,
                     label: meta.label,
@@ -492,7 +636,10 @@ impl Store {
                                 serde_json::json!({ "network_id": nid }),
                             )
                         })?;
-                let secret = self.scoped_secret::<Network>(scope, nid, fb).await?;
+                let secret = lenient(
+                    self.scoped_secret::<Network>(scope, nid, fb).await,
+                    &mut locked,
+                )?;
                 Some(ResolvedNetwork { network, secret })
             }
             None => None,
@@ -510,7 +657,20 @@ impl Store {
             key,
             jumps: Vec::new(),
             startup_script,
+            e2ee_locked: locked,
         })
+    }
+}
+
+/// A secret that is end-to-end encrypted here resolves as empty and sets
+/// `locked`; every other error stays an error.
+fn lenient<S: Default>(r: Result<S>, locked: &mut bool) -> Result<S> {
+    match r {
+        Err(e) if e.vault_code() == Some(crate::error::codes::E2EE_LOCKED) => {
+            *locked = true;
+            Ok(S::default())
+        }
+        other => other,
     }
 }
 

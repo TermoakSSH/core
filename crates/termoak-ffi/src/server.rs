@@ -50,6 +50,13 @@ pub struct SyncReport {
     /// `v2` (vaults) or `legacy`.
     #[uniffi(default)]
     pub protocol: String,
+    /// Local changes with secrets of E2EE vaults waiting for this device
+    /// to be unlocked (0.7 phase 5a).
+    #[uniffi(default)]
+    pub e2ee_waiting: u64,
+    /// Secrets of E2EE vaults still sealed on this device: offer "Unlock".
+    #[uniffi(default)]
+    pub e2ee_locked: u64,
 }
 
 impl SyncReport {
@@ -76,6 +83,8 @@ impl SyncReport {
             vaults_added: r.vaults_added.iter().map(vref).collect(),
             vaults_lost: r.vaults_lost.iter().map(vref).collect(),
             protocol: r.protocol.to_string(),
+            e2ee_waiting: r.e2ee_waiting as u64,
+            e2ee_locked: r.e2ee_locked as u64,
         }
     }
 }

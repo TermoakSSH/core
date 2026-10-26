@@ -169,6 +169,7 @@ fn resolved(sshd: &Sshd, jumps: Vec<ResolvedHost>) -> ResolvedHost {
         startup_script: None,
         network: None,
         group_name: None,
+        e2ee_locked: false,
     }
 }
 

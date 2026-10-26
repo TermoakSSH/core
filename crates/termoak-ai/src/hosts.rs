@@ -304,6 +304,18 @@ impl HostProvider for VaultHosts {
                 .effective_settings_in(&access, vault, &rec.data)
                 .await
                 .map_err(|e| e.to_string())?;
+            // End-to-end encrypted vault (0.7 phase 5a): the server cannot
+            // open its secrets, so its AI only gets the hosts that sign in
+            // with a team certificate (or need no secret at all).
+            if access.is_e2ee(vault)
+                && rec.meta.e2ee_locked
+                && !settings
+                    .auth
+                    .as_ref()
+                    .is_some_and(|a| a.is_team_certificate())
+            {
+                continue;
+            }
             let h = rec.data;
             out.hosts.push(HostEntry {
                 port: settings.port.unwrap_or(22),

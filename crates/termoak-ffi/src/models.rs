@@ -337,6 +337,10 @@ pub struct SshHost {
     /// Read-only: a secret exists but you cannot see it (Use-only vault).
     #[uniffi(default)]
     pub secret_hidden: bool,
+    /// Read-only: the secret is end-to-end encrypted and this device has
+    /// not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+    #[uniffi(default)]
+    pub e2ee_locked: bool,
 }
 
 impl From<Record<cm::Host>> for SshHost {
@@ -363,6 +367,7 @@ impl From<Record<cm::Host>> for SshHost {
             vault_id: r.meta.vault_id.map(|v| v.to_string()),
             access: None,
             secret_hidden: r.meta.secret_hidden,
+            e2ee_locked: r.meta.e2ee_locked,
         }
     }
 }
@@ -492,6 +497,10 @@ pub struct SshIdentity {
     /// Read-only: a secret exists but you cannot see it (Use-only vault).
     #[uniffi(default)]
     pub secret_hidden: bool,
+    /// Read-only: the secret is end-to-end encrypted and this device has
+    /// not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+    #[uniffi(default)]
+    pub e2ee_locked: bool,
 }
 
 impl From<Record<cm::Identity>> for SshIdentity {
@@ -509,6 +518,7 @@ impl From<Record<cm::Identity>> for SshIdentity {
             vault_id: r.meta.vault_id.map(|v| v.to_string()),
             access: None,
             secret_hidden: r.meta.secret_hidden,
+            e2ee_locked: r.meta.e2ee_locked,
         }
     }
 }
@@ -574,6 +584,10 @@ pub struct SshKey {
     /// Read-only: a secret exists but you cannot see it (Use-only vault).
     #[uniffi(default)]
     pub secret_hidden: bool,
+    /// Read-only: the secret is end-to-end encrypted and this device has
+    /// not unlocked its vault yet (0.7 phase 5a): offer "Unlock".
+    #[uniffi(default)]
+    pub e2ee_locked: bool,
     /// Read-only: FIDO2 security key details (sk keys; also derived for
     /// sk keys imported by older apps). See docs/SSH-PRO.md.
     #[uniffi(default)]
@@ -610,6 +624,7 @@ impl From<Record<cm::SshKey>> for SshKey {
             vault_id: r.meta.vault_id.map(|v| v.to_string()),
             access: None,
             secret_hidden: r.meta.secret_hidden,
+            e2ee_locked: r.meta.e2ee_locked,
         }
     }
 }

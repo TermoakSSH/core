@@ -16,7 +16,7 @@ members = [
 # `vX.Y.Z` git tag of this repository, and the mobile apps include it as a
 # submodule. The CLI has its own version (crates/termoak-cli/Cargo.toml)
 # and is released as cli-vX.Y.Z: scripts/release-local.sh.
-version = "0.7.0-next.9"
+version = "0.7.0-next.10"
 edition = "2024"
 rust-version = "1.89"
 authors = ["Oihalitz <oihalitz@ohz.es>"]
@@ -73,6 +73,8 @@ hmac = "0.13"
 p256 = { version = "0.14", features = ["ecdh"] }
 aes-gcm = "0.11"
 hkdf = "0.13"
+# End-to-end encrypted vaults (0.7 phase 5a): X25519 for HPKE (RFC 9180).
+x25519-dalek = { version = "2", features = ["static_secrets", "zeroize"] }
 data-encoding = "2"
 qrcode = { version = "0.14", default-features = false }
 getrandom = "0.4"
@@ -113,3 +115,10 @@ opt-level = "z"
 lto = "fat"
 codegen-units = 1
 strip = "symbols"
+
+# Argon2id (E2EE passphrases) is unusably slow unoptimized: the test suites
+# derive 64 MiB keys.
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3

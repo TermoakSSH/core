@@ -62,6 +62,9 @@ pub struct VaultAccess {
     /// This access changes by itself at this time (a 2FA grace period
     /// ends): cached copies expire then.
     pub valid_until: Option<i64>,
+    /// End-to-end encrypted vaults of `roles` (0.7 phase 5a): the server
+    /// cannot open their secrets.
+    pub e2ee: BTreeSet<Id>,
 }
 
 /// Why a secret is opened. Every path that decrypts a secret for a user goes
@@ -111,6 +114,24 @@ impl VaultAccess {
 
     pub fn is_strict(&self, vault: Id) -> bool {
         self.strict.contains(&vault)
+    }
+
+    /// The vault is end-to-end encrypted.
+    pub fn is_e2ee(&self, vault: Id) -> bool {
+        self.e2ee.contains(&vault)
+    }
+
+    /// This access without the end-to-end encrypted vaults: what clients
+    /// that do not declare `e2ee` may see (they would mishandle sealed
+    /// secrets), docs/E2EE-SSO-AUDIT.md §2.9.
+    pub fn without_e2ee(&self) -> Self {
+        let mut a = self.clone();
+        for v in &self.e2ee {
+            a.roles.remove(v);
+            a.strict.remove(v);
+        }
+        a.e2ee.clear();
+        a
     }
 
     /// May see, export and receive the secrets of `vault` (role and team
@@ -482,10 +503,11 @@ fn map_vault(r: &rusqlite::Row<'_>) -> rusqlite::Result<Vault> {
         member_count: r.get(17)?,
         item_counts: BTreeMap::new(),
         policy: None,
+        e2ee: None,
     })
 }
 
-fn load_vault(conn: &Connection, id: Id) -> Result<Option<Vault>> {
+pub(super) fn load_vault(conn: &Connection, id: Id) -> Result<Option<Vault>> {
     Ok(conn
         .query_row(
             &format!("SELECT {VAULT_COLUMNS} FROM vaults v WHERE v.id = ?1"),
@@ -544,21 +566,21 @@ fn check_team_member_role(role: VaultRole) -> Result<()> {
 }
 
 /// Effective roles of `user` (all vaults, or only `vault`), maximum by rank.
-fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<VaultAccess> {
+pub(super) fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<VaultAccess> {
     let mut stmt = conn.prepare_cached(
-        "SELECT v.id, 'manager', v.settings FROM vaults v
+        "SELECT v.id, 'manager', v.settings, v.crypto_mode FROM vaults v
              WHERE v.owner_user_id = ?1 AND (?2 IS NULL OR v.id = ?2)
          UNION ALL
          SELECT v.id, CASE WHEN tm.role IN ('owner', 'admin') THEN 'manager'
-                           ELSE v.team_member_role END, v.settings
+                           ELSE v.team_member_role END, v.settings, v.crypto_mode
              FROM vaults v JOIN team_members tm ON tm.team_id = v.owner_team_id
              WHERE tm.user_id = ?1 AND (?2 IS NULL OR v.id = ?2)
          UNION ALL
-         SELECT v.id, vm.role, v.settings
+         SELECT v.id, vm.role, v.settings, v.crypto_mode
              FROM vault_members vm JOIN vaults v ON v.id = vm.vault_id
              WHERE vm.user_id = ?1 AND (?2 IS NULL OR v.id = ?2)
          UNION ALL
-         SELECT v.id, vm.role, v.settings
+         SELECT v.id, vm.role, v.settings, v.crypto_mode
              FROM vault_members vm
              JOIN team_members tm ON tm.team_id = vm.team_id
              JOIN vaults v ON v.id = vm.vault_id
@@ -572,6 +594,7 @@ fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<Vault
                     r.get::<_, String>(0)?,
                     r.get::<_, Option<String>>(1)?,
                     r.get::<_, String>(2)?,
+                    r.get::<_, String>(3)?,
                 ))
             },
         )?
@@ -580,7 +603,7 @@ fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<Vault
         user,
         ..Default::default()
     };
-    for (vault, role, settings) in rows {
+    for (vault, role, settings, crypto) in rows {
         let Some(role) = role.map(|r| VaultRole::parse(&r)).filter(|r| r.can_use()) else {
             continue;
         };
@@ -593,8 +616,14 @@ fn compute_access(conn: &Connection, user: Id, only: Option<Id>) -> Result<Vault
         if !settings.use_only_local {
             access.strict.insert(vault);
         }
+        if VaultCrypto::parse(&crypto) == VaultCrypto::E2ee {
+            access.e2ee.insert(vault);
+        }
     }
     apply_team_policies(conn, &mut access, now_ms())?;
+    // A vault hidden by a team rule is not reachable as E2EE either.
+    let reachable: BTreeSet<Id> = access.roles.keys().copied().collect();
+    access.e2ee.retain(|v| reachable.contains(v));
     Ok(access)
 }
 
@@ -609,7 +638,11 @@ fn apply_team_policies(conn: &Connection, access: &mut VaultAccess, now: i64) ->
     let rows = {
         let mut stmt = conn.prepare_cached(
             "SELECT v.id, t.id, t.policy,
-                    (SELECT added_at FROM team_members WHERE team_id = t.id AND user_id = ?1)
+                    (SELECT added_at FROM team_members WHERE team_id = t.id AND user_id = ?1),
+                    EXISTS (SELECT 1 FROM sso_identities si JOIN team_sso ts ON ts.team_id = si.team_id
+                            WHERE si.user_id = ?1 AND si.team_id = t.id
+                              AND json_extract(ts.config, '$.satisfies_2fa') = 1
+                              AND json_extract(ts.config, '$.enabled') = 1)
              FROM vaults v JOIN teams t ON t.id = v.owner_team_id
              WHERE v.owner_team_id IN (SELECT team_id FROM team_members WHERE user_id = ?1)
                 OR v.id IN (SELECT vault_id FROM vault_members WHERE user_id = ?1
@@ -621,6 +654,7 @@ fn apply_team_policies(conn: &Connection, access: &mut VaultAccess, now: i64) ->
                 r.get::<_, String>(1)?,
                 r.get::<_, String>(2)?,
                 r.get::<_, Option<i64>>(3)?,
+                r.get::<_, bool>(4)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?
@@ -636,14 +670,20 @@ fn apply_team_policies(conn: &Connection, access: &mut VaultAccess, now: i64) ->
         )
         .optional()?
         .is_some_and(|v| v != 0);
-    for (vault, team, policy, joined) in rows {
+    for (vault, team, policy, joined, sso_2fa) in rows {
         let vault = parse_id(&vault)?;
         let Some(role) = access.roles.get(&vault).copied() else {
             continue;
         };
         access.team_of.insert(vault, parse_id(&team)?);
         let policy: crate::access::TeamPolicy = serde_json::from_str(&policy).unwrap_or_default();
-        if !totp && let Some(deadline) = policy.twofa_deadline(joined.unwrap_or(0)) {
+        // Signing in through the team's SSO counts as two-step verification
+        // when the team says its identity provider enforces MFA (0.7 phase
+        // 5a, docs/E2EE-SSO-AUDIT.md §3.7).
+        if !totp
+            && !sso_2fa
+            && let Some(deadline) = policy.twofa_deadline(joined.unwrap_or(0))
+        {
             if now >= deadline {
                 access.roles.remove(&vault);
                 access.strict.remove(&vault);
@@ -758,7 +798,7 @@ fn load_member(conn: &Connection, vault: Id, member: Id) -> Result<VaultMember> 
     .ok_or_else(|| CoreError::NotFound(format!("vault member {member}")))
 }
 
-fn bump_vault(conn: &Connection, vault: Id) -> Result<i64> {
+pub(super) fn bump_vault(conn: &Connection, vault: Id) -> Result<i64> {
     let rev = next_rev(conn)?;
     conn.execute(
         "UPDATE vaults SET rev = ?2, updated_at = ?3 WHERE id = ?1",
@@ -1539,8 +1579,8 @@ impl Store {
         let (actor, action) = (actor.to_string(), action.to_string());
         self.call(move |c, _| {
             c.execute(
-                "INSERT INTO audit_log (owner_id, actor, action, target, detail, created_at, vault_id)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                "INSERT INTO audit_log (owner_id, actor, action, target, detail, created_at, vault_id, team_id)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT owner_team_id FROM vaults WHERE id = ?7))",
                 params![
                     owner.to_string(),
                     actor,
@@ -1563,18 +1603,14 @@ impl Store {
         before: Option<i64>,
         limit: i64,
     ) -> Result<Vec<AuditEntry>> {
-        self.call(move |c, _| {
-            let mut stmt = c.prepare(
-                "SELECT id, owner_id, actor, action, target, detail, created_at, vault_id
-                 FROM audit_log WHERE vault_id = ?1 AND id < ?2 ORDER BY id DESC LIMIT ?3",
-            )?;
-            Ok(stmt
-                .query_map(
-                    params![vault.to_string(), before.unwrap_or(i64::MAX), limit],
-                    super::audit::map_audit,
-                )?
-                .collect::<rusqlite::Result<Vec<_>>>()?)
-        })
+        self.audit_search(
+            super::audit::AuditScope::Vault(vault),
+            super::audit::AuditFilter {
+                before,
+                limit: Some(limit),
+                ..Default::default()
+            },
+        )
         .await
     }
 

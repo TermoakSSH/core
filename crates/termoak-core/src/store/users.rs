@@ -25,8 +25,7 @@ impl Default for TokenTtl {
     }
 }
 
-const USER_COLUMNS: &str =
-    "id, email, name, is_admin, created_at, disabled, totp_enabled, plan, email_verified, locale";
+const USER_COLUMNS: &str = "id, email, name, is_admin, created_at, disabled, totp_enabled, plan, email_verified, locale, sso_only";
 
 fn map_user(r: &rusqlite::Row<'_>) -> rusqlite::Result<User> {
     Ok(User {
@@ -40,6 +39,7 @@ fn map_user(r: &rusqlite::Row<'_>) -> rusqlite::Result<User> {
         plan: r.get(7)?,
         email_verified: r.get::<_, i64>(8)? != 0,
         locale: r.get(9)?,
+        sso_only: r.get::<_, i64>(10)? != 0,
     })
 }
 
@@ -229,6 +229,7 @@ impl Store {
                 plan: crate::model::default_plan(),
                 email_verified,
                 locale: crate::model::default_locale(),
+                sso_only: false,
             };
             let tx = c.transaction()?;
             let res = tx.execute(
@@ -313,7 +314,7 @@ impl Store {
                 Ok(c.query_row(
                     &format!("SELECT {USER_COLUMNS}, password_hash FROM users WHERE email = ?1"),
                     [email],
-                    |r| Ok((map_user(r)?, r.get::<_, String>(10)?)),
+                    |r| Ok((map_user(r)?, r.get::<_, String>(11)?)),
                 )
                 .optional()?)
             })
@@ -495,6 +496,16 @@ impl Store {
                 super::vaults::delete_vault_tx(&tx, &vault)?;
             }
             tx.execute("DELETE FROM vault_members WHERE user_id = ?1", [&id])?;
+            // E2EE keys, pairings and wraps; linked SSO identities (0.7
+            // phase 5a). Vaults whose key the user held need a rotation.
+            tx.execute(
+                "DELETE FROM user_key_seals WHERE key_id IN (SELECT id FROM user_keys WHERE user_id = ?1)",
+                [&id],
+            )?;
+            tx.execute("DELETE FROM user_keys WHERE user_id = ?1", [&id])?;
+            tx.execute("DELETE FROM e2ee_pairings WHERE user_id = ?1", [&id])?;
+            tx.execute("DELETE FROM sso_identities WHERE user_id = ?1", [&id])?;
+            tx.execute("DELETE FROM sso_flows WHERE user_id = ?1 OR link_user = ?1", [&id])?;
             tx.execute(
                 "DELETE FROM entities WHERE owner_id = ?1 AND vault_id IS NULL",
                 [&id],
