@@ -4,9 +4,10 @@
 //!
 //! - **User key**: one X25519 key pair per user. The public key is on the
 //!   server; the private key reaches a device only through the user:
-//!   their E2EE passphrase (Argon2id), their recovery key (256 random bits,
-//!   HKDF) or another unlocked device (pairing, HPKE to the new device's
-//!   ephemeral key, confirmed with a six-digit code).
+//!   their E2EE passphrase (Argon2id), their recovery key (256 random bits
+//!   shown as a 24-word BIP39 phrase, HKDF) or another unlocked device
+//!   (pairing, HPKE to the new device's ephemeral key, confirmed with a
+//!   six-digit code).
 //! - **Vault key** (VK): 32 random bytes per vault and version, wrapped for
 //!   every member who may read secrets with HPKE (RFC 9180, base mode,
 //!   DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, AES-256-GCM).
@@ -27,7 +28,7 @@ use hkdf::Hkdf;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use x25519_dalek::{PublicKey, StaticSecret};
-use zeroize::Zeroizing;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::Id;
 use crate::crypto::random_bytes;
@@ -433,10 +434,64 @@ pub fn parse_public_key(b64_key: &str) -> Result<[u8; 32]> {
 // Recovery key
 // ---------------------------------------------------------------------------
 
-const RECOVERY_CHECK_LEN: usize = 3;
+/// Words of a recovery phrase: 256 bits of entropy + an 8-bit BIP39
+/// checksum = 264 bits = 24 words of 11 bits.
+pub const RECOVERY_WORDS: usize = 24;
 
-/// The recovery key: 256 random bits shown once as 56 base32 characters in
-/// groups of four (32 bytes plus a 3-byte SHA-256 check).
+/// The BIP39 English word list, byte for byte `bip-0039/english.txt` of
+/// github.com/bitcoin/bips (2048 words, sorted, unique in their first four
+/// letters). Its SHA-256 is [`BIP39_ENGLISH_SHA256`] (checked by a test).
+const BIP39_ENGLISH: &str = include_str!("bip39_english.txt");
+/// The well-known SHA-256 of `bip-0039/english.txt`.
+pub const BIP39_ENGLISH_SHA256: &str =
+    "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda";
+
+/// The 2048 words of the BIP39 English list, in order.
+pub fn recovery_wordlist() -> &'static [&'static str] {
+    static WORDS: std::sync::OnceLock<Vec<&'static str>> = std::sync::OnceLock::new();
+    WORDS.get_or_init(|| BIP39_ENGLISH.lines().filter(|w| !w.is_empty()).collect())
+}
+
+/// Why a typed recovery phrase was refused (`detail.reason` of
+/// `e2ee_recovery_key_invalid`).
+pub mod recovery_reason {
+    /// Not 24 words (`detail.words` = how many were found).
+    pub const WORD_COUNT: &str = "word_count";
+    /// A word is not in the BIP39 English list (`detail.word` = its
+    /// position, 1-based).
+    pub const UNKNOWN_WORD: &str = "unknown_word";
+    /// Every word is valid but the BIP39 checksum does not match (a word
+    /// mistyped into another valid word, or two words swapped).
+    pub const CHECKSUM: &str = "checksum";
+    /// A recovery key of the first format (56 base32 characters, before
+    /// v0.7.0-next.11): no longer accepted.
+    pub const OLD_FORMAT: &str = "old_format";
+}
+
+/// Index of a typed word: the word itself, or (four letters or more) the
+/// beginning of exactly one word (BIP39 words are unique in their first four
+/// letters, so "aban" is "abandon").
+fn recovery_word_index(token: &str) -> Option<usize> {
+    let words = recovery_wordlist();
+    if let Ok(i) = words.binary_search(&token) {
+        return Some(i);
+    }
+    if token.len() < 4 {
+        return None;
+    }
+    let start = words.partition_point(|w| *w < token);
+    let mut found = words[start..].iter().take_while(|w| w.starts_with(token));
+    match (found.next(), found.next()) {
+        (Some(_), None) => Some(start),
+        _ => None,
+    }
+}
+
+/// The recovery key: 256 random bits shown once as a 24-word BIP39 English
+/// phrase (the 256 bits are the BIP39 entropy, followed by the first 8 bits
+/// of their SHA-256 as the checksum). The 256 bits themselves are the HKDF
+/// input of the key that seals the private key (`kek`): the phrase is only
+/// their encoding, BIP39's PBKDF2 seed (a wallet thing) is not used.
 #[derive(Clone)]
 pub struct RecoveryKey(Zeroizing<[u8; 32]>);
 
@@ -455,50 +510,105 @@ impl RecoveryKey {
         Self(Zeroizing::new(bytes))
     }
 
-    /// `ABCD-EFGH-…` (14 groups).
-    pub fn display(&self) -> Zeroizing<String> {
-        let mut raw = Zeroizing::new(Vec::with_capacity(32 + RECOVERY_CHECK_LEN));
-        raw.extend_from_slice(self.0.as_slice());
-        raw.extend_from_slice(&Sha256::digest(self.0.as_slice())[..RECOVERY_CHECK_LEN]);
-        let text = Zeroizing::new(data_encoding::BASE32_NOPAD.encode(&raw));
-        Zeroizing::new(
-            text.as_bytes()
-                .chunks(4)
-                .map(|c| std::str::from_utf8(c).unwrap_or_default())
-                .collect::<Vec<_>>()
-                .join("-"),
-        )
+    /// The 24 words, in order.
+    pub fn words(&self) -> Vec<&'static str> {
+        let list = recovery_wordlist();
+        let mut bits = Zeroizing::new([0u8; 33]);
+        bits[..32].copy_from_slice(self.0.as_slice());
+        bits[32] = Sha256::digest(self.0.as_slice())[0];
+        let mut out = Vec::with_capacity(RECOVERY_WORDS);
+        for w in 0..RECOVERY_WORDS {
+            let mut index = 0usize;
+            for b in w * 11..w * 11 + 11 {
+                let bit = (bits[b / 8] >> (7 - b % 8)) & 1;
+                index = (index << 1) | bit as usize;
+            }
+            out.push(list[index]);
+        }
+        out
     }
 
-    /// Parses what the user typed: case, spaces and dashes do not matter.
+    /// The phrase: 24 lowercase words separated by single spaces (apps show
+    /// them numbered, in columns).
+    pub fn display(&self) -> Zeroizing<String> {
+        Zeroizing::new(self.words().join(" "))
+    }
+
+    /// Parses what the person typed: case, spaces, line breaks, numbering
+    /// and punctuation do not matter, and every word may be shortened to its
+    /// first four letters (or more). Errors are `e2ee_recovery_key_invalid`
+    /// with `detail.reason` ([`recovery_reason`]).
     pub fn parse(text: &str) -> Result<Self> {
-        let clean: Zeroizing<String> = Zeroizing::new(
+        let invalid = |reason: &str, message: &str, extra: serde_json::Value| {
+            let mut detail = serde_json::json!({ "reason": reason });
+            if let (Some(d), Some(e)) = (detail.as_object_mut(), extra.as_object()) {
+                d.extend(e.clone());
+            }
+            CoreError::vault_detail(codes::E2EE_RECOVERY_KEY_INVALID, message, detail)
+        };
+        // The first format: 56 base32 characters in groups of four.
+        let compact: Zeroizing<String> = Zeroizing::new(
             text.chars()
                 .filter(|c| !c.is_whitespace() && *c != '-')
-                .map(|c| c.to_ascii_uppercase())
                 .collect(),
         );
-        let invalid = || {
-            CoreError::vault(
-                codes::E2EE_RECOVERY_KEY_INVALID,
-                "this is not a valid recovery key",
-            )
-        };
-        let raw = Zeroizing::new(
-            data_encoding::BASE32_NOPAD
-                .decode(clean.as_bytes())
-                .map_err(|_| invalid())?,
-        );
-        if raw.len() != 32 + RECOVERY_CHECK_LEN {
-            return Err(invalid());
+        if compact.len() == 56
+            && compact
+                .chars()
+                .all(|c| matches!(c.to_ascii_uppercase(), 'A'..='Z' | '2'..='7'))
+        {
+            return Err(invalid(
+                recovery_reason::OLD_FORMAT,
+                "this is a recovery key of the old format: recovery keys are now 24 words",
+                serde_json::Value::Null,
+            ));
         }
-        let (key, check) = raw.split_at(32);
-        if Sha256::digest(key)[..RECOVERY_CHECK_LEN] != *check {
-            return Err(invalid());
+        let lower: Zeroizing<String> = Zeroizing::new(text.to_lowercase());
+        let tokens: Vec<&str> = lower
+            .split(|c: char| !c.is_alphabetic())
+            .filter(|t| !t.is_empty())
+            .collect();
+        if tokens.len() != RECOVERY_WORDS {
+            return Err(invalid(
+                recovery_reason::WORD_COUNT,
+                &format!(
+                    "a recovery phrase has {RECOVERY_WORDS} words ({} found)",
+                    tokens.len()
+                ),
+                serde_json::json!({ "words": tokens.len() }),
+            ));
+        }
+        let mut indices = Zeroizing::new([0usize; RECOVERY_WORDS]);
+        for (i, t) in tokens.iter().enumerate() {
+            indices[i] = recovery_word_index(t).ok_or_else(|| {
+                invalid(
+                    recovery_reason::UNKNOWN_WORD,
+                    &format!("word {} is not a recovery phrase word", i + 1),
+                    serde_json::json!({ "word": i + 1 }),
+                )
+            })?;
+        }
+        let mut bits = Zeroizing::new([0u8; 33]);
+        for (w, index) in indices.iter().enumerate() {
+            for k in 0..11 {
+                if (index >> (10 - k)) & 1 == 1 {
+                    let b = w * 11 + k;
+                    bits[b / 8] |= 1 << (7 - b % 8);
+                }
+            }
         }
         let mut bytes = [0u8; 32];
-        bytes.copy_from_slice(key);
-        Ok(Self::from_bytes(bytes))
+        bytes.copy_from_slice(&bits[..32]);
+        let key = Self::from_bytes(bytes);
+        bytes.zeroize();
+        if Sha256::digest(key.0.as_slice())[0] != bits[32] {
+            return Err(invalid(
+                recovery_reason::CHECKSUM,
+                "the words do not form a valid recovery phrase (check for a mistyped or swapped word)",
+                serde_json::Value::Null,
+            ));
+        }
+        Ok(key)
     }
 
     fn kek(&self, user: Id, key_id: Id) -> Zeroizing<[u8; 32]> {
@@ -1122,18 +1232,12 @@ mod tests {
 
         let recovery = RecoveryKey::generate();
         let shown = recovery.display();
-        assert_eq!(shown.len(), 56 + 13);
-        let parsed = RecoveryKey::parse(&shown.to_lowercase().replace('-', " ")).unwrap();
+        assert_eq!(shown.split(' ').count(), RECOVERY_WORDS);
+        let parsed = RecoveryKey::parse(&shown.to_uppercase().replace(' ', "\n")).unwrap();
         let seal = seal_with_recovery(user, &key, &recovery).unwrap();
         check_key_seal(&seal).unwrap();
         let opened = open_with_recovery(user, key.id, &seal, &parsed, Some(key.public())).unwrap();
         assert_eq!(opened.public(), key.public());
-        let mut typo = shown.to_string();
-        typo.replace_range(0..1, if typo.starts_with('A') { "B" } else { "A" });
-        assert_eq!(
-            RecoveryKey::parse(&typo).unwrap_err().vault_code(),
-            Some(codes::E2EE_RECOVERY_KEY_INVALID)
-        );
         // Another published key: refused even though the seal opens.
         let other = UserKeyPair::generate();
         assert_eq!(
@@ -1185,10 +1289,157 @@ mod tests {
         assert!(open_with_passphrase(user, key.id, &weak, "correct horse", None).is_err());
     }
 
+    fn reason(text: &str) -> String {
+        match RecoveryKey::parse(text).unwrap_err() {
+            CoreError::Vault { code, detail, .. } => {
+                assert_eq!(code, codes::E2EE_RECOVERY_KEY_INVALID);
+                detail.unwrap()["reason"].as_str().unwrap().to_string()
+            }
+            other => panic!("{other:?}"),
+        }
+    }
+
+    /// The BIP39 English list is the standard one, and the phrases are
+    /// standard BIP39 (Trezor's 256-bit vectors).
+    #[test]
+    fn recovery_phrase() {
+        assert_eq!(hex::encode(Sha256::digest(BIP39_ENGLISH)), BIP39_ENGLISH_SHA256);
+        let list = recovery_wordlist();
+        assert_eq!(list.len(), 2048);
+        assert!(list.windows(2).all(|w| w[0] < w[1]));
+        for (entropy, phrase) in trezor_vectors() {
+            let rk = RecoveryKey::from_bytes(arr(entropy));
+            assert_eq!(&*rk.display(), phrase);
+            assert_eq!(RecoveryKey::parse(phrase).unwrap().0.as_slice(), &h(entropy)[..]);
+        }
+        let rk = RecoveryKey::generate();
+        let words = rk.words();
+        // Numbered, upper case, commas, four-letter (or longer) prefixes.
+        let typed: String = words
+            .iter()
+            .enumerate()
+            .map(|(i, w)| {
+                let w = if w.len() > 5 && i % 2 == 0 { &w[..4] } else { w };
+                format!("{}. {},\n", i + 1, w.to_uppercase())
+            })
+            .collect();
+        assert_eq!(RecoveryKey::parse(&typed).unwrap().0, rk.0);
+        // Errors with their reason.
+        assert_eq!(reason(&words[..23].join(" ")), recovery_reason::WORD_COUNT);
+        let mut bad = words.clone();
+        bad[6] = "abandom";
+        match RecoveryKey::parse(&bad.join(" ")).unwrap_err() {
+            CoreError::Vault { detail, .. } => assert_eq!(detail.unwrap()["word"], 7),
+            other => panic!("{other:?}"),
+        }
+        assert_eq!(reason(&bad.join(" ")), recovery_reason::UNKNOWN_WORD);
+        // Three letters are not a prefix ("aba" is no word).
+        let mut short = words.clone();
+        short[0] = "aba";
+        assert_eq!(reason(&short.join(" ")), recovery_reason::UNKNOWN_WORD);
+        // The last word carries the checksum: change only its checksum bits.
+        let mut sum = words.clone();
+        let last = list.iter().position(|w| *w == sum[23]).unwrap();
+        sum[23] = list[last ^ 1];
+        assert_eq!(reason(&sum.join(" ")), recovery_reason::CHECKSUM);
+        // The first format (56 base32 characters) is refused as such.
+        assert_eq!(
+            reason("ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ23-4567-ABCD-EFGH-IJKL-MNOP-QRST-UVWX"),
+            recovery_reason::OLD_FORMAT
+        );
+        assert!(recovery_word_index("zoo").is_some());
+        assert_eq!(recovery_word_index("aban"), Some(0));
+        assert_eq!(recovery_word_index("abandons"), None);
+    }
+
+    /// Trezor's python-mnemonic vectors with 256 bits of entropy.
+    fn trezor_vectors() -> [(&'static str, &'static str); 8] {
+        [
+            (
+                "0000000000000000000000000000000000000000000000000000000000000000",
+                "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+            ),
+            (
+                "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+                "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title",
+            ),
+            (
+                "8080808080808080808080808080808080808080808080808080808080808080",
+                "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless",
+            ),
+            (
+                "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+            ),
+            (
+                "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+                "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length",
+            ),
+            (
+                "9f6a2878b2520799a44ef18bc7df394e7061a224d2c33cd015b157d746869863",
+                "panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside",
+            ),
+            (
+                "066dca1a2bb7e8a1db2832148ce9933eea0f3ac9548d793112d9a95c9407efad",
+                "all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform",
+            ),
+            (
+                "f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f",
+                "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold",
+            ),
+        ]
+    }
+
     // ---- shared vectors (tests/e2ee_vectors.json) ----
 
     fn id(s: &str) -> Id {
         s.parse().unwrap()
+    }
+
+    /// What a typed phrase becomes: the raw key, or the refusal's reason
+    /// (and word).
+    fn recovery_parse_cases(recovery: &RecoveryKey) -> Value {
+        let words = recovery.words();
+        let list = recovery_wordlist();
+        let numbered: String = words
+            .iter()
+            .enumerate()
+            .map(|(i, w)| format!("{}) {}\n", i + 1, w.to_uppercase()))
+            .collect();
+        let prefixes = words
+            .iter()
+            .map(|w| if w.len() > 4 { &w[..4] } else { w })
+            .collect::<Vec<_>>()
+            .join("  ");
+        let mut unknown = words.clone();
+        unknown[4] = "qwerty";
+        let mut sum = words.clone();
+        let last = list.iter().position(|w| *w == sum[23]).unwrap();
+        sum[23] = list[last ^ 1];
+        let raw = hex::encode(recovery.0.as_slice());
+        let case = |input: String| {
+            let out = match RecoveryKey::parse(&input) {
+                Ok(k) => json!({"input": input, "raw": hex::encode(k.0.as_slice())}),
+                Err(CoreError::Vault { detail, .. }) => {
+                    let mut d = detail.unwrap();
+                    d["input"] = json!(input);
+                    d
+                }
+                Err(e) => panic!("{e:?}"),
+            };
+            if out.get("raw").is_some() {
+                assert_eq!(out["raw"], json!(raw));
+            }
+            out
+        };
+        json!([
+            case(numbered),
+            case(prefixes),
+            case(words[..12].join(" ")),
+            case(unknown.join(" ")),
+            case(sum.join(" ")),
+            case("ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ23-4567-ABCD-EFGH-IJKL-MNOP-QRST-UVWX".into()),
+        ])
     }
 
     /// Builds the vectors from fixed inputs. `TERMOAK_WRITE_VECTORS=1 cargo
@@ -1253,7 +1504,14 @@ mod tests {
             "recovery_key": {
                 "raw": hex::encode(recovery.0.as_slice()),
                 "display": recovery.display().to_string(),
+                "format": "BIP39 English, 24 words: the 256-bit raw key is the entropy, the checksum is the first byte of its SHA-256; the raw key (not BIP39's PBKDF2 seed) is the HKDF input",
                 "kek_hkdf": {"salt": String::from_utf8_lossy(RECOVERY_SALT), "info": format!("{user}:{key_id}"), "kek": hex::encode(recovery.kek(user, key_id).as_slice())},
+            },
+            "bip39": {
+                "wordlist": "bitcoin/bips bip-0039/english.txt",
+                "wordlist_sha256": BIP39_ENGLISH_SHA256,
+                "vectors": trezor_vectors().iter().map(|(e, p)| json!({"entropy": e, "phrase": p})).collect::<Vec<_>>(),
+                "parse": recovery_parse_cases(&recovery),
             },
             "passphrase_seal": {
                 "passphrase": passphrase,

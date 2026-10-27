@@ -3510,9 +3510,20 @@ RustBuffer uniffi_termoak_ffi_fn_func_qr_code(RustBuffer text, RustCallStatus *_
 RustBuffer uniffi_termoak_ffi_fn_func_e2ee_fingerprint(RustBuffer public_key, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_KEY_CHECK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_KEY_CHECK
+RustBuffer uniffi_termoak_ffi_fn_func_e2ee_recovery_key_check(RustBuffer text, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_KEY_VALID
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_KEY_VALID
 int8_t uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(RustBuffer text, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_WORDLIST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_E2EE_RECOVERY_WORDLIST
+RustBuffer uniffi_termoak_ffi_fn_func_e2ee_recovery_wordlist(RustCallStatus *_Nonnull out_status
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_FUNC_API_ERROR_INFO
@@ -4072,9 +4083,21 @@ uint16_t uniffi_termoak_ffi_checksum_func_e2ee_fingerprint(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_KEY_CHECK
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_KEY_CHECK
+uint16_t uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_check(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_KEY_VALID
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_KEY_VALID
 uint16_t uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_WORDLIST
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_FUNC_E2EE_RECOVERY_WORDLIST
+uint16_t uniffi_termoak_ffi_checksum_func_e2ee_recovery_wordlist(void
     
 );
 #endif

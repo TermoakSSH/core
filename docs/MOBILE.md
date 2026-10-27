@@ -385,10 +385,19 @@ on `TermoakCore` and `AccountHandle`.
 
 - **E2EE key of the account**: `e2eeStatus()` (`setUp`, `unlocked` on this
   device, fingerprint, passphrase/recovery present, pending pairings,
-  `lockedSecrets`). `e2eeSetup(passphrase?)` returns the recovery key:
-  show it once (copy/share/print) and ask the person to keep it.
-  `e2eeUnlockWithPassphrase`, `e2eeUnlockWithRecoveryKey` (live check with
-  `e2eeRecoveryKeyValid(text)`), `e2eeLock`, `e2eeSetPassphrase`,
+  `lockedSecrets`). `e2eeSetup(passphrase?)` returns the recovery key, a
+  **24-word BIP39 English phrase** (lowercase words separated by spaces;
+  since v0.7.0-next.11): show it once, numbered in columns (copy/share/
+  print), and ask the person to confirm a few words before going on.
+  `e2eeUnlockWithPassphrase`, `e2eeUnlockWithRecoveryKey` (case, numbering,
+  punctuation and line breaks are ignored; words can be shortened to their
+  first four letters). Live check with `e2eeRecoveryKeyValid(text)` or, for
+  a precise message, `e2eeRecoveryKeyCheck(text)` → `valid`, `reason`
+  (`word_count`, `unknown_word` with `word` = its 1-based position,
+  `checksum`, `old_format`: a 56-character key of the first format, no
+  longer accepted), `words`; the same reason is in `apiError.details`
+  of `e2ee_recovery_key_invalid`. `e2eeRecoveryWordlist()` gives the 2048
+  words for suggestions. `e2eeLock`, `e2eeSetPassphrase`,
   `e2eeNewRecoveryKey`. The engine keeps the user key in the account store
   sealed with the device key (the Keystore/Keychain-protected one): nothing
   for the app to store.

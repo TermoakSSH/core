@@ -72,8 +72,10 @@ pub struct E2eeStatus {
     pub locked_secrets: u64,
 }
 
-/// What `e2ee_setup` creates. Show `recovery_key` once and ask the person to
-/// keep it safe: it is the way back if every device is lost.
+/// What `e2ee_setup` creates. Show `recovery_key` (the recovery phrase: 24
+/// lowercase BIP39 English words separated by spaces) once, numbered, and
+/// ask the person to keep it safe: it is the way back if every device is
+/// lost.
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
 pub struct E2eeSetupResult {
     pub key: E2eeKeyInfo,
@@ -434,11 +436,69 @@ pub fn e2ee_fingerprint(public_key: String) -> Result<String> {
     Ok(e2ee::fingerprint(&e2ee::parse_public_key(&public_key)?))
 }
 
-/// Whether `text` is a well-formed recovery key (its check digits match):
-/// for live feedback while the person types it.
+/// Whether `text` is a well-formed recovery phrase (24 known words whose
+/// BIP39 checksum matches): for live feedback while the person types it.
 #[uniffi::export]
 pub fn e2ee_recovery_key_valid(text: String) -> bool {
     e2ee::RecoveryKey::parse(&text).is_ok()
+}
+
+/// What is wrong with a typed recovery phrase, for a precise message.
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct E2eeRecoveryKeyCheck {
+    pub valid: bool,
+    /// Empty when valid; otherwise `word_count`, `unknown_word`,
+    /// `checksum` or `old_format` (a 56-character key of the first format,
+    /// no longer accepted).
+    pub reason: String,
+    /// Words found (24 expected).
+    pub words: u32,
+    /// The first unknown word's position (1-based), 0 when none.
+    pub word: u32,
+}
+
+/// Checks a typed recovery phrase: case, numbering, punctuation and line
+/// breaks are ignored, and a word can be shortened to its first four
+/// letters.
+#[uniffi::export]
+pub fn e2ee_recovery_key_check(text: String) -> E2eeRecoveryKeyCheck {
+    let words = text
+        .split(|c: char| !c.is_alphabetic())
+        .filter(|t| !t.is_empty())
+        .count() as u32;
+    match e2ee::RecoveryKey::parse(&text) {
+        Ok(_) => E2eeRecoveryKeyCheck {
+            valid: true,
+            reason: String::new(),
+            words,
+            word: 0,
+        },
+        Err(termoak_core::CoreError::Vault { detail, .. }) => {
+            let d = detail.unwrap_or_default();
+            E2eeRecoveryKeyCheck {
+                valid: false,
+                reason: d["reason"].as_str().unwrap_or_default().to_string(),
+                words,
+                word: d["word"].as_u64().unwrap_or(0) as u32,
+            }
+        }
+        Err(_) => E2eeRecoveryKeyCheck {
+            valid: false,
+            reason: String::new(),
+            words,
+            word: 0,
+        },
+    }
+}
+
+/// The BIP39 English word list (2048 words, sorted), for suggestions while
+/// the person types the recovery phrase.
+#[uniffi::export]
+pub fn e2ee_recovery_wordlist() -> Vec<String> {
+    e2ee::recovery_wordlist()
+        .iter()
+        .map(|w| w.to_string())
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -1383,6 +1443,15 @@ mod tests {
         let rk = e2ee::RecoveryKey::generate();
         assert!(e2ee_recovery_key_valid(rk.display().to_string()));
         assert!(!e2ee_recovery_key_valid("AAAA-BBBB".into()));
+        let ok = e2ee_recovery_key_check(rk.display().to_uppercase());
+        assert!(ok.valid && ok.words == 24 && ok.reason.is_empty());
+        let mut words: Vec<String> = rk.display().split(' ').map(String::from).collect();
+        words[2] = "notaword".into();
+        let bad = e2ee_recovery_key_check(words.join(" "));
+        assert_eq!((bad.reason.as_str(), bad.word), ("unknown_word", 3));
+        let old = e2ee_recovery_key_check("A".repeat(56));
+        assert_eq!(old.reason, "old_format");
+        assert_eq!(e2ee_recovery_wordlist().len(), 2048);
         // The codes the apps branch on have their own variants.
         let locked: TermoakError =
             termoak_core::CoreError::vault(termoak_core::error::codes::E2EE_LOCKED, "locked")

@@ -4069,7 +4069,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-ai"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "async-trait",
  "axum",
@@ -4120,7 +4120,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-client"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4151,7 +4151,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-core"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -4184,7 +4184,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-ffi"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "alacritty_terminal",
  "async-trait",
@@ -4215,7 +4215,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-ssh"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -4239,7 +4239,7 @@ dependencies = [
 
 [[package]]
 name = "termoak-update"
-version = "0.7.0-next.10"
+version = "0.7.0-next.11"
 dependencies = [
  "axum",
  "base64 0.22.1",

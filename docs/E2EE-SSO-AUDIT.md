@@ -21,7 +21,7 @@ team policies, CA, how the server resolves secrets) and `PUSH.md`.
   end-to-end encrypted (decision §9.1).
 - **User keys** reach a device through the person: their **E2EE
   passphrase** (Argon2id, never the login password), their **recovery
-  key** (256 bits shown once) or **another unlocked device** (pairing
+  key** (256 bits shown once as 24 words) or **another unlocked device** (pairing
   confirmed with a six-digit code). This also answers SSO accounts: an
   identity provider cannot derive a key, so SSO users unlock the same way.
 - **What the server can no longer do** for an E2EE vault: reveal, just-in-time
@@ -109,10 +109,22 @@ base64 with padding.
 
 - **Fingerprint** of a public key: the first 16 bytes of its SHA-256 as
   eight groups of four hex digits (`3f2a 9c01 …`).
-- **Recovery key**: 32 random bytes + the first 3 bytes of their SHA-256,
-  base32 (RFC 4648, no padding): 56 characters shown as 14 groups of four
-  (`ABCD-EFGH-…`); case, spaces and dashes are ignored when typed; a typo
-  fails the check (`e2ee_recovery_key_invalid`).
+- **Recovery key** (since core v0.7.0-next.11, decision §9.5): 32 random
+  bytes shown as a **24-word BIP39 English phrase**: the 32 bytes are the
+  BIP39 entropy and the first byte of their SHA-256 is the checksum (264
+  bits, 24 words of 11 bits) from the standard word list (`bip-0039/
+  english.txt` of bitcoin/bips, embedded in every implementation and
+  checked against its SHA-256 `2f5eed53…3b24dbda`). The derivation is the
+  same as before: the 32 bytes (not BIP39's PBKDF2 seed, a wallet thing)
+  are the HKDF input of the recovery KEK above; the phrase is only their
+  encoding. Typing: case, spaces, line breaks, numbering and punctuation
+  are ignored, and a word can be shortened to its first four letters (or
+  more: BIP39 words are unique in their first four). Refusals are
+  `e2ee_recovery_key_invalid` with `detail.reason`: `word_count`
+  (`detail.words`), `unknown_word` (`detail.word`, 1-based), `checksum`
+  (a mistyped or swapped word) or `old_format` (the first format, 56 base32
+  characters, used by no real account and no longer accepted). The vectors
+  carry Trezor's 256-bit BIP39 vectors and typed-phrase cases.
 - **Pairing code**: `SHA-256("termoak:e2ee:pairing-code:v1:{pairing}:" ‖
   device public key)`, first 4 bytes big-endian mod 10⁶, six digits.
 - Argon2id parameters travel with the seal (`params: {alg, m, t, p,
@@ -124,7 +136,8 @@ base64 with padding.
   nonces are safe at this scale (a vault seals thousands of secrets per key
   version, far below the 2³² bound, and every rotation starts again).
 - **Shared vectors**: `core/crates/termoak-core/tests/e2ee_vectors.json`
-  (user key, fingerprint, recovery key and its KEK, both seals, a wrap, a
+  (user key, fingerprint, recovery key with its phrase and KEK, BIP39
+  vectors and typed-phrase cases, both seals, a wrap, a
   secret, a pairing and its code, with the fixed nonces and ephemeral keys
   used). The core checks them both ways (`e2ee::tests::vectors`, plus RFC
   9180 A.1.1 for the HPKE schedule); `qa/lib/e2ee.mjs` is an independent
@@ -480,7 +493,9 @@ login|login_failed|link|unlink|user_created`, `auth.login_refused`,
   `remove_team_domain`; `audit_search`, `audit_export`,
   `team_audit_retention`, `set_team_audit_retention`, `audit_sinks`,
   `create_audit_sink`, `update_audit_sink`, `delete_audit_sink`,
-  `test_audit_sink`; pure `e2ee_fingerprint`, `e2ee_recovery_key_valid`.
+  `test_audit_sink`; pure `e2ee_fingerprint`, `e2ee_recovery_key_valid`,
+  `e2ee_recovery_key_check` (reason and word of a refusal) and
+  `e2ee_recovery_wordlist` (v0.7.0-next.11).
   Records: `VaultInfo.e2ee`, `SshHost/SshIdentity/SshKey.e2ee_locked`,
   `SyncReport.e2ee_waiting/e2ee_locked`, `AuditEvent.vault_id/team_id`.
   Errors: `TermoakError.E2eeLocked` (`e2ee_locked`,
@@ -571,27 +586,44 @@ max_sinks_per_team, allowed_targets`.
 
 ## 9. Decisions for the owner
 
+Decided by the owner on 2026-10-27 (before phase 5b):
+
 1. **Metadata stays readable** by the server in E2EE vaults (labels,
-   addresses, usernames, notes): encrypting it would remove search, the
-   server's views of hosts and server-side features for those vaults.
-   Option later: an "encrypted notes" field. OK?
+   addresses, usernames, notes): only secrets are end-to-end encrypted,
+   as implemented. Encrypting metadata would remove search, the server's
+   views of hosts and server-side features for those vaults. Possible
+   later: an "encrypted notes" field. — **Accepted.**
 2. **No key escrow**: losing every device and the recovery key loses the
-   vault keys the person alone held. Option later: a team recovery key
-   (wraps for team admins) for team vaults. OK to ship without?
+   vault keys the person alone held. Possible later: a team recovery key
+   (wraps for team admins) for team vaults. — **Accepted (default).**
 3. **Private network secrets** in an E2EE vault stay readable by the server
-   (it joins the network), shown as such. Alternative: forbid networks in
-   E2EE vaults. OK?
+   (it joins the network). Networks are allowed in E2EE vaults, as
+   implemented, and the apps show a clear warning that the network's key is
+   readable by the server (the network editor and the vault's encryption
+   settings). — **Accepted.**
 4. **Recordings are not end-to-end encrypted** (managers play them in the
-   web too). Option later: seal uploaded recordings with the VK. OK?
-5. **Recovery key format**: 56 base32 characters (no word list to ship in
-   every app). Prefer a 24-word BIP39 phrase?
-6. **Break glass**: the team owner (and server administrators) keep password
-   sign-in under enforcement by default; teams can turn the owner's off. OK?
-7. **Syslog structured-data id** `termoak@32473` uses the documentation
-   enterprise number (RFC 5612); registering a Private Enterprise Number
-   with IANA (free) would make it `termoak@<PEN>`.
-8. Termoak.com plans: SSO, E2EE and audit sinks in every plan (as decided
-   for teams security), or SSO/sinks only in a paid plan later?
+   web too). Possible later: seal uploaded recordings with the VK. —
+   **Accepted (default).**
+5. **Recovery key format**: changed to a **24-word English BIP39 phrase**
+   (256 bits of entropy + the BIP39 checksum; §2.2) instead of 56 base32
+   characters. Done first, in core v0.7.0-next.11 (generation, parsing
+   tolerant of case/whitespace/numbering with four-letter prefixes,
+   `detail.reason` for the refusals, vectors, FFI `e2ee_recovery_key_check`
+   and `e2ee_recovery_wordlist`). No account used the first format (staging
+   was clean), so there is no migration: the old format is refused with
+   `old_format`. — **Changed.**
+6. **Break glass**: the team owner (and server administrators) keep
+   password sign-in under enforcement by default; teams can turn the
+   owner's off. — **Accepted (default).**
+7. **Syslog structured-data id** `termoak@32473` keeps the documentation
+   enterprise number (RFC 5612) as a placeholder; registering a Private
+   Enterprise Number with IANA (free) would make it `termoak@<PEN>`. —
+   **Accepted (placeholder).**
+8. **Plans**: SSO, E2EE and audit sinks are included in **every plan, Free
+   included**. Checked in phase 5b: the server gates none of them by plan
+   (plan limits are only teams, team members, server sessions, networks
+   and the server AI; `[audit] max_sinks_per_team` is a server setting for
+   every team). — **Decided: every plan.**
 
 ## 10. Checklist 5b — web + desktop
 

@@ -926,7 +926,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_e2ee_fingerprint(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_check(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_func_e2ee_recovery_wordlist(
     ): Int
     external fun uniffi_termoak_ffi_checksum_func_api_error_info(
     ): Int
@@ -3397,8 +3401,12 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_e2ee_fingerprint(`publicKey`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_termoak_ffi_fn_func_e2ee_recovery_key_check(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    external fun uniffi_termoak_ffi_fn_func_e2ee_recovery_wordlist(uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_api_error_info(`errorMessage`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_termoak_ffi_fn_func_detect_import_format(`data`: RustBuffer.ByValue,`fileName`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -3639,7 +3647,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_fingerprint() and 0xFFFF) != 64275) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() and 0xFFFF) != 62772) {
+    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_check() and 0xFFFF) != 16437) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() and 0xFFFF) != 4545) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_func_e2ee_recovery_wordlist() and 0xFFFF) != 56746) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_func_api_error_info() and 0xFFFF) != 40019) {
@@ -31493,8 +31507,72 @@ public object FfiConverterTypeE2eePairingStart: FfiConverterRustBuffer<E2eePairi
 
 
 /**
- * What `e2ee_setup` creates. Show `recovery_key` once and ask the person to
- * keep it safe: it is the way back if every device is lost.
+ * What is wrong with a typed recovery phrase, for a precise message.
+ */
+data class E2eeRecoveryKeyCheck (
+    var `valid`: kotlin.Boolean
+    , 
+    /**
+     * Empty when valid; otherwise `word_count`, `unknown_word`,
+     * `checksum` or `old_format` (a 56-character key of the first format,
+     * no longer accepted).
+     */
+    var `reason`: kotlin.String
+    , 
+    /**
+     * Words found (24 expected).
+     */
+    var `words`: kotlin.UInt
+    , 
+    /**
+     * The first unknown word's position (1-based), 0 when none.
+     */
+    var `word`: kotlin.UInt
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeE2eeRecoveryKeyCheck: FfiConverterRustBuffer<E2eeRecoveryKeyCheck> {
+    override fun read(buf: ByteBuffer): E2eeRecoveryKeyCheck {
+        return E2eeRecoveryKeyCheck(
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: E2eeRecoveryKeyCheck) = (
+            FfiConverterBoolean.allocationSize(value.`valid`) +
+            FfiConverterString.allocationSize(value.`reason`) +
+            FfiConverterUInt.allocationSize(value.`words`) +
+            FfiConverterUInt.allocationSize(value.`word`)
+    )
+
+    override fun write(value: E2eeRecoveryKeyCheck, buf: ByteBuffer) {
+            FfiConverterBoolean.write(value.`valid`, buf)
+            FfiConverterString.write(value.`reason`, buf)
+            FfiConverterUInt.write(value.`words`, buf)
+            FfiConverterUInt.write(value.`word`, buf)
+    }
+}
+
+
+
+/**
+ * What `e2ee_setup` creates. Show `recovery_key` (the recovery phrase: 24
+ * lowercase BIP39 English words separated by spaces) once, numbered, and
+ * ask the person to keep it safe: it is the way back if every device is
+ * lost.
  */
 data class E2eeSetupResult (
     var `key`: E2eeKeyInfo
@@ -49163,8 +49241,24 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
 
         /**
-         * Whether `text` is a well-formed recovery key (its check digits match):
-         * for live feedback while the person types it.
+         * Checks a typed recovery phrase: case, numbering, punctuation and line
+         * breaks are ignored, and a word can be shortened to its first four
+         * letters.
+         */ fun `e2eeRecoveryKeyCheck`(`text`: kotlin.String): E2eeRecoveryKeyCheck {
+            return FfiConverterTypeE2eeRecoveryKeyCheck.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_e2ee_recovery_key_check(
+    
+        
+        FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * Whether `text` is a well-formed recovery phrase (24 known words whose
+         * BIP39 checksum matches): for live feedback while the person types it.
          */ fun `e2eeRecoveryKeyValid`(`text`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     uniffiRustCall() { _status ->
@@ -49172,6 +49266,20 @@ public object FfiConverterMapStringString: FfiConverterRustBuffer<Map<kotlin.Str
     
         
         FfiConverterString.lower(`text`),_status)
+}
+    )
+    }
+    
+
+        /**
+         * The BIP39 English word list (2048 words, sorted), for suggestions while
+         * the person types the recovery phrase.
+         */ fun `e2eeRecoveryWordlist`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_termoak_ffi_fn_func_e2ee_recovery_wordlist(
+    
+        _status)
 }
     )
     }

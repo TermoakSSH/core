@@ -1,5 +1,71 @@
 {
   "about": "End-to-end encrypted vault test vectors (docs/E2EE-SSO-AUDIT.md §2.2). Every implementation (core, web) must reproduce each output from its inputs (the fixed nonces and ephemeral keys are for these vectors only) and open each blob. Binary values are hex unless the name ends in _b64 (standard base64 with padding). Blobs: version byte 1, then [nonce 12 | ciphertext+tag] (AES-256-GCM) or [enc 32 | ciphertext+tag] (HPKE base mode, DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, AES-256-GCM, RFC 9180). AAD and HPKE info are the UTF-8 strings given.",
+  "bip39": {
+    "parse": [
+      {
+        "input": "1) ABANDON\n2) MATH\n3) MIMIC\n4) MASTER\n5) FILTER\n6) DESIGN\n7) CARBON\n8) CRYSTAL\n9) ROOKIE\n10) GROUP\n11) KNIFE\n12) WRAP\n13) ABSURD\n14) MUCH\n15) SNACK\n16) MELT\n17) GRID\n18) ROUGH\n19) CHAPTER\n20) FEVER\n21) RUBBER\n22) HUMBLE\n23) ROOM\n24) TROPHY\n",
+        "raw": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+      },
+      {
+        "input": "aban  math  mimi  mast  filt  desi  carb  crys  rook  grou  knif  wrap  absu  much  snac  melt  grid  roug  chap  feve  rubb  humb  room  trop",
+        "raw": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+      },
+      {
+        "input": "abandon math mimic master filter design carbon crystal rookie group knife wrap",
+        "reason": "word_count",
+        "words": 12
+      },
+      {
+        "input": "abandon math mimic master qwerty design carbon crystal rookie group knife wrap absurd much snack melt grid rough chapter fever rubber humble room trophy",
+        "reason": "unknown_word",
+        "word": 5
+      },
+      {
+        "input": "abandon math mimic master filter design carbon crystal rookie group knife wrap absurd much snack melt grid rough chapter fever rubber humble room trip",
+        "reason": "checksum"
+      },
+      {
+        "input": "ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ23-4567-ABCD-EFGH-IJKL-MNOP-QRST-UVWX",
+        "reason": "old_format"
+      }
+    ],
+    "vectors": [
+      {
+        "entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+        "phrase": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art"
+      },
+      {
+        "entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+        "phrase": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title"
+      },
+      {
+        "entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+        "phrase": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless"
+      },
+      {
+        "entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "phrase": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
+      },
+      {
+        "entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+        "phrase": "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length"
+      },
+      {
+        "entropy": "9f6a2878b2520799a44ef18bc7df394e7061a224d2c33cd015b157d746869863",
+        "phrase": "panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside"
+      },
+      {
+        "entropy": "066dca1a2bb7e8a1db2832148ce9933eea0f3ac9548d793112d9a95c9407efad",
+        "phrase": "all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform"
+      },
+      {
+        "entropy": "f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f",
+        "phrase": "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold"
+      }
+    ],
+    "wordlist": "bitcoin/bips bip-0039/english.txt",
+    "wordlist_sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda"
+  },
   "pairing": {
     "aad": "termoak:e2ee:pairing:0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000d1",
     "code": "959310",
@@ -26,7 +92,8 @@
     "sealed_b64": "ARAREhMUFRYXGBkaG7TGppKK5F4zXsngq+wWwt3noa6gpOluJ9WPRxDQQMzSTPubqUpqnfIxHGcaYulEBQ=="
   },
   "recovery_key": {
-    "display": "AAIS-EM2E-KVTH-PCEZ-VK54-ZXPO-74AB-CIRT-IRKW-M54I-TGVL-XTG5-537U-O46R",
+    "display": "abandon math mimic master filter design carbon crystal rookie group knife wrap absurd much snack melt grid rough chapter fever rubber humble room trophy",
+    "format": "BIP39 English, 24 words: the 256-bit raw key is the entropy, the checksum is the first byte of its SHA-256; the raw key (not BIP39's PBKDF2 seed) is the HKDF input",
     "kek_hkdf": {
       "info": "0192d3a0-0000-7000-8000-000000000001:0192d3a0-0000-7000-8000-0000000000b1",
       "kek": "37d77c9040df5913213975b5b955fee8c7b644fdd89f8e9bf5a94f4fe6c588be",

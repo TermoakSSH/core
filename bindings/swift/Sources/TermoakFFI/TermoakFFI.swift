@@ -21144,8 +21144,97 @@ public func FfiConverterTypeE2eePairingStart_lower(_ value: E2eePairingStart) ->
 
 
 /**
- * What `e2ee_setup` creates. Show `recovery_key` once and ask the person to
- * keep it safe: it is the way back if every device is lost.
+ * What is wrong with a typed recovery phrase, for a precise message.
+ */
+public struct E2eeRecoveryKeyCheck: Equatable, Hashable {
+    public var valid: Bool
+    /**
+     * Empty when valid; otherwise `word_count`, `unknown_word`,
+     * `checksum` or `old_format` (a 56-character key of the first format,
+     * no longer accepted).
+     */
+    public var reason: String
+    /**
+     * Words found (24 expected).
+     */
+    public var words: UInt32
+    /**
+     * The first unknown word's position (1-based), 0 when none.
+     */
+    public var word: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(valid: Bool, 
+        /**
+         * Empty when valid; otherwise `word_count`, `unknown_word`,
+         * `checksum` or `old_format` (a 56-character key of the first format,
+         * no longer accepted).
+         */reason: String, 
+        /**
+         * Words found (24 expected).
+         */words: UInt32, 
+        /**
+         * The first unknown word's position (1-based), 0 when none.
+         */word: UInt32) {
+        self.valid = valid
+        self.reason = reason
+        self.words = words
+        self.word = word
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension E2eeRecoveryKeyCheck: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeE2eeRecoveryKeyCheck: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> E2eeRecoveryKeyCheck {
+        return
+            try E2eeRecoveryKeyCheck(
+                valid: FfiConverterBool.read(from: &buf), 
+                reason: FfiConverterString.read(from: &buf), 
+                words: FfiConverterUInt32.read(from: &buf), 
+                word: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: E2eeRecoveryKeyCheck, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.valid, into: &buf)
+        FfiConverterString.write(value.reason, into: &buf)
+        FfiConverterUInt32.write(value.words, into: &buf)
+        FfiConverterUInt32.write(value.word, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeRecoveryKeyCheck_lift(_ buf: RustBuffer) throws -> E2eeRecoveryKeyCheck {
+    return try FfiConverterTypeE2eeRecoveryKeyCheck.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeE2eeRecoveryKeyCheck_lower(_ value: E2eeRecoveryKeyCheck) -> RustBuffer {
+    return FfiConverterTypeE2eeRecoveryKeyCheck.lower(value)
+}
+
+
+/**
+ * What `e2ee_setup` creates. Show `recovery_key` (the recovery phrase: 24
+ * lowercase BIP39 English words separated by spaces) once, numbered, and
+ * ask the person to keep it safe: it is the way back if every device is
+ * lost.
  */
 public struct E2eeSetupResult: Equatable, Hashable {
     public var key: E2eeKeyInfo
@@ -41668,14 +41757,38 @@ public func e2eeFingerprint(publicKey: String)throws  -> String  {
 })
 }
 /**
- * Whether `text` is a well-formed recovery key (its check digits match):
- * for live feedback while the person types it.
+ * Checks a typed recovery phrase: case, numbering, punctuation and line
+ * breaks are ignored, and a word can be shortened to its first four
+ * letters.
+ */
+public func e2eeRecoveryKeyCheck(text: String) -> E2eeRecoveryKeyCheck  {
+    return try!  FfiConverterTypeE2eeRecoveryKeyCheck_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_e2ee_recovery_key_check(
+        FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * Whether `text` is a well-formed recovery phrase (24 known words whose
+ * BIP39 checksum matches): for live feedback while the person types it.
  */
 public func e2eeRecoveryKeyValid(text: String) -> Bool  {
     return try!  FfiConverterBool.lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_termoak_ffi_fn_func_e2ee_recovery_key_valid(
         FfiConverterString.lower(text),uniffiCallStatus
+    )
+})
+}
+/**
+ * The BIP39 English word list (2048 words, sorted), for suggestions while
+ * the person types the recovery phrase.
+ */
+public func e2eeRecoveryWordlist() -> [String]  {
+    return try!  FfiConverterSequenceString.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_termoak_ffi_fn_func_e2ee_recovery_wordlist(uniffiCallStatus
     )
 })
 }
@@ -42400,7 +42513,13 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_func_e2ee_fingerprint() != 64275) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() != 62772) {
+    if (uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_check() != 16437) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_e2ee_recovery_key_valid() != 4545) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_func_e2ee_recovery_wordlist() != 56746) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_func_api_error_info() != 40019) {
