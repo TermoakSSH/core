@@ -398,6 +398,12 @@ on `TermoakCore` and `AccountHandle`.
   longer accepted), `words`; the same reason is in `apiError.details`
   of `e2ee_recovery_key_invalid`. `e2eeRecoveryWordlist()` gives the 2048
   words for suggestions. `e2eeLock`, `e2eeSetPassphrase`,
+  `e2eeRemovePassphrase()` (v0.7.0-next.12), `e2eeRotateUserKey(passphrase?)`
+  (a lost device: a new key and recovery phrase, shown once like the
+  setup's; every vault key the old key held is wrapped again on this
+  device; the other devices lock), `e2eeReset(confirm)` (everything lost:
+  without `confirm` it lists the vault ids nobody else could open, to show
+  them first; with it the key, seals, pairings and wraps are forgotten),
   `e2eeNewRecoveryKey`. The engine keeps the user key in the account store
   sealed with the device key (the Keystore/Keychain-protected one): nothing
   for the app to store.
@@ -416,6 +422,12 @@ on `TermoakCore` and `AccountHandle`.
   host whose secret is still sealed fails with `TermoakError.E2eeLocked`
   (`apiError.code == "e2ee_locked"`): offer "Unlock". `SyncReport` has
   `e2eeWaiting` (local edits waiting for an unlock) and `e2eeLocked`.
+  `rekeyNeeded` (someone lost access): the apps rotate by themselves on a
+  key holder's unlocked device (once per key version), as the desktop does.
+  `transfer` between vaults of one account where either is end-to-end
+  encrypted happens on the device since v0.7.0-next.12 (a copy sealed for
+  the target, then the originals deleted: moved items get new ids); a
+  secret still locked here fails with `E2eeLocked`.
 - **Server sessions on E2EE hosts**: `openServerSession` fails with
   `E2eeLocked` / `e2ee_unlock_required`; after asking the person, call
   `openServerSessionUnlocked(hostId, cols, rows, title?, record?)`: the

@@ -396,6 +396,101 @@ impl Account {
         Ok(rk.display())
     }
 
+    /// Removes the E2EE passphrase (new devices then unlock with the
+    /// recovery phrase or another device). Returns whether there was one.
+    pub async fn e2ee_remove_passphrase(&self) -> Result<bool> {
+        let v: Value = self.api.delete("/api/v1/me/e2ee/passphrase").await?;
+        Ok(v["removed"].as_bool().unwrap_or(false))
+    }
+
+    /// Replaces the user key (a lost or stolen device): a new key with a new
+    /// recovery phrase (returned once) and, optionally, a passphrase; every
+    /// vault key the old key holds is wrapped again for the new one, on this
+    /// device. Other devices of yours lock and must unlock again.
+    pub async fn e2ee_rotate_user_key(
+        &self,
+        passphrase: Option<&str>,
+    ) -> Result<(UserKeyInfo, Zeroizing<String>)> {
+        let user = self.e2ee_user()?;
+        let old = self.e2ee_user_key().await?.ok_or_else(not_unlocked)?;
+        let key = UserKeyPair::generate();
+        let recovery = RecoveryKey::generate();
+        let mut seals = vec![e2ee::seal_with_recovery(user, &key, &recovery)?];
+        if let Some(p) = passphrase.filter(|p| !p.is_empty()) {
+            seals.push(e2ee::seal_with_passphrase(user, &key, p)?);
+        }
+        let vaults = self.api.vaults().await?;
+        let mut wraps = Vec::new();
+        for v in vaults.iter().filter(|v| v.crypto == VaultCrypto::E2ee) {
+            let Some(info) = &v.e2ee else { continue };
+            let (Some(w), Some(kid)) = (&info.wrap, info.key_id) else {
+                continue;
+            };
+            if kid != old.id {
+                continue;
+            }
+            let vk = e2ee::unwrap_vault_key(w, v.id, info.key_version, user, &old)?;
+            wraps.push(json!({
+                "vault_id": v.id,
+                "version": info.key_version,
+                "wrapped": e2ee::wrap_vault_key(&vk, v.id, info.key_version, user, key.id, key.public())?,
+            }));
+        }
+        let info: UserKeyInfo = self
+            .api
+            .post(
+                "/api/v1/me/e2ee/rotate",
+                &json!({
+                    "old_key_id": old.id,
+                    "key_id": key.id,
+                    "public_key": key.public_b64(),
+                    "seals": seals,
+                    "wraps": wraps,
+                }),
+            )
+            .await?;
+        store_user_key(&self.store, user, &key).await?;
+        Ok((info, recovery.display()))
+    }
+
+    /// Everything lost (no device, no recovery phrase): with `confirm`
+    /// forgets the account's E2EE key, seals, pairings and wraps (and the
+    /// key on this device); without it only lists the vaults nobody else
+    /// could open any more. Returns those vault ids.
+    pub async fn e2ee_reset(&self, confirm: bool) -> Result<Vec<Id>> {
+        let path = if confirm {
+            "/api/v1/me/e2ee?confirm=reset"
+        } else {
+            "/api/v1/me/e2ee"
+        };
+        let v: Value = self.api.delete(path).await?;
+        if confirm {
+            self.e2ee_lock().await?;
+        }
+        Ok(v["orphaned_vaults"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|x| x.as_str().and_then(|s| s.parse().ok()))
+                    .collect()
+            })
+            .unwrap_or_default())
+    }
+
+    /// Whether a move or copy between these vaults of this account touches
+    /// an end-to-end encrypted vault (then it is done on this device).
+    pub async fn e2ee_involved(&self, sources: &std::collections::BTreeSet<Option<Id>>, target: Id) -> Result<bool> {
+        let personal = self.user_id();
+        let vaults = self.store.local_vault_list().await?;
+        let e2ee = |id: Option<Id>| {
+            let id = id.or(personal);
+            vaults
+                .iter()
+                .any(|v| Some(v.id) == id && v.crypto == VaultCrypto::E2ee)
+        };
+        Ok(e2ee(Some(target)) || sources.iter().any(|v| e2ee(*v)))
+    }
+
     // ---- pairing ----
 
     /// New device: asks the user's other devices for the user key. Keep

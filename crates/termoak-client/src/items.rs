@@ -692,6 +692,18 @@ impl Workspace {
                     .vault
                     .or(acc.user_id())
                     .ok_or_else(|| ClientError::Invalid("choose the target vault".into()))?;
+                // The server cannot read or write the secrets of an end-to-end
+                // encrypted vault: such moves and copies are done here (a copy
+                // sealed for the target, then the originals deleted).
+                if acc.e2ee_involved(&src_vaults, target).await? {
+                    let req = LocalTransfer {
+                        vault: Some(target),
+                        ..req
+                    };
+                    return self
+                        .transfer_between(from, req, treq, src, src_vaults)
+                        .await;
+                }
                 let result = acc.api.transfer(target, &treq).await?;
                 if !req.dry_run {
                     acc.sync_once().await?;

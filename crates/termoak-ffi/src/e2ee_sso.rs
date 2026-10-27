@@ -583,6 +583,48 @@ impl TermoakCore {
         run(async move { Ok(acc.e2ee_new_recovery_key().await?.to_string()) }).await
     }
 
+    /// Removes the E2EE passphrase. Returns whether there was one.
+    pub async fn e2ee_remove_passphrase(&self) -> Result<bool> {
+        let acc = self.account_now()?;
+        run(async move { Ok(acc.e2ee_remove_passphrase().await?) }).await
+    }
+
+    /// Replaces the account's E2EE key (a lost or stolen device): a new key
+    /// with a new recovery phrase (shown once) and an optional passphrase;
+    /// every vault key the old key held is wrapped again on this device.
+    /// Your other devices lock and unlock again.
+    #[uniffi::method(default(passphrase))]
+    pub async fn e2ee_rotate_user_key(
+        &self,
+        passphrase: Option<String>,
+    ) -> Result<E2eeSetupResult> {
+        let acc = self.account_now()?;
+        run(async move {
+            let (info, rk) = acc.e2ee_rotate_user_key(passphrase.as_deref()).await?;
+            Ok(E2eeSetupResult {
+                key: (&info).into(),
+                recovery_key: rk.to_string(),
+            })
+        })
+        .await
+    }
+
+    /// Everything lost: without `confirm` lists the vaults nobody else
+    /// could open any more (show them); with it forgets the account's E2EE
+    /// key, seals, pairings and wraps. Returns those vault ids.
+    pub async fn e2ee_reset(&self, confirm: bool) -> Result<Vec<String>> {
+        let acc = self.account_now()?;
+        run(async move {
+            Ok(acc
+                .e2ee_reset(confirm)
+                .await?
+                .into_iter()
+                .map(|id| id.to_string())
+                .collect())
+        })
+        .await
+    }
+
     /// New device: asks your unlocked devices for the key. Show the code;
     /// then call `e2ee_pairing_finish` (after the `e2ee` `pairing` event,
     /// or every few seconds).
@@ -1234,6 +1276,22 @@ impl AccountHandle {
 
     pub async fn e2ee_new_recovery_key(&self) -> Result<String> {
         self.core().e2ee_new_recovery_key().await
+    }
+
+    pub async fn e2ee_remove_passphrase(&self) -> Result<bool> {
+        self.core().e2ee_remove_passphrase().await
+    }
+
+    #[uniffi::method(default(passphrase))]
+    pub async fn e2ee_rotate_user_key(
+        &self,
+        passphrase: Option<String>,
+    ) -> Result<E2eeSetupResult> {
+        self.core().e2ee_rotate_user_key(passphrase).await
+    }
+
+    pub async fn e2ee_reset(&self, confirm: bool) -> Result<Vec<String>> {
+        self.core().e2ee_reset(confirm).await
     }
 
     pub async fn e2ee_pairing_start(&self) -> Result<E2eePairingStart> {

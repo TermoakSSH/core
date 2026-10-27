@@ -1214,6 +1214,12 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_remove_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_reset(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_user_key(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_set_passphrase(
@@ -1808,6 +1814,12 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_remove_passphrase(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_reset(
+    ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_user_key(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_set_passphrase(
@@ -2354,6 +2366,12 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pairings(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_pending_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_remove_passphrase(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_reset(`ptr`: Long,`confirm`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_user_key(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
     ): Long
@@ -3064,6 +3082,12 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pairings(`ptr`: Long,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_pending_members(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_remove_passphrase(`ptr`: Long,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_reset(`ptr`: Long,`confirm`: Byte,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_user_key(`ptr`: Long,`passphrase`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_vault(`ptr`: Long,`vaultId`: RustBuffer.ByValue,
     ): Long
@@ -4079,6 +4103,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members() and 0xFFFF) != 56655) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_remove_passphrase() and 0xFFFF) != 297) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_reset() and 0xFFFF) != 25519) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_user_key() and 0xFFFF) != 64972) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault() and 0xFFFF) != 37157) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4968,6 +5001,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members() and 0xFFFF) != 58629) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_remove_passphrase() and 0xFFFF) != 45709) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_reset() and 0xFFFF) != 19308) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_user_key() and 0xFFFF) != 3578) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault() and 0xFFFF) != 37223) {
@@ -6312,6 +6354,12 @@ public interface AccountHandleInterface {
     suspend fun `e2eePairings`(): List<E2eePairingRequest>
     
     suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String): List<E2eeMember>
+    
+    suspend fun `e2eeRemovePassphrase`(): kotlin.Boolean
+    
+    suspend fun `e2eeReset`(`confirm`: kotlin.Boolean): List<kotlin.String>
+    
+    suspend fun `e2eeRotateUserKey`(`passphrase`: kotlin.String? = null): E2eeSetupResult
     
     suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String): kotlin.UInt
     
@@ -8663,6 +8711,71 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterSequenceTypeE2eeMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRemovePassphrase`() : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_remove_passphrase(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeReset`(`confirm`: kotlin.Boolean) : List<kotlin.String> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_reset(
+                uniffiHandle,
+                
+        FfiConverterBoolean.lower(`confirm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRotateUserKey`(`passphrase`: kotlin.String?) : E2eeSetupResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_user_key(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeSetupResult.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -19772,6 +19885,26 @@ public interface TermoakCoreInterface {
     suspend fun `e2eePendingMembers`(`vaultId`: kotlin.String): List<E2eeMember>
     
     /**
+     * Removes the E2EE passphrase. Returns whether there was one.
+     */
+    suspend fun `e2eeRemovePassphrase`(): kotlin.Boolean
+    
+    /**
+     * Everything lost: without `confirm` lists the vaults nobody else
+     * could open any more (show them); with it forgets the account's E2EE
+     * key, seals, pairings and wraps. Returns those vault ids.
+     */
+    suspend fun `e2eeReset`(`confirm`: kotlin.Boolean): List<kotlin.String>
+    
+    /**
+     * Replaces the account's E2EE key (a lost or stolen device): a new key
+     * with a new recovery phrase (shown once) and an optional passphrase;
+     * every vault key the old key held is wrapped again on this device.
+     * Your other devices lock and unlock again.
+     */
+    suspend fun `e2eeRotateUserKey`(`passphrase`: kotlin.String? = null): E2eeSetupResult
+    
+    /**
      * Rotates a vault's key (after someone lost access: `rekey_needed`).
      */
     suspend fun `e2eeRotateVault`(`vaultId`: kotlin.String): kotlin.UInt
@@ -22877,6 +23010,85 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterSequenceTypeE2eeMember.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Removes the E2EE passphrase. Returns whether there was one.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRemovePassphrase`() : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_remove_passphrase(
+                uniffiHandle,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Everything lost: without `confirm` lists the vaults nobody else
+     * could open any more (show them); with it forgets the account's E2EE
+     * key, seals, pairings and wraps. Returns those vault ids.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeReset`(`confirm`: kotlin.Boolean) : List<kotlin.String> {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_reset(
+                uniffiHandle,
+                
+        FfiConverterBoolean.lower(`confirm`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceString.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Replaces the account's E2EE key (a lost or stolen device): a new key
+     * with a new recovery phrase (shown once) and an optional passphrase;
+     * every vault key the old key held is wrapped again on this device.
+     * Your other devices lock and unlock again.
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `e2eeRotateUserKey`(`passphrase`: kotlin.String?) : E2eeSetupResult {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_user_key(
+                uniffiHandle,
+                
+        FfiConverterOptionalString.lower(`passphrase`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeE2eeSetupResult.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )

@@ -924,6 +924,12 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
     
     func e2eePendingMembers(vaultId: String) async throws  -> [E2eeMember]
     
+    func e2eeRemovePassphrase() async throws  -> Bool
+    
+    func e2eeReset(confirm: Bool) async throws  -> [String]
+    
+    func e2eeRotateUserKey(passphrase: String?) async throws  -> E2eeSetupResult
+    
     func e2eeRotateVault(vaultId: String) async throws  -> UInt32
     
     func e2eeSetPassphrase(passphrase: String) async throws 
@@ -2610,6 +2616,54 @@ open func e2eePendingMembers(vaultId: String)async throws  -> [E2eeMember]  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeE2eeMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeRemovePassphrase()async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_remove_passphrase(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeReset(confirm: Bool)async throws  -> [String]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_reset(
+                        self.uniffiCloneHandle(),FfiConverterBool.lower(confirm)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func e2eeRotateUserKey(passphrase: String? = nil)async throws  -> E2eeSetupResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_e2ee_rotate_user_key(
+                        self.uniffiCloneHandle(),FfiConverterOptionString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeSetupResult_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -10173,6 +10227,26 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func e2eePendingMembers(vaultId: String) async throws  -> [E2eeMember]
     
     /**
+     * Removes the E2EE passphrase. Returns whether there was one.
+     */
+    func e2eeRemovePassphrase() async throws  -> Bool
+    
+    /**
+     * Everything lost: without `confirm` lists the vaults nobody else
+     * could open any more (show them); with it forgets the account's E2EE
+     * key, seals, pairings and wraps. Returns those vault ids.
+     */
+    func e2eeReset(confirm: Bool) async throws  -> [String]
+    
+    /**
+     * Replaces the account's E2EE key (a lost or stolen device): a new key
+     * with a new recovery phrase (shown once) and an optional passphrase;
+     * every vault key the old key held is wrapped again on this device.
+     * Your other devices lock and unlock again.
+     */
+    func e2eeRotateUserKey(passphrase: String?) async throws  -> E2eeSetupResult
+    
+    /**
      * Rotates a vault's key (after someone lost access: `rekey_needed`).
      */
     func e2eeRotateVault(vaultId: String) async throws  -> UInt32
@@ -12671,6 +12745,68 @@ open func e2eePendingMembers(vaultId: String)async throws  -> [E2eeMember]  {
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterSequenceTypeE2eeMember.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Removes the E2EE passphrase. Returns whether there was one.
+     */
+open func e2eeRemovePassphrase()async throws  -> Bool  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_remove_passphrase(
+                        self.uniffiCloneHandle()
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_i8,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_i8,
+            freeFunc: ffi_termoak_ffi_rust_future_free_i8,
+            liftFunc: FfiConverterBool.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Everything lost: without `confirm` lists the vaults nobody else
+     * could open any more (show them); with it forgets the account's E2EE
+     * key, seals, pairings and wraps. Returns those vault ids.
+     */
+open func e2eeReset(confirm: Bool)async throws  -> [String]  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_reset(
+                        self.uniffiCloneHandle(),FfiConverterBool.lower(confirm)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterSequenceString.lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Replaces the account's E2EE key (a lost or stolen device): a new key
+     * with a new recovery phrase (shown once) and an optional passphrase;
+     * every vault key the old key held is wrapped again on this device.
+     * Your other devices lock and unlock again.
+     */
+open func e2eeRotateUserKey(passphrase: String? = nil)async throws  -> E2eeSetupResult  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_e2ee_rotate_user_key(
+                        self.uniffiCloneHandle(),FfiConverterOptionString.lower(passphrase)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterTypeE2eeSetupResult_lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -42945,6 +43081,15 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_pending_members() != 56655) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_remove_passphrase() != 297) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_reset() != 25519) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_user_key() != 64972) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_e2ee_rotate_vault() != 37157) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -43834,6 +43979,15 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_pending_members() != 58629) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_remove_passphrase() != 45709) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_reset() != 19308) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_user_key() != 3578) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_e2ee_rotate_vault() != 37223) {

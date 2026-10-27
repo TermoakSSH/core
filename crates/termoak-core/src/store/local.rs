@@ -684,6 +684,11 @@ impl Store {
                 let Some(kind) = row.kind else {
                     continue;
                 };
+                // A secret still sealed with an E2EE vault key cannot be
+                // copied anywhere until this device is unlocked.
+                if row.e2ee && row.secret.is_some() {
+                    return Err(super::entities::e2ee_locked());
+                }
                 let secret = match row.secret.as_deref() {
                     Some(blob) => {
                         Some(keys.open(c, row.vault_id, row.key_version, kind, row.id, blob)?)
