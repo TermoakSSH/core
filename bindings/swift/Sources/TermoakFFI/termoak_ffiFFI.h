@@ -982,6 +982,11 @@ uint64_t uniffi_termoak_ffi_fn_method_accounthandle_team_sso(uint64_t ptr, RustB
 uint64_t uniffi_termoak_ffi_fn_method_accounthandle_test_audit_sink(uint64_t ptr, RustBuffer scope, RustBuffer sink_id, RustBuffer id
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_TEST_HOST_UNLOCKED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_TEST_HOST_UNLOCKED
+uint64_t uniffi_termoak_ffi_fn_method_accounthandle_test_host_unlocked(uint64_t ptr, RustBuffer host_id, int8_t trust
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_UPDATE_AUDIT_SINK
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_ACCOUNTHANDLE_UPDATE_AUDIT_SINK
 uint64_t uniffi_termoak_ffi_fn_method_accounthandle_update_audit_sink(uint64_t ptr, RustBuffer scope, RustBuffer sink_id, RustBuffer id, RustBuffer name, RustBuffer actions, RustBuffer enabled
@@ -2792,6 +2797,11 @@ uint64_t uniffi_termoak_ffi_fn_method_termoakcore_team_sso(uint64_t ptr, RustBuf
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_AUDIT_SINK
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_AUDIT_SINK
 uint64_t uniffi_termoak_ffi_fn_method_termoakcore_test_audit_sink(uint64_t ptr, RustBuffer scope, RustBuffer sink_id, RustBuffer id
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_HOST_UNLOCKED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_TEST_HOST_UNLOCKED
+uint64_t uniffi_termoak_ffi_fn_method_termoakcore_test_host_unlocked(uint64_t ptr, RustBuffer host_id, int8_t trust
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_FN_METHOD_TERMOAKCORE_UPDATE_AUDIT_SINK
@@ -5085,6 +5095,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_TEST_HOST_UNLOCKED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_TEST_HOST_UNLOCKED
+uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_test_host_unlocked(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_UPDATE_AUDIT_SINK
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_ACCOUNTHANDLE_UPDATE_AUDIT_SINK
 uint16_t uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink(void
@@ -6906,6 +6922,12 @@ uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_team_sso(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_AUDIT_SINK
 #define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_AUDIT_SINK
 uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_HOST_UNLOCKED
+#define UNIFFI_FFIDEF_UNIFFI_TERMOAK_FFI_CHECKSUM_METHOD_TERMOAKCORE_TEST_HOST_UNLOCKED
+uint16_t uniffi_termoak_ffi_checksum_method_termoakcore_test_host_unlocked(void
     
 );
 #endif

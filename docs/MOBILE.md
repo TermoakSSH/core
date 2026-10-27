@@ -433,6 +433,11 @@ on `TermoakCore` and `AccountHandle`.
   `openServerSessionUnlocked(hostId, cols, rows, title?, record?)`: the
   engine resolves the host on the device and sends its credentials for that
   session only.
+  Host tests from the server the same way (v0.7.0-next.13):
+  `testHostUnlocked(hostId, trust)` (`POST /hosts/{id}/test` with the
+  `unlock`, `?trust=true` to accept a new host key) returns the server's
+  answer as JSON (`ok`, `latency_ms`, `fingerprint`, `error`,
+  `error_code`, `network`).
 - **SSO**: on the email step `ssoDiscover(server, email)` (`sso`,
   `enforced`, `teamName`). Mobile: `ssoStart(server, email)` → open
   `flow.authorizeUrl` in a Custom Tab / `ASWebAuthenticationSession` with

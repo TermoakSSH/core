@@ -818,6 +818,32 @@ impl TermoakCore {
         .await
     }
 
+    /// Tests a host of an E2EE vault from the server (`POST
+    /// /hosts/{id}/test`, `?trust=true` to accept and remember a new host
+    /// key), sending its credentials (resolved on this device) for this one
+    /// test, as `open_server_session_unlocked` does for a session. Ask
+    /// first. Returns the server's answer as JSON (`ok`, `latency_ms`,
+    /// `fingerprint`, `error`, `error_code`, `network`...).
+    #[uniffi::method(default(trust = false))]
+    pub async fn test_host_unlocked(&self, host_id: String, trust: bool) -> Result<String> {
+        let hid = parse_id(&host_id)?;
+        let ws = self.ws.clone();
+        let acc = self.account_now()?;
+        run(async move {
+            let item = ws.locate(hid).await?;
+            let mut resolved = ws.resolve_item(item).await?;
+            let unlock = acc.e2ee_unlock_for(&resolved).await;
+            resolved.zeroize_secrets();
+            let path = format!(
+                "/api/v1/hosts/{hid}/test{}",
+                if trust { "?trust=true" } else { "" }
+            );
+            let v: Value = acc.api.post(&path, &json!({"unlock": unlock})).await?;
+            Ok(v.to_string())
+        })
+        .await
+    }
+
     // ----- SSO -----
 
     /// Whether `email` signs in through its team's SSO on `server` (before
@@ -1356,6 +1382,11 @@ impl AccountHandle {
         self.core()
             .open_server_session_unlocked(host_id, cols, rows, title, record)
             .await
+    }
+
+    #[uniffi::method(default(trust = false))]
+    pub async fn test_host_unlocked(&self, host_id: String, trust: bool) -> Result<String> {
+        self.core().test_host_unlocked(host_id, trust).await
     }
 
     pub async fn team_sso(&self, team_id: String) -> Result<Option<SsoSettings>> {

@@ -1250,6 +1250,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_accounthandle_test_host_unlocked(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_accounthandle_verify_team_domain(
@@ -1858,6 +1860,8 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink(
     ): Int
+    external fun uniffi_termoak_ffi_checksum_method_termoakcore_test_host_unlocked(
+    ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink(
     ): Int
     external fun uniffi_termoak_ffi_checksum_method_termoakcore_verify_team_domain(
@@ -2402,6 +2406,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_accounthandle_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_test_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_accounthandle_test_host_unlocked(`ptr`: Long,`hostId`: RustBuffer.ByValue,`trust`: Byte,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_accounthandle_update_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`actions`: RustBuffer.ByValue,`enabled`: RustBuffer.ByValue,
     ): Long
@@ -3126,6 +3132,8 @@ internal object UniffiLib {
     external fun uniffi_termoak_ffi_fn_method_termoakcore_team_sso(`ptr`: Long,`teamId`: RustBuffer.ByValue,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_test_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,
+    ): Long
+    external fun uniffi_termoak_ffi_fn_method_termoakcore_test_host_unlocked(`ptr`: Long,`hostId`: RustBuffer.ByValue,`trust`: Byte,
     ): Long
     external fun uniffi_termoak_ffi_fn_method_termoakcore_update_audit_sink(`ptr`: Long,`scope`: RustBuffer.ByValue,`sinkId`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,`actions`: RustBuffer.ByValue,`enabled`: RustBuffer.ByValue,
     ): Long
@@ -4157,6 +4165,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink() and 0xFFFF) != 2654) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_test_host_unlocked() and 0xFFFF) != 4629) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if ((lib.uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink() and 0xFFFF) != 14785) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -5067,6 +5078,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink() and 0xFFFF) != 6419) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_test_host_unlocked() and 0xFFFF) != 37753) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if ((lib.uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink() and 0xFFFF) != 30404) {
@@ -6390,6 +6404,8 @@ public interface AccountHandleInterface {
     suspend fun `teamSso`(`teamId`: kotlin.String): SsoSettings?
     
     suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null): AuditSinkTest
+    
+    suspend fun `testHostUnlocked`(`hostId`: kotlin.String, `trust`: kotlin.Boolean = false): kotlin.String
     
     suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null, `name`: kotlin.String? = null, `actions`: List<kotlin.String>? = null, `enabled`: kotlin.Boolean? = null): AuditSinkInfo
     
@@ -9117,6 +9133,29 @@ open class AccountHandle: Disposable, AutoCloseable, AccountHandleInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeAuditSinkTest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `testHostUnlocked`(`hostId`: kotlin.String, `trust`: kotlin.Boolean) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_accounthandle_test_host_unlocked(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterBoolean.lower(`trust`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )
@@ -20003,6 +20042,16 @@ public interface TermoakCoreInterface {
     suspend fun `testAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null): AuditSinkTest
     
     /**
+     * Tests a host of an E2EE vault from the server (`POST
+     * /hosts/{id}/test`, `?trust=true` to accept and remember a new host
+     * key), sending its credentials (resolved on this device) for this one
+     * test, as `open_server_session_unlocked` does for a session. Ask
+     * first. Returns the server's answer as JSON (`ok`, `latency_ms`,
+     * `fingerprint`, `error`, `error_code`, `network`...).
+     */
+    suspend fun `testHostUnlocked`(`hostId`: kotlin.String, `trust`: kotlin.Boolean = false): kotlin.String
+    
+    /**
      * Turns a sink on or off, renames it or changes its actions.
      */
     suspend fun `updateAuditSink`(`scope`: AuditScope, `sinkId`: kotlin.String, `id`: kotlin.String? = null, `name`: kotlin.String? = null, `actions`: List<kotlin.String>? = null, `enabled`: kotlin.Boolean? = null): AuditSinkInfo
@@ -23586,6 +23635,37 @@ open class TermoakCore: Disposable, AutoCloseable, TermoakCoreInterface
         { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeAuditSinkTest.lift(it) },
+        // Error FFI converter
+        TermoakException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Tests a host of an E2EE vault from the server (`POST
+     * /hosts/{id}/test`, `?trust=true` to accept and remember a new host
+     * key), sending its credentials (resolved on this device) for this one
+     * test, as `open_server_session_unlocked` does for a session. Ask
+     * first. Returns the server's answer as JSON (`ok`, `latency_ms`,
+     * `fingerprint`, `error`, `error_code`, `network`...).
+     */
+    @Throws(TermoakException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `testHostUnlocked`(`hostId`: kotlin.String, `trust`: kotlin.Boolean) : kotlin.String {
+        return uniffiRustCallAsync(
+        callWithHandle { uniffiHandle ->
+            UniffiLib.uniffi_termoak_ffi_fn_method_termoakcore_test_host_unlocked(
+                uniffiHandle,
+                
+        FfiConverterString.lower(`hostId`),
+        FfiConverterBoolean.lower(`trust`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.ffi_termoak_ffi_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.ffi_termoak_ffi_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
         // Error FFI converter
         TermoakException.ErrorHandler,
     )

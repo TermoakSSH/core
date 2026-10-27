@@ -931,3 +931,44 @@ fn vault_recordings_download_and_forget_access() {
     acc.forget_access();
     core.forget_access();
 }
+
+#[test]
+fn test_host_unlocked_sends_the_credentials() {
+    let fake = fake_server(|r| {
+        Some(match (r.method.as_str(), r.path.as_str()) {
+            ("POST", p) if p.starts_with("/api/v1/hosts/") && p.contains("/test") => Resp::Json(
+                200,
+                json!({"ok": true, "latency_ms": 12, "fingerprint": "SHA256:x", "key_type": "ssh-ed25519",
+                       "os": null, "banner": null, "error": null, "error_code": null}),
+            ),
+            _ => return None,
+        })
+    });
+    let (_dir, core) = signed_in(&fake);
+    let account = core.current_account().unwrap().id;
+    let mut h = crate::tests::host("db", "10.0.0.7");
+    h.account_id = Some(account.clone());
+    h.settings.username = Some("qa".into());
+    let saved = core
+        .save_host(h, SecretChange::Set { value: "s3cr3t".into() })
+        .unwrap();
+    let acc = core.account(account).unwrap();
+    let answer = block_on(acc.test_host_unlocked(saved.id.clone(), true)).unwrap();
+    let v: Value = serde_json::from_str(&answer).unwrap();
+    assert_eq!(v["ok"], true);
+    assert_eq!(v["latency_ms"], 12);
+    let req = fake.last("POST", &format!("/api/v1/hosts/{}/test", saved.id));
+    assert!(req.path.ends_with("?trust=true"), "{}", req.path);
+    let hops = req.json()["unlock"]["hops"].clone();
+    assert_eq!(hops.as_array().unwrap().len(), 1);
+    assert_eq!(hops[0]["host_id"], saved.id);
+    assert_eq!(hops[0]["password"], "s3cr3t");
+    // Without trust: no query.
+    block_on(core.test_host_unlocked(saved.id.clone(), false)).unwrap();
+    let req = fake.last("POST", &format!("/api/v1/hosts/{}/test", saved.id));
+    assert!(!req.path.contains('?'), "{}", req.path);
+    assert!(matches!(
+        block_on(core.test_host_unlocked("nope".into(), false)),
+        Err(TermoakError::Invalid(_))
+    ));
+}

@@ -16,7 +16,7 @@ fn new_core(dir: &std::path::Path, key: &str) -> Arc<TermoakCore> {
     TermoakCore::new(dir.to_string_lossy().into_owned(), key.to_string()).unwrap()
 }
 
-fn host(label: &str, address: &str) -> SshHost {
+pub(crate) fn host(label: &str, address: &str) -> SshHost {
     SshHost {
         id: String::new(),
         label: label.into(),

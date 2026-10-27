@@ -960,6 +960,8 @@ public protocol AccountHandleProtocol: AnyObject, Sendable {
     
     func testAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws  -> AuditSinkTest
     
+    func testHostUnlocked(hostId: String, trust: Bool) async throws  -> String
+    
     func updateAuditSink(scope: AuditScope, sinkId: String, id: String?, name: String?, actions: [String]?, enabled: Bool?) async throws  -> AuditSinkInfo
     
     func verifyTeamDomain(teamId: String, domain: String) async throws  -> TeamDomainInfo
@@ -2904,6 +2906,22 @@ open func testAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)asy
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeAuditSinkTest_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+open func testHostUnlocked(hostId: String, trust: Bool = false)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_accounthandle_test_host_unlocked(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterBool.lower(trust)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -10345,6 +10363,16 @@ public protocol TermoakCoreProtocol: AnyObject, Sendable {
     func testAuditSink(scope: AuditScope, sinkId: String, id: String?) async throws  -> AuditSinkTest
     
     /**
+     * Tests a host of an E2EE vault from the server (`POST
+     * /hosts/{id}/test`, `?trust=true` to accept and remember a new host
+     * key), sending its credentials (resolved on this device) for this one
+     * test, as `open_server_session_unlocked` does for a session. Ask
+     * first. Returns the server's answer as JSON (`ok`, `latency_ms`,
+     * `fingerprint`, `error`, `error_code`, `network`...).
+     */
+    func testHostUnlocked(hostId: String, trust: Bool) async throws  -> String
+    
+    /**
      * Turns a sink on or off, renames it or changes its actions.
      */
     func updateAuditSink(scope: AuditScope, sinkId: String, id: String?, name: String?, actions: [String]?, enabled: Bool?) async throws  -> AuditSinkInfo
@@ -13171,6 +13199,30 @@ open func testAuditSink(scope: AuditScope, sinkId: String, id: String? = nil)asy
             completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
             freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
             liftFunc: FfiConverterTypeAuditSinkTest_lift,
+            errorHandler: FfiConverterTypeTermoakError_lift
+        )
+}
+    
+    /**
+     * Tests a host of an E2EE vault from the server (`POST
+     * /hosts/{id}/test`, `?trust=true` to accept and remember a new host
+     * key), sending its credentials (resolved on this device) for this one
+     * test, as `open_server_session_unlocked` does for a session. Ask
+     * first. Returns the server's answer as JSON (`ok`, `latency_ms`,
+     * `fingerprint`, `error`, `error_code`, `network`...).
+     */
+open func testHostUnlocked(hostId: String, trust: Bool = false)async throws  -> String  {
+    return
+        try  await uniffiRustCallAsync(
+            rustFutureFunc: {
+                uniffi_termoak_ffi_fn_method_termoakcore_test_host_unlocked(
+                        self.uniffiCloneHandle(),FfiConverterString.lower(hostId),FfiConverterBool.lower(trust)
+                )
+            },
+            pollFunc: ffi_termoak_ffi_rust_future_poll_rust_buffer,
+            completeFunc: ffi_termoak_ffi_rust_future_complete_rust_buffer,
+            freeFunc: ffi_termoak_ffi_rust_future_free_rust_buffer,
+            liftFunc: FfiConverterString.lift,
             errorHandler: FfiConverterTypeTermoakError_lift
         )
 }
@@ -43135,6 +43187,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_termoak_ffi_checksum_method_accounthandle_test_audit_sink() != 2654) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_termoak_ffi_checksum_method_accounthandle_test_host_unlocked() != 4629) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_termoak_ffi_checksum_method_accounthandle_update_audit_sink() != 14785) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -44045,6 +44100,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_test_audit_sink() != 6419) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_termoak_ffi_checksum_method_termoakcore_test_host_unlocked() != 37753) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_termoak_ffi_checksum_method_termoakcore_update_audit_sink() != 30404) {
