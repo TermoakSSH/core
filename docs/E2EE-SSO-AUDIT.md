@@ -1,6 +1,8 @@
 # End-to-end encrypted vaults, SSO/OIDC for teams and extended audit (Termoak 0.7, phase 5a)
 
-Status: **phase 5a** (2026-10-26): design (this file; identical copies in
+Status: phases **5a** (2026-10-26), **5b** (2026-10-27, §10) and **5c**
+(2026-10-27, Android + iOS, §11; core v0.7.0-next.13) done. Phase 5a:
+design (this file; identical copies in
 `server/docs/E2EE-SSO-AUDIT.md` and `core/docs/E2EE-SSO-AUDIT.md`), core
 v0.7.0-next.10, server 0.7.0-next.10 (staging next.termoak.com, schema
 v14), QA suites `e2ee`, `sso`, `audit` and a compat section. The apps'
@@ -499,7 +501,9 @@ login|login_failed|link|unlink|user_created`, `auth.login_refused`,
   `e2ee_rotate_user_key(passphrase?)` (new key, every vault key wrapped
   again, a new recovery phrase returned) and `e2ee_reset(confirm)` (the
   vaults that would be lost without `confirm`; locks this device after it)
-  (v0.7.0-next.12). Since v0.7.0-next.12 the client also moves and copies
+  (v0.7.0-next.12); `test_host_unlocked(host_id, trust)` (a server host
+  test with the per-test unlock, the server's answer as JSON; v0.7.0-next.13,
+  for the phones). Since v0.7.0-next.12 the client also moves and copies
   items into and out of E2EE vaults on the device (`transfer` →
   `transfer_between` when a source or the target is E2EE, sealed for the
   target), and `export_local` refuses E2EE secrets with `e2ee_locked`.
@@ -722,47 +726,108 @@ Findings:
 - QA Chromium 130 has no WebCrypto X25519: the browser suites cover the
   JavaScript X25519 path, Node tests the native one.
 
-## 11. Checklist 5c — Android + iOS
+## 11. Checklist 5c — Android + iOS (done 2026-10-27)
 
-- [ ] Core bindings v0.7.0-next.12: `TermoakError.E2eeLocked/SsoRequired` in
-      every `when`/`switch` (`e2ee_recovery_key_invalid` carries
-      `detail.reason`: `word_count`, `unknown_word` + `word`, `checksum`,
-      `old_format`); `VaultInfo.e2ee`, `e2ee_locked` on items,
-      `SyncReport.e2ee_*`, `AuditEvent.vault_id/team_id`.
-- [ ] Setup like the desktop: the 24 words numbered (copy, share/save,
-      print where there is one), three words asked back before publishing;
-      `e2ee_recovery_key_check` for live feedback while typing,
-      `e2ee_recovery_wordlist` for word suggestions on the keyboard.
-- [ ] Unlock with passphrase / recovery phrase / pairing, pairing approvals
-      from a push or the events socket (same six-digit code), lock; key
-      management: change/remove passphrase (`e2ee_remove_passphrase`), new
-      recovery phrase, replace the key (`e2ee_rotate_user_key`, shows the
-      new phrase), reset (`e2ee_reset(false)` lists the vaults first). The
-      user key is kept by the core in the account store sealed with the
-      device key (Keystore/Keychain); optional biometric gate before
-      showing the phrase or unlocking.
-- [ ] E2EE vaults: lock badges, unlock prompts, enable/disable/rotate,
-      pending members with fingerprints and the key-changed warning, the
-      networks warning (§9.3), automatic rotation on `rekey_needed` when
-      this device holds the key (as the desktop: once per vault and
-      version), `open_server_session_unlocked` confirmation and the
-      per-test unlock.
-- [ ] Moves/copies through the core's `transfer` (client-side for E2EE since
-      v0.7.0-next.12); exports of sealed secrets refused with `e2ee_locked`.
-- [ ] SSO: Android Custom Tab + intent filter for `termoak://sso`; iOS
-      `ASWebAuthenticationSession` with `callbackURLScheme: "termoak"`;
-      `sso_discover` on the email step ("Continue with <team>", only that
-      when enforced), `sso_start` (default redirect `termoak://sso`),
-      `sso_complete` with the callback URL (+ TOTP step); `SsoRequired`
+Android 0.7.0-next.6 (mobile-android `next` 23a916e) and iOS (mobile-ios
+`next` 2e08ebe, not built on a Mac here), both on core v0.7.0-next.13 (one
+call added: `test_host_unlocked`); server unchanged (staging 0.7.0-next.11).
+
+- [x] Core bindings: `TermoakError.E2eeLocked/SsoRequired` read by code
+      (`e2ee_recovery_key_invalid` with `detail.reason` and `word`,
+      `sso_required` with `team_name`), `VaultInfo.e2ee`, `e2ee_locked` on
+      hosts, `SyncReport.e2ee_waiting`, `AuditEvent`. The core declares
+      `e2ee` (header and events socket) since next.10, so the apps declare it
+      together with this phase.
+- [x] Setup like the desktop: the 24 words numbered in two columns, copy
+      (sensitive on Android, this device only and two minutes on iOS), save
+      (Android: the system's document picker; iOS: Files), print (the
+      system's print service), three words asked back; live feedback from
+      `e2ee_recovery_key_check`, suggestions from `e2ee_recovery_wordlist`.
+      The phrase screen is `FLAG_SECURE` on Android (a secure full-screen
+      dialog: no screenshots, recordings or app-switcher thumbnail); iOS
+      hides the words while the app is not active or the screen is captured
+      (recorded/mirrored), so the app switcher's snapshot never has them.
+- [x] Unlock with passphrase / recovery phrase / pairing (new device polls
+      every 3 s; the approving device gets the `e2ee` event, also re-read on
+      `hello`, and shows the same code: a dialog in front, a notification
+      of the app's own in the background, since the server sends no push for
+      pairings), lock, change/remove passphrase, new recovery phrase, replace
+      the key, reset (`e2ee_reset(false)` first, typed email). New phrase,
+      replace and reset behind the screen lock (BiometricPrompt / Face ID).
+      The key stays in the engine's account store sealed with the
+      Keystore/Keychain-protected device key.
+- [x] E2EE vaults: badges (locked when this device can't open it), Locked
+      chip on hosts, Home banners (locked, a device asking, members waiting,
+      set up to get a key), Vault → Encryption (turn on with fingerprints,
+      unchecked members wait, what changes, networks warning; confirm
+      pending members with the key-changed warning; rotate; turn off with
+      the typed name), automatic rotation on `rekey_needed` after a sync
+      (once per vault and version), the networks warning in the network
+      form. Terminals: a locked host shows Unlock and connects again; a
+      server session asks "Send this host's credentials for this session?"
+      (`open_server_session_unlocked`); a server host test asks too
+      (`test_host_unlocked`, new in core next.13).
+- [x] Moves/copies through the core's `transfer` (client-side for E2EE);
+      sealed exports refused with `e2ee_locked` in words.
+- [x] SSO: Android Custom Tab (androidx.browser) + intent filter
+      `termoak://sso`; iOS `ASWebAuthenticationSession` with
+      `callbackURLScheme: "termoak"`; `sso_discover` on the email step
+      ("Continue with <team>", only that when enforced, the owner's
+      break-glass password behind a link), `sso_start`, `sso_complete` with
+      the callback (+ TOTP step); `sso_required` on sign-in or sign-up
       switches to SSO.
-- [ ] Team SSO and domains (presets, TXT record to copy/share, verify,
-      enforce), linked identities (link/unlink).
-- [ ] Audit: filtered list (the desktop's presets), export to a file and
-      share; team retention; sinks (view, test, pause; creation can stay
-      desktop/web).
-- [ ] en/es strings for every new code and audit action (the desktop's
-      `locales/*.json` keys `e2ee.*`, `sso.*`, `audit.*`, `vault_e2ee.*`
-      can be reused).
+- [x] Team SSO and domains (presets with their steps, redirect URI to copy,
+      write-only secret, rules, TXT record as name/value/zone line to copy
+      or share, verify, remove, enforce only with a verified domain), linked
+      identities (link with the app's own PKCE through `POST /me/sso/link`,
+      unlink).
+- [x] Audit: account (Settings → Security), team (owners/admins) and vault
+      (Admins, servers with `audit_v2`) with the desktop's presets, ranges,
+      text, person, load more; export CSV/JSON/NDJSON to the share sheet;
+      team retention (`GET /teams/{id}/audit/settings` for the default and
+      maximum); sinks: state, test, pause/resume, delete (creation stays on
+      the desktop and the web).
+- [x] en/es for every new code, recovery reason and audit action (the
+      desktop's 5b texts with "this computer" as "this device", plus the
+      apps' own: Android `strings_e2ee_sso_audit.xml`, iOS
+      `Localizable.xcstrings`).
+
+Checked: Android JVM tests 414 (58 opt-in skipped), including the shared
+`e2ee_vectors.json` and BIP39 vectors through the engine built for this
+computer (`E2eeVectorsTest`), screenshots of 20 screens in en/es ×
+light/dark, debug build; an opt-in `LiveE2eeTest` against staging with the
+same engine: setup, a shared E2EE vault confirmed by fingerprint, reveal
+refused, host test and server session refused then unlocked per connection
+against an OpenSSH container (host key trusted with the unlocked test),
+local SSH with the sealed key, a second device unlocked by pairing (same
+code) and again with the recovery phrase typed as numbered four-letter
+capitals, automatic rotation after a downgrade, the vault audit and its
+CSV export, SSO through a local Dex (temporary `[sso] allowed_issuers`,
+restored): an account created through `termoak://sso`, an identity linked
+and unlinked, enforcement refusing a password sign-in with the team named;
+E2EE turned off; everything removed. iOS: 187 XCTests on Linux (the pure
+rules, PKCE vector, the shared fingerprint and pairing-code vectors), the
+new and changed files type-check against the stand-in modules (only the
+stubs' gaps).
+
+Findings:
+- The FFI had no way to test an E2EE host from the server with the
+  per-test unlock (the desktop builds it in termoak-client): core
+  v0.7.0-next.13 adds `test_host_unlocked`. A host test is also what trusts
+  a new host key, so a host added straight into an E2EE vault needs it.
+- Linking an identity needs the account to be a member of the team
+  (`not_team_member` otherwise); the identity's email domain does not need
+  to be verified.
+- The server sends no push for pairing requests: the phones learn them
+  from the events socket (and `hello`), so a phone that is fully closed
+  sees them on the next start; the other device keeps polling for ten
+  minutes.
+- As on the desktop, `e2ee_setup` publishes the key before the three words
+  are confirmed; the apps warn when closing before confirming (the phrase
+  is never shown again; a new one can be made from Security).
+- An SSO-made account (`sso_only`) can't be deleted by an administrator
+  directly: to clean up, the administrator sets a password and the account
+  deletes itself after its team (and its enforcement) is gone.
 
 ## 12. Deferred / open
 
