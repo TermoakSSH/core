@@ -495,7 +495,14 @@ login|login_failed|link|unlink|user_created`, `auth.login_refused`,
   `create_audit_sink`, `update_audit_sink`, `delete_audit_sink`,
   `test_audit_sink`; pure `e2ee_fingerprint`, `e2ee_recovery_key_valid`,
   `e2ee_recovery_key_check` (reason and word of a refusal) and
-  `e2ee_recovery_wordlist` (v0.7.0-next.11).
+  `e2ee_recovery_wordlist` (v0.7.0-next.11); `e2ee_remove_passphrase`,
+  `e2ee_rotate_user_key(passphrase?)` (new key, every vault key wrapped
+  again, a new recovery phrase returned) and `e2ee_reset(confirm)` (the
+  vaults that would be lost without `confirm`; locks this device after it)
+  (v0.7.0-next.12). Since v0.7.0-next.12 the client also moves and copies
+  items into and out of E2EE vaults on the device (`transfer` →
+  `transfer_between` when a source or the target is E2EE, sealed for the
+  target), and `export_local` refuses E2EE secrets with `e2ee_locked`.
   Records: `VaultInfo.e2ee`, `SshHost/SshIdentity/SshKey.e2ee_locked`,
   `SyncReport.e2ee_waiting/e2ee_locked`, `AuditEvent.vault_id/team_id`.
   Errors: `TermoakError.E2eeLocked` (`e2ee_locked`,
@@ -625,72 +632,137 @@ Decided by the owner on 2026-10-27 (before phase 5b):
    and the server AI; `[audit] max_sinks_per_team` is a server setting for
    every team). — **Decided: every plan.**
 
-## 10. Checklist 5b — web + desktop
+## 10. Checklist 5b — web + desktop (done 2026-10-27)
 
-- [ ] Features: the desktop gets `e2ee` from the core; the web adds `e2ee`
-      to its `X-Termoak-Features` wrapper and events socket only once it
-      implements §2 (until then E2EE vaults stay hidden there).
-- [ ] Account → Security → End-to-end encryption: set up (recovery key shown
-      once with copy/download/print and a "I stored it" confirmation;
-      optional passphrase with a strength hint), status (fingerprint,
-      unlocked here or not), unlock (passphrase / recovery key / "use another
-      device" with the six-digit code), lock, change passphrase, new recovery
-      key, rotate key, reset (with the list of vaults that would be lost).
-- [ ] Pairing requests from other devices: notification/badge, the code,
-      Approve/Deny (desktop: also a system notification).
-- [ ] Vault settings → Encryption: turn on (who gets the key now, with
-      fingerprints; what stops working: server sessions without unlock, the
-      server AI, just-in-time credentials, server-side moves), turn off
-      (typed confirmation), rotate; `rekey_needed` banner for key holders
-      ("Ana lost access: rotate the key"); pending members with
-      fingerprints and the key-changed warning, Confirm.
-- [ ] Lock badges: E2EE vaults and items (`e2ee_locked`), "Unlock" on
-      `E2eeLocked` errors; `SyncReport.e2ee_waiting/e2ee_locked` notices.
-- [ ] Server sessions/tests on E2EE hosts: "Send this host's credentials to
-      the server for this session?" → `open_server_session_unlocked` / test
-      with `unlock`; Connect-only members with team certificates unchanged.
-- [ ] Moves/copies with E2EE: client-side (sealed in the target).
-- [ ] Web crypto per §2.10 (WebCrypto + hpke on top + Argon2id WASM,
-      non-extractable keys, IndexedDB only with "Remember"), passing
-      `e2ee_vectors.json` (port `qa/lib/e2ee.mjs`).
-- [ ] Sign-in: email first → `sso_discover`; "Continue with <team>" (and
-      only that when `enforced`); desktop `sso_start_loopback` + system
-      browser + `wait_callback` + `sso_complete` (with the TOTP step);
-      web `/app/sso` callback page; `SsoRequired` error → switch to SSO.
-- [ ] Team → Single sign-on (owners/admins): preset picker with the fields
-      each needs, redirect URI to copy, client secret (write-only), test
-      (save validates discovery), domains with the TXT record to copy and
-      Verify, enforce (needs a verified domain), owner break glass,
-      auto-create/join, "SSO counts as 2FA". Account → Linked identities
+Desktop 0.7.0-next.5 (desktop `next` 013f82d, core v0.7.0-next.12) and the
+web (web `next` ec828e1), server 0.7.0-next.11 on staging (CSP allows
+WebAssembly, `/me/sso` names the team). QA: browser suites `e2ee`, `sso`,
+`audit` (qa `main` 55666f7).
+
+- [x] Features: the desktop gets `e2ee` from the core; the web declares
+      `e2ee` (header wrapper and events socket) since it implements §2.
+- [x] Account → Security → End-to-end encryption: set up (24 words shown
+      once, numbered, with copy/save/print, then three of them asked back;
+      nothing is published before that; optional passphrase with a strength
+      hint), status (fingerprint, unlocked here or not), unlock (passphrase /
+      recovery phrase with live feedback by reason / another device with the
+      six-digit code), lock, change/remove passphrase, new recovery phrase,
+      replace the key, reset (typed confirmation, with the vaults that would
+      be lost). Desktop: Settings has its own Security and Activity pages.
+- [x] Pairing requests: banner/toast, sidebar badge (web), the code,
+      Approve/Deny (desktop: also a system notification when in the
+      background).
+- [x] Vault → Encryption: turn on (who gets the key now with fingerprints,
+      unchecked members wait; what changes; the network warning, §9.3),
+      turn off (typed name), rotate; `rekey_needed` banner; pending members
+      with fingerprints and the key-changed warning, Confirm. The desktop
+      also rotates by itself, once per vault and version, when it holds the
+      key and the server flags `rekey_needed` (a toast says so).
+- [x] Lock badges on E2EE vaults and items, "Unlock" on `E2eeLocked`,
+      `SyncReport.e2ee_waiting/e2ee_locked` notices; the terminal shows a
+      locked card with Unlock.
+- [x] Server sessions/tests on E2EE hosts: "Send this host's credentials for
+      this session?" → `unlock` (desktop through the core's
+      `unlock_payload`, web resolving the same chain: jumps, identity, key,
+      proxy password).
+- [x] Moves/copies with E2EE: done on the desktop (core v0.7.0-next.12
+      `transfer_between`). The web has no move/copy UI, so nothing to add;
+      it refuses key import into an E2EE vault (the server cannot read it).
+- [x] Web crypto: WebCrypto HPKE, X25519 in JavaScript where WebCrypto lacks
+      it (Chrome < 133, Safari < 17; "Remember on this browser" hidden
+      there), Argon2id with hash-wasm's WebAssembly (pinned by SHA-256) or a
+      JavaScript fallback; every vector of `e2ee_vectors.json` passes with
+      both. The key is a non-extractable CryptoKey in IndexedDB only with
+      "Remember". A warning wherever keys are handled: the served code is
+      the weak point, prefer the native apps.
+- [x] Sign-in: the email asks `GET /auth/sso/discover` ("Continue with
+      <team>", only that when enforced, the owner's password as break
+      glass); desktop loopback + system browser (PKCE) + TOTP step; web
+      `/app/sso`; `sso_required` switches to SSO.
+- [x] Team → Single sign-on with the five presets and their steps, redirect
+      URI to copy, write-only secret, domains with the TXT record to copy
+      (desktop also as a zone-file line), Verify, enforce (needs a verified
+      domain), auto-create/join, "SSO counts as 2FA"; linked identities
       (link/unlink).
-- [ ] Audit: filters (actions with presets: Access, Certificates, Policy,
-      E2EE, SSO, Sign-ins), actor/vault/time range/text, infinite scroll
-      (`before`), export CSV/JSON; team retention; sinks (webhook/syslog
-      forms, secret shown once with copy, test, failures/last error,
-      enable/disable). Readable sentences for the new actions (en/es).
-- [ ] en/es texts for every new error code.
+- [x] Audit: team, account (and vault on the web) views with presets
+      (Access, Certificates, Policy, E2EE, SSO, Sign-ins), person, dates,
+      text, load more / endless scrolling (`before`), export CSV/JSON/NDJSON;
+      team retention; sinks (webhook with the secret once, syslog over TLS
+      or TCP, test, state with failures and last error, pause, delete); the
+      web also has the server-wide sinks in Administration.
+- [x] en/es texts for every new error code, recovery reason and audit
+      action.
+
+Checked on staging with two accounts (desktop in Xvfb with a second
+device and the other member played by the core, and the web with two
+browsers): setup, phrase confirmation (prefixes and capitals accepted),
+vault turned on with fingerprints, a member left waiting and confirmed from
+the banner, local SSH with an E2EE key, pairing with matching codes, server
+host test and server session with per-connection unlock, lock and unlock
+with the phrase (typo explained), automatic rotation after a downgrade,
+team SSO with a local Dex (temporary `allowed_issuers`, restored),
+domain verification failure then administrator vouching, enforcement,
+identity link through the system browser, an SSO-created account, team
+audit with presets, retention, a webhook sink delivered and tested, export,
+items copied out of the E2EE vault on the device, E2EE turned off.
+
+Findings:
+- The server's CSP blocked WebAssembly, so the web ran Argon2id in
+  JavaScript (~3 s per unlock instead of ~0.3 s): server 0.7.0-next.11 adds
+  `'wasm-unsafe-eval'` to `script-src` (compilation only, no `eval`).
+- `/me/sso` now includes `team_name` (the web looked it up from `/teams`).
+- Server-side moves out of or into E2EE vaults are refused (5a); the core
+  now does them on the device (v0.7.0-next.12) and refuses exporting
+  sealed secrets in plain text.
+- `rekey_needed` reaches the other holders with the periodic sync (about
+  five minutes on the desktop) unless an event arrives first; rotation is
+  automatic on the desktop and offered by a banner on the web.
+- File dialogs (export, save the phrase) and system notifications cannot be
+  exercised under Xvfb without a portal; checked through the client calls.
+- QA Chromium 130 has no WebCrypto X25519: the browser suites cover the
+  JavaScript X25519 path, Node tests the native one.
 
 ## 11. Checklist 5c — Android + iOS
 
-- [ ] Core bindings v0.7.0-next.10: `TermoakError.E2eeLocked/SsoRequired` in
-      every `when`/`switch`; `VaultInfo.e2ee`, `e2ee_locked` on items,
+- [ ] Core bindings v0.7.0-next.12: `TermoakError.E2eeLocked/SsoRequired` in
+      every `when`/`switch` (`e2ee_recovery_key_invalid` carries
+      `detail.reason`: `word_count`, `unknown_word` + `word`, `checksum`,
+      `old_format`); `VaultInfo.e2ee`, `e2ee_locked` on items,
       `SyncReport.e2ee_*`, `AuditEvent.vault_id/team_id`.
-- [ ] The same E2EE screens as §10 (setup with the recovery key shown once,
-      unlock with passphrase / recovery key / pairing, pairing approvals from
-      a push or the events socket, lock), the user key kept by the core in
-      the account store sealed with the device key (already backed by the
-      Keystore/Keychain); optional biometric gate before showing/unlocking.
+- [ ] Setup like the desktop: the 24 words numbered (copy, share/save,
+      print where there is one), three words asked back before publishing;
+      `e2ee_recovery_key_check` for live feedback while typing,
+      `e2ee_recovery_wordlist` for word suggestions on the keyboard.
+- [ ] Unlock with passphrase / recovery phrase / pairing, pairing approvals
+      from a push or the events socket (same six-digit code), lock; key
+      management: change/remove passphrase (`e2ee_remove_passphrase`), new
+      recovery phrase, replace the key (`e2ee_rotate_user_key`, shows the
+      new phrase), reset (`e2ee_reset(false)` lists the vaults first). The
+      user key is kept by the core in the account store sealed with the
+      device key (Keystore/Keychain); optional biometric gate before
+      showing the phrase or unlocking.
 - [ ] E2EE vaults: lock badges, unlock prompts, enable/disable/rotate,
-      pending members with fingerprints, `open_server_session_unlocked`
-      confirmation.
+      pending members with fingerprints and the key-changed warning, the
+      networks warning (§9.3), automatic rotation on `rekey_needed` when
+      this device holds the key (as the desktop: once per vault and
+      version), `open_server_session_unlocked` confirmation and the
+      per-test unlock.
+- [ ] Moves/copies through the core's `transfer` (client-side for E2EE since
+      v0.7.0-next.12); exports of sealed secrets refused with `e2ee_locked`.
 - [ ] SSO: Android Custom Tab + intent filter for `termoak://sso`; iOS
       `ASWebAuthenticationSession` with `callbackURLScheme: "termoak"`;
-      `sso_discover` on the email step, `sso_start` (default redirect
-      `termoak://sso`), `sso_complete` with the callback URL (+ TOTP step).
-- [ ] Team SSO and domains (read/edit like the desktop), linked identities.
-- [ ] Audit: filtered list, export to a file and share; team retention;
-      sinks (view, test, enable/disable; creation can stay desktop/web).
-- [ ] en/es strings for every new code.
+      `sso_discover` on the email step ("Continue with <team>", only that
+      when enforced), `sso_start` (default redirect `termoak://sso`),
+      `sso_complete` with the callback URL (+ TOTP step); `SsoRequired`
+      switches to SSO.
+- [ ] Team SSO and domains (presets, TXT record to copy/share, verify,
+      enforce), linked identities (link/unlink).
+- [ ] Audit: filtered list (the desktop's presets), export to a file and
+      share; team retention; sinks (view, test, pause; creation can stay
+      desktop/web).
+- [ ] en/es strings for every new code and audit action (the desktop's
+      `locales/*.json` keys `e2ee.*`, `sso.*`, `audit.*`, `vault_e2ee.*`
+      can be reused).
 
 ## 12. Deferred / open
 
